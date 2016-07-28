@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Dummy schedule list view-->
+    <string-array name="schedule_icons">
+        <item>R.drawable.placeholder_sixtyfour</item>
+        <item>R.drawable.placeholder_sixtyfour</item>
+        <item>R.drawable.placeholder_sixtyfour</item>
+    </string-array>
+
+    <string-array name="schedule_lessons">
+        <item>Maths</item>
+        <item>French</item>
+        <item>Biology</item>
+    </string-array>
+
+    <string-array name="schedule_teachers">
+        <item>Mr One</item>
+        <item>Mr Two</item>
+        <item>Mr Three</item>
+    </string-array>
+
+    <string-array name="schedule_rooms">
+        <item>101</item>
+        <item>102</item>
+        <item>103</item>
+    </string-array>
+
+    <string-array name="schedule_time_ins">
+        <item>1:00</item>
+        <item>2:00</item>
+        <item>3:00</item>
+    </string-array>
+
+    <string-array name="schedule_time_outs">
+        <item>4:00</item>
+        <item>5:00</item>
+        <item>6:00</item>
+    </string-array>
+
+</resources>
