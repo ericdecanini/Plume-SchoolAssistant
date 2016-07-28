@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Plume - School Assistant</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <!-- Strings for tabbed layout -->
+    <string name="tab_one">Schedule</string>
+    <string name="tab_two">Tasks</string>
+    <string name="title_activity_temp">TempActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
