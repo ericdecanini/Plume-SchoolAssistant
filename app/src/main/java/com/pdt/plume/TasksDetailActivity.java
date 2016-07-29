@@ -9,5 +9,10 @@ public class TasksDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tasks_detail);
+
+        TasksDetailFragment fragment = new TasksDetailFragment();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
     }
 }

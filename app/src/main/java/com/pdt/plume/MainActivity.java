@@ -36,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,15 +43,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        if (mViewPager != null)
-            mViewPager.setAdapter(mSectionsPagerAdapter);
 
         // Check if the device is a phone or tablet, then initialise the tab layout
         // based on that
@@ -139,6 +128,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void initTabs(){
+        // Create the adapter that will return a fragment for each of the two
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        if (mViewPager != null)
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout!= null)
             tabLayout.setupWithViewPager(mViewPager);
@@ -167,19 +165,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // container view.
                     switch (position){
                         case 0:
-//                            getSupportFragmentManager().beginTransaction()
-//                                    .replace(R.id.container, new ScheduleFragment())
-//                                    .commit();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.detail_container, new ScheduleDetailFragment())
+                                    .replace(R.id.container, new ScheduleFragment())
                                     .commit();
                             break;
                         case 1:
-//                            getSupportFragmentManager().beginTransaction()
-//                                    .replace(R.id.container, new TasksFragment())
-//                                    .commit();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.detail_container, new TasksDetailFragment())
+                                    .replace(R.id.container, new TasksFragment())
                                     .commit();
                             break;
                     }

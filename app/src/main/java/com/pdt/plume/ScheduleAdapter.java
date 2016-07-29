@@ -14,6 +14,7 @@ public class ScheduleAdapter extends ArrayAdapter {
     Context context;
     int layoutResourceId;
     Schedule data[] = null;
+    private int mItemSelected = -1 ;
 
     public ScheduleAdapter(Context context, int layoutResourceId, Schedule[] data) {
         super(context, layoutResourceId, data);
@@ -55,7 +56,17 @@ public class ScheduleAdapter extends ArrayAdapter {
         holder.timeIn.setText(schedule.scheduleTimeIn);
         holder.timeOut.setText(schedule.scheduleTimeOut);
 
+        if(mItemSelected==position){
+            row.setActivated(true);
+        }else{
+            row.setActivated(false);
+        }
+
         return row;
+    }
+
+    public void setItemSelected(int position){
+        mItemSelected=position;
     }
 
     static class ViewHolder

@@ -29,21 +29,31 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-        Log.v(LOG_TAG, "Schedule Fragment Initialised");
 
         //Initialise Schedule List
-        ListView listView = (ListView) rootView.findViewById(R.id.schedule_list);
-        ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, generateDummyScheduleArray());
+        final ListView listView = (ListView) rootView.findViewById(R.id.schedule_list);
+        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, generateDummyScheduleArray());
         if (listView != null){
-            Log.v(LOG_TAG, "ListView not null");
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                    //Replace fragment if device is a tablet
+                    if (getResources().getBoolean(R.bool.isTablet)){
+                        ScheduleDetailFragment fragment = new ScheduleDetailFragment();
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.detail_container, fragment)
+                                .commit();
+                    }
+                    //Start a new activity if device is a phone
+                    else{
+                        Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                        startActivity(intent);
+                    }
                 }
             });
-        } else Log.v(LOG_TAG, "ListView is null");
+            listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+        }
 
 
         // Inflate the layout for this fragment

@@ -21,7 +21,7 @@
         <activity
             android:name=".ScheduleDetailActivity"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".TasksDetailActivity"></activity>
+        <activity android:name=".TasksDetailActivity" />
     </application>
 
 </manifest>

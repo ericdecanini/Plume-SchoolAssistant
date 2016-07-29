@@ -9,5 +9,10 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_detail);
+
+        ScheduleDetailFragment fragment = new ScheduleDetailFragment();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
     }
 }
