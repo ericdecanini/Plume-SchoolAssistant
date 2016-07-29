@@ -26,7 +26,6 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -68,9 +67,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        if (drawer != null)
+        if (drawer != null){
             drawer.setDrawerListener(toggle);
-        toggle.syncState();
+            toggle.syncState();
+        }
+
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null)
@@ -80,11 +81,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+        if (drawer != null)
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -108,7 +110,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        if (drawer != null)
+            drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
@@ -164,14 +167,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // container view.
                     switch (position){
                         case 0:
+//                            getSupportFragmentManager().beginTransaction()
+//                                    .replace(R.id.container, new ScheduleFragment())
+//                                    .commit();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.container, new ScheduleFragment())
+                                    .replace(R.id.detail_container, new ScheduleDetailFragment())
                                     .commit();
                             break;
                         case 1:
+//                            getSupportFragmentManager().beginTransaction()
+//                                    .replace(R.id.container, new TasksFragment())
+//                                    .commit();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.container, new TasksFragment())
+                                    .replace(R.id.detail_container, new TasksDetailFragment())
                                     .commit();
+                            break;
                     }
                 }
 

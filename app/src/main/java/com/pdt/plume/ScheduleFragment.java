@@ -2,18 +2,22 @@ package com.pdt.plume;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ScheduleFragment extends Fragment {
+    String LOG_TAG = ScheduleFragment.class.getSimpleName();
 
 
     public ScheduleFragment() {
@@ -25,12 +29,22 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        Log.v(LOG_TAG, "Schedule Fragment Initialised");
 
         //Initialise Schedule List
         ListView listView = (ListView) rootView.findViewById(R.id.schedule_list);
         ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, generateDummyScheduleArray());
-        if (listView != null)
+        if (listView != null){
+            Log.v(LOG_TAG, "ListView not null");
             listView.setAdapter(mScheduleAdapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                }
+            });
+        } else Log.v(LOG_TAG, "ListView is null");
+
 
         // Inflate the layout for this fragment
         return rootView;
