@@ -2,12 +2,6 @@
 <resources>
 
     <!--Dummy schedule list view-->
-    <string-array name="schedule_icons">
-        <item>R.drawable.placeholder_sixtyfour</item>
-        <item>R.drawable.placeholder_sixtyfour</item>
-        <item>R.drawable.placeholder_sixtyfour</item>
-    </string-array>
-
     <string-array name="schedule_lessons">
         <item>Maths</item>
         <item>French</item>
@@ -36,6 +30,25 @@
         <item>4:00</item>
         <item>5:00</item>
         <item>6:00</item>
+    </string-array>
+
+    <!-- Dummy task list view -->
+    <string-array name="tasks_titles">
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
+    </string-array>
+
+    <string-array name="tasks_shareds">
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
+    </string-array>
+
+    <string-array name="tasks_descriptions">
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
+        <item>Lorem Ipsum</item>
     </string-array>
 
 </resources>
