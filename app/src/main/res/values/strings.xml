@@ -29,6 +29,7 @@
     <string name="new_schedule_time_out">Time out</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
+    <string name="EXTRA_TEXT_RETURN_TO_TASKS">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
 
 </resources>

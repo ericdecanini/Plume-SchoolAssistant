@@ -4,6 +4,7 @@ package com.pdt.plume;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +50,17 @@ public class TasksFragment extends Fragment {
         });
         if (getResources().getBoolean(R.bool.isTablet))
             listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+
+        //Initialise the fab
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), NewTaskActivity.class);
+                startActivity(intent);
+            }
+        });
+
         return rootView;
     }
 
