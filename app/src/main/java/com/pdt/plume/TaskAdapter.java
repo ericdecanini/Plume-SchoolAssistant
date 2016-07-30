@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,7 @@ public class TaskAdapter extends ArrayAdapter {
             holder.title = (TextView)row.findViewById(R.id.task_title);
             holder.shared = (TextView)row.findViewById(R.id.task_shared);
             holder.description = (TextView)row.findViewById(R.id.task_description);
+            holder.attachment = (TextView)row.findViewById(R.id.task_attachment);
             holder.date = (TextView)row.findViewById(R.id.task_date);
 
             row.setTag(holder);
@@ -51,6 +53,7 @@ public class TaskAdapter extends ArrayAdapter {
         holder.title.setText(task.taskTitle);
         holder.shared.setText(task.taskShared);
         holder.description.setText(task.taskDescription);
+        holder.attachment.setText(task.taskAttachment);
         holder.date.setText("" + task.taskDate);
 
         return row;
@@ -62,6 +65,7 @@ public class TaskAdapter extends ArrayAdapter {
         TextView title;
         TextView shared;
         TextView description;
+        TextView attachment;
         TextView date;
     }
 

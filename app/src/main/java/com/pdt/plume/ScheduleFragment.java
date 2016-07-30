@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,8 +53,20 @@ public class ScheduleFragment extends Fragment {
                     }
                 }
             });
-            listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+            if (getResources().getBoolean(R.bool.isTablet))
+                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
+
+        //Initialise fab
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
 
         // Inflate the layout for this fragment

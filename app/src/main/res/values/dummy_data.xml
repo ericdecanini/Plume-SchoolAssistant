@@ -51,4 +51,10 @@
         <item>Lorem Ipsum</item>
     </string-array>
 
+    <string-array name="tasks_attachments">
+        <item>http://www.lipsum.com/</item>
+        <item>http://www.lipsum.com/</item>
+        <item>http://www.lipsum.com/</item>
+    </string-array>
+
 </resources>

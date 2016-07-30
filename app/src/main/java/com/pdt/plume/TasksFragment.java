@@ -39,7 +39,7 @@ public class TasksFragment extends Fragment {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.detail_container, fragment)
                             .commit();
-                }
+                } 
                 //Start a new activity if device is a phone
                 else{
                     Intent intent = new Intent(getContext(), TasksDetailActivity.class);
@@ -47,7 +47,8 @@ public class TasksFragment extends Fragment {
                 }
             }
         });
-        listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+        if (getResources().getBoolean(R.bool.isTablet))
+            listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         return rootView;
     }
 
@@ -70,6 +71,7 @@ public class TasksFragment extends Fragment {
                 resources.getStringArray(R.array.tasks_titles)[count],
                 resources.getStringArray(R.array.tasks_shareds)[count],
                 resources.getStringArray(R.array.tasks_descriptions)[count],
+                resources.getStringArray(R.array.tasks_attachments)[count],
                 taskDates[count]);
     }
 
