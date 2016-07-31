@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.pdt.plume.data.DbContract;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 // TODO: Implement actions to read, insert, update, and delete database data
 public class ScheduleFragment extends Fragment {
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
+    ArrayList<Schedule> highlightedItems;
 
 
     public ScheduleFragment() {
@@ -35,7 +37,7 @@ public class ScheduleFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
         // Get Schedule Data
         DbHelper dbHelper = new DbHelper(getContext());
 
@@ -59,6 +61,17 @@ public class ScheduleFragment extends Fragment {
                         Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
                         startActivity(intent);
                     }
+                }
+            });
+
+            // Initialise highlight of items
+            highlightedItems = new ArrayList<>();
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    ImageView scheduleIcon = (ImageView) view.findViewById(R.id.schedule_icon);
+                    scheduleIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_checked));
+                    return true;
                 }
             });
             if (getResources().getBoolean(R.bool.isTablet))

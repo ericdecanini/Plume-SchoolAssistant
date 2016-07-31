@@ -5,6 +5,9 @@
 
     <ImageView
         android:id="@+id/schedule_icon"
+        android:minHeight="48dp"
+        android:minWidth="48dp"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
