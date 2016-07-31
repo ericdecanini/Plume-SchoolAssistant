@@ -4,6 +4,9 @@ package com.pdt.plume;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,6 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.pdt.plume.data.DbContract;
+import com.pdt.plume.data.DbHelper;
+
+import java.util.ArrayList;
 
 // TODO: Implement actions to read, insert, update, and delete database data
 public class ScheduleFragment extends Fragment {
@@ -28,10 +36,12 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        // Get Schedule Data
+        DbHelper dbHelper = new DbHelper(getContext());
 
-        //Initialise Schedule List
+        // Initialise Schedule List
         final ListView listView = (ListView) rootView.findViewById(R.id.schedule_list);
-        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, generateDummyScheduleArray());
+        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
         if (listView != null){
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -7,6 +7,7 @@ import android.database.DatabaseUtils;
 import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.pdt.plume.Schedule;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
@@ -16,10 +17,12 @@ import java.util.ArrayList;
 
 
 public class DbHelper extends SQLiteOpenHelper {
+    private String LOG_TAG = DbHelper.class.getSimpleName();
+
     private static final String DATABASE_NAME = "PlumeDb.db";
     private static final int DATABASE_VERSION = 1;
 
-    public DbHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+    public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -71,24 +74,6 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public Cursor getCurrentDayScheduleData(){
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-        MatrixCursor matrixCursor = new MatrixCursor(cursor.getColumnNames());
-        int r = 5;
-        for (int i = 0; i < numberOfRows(); i++){
-            String occurrence = cursor.getString(ScheduleEntry.COLUMN_OCCURENCE.indexOf(i));
-            String[] occurenceData = occurrence.split(":");
-        }
-        return cursor;
-    }
-
     public Cursor getAllScheduleData(){
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(ScheduleEntry.TABLE_NAME,
@@ -127,18 +112,31 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Schedule> getCurrentDayScheduleArray(){
         Cursor cursor = getCurrentDayScheduleData();
         ArrayList<Schedule> arrayList = new ArrayList<>();
-        for (int i = 0; i < numberOfRows(); i++){
-            cursor.move(i);
-            arrayList.add(i, new Schedule(
-                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
-                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
-                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
-                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
-                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))
-            ));
+        for (int i = 0; i < cursor.getCount(); i++){
+            if (cursor.moveToPosition(i)){
+                arrayList.add(i, new Schedule(
+                        cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))
+                ));
+            }
         }
         return arrayList;
+    }
+
+    public Cursor getCurrentDayScheduleData(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        return cursor;
     }
 
 }

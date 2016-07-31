@@ -31,6 +31,14 @@
     <string name="new_schedule_room">Room</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
+    <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
+    <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
+    <string name="new_schedule_room_key" translatable="false">KEY_NEW_SCHEDULE_ROOM</string>
+    <string name="new_schedule_occurrence_key" translatable="false">KEY_NEW_SCHEDULE_OCCURRENCE</string>
+    <string name="new_schedule_timein_key" translatable="false">KEY_NEW_SCHEDULE_TIMEIN</string>
+    <string name="new_schedule_timeout_key" translatable="false">KEY_NEW_SCHEDULE_TIMEOUT</string>
+    <string name="new_schedule_icon_key" translatable="false">KEY_NEW_SCHEDULE_ICON</string>
+
     <!-- Strings for Database -->
     <string name="DATABASE_NAME">PLUME DATABASE</string>
 

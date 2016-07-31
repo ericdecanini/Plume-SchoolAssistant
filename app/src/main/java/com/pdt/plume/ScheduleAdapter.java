@@ -9,14 +9,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class ScheduleAdapter extends ArrayAdapter {
 
     Context context;
     int layoutResourceId;
-    Schedule data[] = null;
+    ArrayList<Schedule> data = null;
     private int mItemSelected = -1 ;
 
-    public ScheduleAdapter(Context context, int layoutResourceId, Schedule[] data) {
+    public ScheduleAdapter(Context context, int layoutResourceId, ArrayList<Schedule> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
@@ -48,7 +50,7 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
-        Schedule schedule = data[position];
+        Schedule schedule = data.get(position);
         holder.icon.setImageResource(schedule.scheduleIcon);
         holder.lesson.setText(schedule.scheduleLesson);
         holder.teacher.setText(schedule.scheduleTeacher);
