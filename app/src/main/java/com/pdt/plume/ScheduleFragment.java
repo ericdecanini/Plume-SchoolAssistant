@@ -14,9 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+// TODO: Implement actions to read, insert, update, and delete database data
 public class ScheduleFragment extends Fragment {
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
 

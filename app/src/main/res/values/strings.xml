@@ -31,5 +31,7 @@
     <string name="new_schedule_room">Room</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
+    <!-- Strings for Database -->
+    <string name="DATABASE_NAME">PLUME DATABASE</string>
 
 </resources>
