@@ -1,10 +1,14 @@
 package com.pdt.plume;
 
+import android.content.Context;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.Spinner;
 
-/**
- * Created by user on 30/07/2016.
- */
+import java.util.ArrayList;
+
+
 public class Utlility {
 
     public static int getIndex(Spinner spinner, String myString){
@@ -18,5 +22,7 @@ public class Utlility {
         }
         return index;
     }
+
+
 
 }
