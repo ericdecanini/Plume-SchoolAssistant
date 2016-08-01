@@ -12,11 +12,14 @@
     <!-- Strings for tabbed layout -->
     <string name="tab_one">Schedule</string>
     <string name="tab_two">Tasks</string>
-    <string name="title_activity_temp">TempActivity</string>
 
     <!-- Strings for navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Strings for Action Mode -->
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
 
     <!-- Strings for NewActivity (General) -->
     <string name="done">Done</string>
@@ -29,7 +32,7 @@
     <string name="new_schedule_time_out">Time out</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
-    <string name="EXTRA_TEXT_RETURN_TO_TASKS">EXTRA_TEXT_RETURN_TO_TASKS</string>
+    <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
     <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
     <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
@@ -40,6 +43,6 @@
     <string name="new_schedule_icon_key" translatable="false">KEY_NEW_SCHEDULE_ICON</string>
 
     <!-- Strings for Database -->
-    <string name="DATABASE_NAME">PLUME DATABASE</string>
+    <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
 </resources>

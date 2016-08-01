@@ -9,7 +9,7 @@
     </item>
 
     <item>
-        <inset android:drawable="@drawable/ic_check_white_24dp"
+        <inset android:drawable="@drawable/ic_check_white"
             android:gravity="center" />
     </item>
 

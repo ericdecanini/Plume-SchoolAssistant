@@ -106,7 +106,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public Integer deleteScheduleItem(Integer id){
         SQLiteDatabase db = getWritableDatabase();
-        return db.delete(ScheduleEntry.TABLE_NAME, "id = ?", new String[]{Integer.toString(id)});
+        return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
     public ArrayList<Schedule> getCurrentDayScheduleArray(){
