@@ -1,20 +1,12 @@
 package com.pdt.plume;
 
 
-import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.BoolRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.view.ActionMode;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -24,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -41,6 +32,8 @@ public class ScheduleFragment extends Fragment {
     boolean isTablet;
 
     ListView listView;
+    private int mOptionMenu;
+    private Menu mActionMenu;
 
 
     public ScheduleFragment() {
@@ -118,33 +111,37 @@ public class ScheduleFragment extends Fragment {
                     mode.setSubtitle(null);
                     break;
                 case 1:
+                    mOptionMenu = 0;
                     mode.setSubtitle("One item selected");
                     break;
                 default:
+                    mOptionMenu = 1;
                     mode.setSubtitle("" + checkedCount + " items selected");
                     break;
             }
-            if (checked)
-                positionsList.add(position);
-            else{
-                int itemId = -1;
-                for (int i = 0; i < positionsList.size(); i++){
-                    if (position == positionsList.get(i)) {
-                        Log.v(LOG_TAG, "i = " + positionsList.get(i));
-                        itemId = i;
+                    if (checked)
+                        positionsList.add(position);
+                    else {
+                        int itemId = -1;
+                        for (int i = 0; i < positionsList.size(); i++) {
+                            if (position == positionsList.get(i)) {
+                                Log.v(LOG_TAG, "i = " + positionsList.get(i));
+                                itemId = i;
+                            }
+                        }
+                        Log.v(LOG_TAG, "ItemId = " + itemId);
+                        if (itemId != -1)
+                            positionsList.remove(itemId);
                     }
-                }
-                Log.v(LOG_TAG, "ItemId = " + itemId);
-                if (itemId != -1)
-                    positionsList.remove(itemId);
-            }
-
+            mode.invalidate();
         }
+
 
         @Override
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
             MenuInflater inflater = getActivity().getMenuInflater();
-            inflater.inflate(R.menu.menu_action_mode, menu);
+            inflater.inflate(R.menu.menu_action_mode_single, menu);
+            mActionMenu = menu;
             mode.setTitle("Select Items");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
@@ -156,6 +153,11 @@ public class ScheduleFragment extends Fragment {
 
         @Override
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+            MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
+            if (mOptionMenu == 0)
+                menuItem.setVisible(true);
+            else
+                menuItem.setVisible(false);
             return true;
         }
 
@@ -164,6 +166,10 @@ public class ScheduleFragment extends Fragment {
             switch (item.getItemId()) {
                 case R.id.action_delete:
                     deleteSelectedItems();
+                    break;
+                case R.id.action_edit:
+
+                    break;
                 default:
                     Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
                             Toast.LENGTH_SHORT).show();
@@ -186,21 +192,21 @@ public class ScheduleFragment extends Fragment {
             DbHelper db = new DbHelper(getActivity());
             Cursor cursor = db.getCurrentDayScheduleData();
             for(int i = 0; i < positionsList.size(); i++) {
-                if (cursor.moveToPosition(positionsList.get(i))){
+                if (cursor.moveToPosition(positionsList.get(i))) {
                     String tempString = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry._ID));
                     Log.v(LOG_TAG, "tempString = " + tempString);
                     Log.v(LOG_TAG, "positionsListGetIIndexId = " + cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID)));
                     db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID)));
                 }
-                cursor.close();
-                ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
-                adapter.clear();
-                adapter.addAll(db.getCurrentDayScheduleArray());
-                adapter.notifyDataSetChanged();
-                positionsList.clear();
-                getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             }
+            cursor.close();
+            ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
+            adapter.clear();
+            adapter.addAll(db.getCurrentDayScheduleArray());
+            adapter.notifyDataSetChanged();
+            positionsList.clear();
+            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
     }
 
