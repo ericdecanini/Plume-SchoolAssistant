@@ -26,10 +26,8 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Implement actions to read, insert, update, and delete database data
 public class ScheduleFragment extends Fragment {
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
-    Utlility utlility = new Utlility();
     boolean isTablet;
 
     ListView listView;
@@ -126,11 +124,9 @@ public class ScheduleFragment extends Fragment {
                         int itemId = -1;
                         for (int i = 0; i < positionsList.size(); i++) {
                             if (position == positionsList.get(i)) {
-                                Log.v(LOG_TAG, "i = " + positionsList.get(i));
                                 itemId = i;
                             }
                         }
-                        Log.v(LOG_TAG, "ItemId = " + itemId);
                         if (itemId != -1)
                             positionsList.remove(itemId);
                     }
@@ -194,9 +190,6 @@ public class ScheduleFragment extends Fragment {
             Cursor cursor = db.getCurrentDayScheduleData();
             for(int i = 0; i < positionsList.size(); i++) {
                 if (cursor.moveToPosition(positionsList.get(i))) {
-                    String tempString = cursor.getString(cursor.getColumnIndex(ScheduleEntry._ID));
-                    Log.v(LOG_TAG, "tempString = " + tempString);
-                    Log.v(LOG_TAG, "positionsListGetIIndexId = " + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                     db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                 }
             }

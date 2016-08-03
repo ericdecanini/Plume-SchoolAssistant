@@ -2,7 +2,6 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +9,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class TaskAdapter extends ArrayAdapter {
 
     Context context;
     int layoutResourceId;
-    Task data[] = null;
+    ArrayList<Task> data = null;
 
-    public TaskAdapter(Context context, int layoutResourceId, Task[] data) {
+    public TaskAdapter(Context context, int layoutResourceId, ArrayList<Task> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
@@ -48,13 +49,13 @@ public class TaskAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
-        Task task = data[position];
+        Task task = data.get(position);
         holder.icon.setImageResource(task.taskIcon);
         holder.title.setText(task.taskTitle);
         holder.shared.setText(task.taskShared);
         holder.description.setText(task.taskDescription);
         holder.attachment.setText(task.taskAttachment);
-        holder.date.setText("" + task.taskDate);
+        holder.date.setText("" + task.taskDueDate);
 
         return row;
     }

@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/placeholder_sixtyfour" />
         <EditText
-            android:id="@+id/new_task_title"
+            android:id="@+id/field_new_task_title"
             android:layout_width="match_parent"
             android:hint="@string/new_schedule_hint"
             android:layout_toRightOf="@id/new_task_icon"
@@ -28,7 +28,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/new_task_title"
+            android:layout_below="@id/field_new_task_title"
             android:layout_toRightOf="@id/new_task_icon"
             android:layout_toEndOf="@id/new_task_icon">
             <TextView
@@ -53,6 +53,7 @@
         android:layout_height="1dp"
         android:background="#777777" />
     <EditText
+        android:id="@+id/field_new_task_description"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:background="@null"

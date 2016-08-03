@@ -19,8 +19,9 @@ public class DbContract {
     public static final class TasksEntry implements BaseColumns{
         public static final String TABLE_NAME = "tasks";
         public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_SHARER = "sharer";
         public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_FILE = "file";
+        public static final String COLUMN_ATTACHMENT = "attachment";
         public static final String COLUMN_DUEDATE = "duedate";
         public static final String COLUMN_ALARMTIME = "alarmtime";
         public static final String COLUMN_ICON = "icon";

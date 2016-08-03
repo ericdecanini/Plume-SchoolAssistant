@@ -6,18 +6,20 @@ public class Task {
     public String taskShared;
     public String taskDescription;
     public String taskAttachment;
-    public long taskDate;
+    public float taskDueDate;
+    public float alarmTime;
     public Task(){
         super();
     }
 
-    public Task(int icon, String title, String shared, String description, String attachment, long date) {
+    public Task(int icon, String title, String shared, String description, String attachment, float dueDate, float alarmTime) {
         super();
         this.taskIcon = icon;
         this.taskTitle = title;
         this.taskShared = shared;
         this.taskDescription = description;
         this.taskAttachment = attachment;
-        this.taskDate = date;
+        this.taskDueDate = dueDate;
+        this.alarmTime = alarmTime;
     }
 }

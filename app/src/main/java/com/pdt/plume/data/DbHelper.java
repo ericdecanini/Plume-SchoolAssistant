@@ -3,13 +3,12 @@ package com.pdt.plume.data;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.pdt.plume.Schedule;
+import com.pdt.plume.Task;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
 
@@ -42,8 +41,9 @@ public class DbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_TASKS_TABLE = "CREATE TABLE " + TasksEntry.TABLE_NAME + " ("
                 + TasksEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TasksEntry.COLUMN_TITLE + " TEXT NOT NULL, "
+                + TasksEntry.COLUMN_SHARER + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, "
-                + TasksEntry.COLUMN_FILE + " BLOB NOT NULL, "
+                + TasksEntry.COLUMN_ATTACHMENT + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DUEDATE + " REAL NOT NULL, "
                 + TasksEntry.COLUMN_ALARMTIME + " REAL NOT NULL, "
                 + TasksEntry.COLUMN_ICON + " INTEGER NOT NULL "
@@ -60,6 +60,47 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public Cursor getAllScheduleData(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    public Cursor getCurrentDayScheduleData(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        return cursor;
+    }
+
+    public ArrayList<Schedule> getCurrentDayScheduleArray(){
+        Cursor cursor = getCurrentDayScheduleData();
+        ArrayList<Schedule> arrayList = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++){
+            if (cursor.moveToPosition(i)){
+                arrayList.add(i, new Schedule(
+                        cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))
+                ));
+            }
+        }
+        return arrayList;
+    }
+
     public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -72,22 +113,6 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.insert(ScheduleEntry.TABLE_NAME, null, contentValues);
         return true;
-    }
-
-    public Cursor getAllScheduleData(){
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(ScheduleEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-    }
-
-    public int numberOfRows(){
-        SQLiteDatabase db = this.getReadableDatabase();
-        return (int) DatabaseUtils.queryNumEntries(db, ScheduleEntry.TABLE_NAME);
     }
 
     public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int icon){
@@ -109,34 +134,68 @@ public class DbHelper extends SQLiteOpenHelper {
         return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
-    public ArrayList<Schedule> getCurrentDayScheduleArray(){
-        Cursor cursor = getCurrentDayScheduleData();
-        ArrayList<Schedule> arrayList = new ArrayList<>();
-        for (int i = 0; i < cursor.getCount(); i++){
-            if (cursor.moveToPosition(i)){
-                arrayList.add(i, new Schedule(
-                        cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))
-                ));
-            }
-        }
-        return arrayList;
-    }
-
-    public Cursor getCurrentDayScheduleData(){
+    public Cursor getTaskData(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
+        return db.query(TasksEntry.TABLE_NAME,
                 null,
                 null,
                 null,
                 null,
                 null,
                 null);
-        return cursor;
+    }
+
+    public ArrayList<Task> getTaskDataArray(){
+        Cursor cursor = getTaskData();
+        ArrayList<Task> arrayList = new ArrayList<>();
+        Log.v(LOG_TAG, "Task Cursor Count: " + cursor.getCount());
+        for (int i = 0; i < cursor.getCount(); i++){
+            if (cursor.moveToPosition(i)){
+                arrayList.add(i, new Task(
+                        cursor.getInt(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_ALARMTIME))
+                ));
+            }
+        }
+        return arrayList;
+    }
+
+    public boolean insertTask(String title, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(TasksEntry.COLUMN_TITLE, title);
+        contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
+        contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
+        contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
+        contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
+        contentValues.put(TasksEntry.COLUMN_ALARMTIME, alarmTime);
+        contentValues.put(TasksEntry.COLUMN_ICON, icon);
+        db.insert(TasksEntry.TABLE_NAME, null, contentValues);
+        return true;
+    }
+
+    public boolean updateTaskItem(Integer id, String title, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(TasksEntry.COLUMN_TITLE, title);
+        contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
+        contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
+        contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
+        contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
+        contentValues.put(TasksEntry.COLUMN_ALARMTIME, alarmTime);
+        contentValues.put(TasksEntry.COLUMN_ICON, icon);
+        db.update(TasksEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
+        return true;
+    }
+
+    public Integer deleteTaskItem(Integer id){
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(TasksEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
 }

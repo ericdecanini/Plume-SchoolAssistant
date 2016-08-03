@@ -72,6 +72,9 @@ public class NewScheduleActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
+            case android.R.id.home:
+                finish();
+                break;
             case R.id.action_done:
                 Intent intent = new Intent(this, MainActivity.class);
                 if (insertScheduleData()){
@@ -93,13 +96,15 @@ public class NewScheduleActivity extends AppCompatActivity {
         int icon = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
-        if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)){
-            return true;
-        } else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
-
-        if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)){
-            return true;
-        } else Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+        if (FLAG_EDIT){
+            if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)){
+                return true;
+            } else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+        } else {
+            if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)){
+                return true;
+            } else Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+        }
         return false;
     }
 }

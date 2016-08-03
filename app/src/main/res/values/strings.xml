@@ -50,6 +50,17 @@
     <string name="SCHEDULE_EXTRA_TIMEOUT" translatable="false">SCHEDULE_EXTRA_TIMEOUT</string>
     <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
 
+    <!-- Strings for NewTasksActivity -->
+
+    <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
+    <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
+    <string name="TASKS_EXTRA_SHARER" translatable="false">TASKS_EXTRA_SHARER</string>
+    <string name="TASKS_EXTRA_DESCRIPTION" translatable="false">TASKS_EXTRA_DESCRIPTION</string>
+    <string name="TASKS_EXTRA_ATTACHMENT" translatable="false">TASKS_EXTRA_ATTACHMENT</string>
+    <string name="TASKS_EXTRA_DUEDATE" translatable="false">TASKS_EXTRA_DUEDATE</string>
+    <string name="TASKS_EXTRA_ALARMTIME" translatable="false">TASKS_EXTRA_ALARMTIME</string>
+    <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
+
     <!-- Strings for Database -->
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
