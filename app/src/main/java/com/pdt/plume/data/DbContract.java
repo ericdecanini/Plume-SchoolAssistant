@@ -10,7 +10,7 @@ public class DbContract {
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_TEACHER = "teacher";
         public static final String COLUMN_ROOM = "room";
-        public static final String COLUMN_OCCURENCE = "occurrence";
+        public static final String COLUMN_OCCURRENCE = "occurrence";
         public static final String COLUMN_TIMEIN = "timein";
         public static final String COLUMN_TIMEOUT = "timeout";
         public static final String COLUMN_ICON = "icon";

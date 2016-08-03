@@ -32,7 +32,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 + ScheduleEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_TEACHER + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_ROOM + " TEXT NOT NULL, "
-                + ScheduleEntry.COLUMN_OCCURENCE + " TEXT NOT NULL, "
+                + ScheduleEntry.COLUMN_OCCURRENCE + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_TIMEIN + " REAL NOT NULL, "
                 + ScheduleEntry.COLUMN_TIMEOUT + " REAL NOT NULL, "
                 + ScheduleEntry.COLUMN_ICON + " INTEGER NOT NULL "
@@ -107,7 +107,7 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
-        contentValues.put(ScheduleEntry.COLUMN_OCCURENCE, occurrence);
+        contentValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
         contentValues.put(ScheduleEntry.COLUMN_TIMEIN, timein);
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeout);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
@@ -121,7 +121,7 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
-        contentValues.put(ScheduleEntry.COLUMN_OCCURENCE, occurrence);
+        contentValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
         contentValues.put(ScheduleEntry.COLUMN_TIMEIN, timein);
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeout);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
