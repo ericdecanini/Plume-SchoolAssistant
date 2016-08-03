@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -168,7 +169,7 @@ public class ScheduleFragment extends Fragment {
                     deleteSelectedItems();
                     break;
                 case R.id.action_edit:
-
+                    editSelectedItem();
                     break;
                 default:
                     Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
@@ -187,16 +188,16 @@ public class ScheduleFragment extends Fragment {
                 getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        public void deleteSelectedItems() {
+        private void deleteSelectedItems() {
 
             DbHelper db = new DbHelper(getActivity());
             Cursor cursor = db.getCurrentDayScheduleData();
             for(int i = 0; i < positionsList.size(); i++) {
                 if (cursor.moveToPosition(positionsList.get(i))) {
-                    String tempString = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+                    String tempString = cursor.getString(cursor.getColumnIndex(ScheduleEntry._ID));
                     Log.v(LOG_TAG, "tempString = " + tempString);
-                    Log.v(LOG_TAG, "positionsListGetIIndexId = " + cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID)));
-                    db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID)));
+                    Log.v(LOG_TAG, "positionsListGetIIndexId = " + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                    db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                 }
             }
             cursor.close();
@@ -207,6 +208,40 @@ public class ScheduleFragment extends Fragment {
             positionsList.clear();
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+        }
+
+        private void editSelectedItem(){
+            if (positionsList.size() == 1){
+                int id;
+                String title = "";
+                String teacher = "";
+                String room = "";
+                float timeIn = 0f;
+                float timeOut = 0f;
+                DbHelper db = new DbHelper(getActivity());
+                Cursor cursor = db.getCurrentDayScheduleData();
+                if (cursor.moveToPosition(positionsList.get(0))){
+                    id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
+                    title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                    teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+                    room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+                    timeIn = cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                    timeOut = cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
+                    cursor.close();
+                    Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TEACHER), teacher);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ROOM), room);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEIN), timeIn);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEOUT), timeOut);
+                    intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                    startActivity(intent);
+                }
+            } else {
+                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+            }
+
         }
     }
 

@@ -1,6 +1,7 @@
 package com.pdt.plume;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,6 +18,15 @@ public class NewScheduleActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
 
+    EditText fieldTitle;
+    EditText fieldTeacher;
+    EditText fieldRoom;
+    TextView fieldTimein;
+    TextView fieldTimeout;
+
+    boolean FLAG_EDIT = false;
+    int editId = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,6 +34,32 @@ public class NewScheduleActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null)
             getSupportActionBar().setElevation(0f);
+
+        fieldTitle = (EditText) findViewById(R.id.field_new_schedule_title);
+        fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
+        fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
+        fieldTimein = (TextView) findViewById(R.id.field_new_schedule_timein);
+        fieldTimeout = (TextView) findViewById(R.id.field_new_schedule_timeout);
+
+        Intent intent = getIntent();
+        if (intent != null){
+            Bundle extras = intent.getExtras();
+            if (extras != null){
+                editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
+                String title = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE));
+                String teacher = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TEACHER));
+                String room = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_ROOM));
+                float timeIn = extras.getFloat(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEIN));
+                float timeOut = extras.getFloat(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEOUT));
+                FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
+
+                fieldTitle.setText(title);
+                fieldTeacher.setText(teacher);
+                fieldRoom.setText(room);
+                fieldTimein.setText("" + timeIn);
+                fieldTimeout.setText("" + timeOut);
+            }
+        }
     }
 
     @Override
@@ -48,27 +84,19 @@ public class NewScheduleActivity extends AppCompatActivity {
     }
 
     private boolean insertScheduleData(){
-//        Bundle bundle = new Bundle();
-        EditText fieldTitle = (EditText) findViewById(R.id.field_new_schedule_title);
         String title = fieldTitle.getText().toString();
-
-        EditText fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
         String teacher = fieldTeacher.getText().toString();
-
-        EditText fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
         String room = fieldRoom.getText().toString();
-
         String occurrence = "";
-
-        TextView fieldTimein = (TextView) findViewById(R.id.field_new_schedule_timein);
         int timein = 1300;
-
-        TextView fieldTimeout = (TextView) findViewById(R.id.field_new_schedule_timeout);
         int timeout = 1400;
-
         int icon = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
+        if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)){
+            return true;
+        } else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+
         if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)){
             return true;
         } else Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();

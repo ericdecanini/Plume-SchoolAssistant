@@ -100,7 +100,7 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_TIMEIN, timein);
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeout);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
-        db.update(ScheduleEntry.TABLE_NAME, contentValues, "id = ?", new String[]{Integer.toString(id)});
+        db.update(ScheduleEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
         return true;
     }
 

@@ -42,6 +42,14 @@
     <string name="new_schedule_timeout_key" translatable="false">KEY_NEW_SCHEDULE_TIMEOUT</string>
     <string name="new_schedule_icon_key" translatable="false">KEY_NEW_SCHEDULE_ICON</string>
 
+    <string name="SCHEDULE_EXTRA_ID" translatable="false">SCHEDULE_EXTRA_ID</string>
+    <string name="SCHEDULE_EXTRA_TITLE" translatable="false">SCHEDULE_EXTRA_TITLE</string>
+    <string name="SCHEDULE_EXTRA_TEACHER" translatable="false">SCHEDULE_EXTRA_TEACHER</string>
+    <string name="SCHEDULE_EXTRA_ROOM" translatable="false">SCHEDULE_EXTRA_ROOM</string>
+    <string name="SCHEDULE_EXTRA_TIMEIN" translatable="false">SCHEDULE_EXTRA_TIMEIN</string>
+    <string name="SCHEDULE_EXTRA_TIMEOUT" translatable="false">SCHEDULE_EXTRA_TIMEOUT</string>
+    <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
+
     <!-- Strings for Database -->
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
