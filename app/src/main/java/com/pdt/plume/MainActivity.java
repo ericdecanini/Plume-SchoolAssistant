@@ -142,6 +142,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout!= null)
             tabLayout.setupWithViewPager(mViewPager);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
+            mViewPager.setCurrentItem(1);
+        }
     }
 
     public void initSpinner(){
