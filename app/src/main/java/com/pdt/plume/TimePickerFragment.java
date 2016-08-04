@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 
 import java.util.Calendar;
 
@@ -35,12 +36,27 @@ public class TimePickerFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the current time as the default values for the picker
+        boolean FLAG_EDIT = NewScheduleActivity.isEdited;
+        int resourceId = NewScheduleActivity.resourceId;
         final Calendar c = Calendar.getInstance();
-        int hour = c.get(Calendar.HOUR_OF_DAY);
-        int minute = c.get(Calendar.MINUTE);
+        int hour;
+        Log.v("TimePickerFragment", "FLAG_EDIT: " + FLAG_EDIT);
+        if (resourceId == R.id.field_new_schedule_timein) {
+            if (FLAG_EDIT)
+                hour = NewScheduleActivity.timeInHour;
+            else
+                hour = c.get(Calendar.HOUR_OF_DAY) + 1;
+        }
+        else {
+            if (FLAG_EDIT)
+                hour = NewScheduleActivity.timeOutHour;
+            else
+                hour = c.get(Calendar.HOUR_OF_DAY) + 2;
+        }
+
 
         // Create a new instance of TimePickerDialog and return it
-        return new TimePickerDialog(mActivity, mListener, hour, minute,
+        return new TimePickerDialog(mActivity, mListener, hour, 0,
                 DateFormat.is24HourFormat(getActivity()));
     }
 }

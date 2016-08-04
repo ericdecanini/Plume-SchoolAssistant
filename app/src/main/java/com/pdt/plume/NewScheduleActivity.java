@@ -31,14 +31,15 @@ public class NewScheduleActivity extends AppCompatActivity
     LinearLayout fieldTimeOut;
     TextView fieldValueTimeIn;
     TextView fieldValueTimeOut;
-    int timeInHour;
+    public static int timeInHour;
     int timeInMinute;
-    int timeOutHour;
+    public static int timeOutHour;
     int timeOutMinute;
 
     boolean FLAG_EDIT = false;
+    public static boolean isEdited;
     int editId = -1;
-    int resourceId = -1;
+    public static int resourceId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +61,7 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldTimeOut.setOnClickListener(showTimePickerDialog());
         Calendar c = Calendar.getInstance();
 
-        timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
-        timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
-        String timeInDefault = timeInHour + ":00";
-        String timeOutDefault = timeOutHour + ":00";
-        fieldValueTimeIn.setText(timeInDefault);
-        fieldValueTimeOut.setText(timeOutDefault);
+
 
         Intent intent = getIntent();
         if (intent != null){
@@ -84,8 +80,23 @@ public class NewScheduleActivity extends AppCompatActivity
                 fieldRoom.setText(room);
                 fieldValueTimeIn.setText("" + timeIn);
                 fieldValueTimeOut.setText("" + timeOut);
+
+                timeInHour = (int) timeIn;
+                timeOutHour = (int) timeOut;
+
             }
         }
+        isEdited = FLAG_EDIT;
+
+        if (!isEdited){
+            timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
+            timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+            String timeInDefault = timeInHour + ":00";
+            String timeOutDefault = timeOutHour + ":00";
+            fieldValueTimeIn.setText(timeInDefault);
+            fieldValueTimeOut.setText(timeOutDefault);
+        }
+
     }
 
     @Override
@@ -105,6 +116,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 if (insertScheduleData()){
                     startActivity(intent);
+                    finish();
                 } else finish();
 
                 break;
