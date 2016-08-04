@@ -1,31 +1,44 @@
 package com.pdt.plume;
 
+import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.database.Cursor;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbHelper;
 
-public class NewScheduleActivity extends AppCompatActivity {
+import java.util.Calendar;
+
+public class NewScheduleActivity extends AppCompatActivity
+        implements TimePickerDialog.OnTimeSetListener{
 
     private Toolbar toolbar;
 
     EditText fieldTitle;
     EditText fieldTeacher;
     EditText fieldRoom;
-    TextView fieldTimein;
-    TextView fieldTimeout;
+    LinearLayout fieldTimeIn;
+    LinearLayout fieldTimeOut;
+    TextView fieldValueTimeIn;
+    TextView fieldValueTimeOut;
+    int timeInHour;
+    int timeInMinute;
+    int timeOutHour;
+    int timeOutMinute;
 
     boolean FLAG_EDIT = false;
     int editId = -1;
+    int resourceId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +51,21 @@ public class NewScheduleActivity extends AppCompatActivity {
         fieldTitle = (EditText) findViewById(R.id.field_new_schedule_title);
         fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
         fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
-        fieldTimein = (TextView) findViewById(R.id.field_new_schedule_timein);
-        fieldTimeout = (TextView) findViewById(R.id.field_new_schedule_timeout);
+        fieldTimeIn = (LinearLayout) findViewById(R.id.field_new_schedule_timein);
+        fieldTimeOut = (LinearLayout) findViewById(R.id.field_new_schedule_timeout);
+        fieldValueTimeIn = (TextView) findViewById(R.id.fieldvalue_new_schedule_timein);
+        fieldValueTimeOut = (TextView) findViewById(R.id.fieldvalue_new_schedule_timeout);
+
+        fieldTimeIn.setOnClickListener(showTimePickerDialog());
+        fieldTimeOut.setOnClickListener(showTimePickerDialog());
+        Calendar c = Calendar.getInstance();
+
+        timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
+        timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+        String timeInDefault = timeInHour + ":00";
+        String timeOutDefault = timeOutHour + ":00";
+        fieldValueTimeIn.setText(timeInDefault);
+        fieldValueTimeOut.setText(timeOutDefault);
 
         Intent intent = getIntent();
         if (intent != null){
@@ -56,8 +82,8 @@ public class NewScheduleActivity extends AppCompatActivity {
                 fieldTitle.setText(title);
                 fieldTeacher.setText(teacher);
                 fieldRoom.setText(room);
-                fieldTimein.setText("" + timeIn);
-                fieldTimeout.setText("" + timeOut);
+                fieldValueTimeIn.setText("" + timeIn);
+                fieldValueTimeOut.setText("" + timeOut);
             }
         }
     }
@@ -86,13 +112,26 @@ public class NewScheduleActivity extends AppCompatActivity {
         return true;
     }
 
+    private View.OnClickListener showTimePickerDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resourceId = v.getId();
+                DialogFragment timePickerFragment = new TimePickerFragment();
+                if (resourceId != -1)
+                    timePickerFragment.show(getSupportFragmentManager(), "time picker");
+            }
+        };
+    }
+
+
     private boolean insertScheduleData(){
         String title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
         String occurrence = "";
-        int timein = 1300;
-        int timeout = 1400;
+        int timein = timeInHour + timeInMinute;
+        int timeout = timeOutHour + timeOutMinute;
         int icon = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
@@ -107,4 +146,23 @@ public class NewScheduleActivity extends AppCompatActivity {
         }
         return false;
     }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        String timeString = hourOfDay + " " + minute;
+        switch (resourceId){
+            case R.id.field_new_schedule_timein:
+                timeInHour = hourOfDay;
+                timeInMinute = minute;
+                fieldValueTimeIn.setText(timeString);
+                break;
+            case R.id.field_new_schedule_timeout:
+                timeOutHour = hourOfDay;
+                timeOutMinute = minute;
+                fieldValueTimeOut.setText(timeString);
+                break;
+        }
+
+    }
 }
+

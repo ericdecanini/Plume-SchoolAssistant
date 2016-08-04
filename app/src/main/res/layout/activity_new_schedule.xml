@@ -55,6 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <LinearLayout
+                android:id="@+id/field_new_schedule_timein"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -65,13 +66,14 @@
                     android:layout_height="match_parent"
                     android:text="@string/new_schedule_time_in"/>
                 <TextView
-                    android:id="@+id/field_new_schedule_timein"
+                    android:id="@+id/fieldvalue_new_schedule_timein"
                     android:layout_gravity="center_horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="11:00"/>
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/field_new_schedule_timeout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -82,7 +84,7 @@
                     android:layout_height="match_parent"
                     android:text="@string/new_schedule_time_out"/>
                 <TextView
-                    android:id="@+id/field_new_schedule_timeout"
+                    android:id="@+id/fieldvalue_new_schedule_timeout"
                     android:layout_gravity="center_horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
