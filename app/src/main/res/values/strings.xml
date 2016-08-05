@@ -26,13 +26,31 @@
 
     <!-- Strings for NewScheduleActivity -->
     <string name="new_schedule_hint">Enter title here&#8230;</string>
-    <string name="new_schedule_when">Days</string>
+    <string name="new_schedule_class_time">Add Class Time</string>
     <string name="new_schedule_repeats">Repeats</string>
     <string name="new_schedule_time_in">Time in</string>
     <string name="new_schedule_time_out">Time out</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
+
+    <string name="class_time_one_title">Select your school\'s class schedule type.</string>
+    <string name="class_time_one_timebased">Time Based (8:00&#8211;9:00)</string>
+    <string name="class_time_one_periodbased">Period Based (1st Period)</string>
+    <string name="class_time_one_blockbased">Block Based (1st Block)</string>
+
+    <string name="class_time_two_sameweek">Same time every week</string>
+    <string name="class_time_two_altweeks">Alternating weeks</string>
+
+    <string name="class_time_three_weekone">Week 1</string>
+    <string name="class_time_three_weektwo">Week 2</string>
+    <string name="class_time_three_sunday">Sunday</string>
+    <string name="class_time_three_monday">Monday</string>
+    <string name="class_time_three_tuesday">Tuesday</string>
+    <string name="class_time_three_wednesday">Wednesday</string>
+    <string name="class_time_three_thursday">Thursday</string>
+    <string name="class_time_three_friday">Friday</string>
+    <string name="class_time_three_saturday">Saturday</string>
 
     <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
     <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
@@ -63,5 +81,8 @@
 
     <!-- Strings for Database -->
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

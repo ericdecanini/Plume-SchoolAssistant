@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,12 +18,14 @@ import android.widget.Toast;
 
 import com.pdt.plume.data.DbHelper;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class NewScheduleActivity extends AppCompatActivity
-        implements TimePickerDialog.OnTimeSetListener{
+        implements TimePickerDialog.OnTimeSetListener,
+ClassTimeOneFragment.onBasisSelectedListener{
 
-    private Toolbar toolbar;
+    String LOG_TAG = NewScheduleActivity.class.getSimpleName();
 
     EditText fieldTitle;
     EditText fieldTeacher;
@@ -36,10 +39,16 @@ public class NewScheduleActivity extends AppCompatActivity
     public static int timeOutHour;
     int timeOutMinute;
 
+    TextView fieldOccurrence;
+
     boolean FLAG_EDIT = false;
     public static boolean isEdited;
     int editId = -1;
     public static int resourceId = -1;
+
+    String basis ;
+    String weekAlt;
+    ArrayList<String> classDays;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +65,13 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldTimeOut = (LinearLayout) findViewById(R.id.field_new_schedule_timeout);
         fieldValueTimeIn = (TextView) findViewById(R.id.fieldvalue_new_schedule_timein);
         fieldValueTimeOut = (TextView) findViewById(R.id.fieldvalue_new_schedule_timeout);
+        fieldOccurrence = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
 
         fieldTimeIn.setOnClickListener(showTimePickerDialog());
         fieldTimeOut.setOnClickListener(showTimePickerDialog());
         Calendar c = Calendar.getInstance();
 
+        fieldOccurrence.setOnClickListener(addClassTime());
 
 
         Intent intent = getIntent();
@@ -95,6 +106,8 @@ public class NewScheduleActivity extends AppCompatActivity
             String timeOutDefault = timeOutHour + ":00";
             fieldValueTimeIn.setText(timeInDefault);
             fieldValueTimeOut.setText(timeOutDefault);
+
+            classDays = new ArrayList<>();
         }
 
     }
@@ -133,6 +146,22 @@ public class NewScheduleActivity extends AppCompatActivity
                 if (resourceId != -1)
                     timePickerFragment.show(getSupportFragmentManager(), "time picker");
             }
+        };
+    }
+
+    private View.OnClickListener addClassTime() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setClassTimeOne();
+    }
+
+    private void setClassTimeOne() {
+        ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
+    }
         };
     }
 
@@ -175,6 +204,15 @@ public class NewScheduleActivity extends AppCompatActivity
                 break;
         }
 
+    }
+
+    @Override
+    public void onBasisSelected(String basis) {
+        this.basis = basis;
+        Log.v(LOG_TAG, "Basis: " + this.basis);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, new ClassTimeTwoFragment())
+                .commit();
     }
 }
 

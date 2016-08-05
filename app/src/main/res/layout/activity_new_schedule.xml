@@ -1,107 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.pdt.plume.NewScheduleActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <EditText
             android:id="@+id/field_new_schedule_title"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/colorPrimary"
-            android:paddingStart="24dp"
+            android:hint="@string/new_schedule_hint"
             android:paddingLeft="24dp"
+            android:paddingStart="24dp"
             android:textColor="@color/white"
-            android:textColorHint="@color/white"
-            android:hint="@string/new_schedule_hint" />
+            android:textColorHint="@color/white" />
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/placeholder_sixtyfour" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/new_schedule_when" />
-            <Spinner
-                android:id="@+id/field_new_schedule_occurrence_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/activity_horizontal_margin">
 
-        <CheckBox
-            android:id="@+id/field_new_schedule_occurrence_repeats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/new_schedule_repeats"
-            android:button="@null"
-            android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
-            android:drawableEnd="?android:attr/listChoiceIndicatorMultiple" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
             <LinearLayout
-                android:id="@+id/field_new_schedule_timein"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_height="match_parent"
-                    android:text="@string/new_schedule_time_in"/>
-                <TextView
-                    android:id="@+id/fieldvalue_new_schedule_timein"
-                    android:layout_gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="11:00"/>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/field_new_schedule_timeout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1">
+                    android:src="@drawable/placeholder_sixtyfour" />
+
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_height="match_parent"
-                    android:text="@string/new_schedule_time_out"/>
-                <TextView
-                    android:id="@+id/fieldvalue_new_schedule_timeout"
-                    android:layout_gravity="center_horizontal"
+                    android:id="@+id/field_new_schedule_add_class_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="12:00"/>
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/new_schedule_class_time" />
             </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/field_new_schedule_occurrence_repeats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@null"
+                android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
+                android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+                android:text="@string/new_schedule_repeats" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/field_new_schedule_timein"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/new_schedule_time_in" />
+
+                    <TextView
+                        android:id="@+id/fieldvalue_new_schedule_timein"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="11:00" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/field_new_schedule_timeout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/new_schedule_time_out" />
+
+                    <TextView
+                        android:id="@+id/fieldvalue_new_schedule_timeout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="12:00" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/field_new_schedule_teacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/new_schedule_teacher" />
+
+            <EditText
+                android:id="@+id/field_new_schedule_room"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/new_schedule_room" />
+
         </LinearLayout>
-
-        <EditText
-            android:id="@+id/field_new_schedule_teacher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/new_schedule_teacher"/>
-        <EditText
-            android:id="@+id/field_new_schedule_room"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/new_schedule_room"/>
-
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>
