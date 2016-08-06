@@ -5,13 +5,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -40,8 +42,13 @@ public class NewScheduleActivity extends AppCompatActivity
     int timeInMinute;
     public static int timeOutHour;
     int timeOutMinute;
+    ImageView fieldIcon;
+    int iconImageResource = -1;
 
-    TextView fieldOccurrence;
+    ListView classTimeList;
+    TextView fieldAddClassTime;
+    ArrayAdapter<String> classTimeAdapter;
+    ArrayList<String> occurrenceList;
 
     boolean FLAG_EDIT = false;
     public static boolean isEdited;
@@ -50,7 +57,8 @@ public class NewScheduleActivity extends AppCompatActivity
 
     String basis;
     String weekType;
-    ArrayList<String> classDays;
+    String classDays;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,13 +75,19 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldTimeOut = (LinearLayout) findViewById(R.id.field_new_schedule_timeout);
         fieldValueTimeIn = (TextView) findViewById(R.id.fieldvalue_new_schedule_timein);
         fieldValueTimeOut = (TextView) findViewById(R.id.fieldvalue_new_schedule_timeout);
-        fieldOccurrence = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
+        fieldAddClassTime = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
+        fieldIcon = (ImageView) findViewById(R.id.new_schedule_icon);
+        classTimeList = (ListView) findViewById(R.id.field_new_schedule_class_time_list);
+        occurrenceList = new ArrayList<>();
+
+        classTimeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, occurrenceList);
+        classTimeList.setAdapter(classTimeAdapter);
 
         fieldTimeIn.setOnClickListener(showTimePickerDialog());
         fieldTimeOut.setOnClickListener(showTimePickerDialog());
         Calendar c = Calendar.getInstance();
 
-        fieldOccurrence.setOnClickListener(addClassTime());
+        fieldAddClassTime.setOnClickListener(addClassTime());
 
 
         Intent intent = getIntent();
@@ -108,8 +122,6 @@ public class NewScheduleActivity extends AppCompatActivity
             String timeOutDefault = timeOutHour + ":00";
             fieldValueTimeIn.setText(timeInDefault);
             fieldValueTimeOut.setText(timeOutDefault);
-
-            classDays = new ArrayList<>();
         }
 
     }
@@ -151,43 +163,36 @@ public class NewScheduleActivity extends AppCompatActivity
         };
     }
 
-    private View.OnClickListener addClassTime() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setClassTimeOne();
-            }
-
-            private void setClassTimeOne() {
-                ClassTimeOneFragment fragment = new ClassTimeOneFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, fragment)
-                        .commit();
-            }
-        };
-    }
-
 
     private boolean insertScheduleData() {
         String title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
-        String occurrence = "";
         int timein = timeInHour + timeInMinute;
         int timeout = timeOutHour + timeOutMinute;
-        int icon = R.drawable.placeholder_sixtyfour;
+        //Default icon if no other resource was set
+        if (iconImageResource == -1)
+            iconImageResource = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
         if (FLAG_EDIT) {
-            if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)) {
-                return true;
-            } else
-                Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+            for (int i = 0; i < occurrenceList.size(); i++) {
+                String occurrence = occurrenceList.get(i);
+                if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, iconImageResource)) {
+                    if (i == occurrenceList.size() - 1)
+                        return true;
+                } else
+                    Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)) {
-                return true;
-            } else
-                Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+            for (int i = 0; i < occurrenceList.size(); i++) {
+                String occurrence = occurrenceList.get(i);
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, iconImageResource)) {
+                    if (i == occurrenceList.size() - 1)
+                        return true;
+                } else
+                    Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+            }
         }
         return false;
     }
@@ -210,10 +215,25 @@ public class NewScheduleActivity extends AppCompatActivity
 
     }
 
+    private View.OnClickListener addClassTime() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setClassTimeOne();
+            }
+
+            private void setClassTimeOne() {
+                ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, fragment)
+                        .commit();
+            }
+        };
+    }
+
     @Override
     public void onBasisSelected(String basis) {
         this.basis = basis;
-        Log.v(LOG_TAG, "Basis: " + this.basis);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new ClassTimeTwoFragment())
                 .commit();
@@ -222,19 +242,24 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onWeekTypeSelected(String weekType) {
         this.weekType = weekType;
-        Log.v(LOG_TAG, "Week Type: " + this.weekType);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new ClassTimeThreeFragment())
+                .replace(R.id.container, new ClassTimeThreeFragment(), "TAG")
                 .commit();
     }
 
     @Override
-    public void onDaysSelectedListener(String weekType) {
-
+    public void onDaysSelected(String classDays) {
+        this.classDays = classDays;
+        getSupportFragmentManager().beginTransaction()
+                .remove(getSupportFragmentManager().findFragmentByTag("TAG"))
+                .commit();
+        occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
+        Log.v(LOG_TAG, "Occurrence: " + processOccurrenceString(basis, weekType, classDays));
+        classTimeAdapter.notifyDataSetChanged();
     }
 
-    private void processOccurenceString(String basis, String weekType, ArrayList<String> classDays){
-
+    private String processOccurrenceString(String basis, String weekType, String classDays) {
+        return basis + ":" + weekType + ":" + classDays;
     }
 }
 

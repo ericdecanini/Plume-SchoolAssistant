@@ -12,7 +12,7 @@ import android.widget.Button;
 
 public class ClassTimeThreeFragment extends Fragment {
 
-    int[] isButtonChecked;
+    int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
 
 
     public ClassTimeThreeFragment() {
@@ -56,6 +56,7 @@ public class ClassTimeThreeFragment extends Fragment {
         thursday.setOnClickListener(listener());
         friday.setOnClickListener(listener());
         saturday.setOnClickListener(listener());
+        done.setOnClickListener(listener());
         return rootView;
     }
 
@@ -115,7 +116,7 @@ public class ClassTimeThreeFragment extends Fragment {
                 + isButtonChecked[3] + ":"
                 + isButtonChecked[4] + ":"
                 + isButtonChecked[5] + ":"
-                + isButtonChecked[6] + ":";
+                + isButtonChecked[6];
     }
 
 }

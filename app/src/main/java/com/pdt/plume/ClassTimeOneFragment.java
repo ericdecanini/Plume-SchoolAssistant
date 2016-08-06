@@ -44,8 +44,7 @@ public class ClassTimeOneFragment extends Fragment {
 
         timeBasedButton.setOnClickListener(listener());
         periodBasedButton.setOnClickListener(listener());
-        blockBasedButton.setOnClickListener(listener()
-        );
+        blockBasedButton.setOnClickListener(listener());
         return rootView;
     }
 
