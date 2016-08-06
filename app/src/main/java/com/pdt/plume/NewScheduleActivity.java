@@ -23,7 +23,9 @@ import java.util.Calendar;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
-ClassTimeOneFragment.onBasisSelectedListener{
+        ClassTimeOneFragment.onBasisSelectedListener,
+        ClassTimeTwoFragment.onWeekTypeSelectedListener,
+        ClassTimeThreeFragment.onDaysSelectedListener {
 
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
 
@@ -46,8 +48,8 @@ ClassTimeOneFragment.onBasisSelectedListener{
     int editId = -1;
     public static int resourceId = -1;
 
-    String basis ;
-    String weekAlt;
+    String basis;
+    String weekType;
     ArrayList<String> classDays;
 
     @Override
@@ -75,9 +77,9 @@ ClassTimeOneFragment.onBasisSelectedListener{
 
 
         Intent intent = getIntent();
-        if (intent != null){
+        if (intent != null) {
             Bundle extras = intent.getExtras();
-            if (extras != null){
+            if (extras != null) {
                 editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
                 String title = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE));
                 String teacher = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TEACHER));
@@ -99,7 +101,7 @@ ClassTimeOneFragment.onBasisSelectedListener{
         }
         isEdited = FLAG_EDIT;
 
-        if (!isEdited){
+        if (!isEdited) {
             timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
             timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
             String timeInDefault = timeInHour + ":00";
@@ -121,13 +123,13 @@ ClassTimeOneFragment.onBasisSelectedListener{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
                 break;
             case R.id.action_done:
                 Intent intent = new Intent(this, MainActivity.class);
-                if (insertScheduleData()){
+                if (insertScheduleData()) {
                     startActivity(intent);
                     finish();
                 } else finish();
@@ -154,19 +156,19 @@ ClassTimeOneFragment.onBasisSelectedListener{
             @Override
             public void onClick(View v) {
                 setClassTimeOne();
-    }
+            }
 
-    private void setClassTimeOne() {
-        ClassTimeOneFragment fragment = new ClassTimeOneFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, fragment)
-                .commit();
-    }
+            private void setClassTimeOne() {
+                ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, fragment)
+                        .commit();
+            }
         };
     }
 
 
-    private boolean insertScheduleData(){
+    private boolean insertScheduleData() {
         String title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
@@ -176,14 +178,16 @@ ClassTimeOneFragment.onBasisSelectedListener{
         int icon = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
-        if (FLAG_EDIT){
-            if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)){
+        if (FLAG_EDIT) {
+            if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, icon)) {
                 return true;
-            } else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
         } else {
-            if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)){
+            if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, icon)) {
                 return true;
-            } else Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
         }
         return false;
     }
@@ -191,7 +195,7 @@ ClassTimeOneFragment.onBasisSelectedListener{
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         String timeString = hourOfDay + " " + minute;
-        switch (resourceId){
+        switch (resourceId) {
             case R.id.field_new_schedule_timein:
                 timeInHour = hourOfDay;
                 timeInMinute = minute;
@@ -213,6 +217,24 @@ ClassTimeOneFragment.onBasisSelectedListener{
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new ClassTimeTwoFragment())
                 .commit();
+    }
+
+    @Override
+    public void onWeekTypeSelected(String weekType) {
+        this.weekType = weekType;
+        Log.v(LOG_TAG, "Week Type: " + this.weekType);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, new ClassTimeThreeFragment())
+                .commit();
+    }
+
+    @Override
+    public void onDaysSelectedListener(String weekType) {
+
+    }
+
+    private void processOccurenceString(String basis, String weekType, ArrayList<String> classDays){
+
     }
 }
 

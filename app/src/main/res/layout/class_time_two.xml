@@ -22,6 +22,7 @@
         android:layout_gravity="center_horizontal" />
 
     <Button
+        android:id="@+id/class_two_weeksame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -33,6 +34,7 @@
         android:text="@string/class_time_two_sameweek" />
 
     <Button
+        android:id="@+id/class_two_weekalt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
