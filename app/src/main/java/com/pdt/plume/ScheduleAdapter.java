@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class ScheduleAdapter extends ArrayAdapter {
 
     Context context;
+    Utility utility = new Utility();
     int layoutResourceId;
     ArrayList<Schedule> data = null;
     private int mItemSelected = -1 ;

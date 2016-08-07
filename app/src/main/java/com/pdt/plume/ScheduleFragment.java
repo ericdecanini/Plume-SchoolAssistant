@@ -177,6 +177,7 @@ public class ScheduleFragment extends Fragment {
 
         @Override
         public void onDestroyActionMode(android.view.ActionMode mode) {
+            positionsList.clear();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
             getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
@@ -206,29 +207,20 @@ public class ScheduleFragment extends Fragment {
         private void editSelectedItem(){
             if (positionsList.size() == 1){
                 int id;
-                String title = "";
-                String teacher = "";
-                String room = "";
-                float timeIn = 0f;
-                float timeOut = 0f;
+                String title;
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getCurrentDayScheduleData();
                 if (cursor.moveToPosition(positionsList.get(0))){
                     id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-                    teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-                    room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                    timeIn = cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-                    timeOut = cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
                     cursor.close();
                     Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TEACHER), teacher);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ROOM), room);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEIN), timeIn);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEOUT), timeOut);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                    positionsList.clear();
+                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
                     startActivity(intent);
                 }
             } else {

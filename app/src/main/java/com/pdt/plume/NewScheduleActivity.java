@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +32,15 @@ public class NewScheduleActivity extends AppCompatActivity
         ClassTimeThreeFragment.onDaysSelectedListener {
 
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
+    Utility utlility = new Utility();
+
+    String scheduleTitle;
+    String scheduleTeacher;
+    String scheduleRoom;
+    ArrayList<String> occurrenceList;
+    int timeInSeconds;
+    int timeOutSeconds;
+    int scheduleIconResource = -1;
 
     EditText fieldTitle;
     EditText fieldTeacher;
@@ -39,16 +50,12 @@ public class NewScheduleActivity extends AppCompatActivity
     TextView fieldValueTimeIn;
     TextView fieldValueTimeOut;
     public static int timeInHour;
-    int timeInMinute;
     public static int timeOutHour;
-    int timeOutMinute;
     ImageView fieldIcon;
-    int iconImageResource = -1;
 
     ListView classTimeList;
     TextView fieldAddClassTime;
     ArrayAdapter<String> classTimeAdapter;
-    ArrayList<String> occurrenceList;
 
     boolean FLAG_EDIT = false;
     public static boolean isEdited;
@@ -80,9 +87,6 @@ public class NewScheduleActivity extends AppCompatActivity
         classTimeList = (ListView) findViewById(R.id.field_new_schedule_class_time_list);
         occurrenceList = new ArrayList<>();
 
-        classTimeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, occurrenceList);
-        classTimeList.setAdapter(classTimeAdapter);
-
         fieldTimeIn.setOnClickListener(showTimePickerDialog());
         fieldTimeOut.setOnClickListener(showTimePickerDialog());
         Calendar c = Calendar.getInstance();
@@ -90,40 +94,56 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldAddClassTime.setOnClickListener(addClassTime());
 
 
+
         Intent intent = getIntent();
         if (intent != null) {
             Bundle extras = intent.getExtras();
             if (extras != null) {
+                scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
                 editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
-                String title = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE));
-                String teacher = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_TEACHER));
-                String room = extras.getString(getResources().getString(R.string.SCHEDULE_EXTRA_ROOM));
-                float timeIn = extras.getFloat(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEIN));
-                float timeOut = extras.getFloat(getResources().getString(R.string.SCHEDULE_EXTRA_TIMEOUT));
                 FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
 
-                fieldTitle.setText(title);
-                fieldTeacher.setText(teacher);
-                fieldRoom.setText(room);
-                fieldValueTimeIn.setText("" + timeIn);
-                fieldValueTimeOut.setText("" + timeOut);
-
-                timeInHour = (int) timeIn;
-                timeOutHour = (int) timeOut;
-
+                timeInHour = timeInSeconds;
+                timeOutHour = timeOutSeconds;
             }
         }
         isEdited = FLAG_EDIT;
 
-        if (!isEdited) {
+        if (isEdited) {
+            Cursor cursor = new DbHelper(this).getScheduleDataArrayByTitle(scheduleTitle);
+            if (cursor.moveToFirst()) {
+
+                scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+                scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    occurrenceList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
+                    if (!cursor.moveToNext())
+                        cursor.moveToFirst();
+                }
+                timeInSeconds = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                timeOutSeconds = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
+                scheduleIconResource = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+
+                fieldTitle.setText(scheduleTitle);
+                fieldTeacher.setText(scheduleTeacher);
+                fieldRoom.setText(scheduleRoom);
+                fieldValueTimeIn.setText(utlility.secondsToTime(timeInSeconds));
+                fieldValueTimeOut.setText(utlility.secondsToTime(timeOutSeconds));
+                fieldIcon.setImageResource(scheduleIconResource);
+            }
+        } else {
             timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
             timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+            timeInSeconds = utlility.timeToSeconds(timeInHour, 0);
+            timeOutSeconds = utlility.timeToSeconds(timeOutHour, 0);
             String timeInDefault = timeInHour + ":00";
             String timeOutDefault = timeOutHour + ":00";
             fieldValueTimeIn.setText(timeInDefault);
             fieldValueTimeOut.setText(timeOutDefault);
         }
 
+        classTimeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, occurrenceList);
+        classTimeList.setAdapter(classTimeAdapter);
     }
 
     @Override
@@ -164,21 +184,27 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
 
+
     private boolean insertScheduleData() {
         String title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
-        int timein = timeInHour + timeInMinute;
-        int timeout = timeOutHour + timeOutMinute;
         //Default icon if no other resource was set
-        if (iconImageResource == -1)
-            iconImageResource = R.drawable.placeholder_sixtyfour;
+        if (scheduleIconResource == -1)
+            scheduleIconResource = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
         if (FLAG_EDIT) {
+            Cursor cursor = dbHelper.getScheduleDataArrayByTitle(scheduleTitle);
+            for (int i = 0; i < cursor.getCount(); i++){
+                if (cursor.moveToPosition(i)){
+                    int rowId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
+                    dbHelper.deleteScheduleItem(rowId);
+                }
+            }
             for (int i = 0; i < occurrenceList.size(); i++) {
                 String occurrence = occurrenceList.get(i);
-                if (dbHelper.updateScheduleItem(editId, title, teacher, room, occurrence, timein, timeout, iconImageResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeInSeconds, timeOutSeconds, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -187,7 +213,7 @@ public class NewScheduleActivity extends AppCompatActivity
         } else {
             for (int i = 0; i < occurrenceList.size(); i++) {
                 String occurrence = occurrenceList.get(i);
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timein, timeout, iconImageResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeInSeconds, timeOutSeconds, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -199,16 +225,20 @@ public class NewScheduleActivity extends AppCompatActivity
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        String timeString = hourOfDay + " " + minute;
+        String timeString;
+        if (minute < 10)
+            timeString = hourOfDay + ":0" + minute;
+        else
+            timeString = hourOfDay + ":" + minute;
         switch (resourceId) {
             case R.id.field_new_schedule_timein:
                 timeInHour = hourOfDay;
-                timeInMinute = minute;
+                timeInSeconds = utlility.timeToSeconds(hourOfDay, minute);
                 fieldValueTimeIn.setText(timeString);
                 break;
             case R.id.field_new_schedule_timeout:
                 timeOutHour = hourOfDay;
-                timeOutMinute = minute;
+                timeOutSeconds = utlility.timeToSeconds(hourOfDay, minute);
                 fieldValueTimeOut.setText(timeString);
                 break;
         }

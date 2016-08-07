@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.pdt.plume.Schedule;
 import com.pdt.plume.Task;
+import com.pdt.plume.Utility;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 
 public class DbHelper extends SQLiteOpenHelper {
     private String LOG_TAG = DbHelper.class.getSimpleName();
+    Utility utility = new Utility();
 
     private static final String DATABASE_NAME = "PlumeDb.db";
     private static final int DATABASE_VERSION = 1;
@@ -83,6 +85,18 @@ public class DbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
+    public Cursor getScheduleDataArrayByTitle(String title){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                ScheduleEntry.COLUMN_TITLE + "=?",
+                new String[]{title},
+                null,
+                null,
+                null);
+        return cursor;
+    }
+
     public ArrayList<Schedule> getCurrentDayScheduleArray(){
         Cursor cursor = getCurrentDayScheduleData();
         ArrayList<Schedule> arrayList = new ArrayList<>();
@@ -93,8 +107,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
                         cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
                         cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))
+                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
+                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT)))
                 ));
             }
         }

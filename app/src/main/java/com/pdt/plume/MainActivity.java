@@ -3,7 +3,6 @@ package com.pdt.plume;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -195,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // and automatically switch back to tasks if it did
             Intent intent = getIntent();
             if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS)))
-                spinner.setSelection(Utlility.getIndex(spinner, spinner.getItemAtPosition(1).toString()));
+                spinner.setSelection(Utility.getIndex(spinner, spinner.getItemAtPosition(1).toString()));
         }
     }
 
