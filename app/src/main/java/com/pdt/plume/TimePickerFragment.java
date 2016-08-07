@@ -43,13 +43,13 @@ public class TimePickerFragment extends DialogFragment {
         Log.v("TimePickerFragment", "FLAG_EDIT: " + FLAG_EDIT);
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
-                hour = NewScheduleActivity.timeInHour;
+                hour = ClassTimeThreeFragment.timeInHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 1;
         }
         else {
             if (FLAG_EDIT)
-                hour = NewScheduleActivity.timeOutHour;
+                hour = ClassTimeThreeFragment.timeOutHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 2;
         }

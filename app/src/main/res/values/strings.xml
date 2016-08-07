@@ -28,8 +28,8 @@
     <string name="new_schedule_hint">Enter title here&#8230;</string>
     <string name="new_schedule_add_class_time">Add Class Time</string>
     <string name="new_schedule_repeats">Repeats</string>
-    <string name="new_schedule_time_in">Time in</string>
-    <string name="new_schedule_time_out">Time out</string>
+    <string name="new_schedule_time_in">Start time</string>
+    <string name="new_schedule_time_out">End time</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>

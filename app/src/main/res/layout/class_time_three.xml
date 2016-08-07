@@ -103,6 +103,22 @@
 
     </LinearLayout>
 
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/field_new_schedule_timein"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/new_schedule_time_in"
+        android:hint="@string/new_schedule_time_in"/>
+
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/field_new_schedule_timeout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/new_schedule_time_out"
+        android:hint="@string/new_schedule_time_out"/>
+
     <Button
         android:layout_marginTop="24dp"
         android:layout_marginLeft="16dp"

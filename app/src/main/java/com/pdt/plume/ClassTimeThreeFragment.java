@@ -1,18 +1,35 @@
 package com.pdt.plume;
 
 
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 
-public class ClassTimeThreeFragment extends Fragment {
+public class ClassTimeThreeFragment extends Fragment
+        implements TimePickerDialog.OnTimeSetListener{
+
+    Utility utility = new Utility();
 
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
+    TextView fieldTimeIn;
+    TextView fieldTimeOut;
+    public static int timeInHour;
+    public static int timeOutHour;
+    int timeInSeconds;
+    int timeOutSeconds;
+    int resourceId = -1;
 
 
     public ClassTimeThreeFragment() {
@@ -21,7 +38,7 @@ public class ClassTimeThreeFragment extends Fragment {
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds);
     }
 
     onDaysSelectedListener daysSelectedListener;
@@ -48,6 +65,8 @@ public class ClassTimeThreeFragment extends Fragment {
         Button friday = (Button) rootView.findViewById(R.id.class_three_friday);
         Button saturday = (Button) rootView.findViewById(R.id.class_three_saturday);
         Button done = (Button) rootView.findViewById(R.id.class_three_done);
+        fieldTimeIn = (TextView) rootView.findViewById(R.id.field_new_schedule_timein);
+        fieldTimeOut = (TextView) rootView.findViewById(R.id.field_new_schedule_timeout);
 
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
@@ -57,6 +76,19 @@ public class ClassTimeThreeFragment extends Fragment {
         friday.setOnClickListener(listener());
         saturday.setOnClickListener(listener());
         done.setOnClickListener(listener());
+        fieldTimeIn.setOnClickListener(showTimePickerDialog());
+        fieldTimeOut.setOnClickListener(showTimePickerDialog());
+
+        Calendar c = Calendar.getInstance();
+        timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
+        timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+        timeInSeconds = utility.timeToSeconds(timeInHour, 0);
+        timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
+        String timeInDefault = timeInHour + ":00";
+        String timeOutDefault = timeOutHour + ":00";
+        fieldTimeIn.setText(timeInDefault);
+        fieldTimeOut.setText(timeOutDefault);
+
         return rootView;
     }
 
@@ -102,11 +134,42 @@ public class ClassTimeThreeFragment extends Fragment {
                         break;
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
-                        daysSelectedListener.onDaysSelected(classDays);
+                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds);
                         break;
                 }
             }
         };
+    }
+
+    private View.OnClickListener showTimePickerDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resourceId = v.getId();
+                DialogFragment timePickerFragment = new TimePickerFragment();
+                if (resourceId != -1)
+                    timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
+            }
+        };
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        String timeString;
+        if (minute < 10)
+            timeString = hourOfDay + ":0" + minute;
+        else
+            timeString = hourOfDay + ":" + minute;
+        switch (resourceId) {
+            case R.id.field_new_schedule_timein:
+                timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
+                fieldTimeIn.setText(timeString);
+                break;
+            case R.id.field_new_schedule_timeout:
+                timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
+                fieldTimeOut.setText(timeString);
+                break;
+        }
     }
 
     private String processClassDaysString(){
