@@ -25,10 +25,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class NewScheduleActivity extends AppCompatActivity
-        implements
+        implements TimePickerDialog.OnTimeSetListener,
         ClassTimeOneFragment.onBasisSelectedListener,
         ClassTimeTwoFragment.onWeekTypeSelectedListener,
-        ClassTimeThreeFragment.onDaysSelectedListener {
+        ClassTimeThreeFragment.onDaysSelectedListener,
+        ClassTimeThreeFragment.onTimeSelectedListener {
 
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -39,7 +40,7 @@ public class NewScheduleActivity extends AppCompatActivity
     ArrayList<String> occurrenceList;
     ArrayList<Integer> timeInList;
     ArrayList<Integer> timeOutList;
-//    int timeInSeconds;
+    //    int timeInSeconds;
 //    int timeOutSeconds;
     int scheduleIconResource = -1;
 
@@ -60,6 +61,9 @@ public class NewScheduleActivity extends AppCompatActivity
     String basis;
     String weekType;
     String classDays;
+    int timeSelectedResourceId = -1;
+    int previousTimeInSeconds;
+    int previousTimeOutSeconds;
 
 
     @Override
@@ -81,9 +85,7 @@ public class NewScheduleActivity extends AppCompatActivity
         timeOutList = new ArrayList<>();
 
 
-
         fieldAddClassTime.setOnClickListener(addClassTime());
-
 
 
         Intent intent = getIntent();
@@ -162,8 +164,8 @@ public class NewScheduleActivity extends AppCompatActivity
         DbHelper dbHelper = new DbHelper(this);
         if (FLAG_EDIT) {
             Cursor cursor = dbHelper.getScheduleDataArrayByTitle(scheduleTitle);
-            for (int i = 0; i < cursor.getCount(); i++){
-                if (cursor.moveToPosition(i)){
+            for (int i = 0; i < cursor.getCount(); i++) {
+                if (cursor.moveToPosition(i)) {
                     int rowId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                     dbHelper.deleteScheduleItem(rowId);
                 }
@@ -175,7 +177,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
-                } catch (IndexOutOfBoundsException exception){
+                } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
                 if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, scheduleIconResource)) {
@@ -192,7 +194,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
-                } catch (IndexOutOfBoundsException exception){
+                } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
                 if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, scheduleIconResource)) {
@@ -219,6 +221,22 @@ public class NewScheduleActivity extends AppCompatActivity
                         .commit();
             }
         };
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        Bundle args = new Bundle();
+        int resourceId = timeSelectedResourceId;
+        args.putInt("resourceId", resourceId);
+        args.putInt("hourOfDay", hourOfDay);
+        args.putInt("minute", minute);
+        args.putInt("timeInSeconds", previousTimeInSeconds);
+        args.putInt("timeOutSeconds", previousTimeOutSeconds);
+        ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
+        fragment.setArguments(args);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment, "TAG")
+                .commit();
     }
 
     @Override
@@ -251,6 +269,13 @@ public class NewScheduleActivity extends AppCompatActivity
 
     private String processOccurrenceString(String basis, String weekType, String classDays) {
         return basis + ":" + weekType + ":" + classDays;
+    }
+
+    @Override
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds) {
+        timeSelectedResourceId = resourceId;
+        this.previousTimeInSeconds = previousTimeInSeconds;
+        this.previousTimeOutSeconds = previousTimeOutSeconds;
     }
 }
 

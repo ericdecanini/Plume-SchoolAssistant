@@ -41,13 +41,19 @@ public class ClassTimeThreeFragment extends Fragment
         public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds);
     }
 
+    public interface onTimeSelectedListener {
+        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds);
+    }
+
     onDaysSelectedListener daysSelectedListener;
+    onTimeSelectedListener timeSelectedListener;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
             daysSelectedListener = (onDaysSelectedListener) context;
+            timeSelectedListener = (onTimeSelectedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
@@ -79,15 +85,42 @@ public class ClassTimeThreeFragment extends Fragment
         fieldTimeIn.setOnClickListener(showTimePickerDialog());
         fieldTimeOut.setOnClickListener(showTimePickerDialog());
 
-        Calendar c = Calendar.getInstance();
-        timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
-        timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
-        timeInSeconds = utility.timeToSeconds(timeInHour, 0);
-        timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
-        String timeInDefault = timeInHour + ":00";
-        String timeOutDefault = timeOutHour + ":00";
-        fieldTimeIn.setText(timeInDefault);
-        fieldTimeOut.setText(timeOutDefault);
+        Bundle args = getArguments();
+        if (args != null){
+            int hourOfDay = args.getInt("hourOfDay");
+            int minute = args.getInt("minute");
+            int previousTimeInSeconds = args.getInt("timeInSeconds");
+            int previousTimeOutSeconds = args.getInt("timeOutSeconds");
+            switch (args.getInt("resourceId")){
+                case R.id.field_new_schedule_timein:
+                    timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
+                    timeOutSeconds = previousTimeOutSeconds;
+                    if (minute < 10)
+                        fieldTimeIn.setText(hourOfDay + ":0" + minute);
+                    else
+                        fieldTimeIn.setText(hourOfDay + ":" + minute);
+                    fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
+                    break;
+                case R.id.field_new_schedule_timeout:
+                    timeInSeconds = previousTimeInSeconds;
+                    timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
+                    if (minute < 10)
+                        fieldTimeOut.setText(hourOfDay + ":0" + minute);
+                    else
+                        fieldTimeOut.setText(hourOfDay + ":" + minute);
+                    fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
+                    break;
+            }
+        }
+        else {
+            Calendar c = Calendar.getInstance();
+            timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
+            timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+            timeInSeconds = utility.timeToSeconds(timeInHour, 0);
+            timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
+            fieldTimeIn.setText(timeInHour + ":00");
+            fieldTimeOut.setText(timeOutHour + ":00");
+        }
 
         return rootView;
     }
@@ -149,6 +182,7 @@ public class ClassTimeThreeFragment extends Fragment
                 DialogFragment timePickerFragment = new TimePickerFragment();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
+                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds);
             }
         };
     }
