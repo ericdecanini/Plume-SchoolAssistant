@@ -64,6 +64,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int timeSelectedResourceId = -1;
     int previousTimeInSeconds;
     int previousTimeOutSeconds;
+    int[] previousButtonsChecked;
 
 
     @Override
@@ -110,11 +111,11 @@ public class NewScheduleActivity extends AppCompatActivity
                 scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
                 for (int i = 0; i < cursor.getCount(); i++) {
                     occurrenceList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
+                    timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
                     if (!cursor.moveToNext())
                         cursor.moveToFirst();
                 }
-//                timeInSeconds = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-//                timeOutSeconds = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
                 scheduleIconResource = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
 
                 fieldTitle.setText(scheduleTitle);
@@ -232,6 +233,7 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("minute", minute);
         args.putInt("timeInSeconds", previousTimeInSeconds);
         args.putInt("timeOutSeconds", previousTimeOutSeconds);
+        args.putIntArray("buttonsChecked", previousButtonsChecked);
         ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
         fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
@@ -272,10 +274,11 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds) {
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked) {
         timeSelectedResourceId = resourceId;
         this.previousTimeInSeconds = previousTimeInSeconds;
         this.previousTimeOutSeconds = previousTimeOutSeconds;
+        previousButtonsChecked = buttonsChecked;
     }
 }
 

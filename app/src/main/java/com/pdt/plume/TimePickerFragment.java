@@ -40,7 +40,6 @@ public class TimePickerFragment extends DialogFragment {
         int resourceId = NewScheduleActivity.resourceId;
         final Calendar c = Calendar.getInstance();
         int hour;
-        Log.v("TimePickerFragment", "FLAG_EDIT: " + FLAG_EDIT);
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
                 hour = ClassTimeThreeFragment.timeInHour;

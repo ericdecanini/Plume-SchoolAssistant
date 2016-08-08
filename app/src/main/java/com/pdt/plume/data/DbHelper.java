@@ -162,7 +162,6 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Task> getTaskDataArray(){
         Cursor cursor = getTaskData();
         ArrayList<Task> arrayList = new ArrayList<>();
-        Log.v(LOG_TAG, "Task Cursor Count: " + cursor.getCount());
         for (int i = 0; i < cursor.getCount(); i++){
             if (cursor.moveToPosition(i)){
                 arrayList.add(i, new Task(

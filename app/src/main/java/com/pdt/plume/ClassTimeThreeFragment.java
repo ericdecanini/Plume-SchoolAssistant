@@ -42,7 +42,7 @@ public class ClassTimeThreeFragment extends Fragment
     }
 
     public interface onTimeSelectedListener {
-        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds);
+        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked);
     }
 
     onDaysSelectedListener daysSelectedListener;
@@ -91,6 +91,7 @@ public class ClassTimeThreeFragment extends Fragment
             int minute = args.getInt("minute");
             int previousTimeInSeconds = args.getInt("timeInSeconds");
             int previousTimeOutSeconds = args.getInt("timeOutSeconds");
+            isButtonChecked = args.getIntArray("buttonsChecked");;
             switch (args.getInt("resourceId")){
                 case R.id.field_new_schedule_timein:
                     timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
@@ -182,7 +183,7 @@ public class ClassTimeThreeFragment extends Fragment
                 DialogFragment timePickerFragment = new TimePickerFragment();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
-                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds);
+                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, isButtonChecked);
             }
         };
     }
