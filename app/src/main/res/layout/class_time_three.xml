@@ -28,96 +28,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal" />
 
-    <LinearLayout
+    <ListView
+        android:id="@+id/class_three_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp" >
-
-            <Button
-                android:id="@+id/class_three_sunday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_sunday" />
-            <Button
-                android:id="@+id/class_three_monday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_monday" />
-
-            <Button
-                android:id="@+id/class_three_tuesday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_tuesday" />
-
-            <Button
-                android:id="@+id/class_three_wednesday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_wednesday" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp" >
-
-            <Button
-                android:id="@+id/class_three_thursday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_thursday" />
-            <Button
-                android:id="@+id/class_three_friday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_friday" />
-
-            <Button
-                android:id="@+id/class_three_saturday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_saturday" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <TextView
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/field_new_schedule_timein"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/new_schedule_time_in"
-        android:hint="@string/new_schedule_time_in"/>
-
-    <TextView
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/field_new_schedule_timeout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/new_schedule_time_out"
-        android:hint="@string/new_schedule_time_out"/>
+        android:layout_height="wrap_content" />
 
     <Button
         android:layout_marginTop="24dp"

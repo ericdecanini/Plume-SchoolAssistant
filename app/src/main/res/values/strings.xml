@@ -68,6 +68,8 @@
     <string name="SCHEDULE_EXTRA_TIMEOUT" translatable="false">SCHEDULE_EXTRA_TIMEOUT</string>
     <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
 
+    <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
+    <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
     <!-- Strings for NewTasksActivity -->
 
     <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>

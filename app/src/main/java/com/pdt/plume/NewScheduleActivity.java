@@ -1,10 +1,11 @@
 package com.pdt.plume;
 
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -21,7 +22,6 @@ import android.widget.Toast;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class NewScheduleActivity extends AppCompatActivity
@@ -212,14 +212,27 @@ public class NewScheduleActivity extends AppCompatActivity
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setClassTimeOne();
-            }
-
-            private void setClassTimeOne() {
-                ClassTimeOneFragment fragment = new ClassTimeOneFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, fragment)
-                        .commit();
+                SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+                String preferenceBasis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
+                String preferenceWeekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
+                if (!preferenceBasis.equals("-1") && !preferenceWeekType.equals("-1")){
+                    basis = preferenceBasis;
+                    weekType = preferenceWeekType;
+                    ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
+                    Bundle args = new Bundle();
+                    args.putString("basis", preferenceBasis);
+                    args.putString("weekType", preferenceWeekType);
+                    fragment.setArguments(args);
+                    getSupportFragmentManager().beginTransaction()
+                            .add(R.id.container, fragment, "TAG")
+                            .commit();
+                }
+                else {
+                    ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .add(R.id.container, fragment)
+                            .commit();
+                }
             }
         };
     }
@@ -244,6 +257,10 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onBasisSelected(String basis) {
         this.basis = basis;
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), basis);
+        editor.apply();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new ClassTimeTwoFragment())
                 .commit();
@@ -252,6 +269,10 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onWeekTypeSelected(String weekType) {
         this.weekType = weekType;
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType);
+        editor.apply();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new ClassTimeThreeFragment(), "TAG")
                 .commit();
