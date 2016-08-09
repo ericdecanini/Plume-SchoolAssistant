@@ -64,7 +64,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int timeSelectedResourceId = -1;
     int previousTimeInSeconds;
     int previousTimeOutSeconds;
-    int[] previousButtonsChecked;
+    ArrayList<Integer> previousButtonsChecked = new ArrayList<>();
 
 
     @Override
@@ -246,7 +246,7 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("minute", minute);
         args.putInt("timeInSeconds", previousTimeInSeconds);
         args.putInt("timeOutSeconds", previousTimeOutSeconds);
-        args.putIntArray("buttonsChecked", previousButtonsChecked);
+        args.putIntegerArrayList("buttonsChecked", previousButtonsChecked);
         ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
         fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
@@ -295,7 +295,7 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked) {
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, ArrayList<Integer> buttonsChecked) {
         timeSelectedResourceId = resourceId;
         this.previousTimeInSeconds = previousTimeInSeconds;
         this.previousTimeOutSeconds = previousTimeOutSeconds;

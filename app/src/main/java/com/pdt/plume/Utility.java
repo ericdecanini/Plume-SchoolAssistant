@@ -1,9 +1,5 @@
 package com.pdt.plume;
 
-import android.content.Context;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -36,6 +32,16 @@ public class Utility {
             return hourOfDay + ":0" + minute;
         else
             return hourOfDay + ":" + minute;
+    }
+
+    public ArrayList<Object> updateArrayListItemAtPosition(ArrayList arrayList, int position, Object newObject){
+        ArrayList<Object> newArrayList = new ArrayList<>();
+        for (int i = 0; i < position; i++)
+            newArrayList.add(arrayList.get(i));
+        newArrayList.add(newObject);
+        for (int i = position + 1; i < arrayList.size(); i++)
+            newArrayList.add(arrayList.get(i));
+        return newArrayList;
     }
 
 
