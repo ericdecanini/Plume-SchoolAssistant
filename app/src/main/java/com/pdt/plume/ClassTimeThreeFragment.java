@@ -28,7 +28,7 @@ public class ClassTimeThreeFragment extends Fragment
 
     ArrayAdapter<String> adapter;
 
-    ArrayList<ArrayList<Integer>> isButtonChecked = new ArrayList<>();
+    ArrayList<Integer> isButtonChecked = new ArrayList<>();
     ArrayList<TextView> fieldTimeIn = new ArrayList<>();
     ArrayList<TextView> fieldTimeOut = new ArrayList<>();
     public static int[] timeInHour = {0, 0};
@@ -89,6 +89,8 @@ public class ClassTimeThreeFragment extends Fragment
         adapter = new ArrayAdapter<>(getActivity(), R.layout.list_itemclass_time_three_timebase, R.id.class_three_item_header, dayslistHeaders);
         daysList.setAdapter(adapter);
         listCount = adapter.getCount();
+        for (int i = 0; i < 7; i ++)
+            isButtonChecked.add(0);
 
 
         Button done = (Button) rootView.findViewById(R.id.class_three_done);
@@ -130,11 +132,11 @@ public class ClassTimeThreeFragment extends Fragment
                 int previousTimeInSeconds = args.getInt("timeInSeconds");
                 int previousTimeOutSeconds = args.getInt("timeOutSeconds");
                 isButtonChecked.clear();
-                int[] integers = args.getIntArray("buttonsChecked");
-                ArrayList<Integer> newIntegers = new ArrayList<>();
-                for (int ii = 0; ii < integers.length; ii++)
-                    newIntegers.add(integers[ii]);
-                isButtonChecked.add(newIntegers);
+//                int[] integers = args.getIntArray("buttonsChecked");
+//                ArrayList<Integer> newIntegers = new ArrayList<>();
+//                for (int ii = 0; ii < integers.length; ii++)
+//                    newIntegers.add(integers[ii]);
+                isButtonChecked = args.getIntegerArrayList("buttonsChecked");
                 //Get the previously clicked viewId which called the time dialog
                 switch (args.getInt("resourceId")) {
                     case R.id.field_new_schedule_timein:
@@ -179,37 +181,37 @@ public class ClassTimeThreeFragment extends Fragment
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.class_three_sunday:
-                        if (isButtonChecked.get(position).get(0) == 1)
+                        if (isButtonChecked.get(0) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 0, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 0, 1);
                         break;
                     case R.id.class_three_monday:
-                        if (isButtonChecked.get(position).get(1) == 1)
+                        if (isButtonChecked.get(1) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 1, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 1, 1);
                         break;
                     case R.id.class_three_tuesday:
-                        if (isButtonChecked.get(position).get(2) == 1)
+                        if (isButtonChecked.get(2) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 2, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 2, 1);
                         break;
                     case R.id.class_three_wednesday:
-                        if (isButtonChecked.get(position).get(3) == 1)
+                        if (isButtonChecked.get(3) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 3, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 3, 1);
                         break;
                     case R.id.class_three_thursday:
-                        if (isButtonChecked.get(position).get(4) == 1)
+                        if (isButtonChecked.get(4) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 4, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 4, 1);
                         break;
                     case R.id.class_three_friday:
-                        if (isButtonChecked.get(position).get(5) == 1)
+                        if (isButtonChecked.get(5) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 5, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 5, 1);
                         break;
                     case R.id.class_three_saturday:
-                        if (isButtonChecked.get(position).get(6) == 1)
+                        if (isButtonChecked.get(6) == 1)
                             utility.updateArrayListItemAtPosition(isButtonChecked, 6, 0);
                         else utility.updateArrayListItemAtPosition(isButtonChecked, 6, 1);
                         break;
@@ -233,7 +235,7 @@ public class ClassTimeThreeFragment extends Fragment
                 DialogFragment timePickerFragment = new TimePickerFragment();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
-                    timeSelectedListener.onTimeSelected(resourceId, timeInSeconds[listPosition], timeOutSeconds[listCount], isButtonChecked.get(listPosition));
+                    timeSelectedListener.onTimeSelected(resourceId, timeInSeconds[listPosition], timeOutSeconds[listCount], isButtonChecked);
             }
         };
     }
