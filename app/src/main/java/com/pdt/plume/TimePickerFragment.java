@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 
 import java.util.Calendar;
 
@@ -37,18 +38,17 @@ public class TimePickerFragment extends DialogFragment {
         // Use the current time as the default values for the picker
         boolean FLAG_EDIT = NewScheduleActivity.isEdited;
         int resourceId = NewScheduleActivity.resourceId;
-        int position = ClassTimeThreeFragment.listPosition;
         final Calendar c = Calendar.getInstance();
-        int hour = -1;
+        int hour;
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragment.timeInHour[position];
+                hour = ClassTimeThreeFragment.timeInHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 1;
         }
         else {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragment.timeOutHour[position];
+                hour = ClassTimeThreeFragment.timeOutHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 2;
         }

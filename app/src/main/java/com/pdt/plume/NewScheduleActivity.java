@@ -1,11 +1,10 @@
 package com.pdt.plume;
 
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -64,7 +63,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int timeSelectedResourceId = -1;
     int previousTimeInSeconds;
     int previousTimeOutSeconds;
-    ArrayList<Integer> previousButtonsChecked = new ArrayList<>();
+    int[] previousButtonsChecked;
 
 
     @Override
@@ -212,27 +211,14 @@ public class NewScheduleActivity extends AppCompatActivity
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-                String preferenceBasis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
-                String preferenceWeekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
-                if (!preferenceBasis.equals("-1") && !preferenceWeekType.equals("-1")){
-                    basis = preferenceBasis;
-                    weekType = preferenceWeekType;
-                    ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
-                    Bundle args = new Bundle();
-                    args.putString("basis", preferenceBasis);
-                    args.putString("weekType", preferenceWeekType);
-                    fragment.setArguments(args);
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, fragment, "TAG")
-                            .commit();
-                }
-                else {
-                    ClassTimeOneFragment fragment = new ClassTimeOneFragment();
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, fragment)
-                            .commit();
-                }
+                setClassTimeOne();
+            }
+
+            private void setClassTimeOne() {
+                ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, fragment)
+                        .commit();
             }
         };
     }
@@ -241,12 +227,14 @@ public class NewScheduleActivity extends AppCompatActivity
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         Bundle args = new Bundle();
         int resourceId = timeSelectedResourceId;
+        args.putString("basis", basis);
+        args.putString("weekType", weekType);
         args.putInt("resourceId", resourceId);
         args.putInt("hourOfDay", hourOfDay);
         args.putInt("minute", minute);
         args.putInt("timeInSeconds", previousTimeInSeconds);
         args.putInt("timeOutSeconds", previousTimeOutSeconds);
-        args.putIntegerArrayList("buttonsChecked", previousButtonsChecked);
+        args.putIntArray("buttonsChecked", previousButtonsChecked);
         ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
         fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
@@ -257,10 +245,6 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onBasisSelected(String basis) {
         this.basis = basis;
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), basis);
-        editor.apply();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new ClassTimeTwoFragment())
                 .commit();
@@ -269,12 +253,13 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onWeekTypeSelected(String weekType) {
         this.weekType = weekType;
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType);
-        editor.apply();
+        Bundle args = new Bundle();
+        args.putString("basis", basis);
+        args.putString("weekType", weekType);
+        ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
+        fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new ClassTimeThreeFragment(), "TAG")
+                .replace(R.id.container, fragment, "TAG")
                 .commit();
     }
 
@@ -295,11 +280,10 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, ArrayList<Integer> buttonsChecked) {
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked) {
         timeSelectedResourceId = resourceId;
         this.previousTimeInSeconds = previousTimeInSeconds;
         this.previousTimeOutSeconds = previousTimeOutSeconds;
         previousButtonsChecked = buttonsChecked;
     }
 }
-
