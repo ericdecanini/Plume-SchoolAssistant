@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -16,17 +16,85 @@
 
     <TextView
         android:id="@+id/class_time_one_value"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal" />
 
     <TextView
         android:id="@+id/class_time_two_value"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:id="@+id/class_three_item_header"
+        android:layout_width="wrap_content"
+        android:text="@string/class_time_three_select_days"
+        android:layout_margin="16dp"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_height="wrap_content">
+
+        <ImageView android:layout_weight="1"
+            android:id="@+id/class_three_sunday"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_saturday_sunday_unselected" />
+
+        <ImageView android:layout_weight="1"
+            android:id="@+id/class_three_monday"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_monday_unselected" />
+
+        <ImageView android:layout_weight="1"
+            android:id="@+id/class_three_tuesday"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_tuesday_thursday_unselected" />
+
+        <ImageView android:layout_weight="1"
+            android:id="@+id/class_three_wednesday"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_wednesday_unselected" />
+
+        <ImageView android:layout_weight="1"
+            android:id="@+id/class_three_thursday"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_tuesday_thursday_unselected" />
+
+        <ImageView
+            android:id="@+id/class_three_friday"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_friday_unselected" />
+
+        <ImageView
+            android:id="@+id/class_three_saturday"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ui_saturday_sunday_unselected" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,37 +104,29 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp" >
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/class_three_sunday"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_sunday" />
-            <Button
-                android:id="@+id/class_three_monday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_monday" />
+                android:text="@string/new_schedule_time_in"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <Button
-                android:id="@+id/class_three_tuesday"
+            <EditText
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/black"
+                android:focusable="false"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:id="@+id/field_new_schedule_timein"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_tuesday" />
-
-            <Button
-                android:id="@+id/class_three_wednesday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_wednesday" />
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
@@ -74,56 +134,107 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp" >
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/class_three_thursday"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_thursday" />
-            <Button
-                android:id="@+id/class_three_friday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_friday" />
+                android:text="@string/new_schedule_time_out"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <Button
-                android:id="@+id/class_three_saturday"
+            <EditText
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/black"
+                android:focusable="false"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:id="@+id/field_new_schedule_timeout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/class_time_three_saturday" />
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <TextView
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/field_new_schedule_timein"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/new_schedule_time_in"
-        android:hint="@string/new_schedule_time_in"/>
-
-    <TextView
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/field_new_schedule_timeout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/new_schedule_time_out"
-        android:hint="@string/new_schedule_time_out"/>
 
     <LinearLayout
         android:id="@+id/class_time_three_week_type_alt_layout"
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/class_three_item_header_alt"
+            android:layout_width="wrap_content"
+            android:text="@string/class_time_three_weektwo"
+            android:layout_margin="16dp"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_height="wrap_content">
+
+            <ImageView android:layout_weight="1"
+                android:id="@+id/class_three_sunday_alt"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_saturday_sunday_unselected" />
+
+            <ImageView android:layout_weight="1"
+                android:id="@+id/class_three_monday_alt"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_monday_unselected" />
+
+            <ImageView android:layout_weight="1"
+                android:id="@+id/class_three_tuesday_alt"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_tuesday_thursday_unselected" />
+
+            <ImageView android:layout_weight="1"
+                android:id="@+id/class_three_wednesday_alt"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_wednesday_unselected" />
+
+            <ImageView android:layout_weight="1"
+                android:id="@+id/class_three_thursday_alt"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_tuesday_thursday_unselected" />
+
+            <ImageView
+                android:id="@+id/class_three_friday_alt"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_friday_unselected" />
+
+            <ImageView
+                android:id="@+id/class_three_saturday_alt"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="46dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ui_saturday_sunday_unselected" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -133,37 +244,29 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginLeft="16dp"
-                android:orientation="vertical"
-                android:layout_marginStart="16dp" >
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/class_three_sunday_alt"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_marginTop="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_sunday" />
-                <Button
-                    android:id="@+id/class_three_monday_alt"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_monday" />
+                    android:text="@string/new_schedule_time_in"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <Button
-                    android:id="@+id/class_three_tuesday_alt"
+                <EditText
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:textColor="@color/black"
+                    android:focusable="false"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:id="@+id/field_new_schedule_timein_alt"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_tuesday" />
-
-                <Button
-                    android:id="@+id/class_three_wednesday_alt"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_wednesday" />
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -171,50 +274,33 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginLeft="16dp"
-                android:orientation="vertical"
-                android:layout_marginStart="16dp" >
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/class_three_thursday_alt"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_marginTop="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_thursday" />
-                <Button
-                    android:id="@+id/class_three_friday_alt"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_friday" />
+                    android:text="@string/new_schedule_time_out"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <Button
-                    android:id="@+id/class_three_saturday_alt"
+                <EditText
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:textColor="@color/black"
+                    android:focusable="false"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:id="@+id/field_new_schedule_timeout_alt"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/class_time_three_saturday" />
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
         </LinearLayout>
-
-        <TextView
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/field_new_schedule_timein_alt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/new_schedule_time_in"
-            android:hint="@string/new_schedule_time_in"/>
-
-        <TextView
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/field_new_schedule_timeout_alt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/new_schedule_time_out"
-            android:hint="@string/new_schedule_time_out"/>
 
     </LinearLayout>
 
@@ -225,9 +311,11 @@
         android:layout_marginRight="16dp"
         android:layout_marginEnd="16dp"
         android:id="@+id/class_three_done"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
+        android:background="@android:color/transparent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="end"
+        android:textColor="@color/colorAccent"
         android:text="@string/done" />
 
 

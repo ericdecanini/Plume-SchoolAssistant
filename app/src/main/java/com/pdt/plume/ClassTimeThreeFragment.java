@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.TimePicker;
 
 import java.util.Calendar;
@@ -23,16 +23,18 @@ public class ClassTimeThreeFragment extends Fragment
     Utility utility = new Utility();
 
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
-    TextView fieldTimeIn;
-    TextView fieldTimeOut;
-    TextView fieldTimeInAlt;
-    TextView fieldTimeOutAlt;
+    EditText fieldTimeIn;
+    EditText fieldTimeOut;
+    EditText fieldTimeInAlt;
+    EditText fieldTimeOutAlt;
     public static int timeInHour;
     public static int timeOutHour;
+    public static int timeInAltHour;
+    public static int timeOutAltHour;
     int timeInSeconds;
     int timeOutSeconds;
-    int timeInSecondsAlt;
-    int timeOutSecondsAlt;
+    int timeInAltSeconds;
+    int timeOutAltSeconds;
     int resourceId = -1;
 
 
@@ -42,11 +44,11 @@ public class ClassTimeThreeFragment extends Fragment
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds);
     }
 
     public interface onTimeSelectedListener {
-        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked);
+        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
     }
 
     onDaysSelectedListener daysSelectedListener;
@@ -67,26 +69,26 @@ public class ClassTimeThreeFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.class_time_three, container, false);
-        Button sunday = (Button) rootView.findViewById(R.id.class_three_sunday);
-        Button monday = (Button) rootView.findViewById(R.id.class_three_monday);
-        Button tuesday = (Button) rootView.findViewById(R.id.class_three_tuesday);
-        Button wednesday = (Button) rootView.findViewById(R.id.class_three_wednesday);
-        Button thursday = (Button) rootView.findViewById(R.id.class_three_thursday);
-        Button friday = (Button) rootView.findViewById(R.id.class_three_friday);
-        Button saturday = (Button) rootView.findViewById(R.id.class_three_saturday);
-        fieldTimeIn = (TextView) rootView.findViewById(R.id.field_new_schedule_timein);
-        fieldTimeOut = (TextView) rootView.findViewById(R.id.field_new_schedule_timeout);
+        ImageView sunday = (ImageView) rootView.findViewById(R.id.class_three_sunday);
+        ImageView monday = (ImageView) rootView.findViewById(R.id.class_three_monday);
+        ImageView tuesday = (ImageView) rootView.findViewById(R.id.class_three_tuesday);
+        ImageView wednesday = (ImageView) rootView.findViewById(R.id.class_three_wednesday);
+        ImageView thursday = (ImageView) rootView.findViewById(R.id.class_three_thursday);
+        ImageView friday = (ImageView) rootView.findViewById(R.id.class_three_friday);
+        ImageView saturday = (ImageView) rootView.findViewById(R.id.class_three_saturday);
+        fieldTimeIn = (EditText) rootView.findViewById(R.id.field_new_schedule_timein);
+        fieldTimeOut = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout);
         Button done = (Button) rootView.findViewById(R.id.class_three_done);
 
-        Button sundayAlt = (Button) rootView.findViewById(R.id.class_three_sunday_alt);
-        Button mondayAlt = (Button) rootView.findViewById(R.id.class_three_monday_alt);
-        Button tuesdayAlt = (Button) rootView.findViewById(R.id.class_three_tuesday_alt);
-        Button wednesdayAlt = (Button) rootView.findViewById(R.id.class_three_wednesday_alt);
-        Button thursdayAlt = (Button) rootView.findViewById(R.id.class_three_thursday_alt);
-        Button fridayAlt = (Button) rootView.findViewById(R.id.class_three_friday_alt);
-        Button saturdayAlt = (Button) rootView.findViewById(R.id.class_three_saturday_alt);
-        fieldTimeInAlt = (TextView) rootView.findViewById(R.id.field_new_schedule_timein_alt);
-        fieldTimeOutAlt = (TextView) rootView.findViewById(R.id.field_new_schedule_timeout_alt);
+        ImageView sundayAlt = (ImageView) rootView.findViewById(R.id.class_three_sunday_alt);
+        ImageView mondayAlt = (ImageView) rootView.findViewById(R.id.class_three_monday_alt);
+        ImageView tuesdayAlt = (ImageView) rootView.findViewById(R.id.class_three_tuesday_alt);
+        ImageView wednesdayAlt = (ImageView) rootView.findViewById(R.id.class_three_wednesday_alt);
+        ImageView thursdayAlt = (ImageView) rootView.findViewById(R.id.class_three_thursday_alt);
+        ImageView fridayAlt = (ImageView) rootView.findViewById(R.id.class_three_friday_alt);
+        ImageView saturdayAlt = (ImageView) rootView.findViewById(R.id.class_three_saturday_alt);
+        fieldTimeInAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timein_alt);
+        fieldTimeOutAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout_alt);
 
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
@@ -111,8 +113,9 @@ public class ClassTimeThreeFragment extends Fragment
 
         Bundle args = getArguments();
         if (args != null){
-            //Change the layout based on weekType
-            rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
+            if (!args.getString("weekType", "-1").equals("1"))
+                //Change the layout based on weekType
+                rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
 
             //Set the variables for timeIn and timeOut if the fragment was restarted by onTimeSet
             if (args.containsKey("hourOfDay")){
@@ -120,25 +123,61 @@ public class ClassTimeThreeFragment extends Fragment
                 int minute = args.getInt("minute");
                 int previousTimeInSeconds = args.getInt("timeInSeconds");
                 int previousTimeOutSeconds = args.getInt("timeOutSeconds");
+                int previousTimeInAltSeconds = args.getInt("timeInAltSeconds");
+                int previousTimeOutAltSeconds = args.getInt("timeOutAltSeconds");
                 isButtonChecked = args.getIntArray("buttonsChecked");;
                 switch (args.getInt("resourceId")){
                     case R.id.field_new_schedule_timein:
                         timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
                         timeOutSeconds = previousTimeOutSeconds;
+                        timeInAltSeconds = previousTimeInAltSeconds;
+                        timeOutAltSeconds = previousTimeOutAltSeconds;
                         if (minute < 10)
                             fieldTimeIn.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeIn.setText(hourOfDay + ":" + minute);
                         fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
+                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
+                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
                         break;
                     case R.id.field_new_schedule_timeout:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeInAltSeconds = previousTimeInAltSeconds;
+                        timeOutAltSeconds = previousTimeOutAltSeconds;
                         if (minute < 10)
                             fieldTimeOut.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeOut.setText(hourOfDay + ":" + minute);
                         fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
+                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
+                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
+                        break;
+                    case R.id.field_new_schedule_timein_alt:
+                        timeInSeconds = previousTimeInSeconds;
+                        timeOutSeconds = previousTimeOutSeconds;
+                        timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeOutAltSeconds = previousTimeOutAltSeconds;
+                        if (minute < 10)
+                            fieldTimeInAlt.setText(hourOfDay + ":0" + minute);
+                        else
+                            fieldTimeInAlt.setText(hourOfDay + ":" + minute);
+                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
+                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
+                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
+                        break;
+                    case R.id.field_new_schedule_timeout_alt:
+                        timeInSeconds = previousTimeInSeconds;
+                        timeOutSeconds = previousTimeOutSeconds;
+                        timeInAltSeconds = previousTimeInAltSeconds;
+                        timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        if (minute < 10)
+                            fieldTimeOutAlt.setText(hourOfDay + ":0" + minute);
+                        else
+                            fieldTimeOutAlt.setText(hourOfDay + ":" + minute);
+                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
+                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
+                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
                         break;
                 }
             }
@@ -146,10 +185,16 @@ public class ClassTimeThreeFragment extends Fragment
                 Calendar c = Calendar.getInstance();
                 timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+                timeInAltHour = c.get(Calendar.HOUR_OF_DAY) + 1;
+                timeOutAltHour = c.get(Calendar.HOUR_OF_DAY) + 2;
                 timeInSeconds = utility.timeToSeconds(timeInHour, 0);
                 timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
+                timeInAltSeconds = utility.timeToSeconds(timeInHour, 0);
+                timeOutAltSeconds = utility.timeToSeconds(timeOutHour, 0);
                 fieldTimeIn.setText(timeInHour + ":00");
                 fieldTimeOut.setText(timeOutHour + ":00");
+                fieldTimeInAlt.setText(timeInAltHour + ":00");
+                fieldTimeOutAlt.setText(timeOutAltHour + ":00");
             }
         }
         return rootView;
@@ -303,7 +348,7 @@ public class ClassTimeThreeFragment extends Fragment
                         break;
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
-                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds);
+                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds);
                         break;
                 }
             }
@@ -318,7 +363,7 @@ public class ClassTimeThreeFragment extends Fragment
                 DialogFragment timePickerFragment = new TimePickerFragment();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
-                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, isButtonChecked);
+                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
             }
         };
     }
@@ -340,11 +385,11 @@ public class ClassTimeThreeFragment extends Fragment
                 fieldTimeOut.setText(timeString);
                 break;
             case R.id.field_new_schedule_timein_alt:
-                timeInSecondsAlt = utility.timeToSeconds(hourOfDay, minute);
+                timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
                 fieldTimeInAlt.setText(timeString);
                 break;
             case R.id.field_new_schedule_timeout_alt:
-                timeOutSecondsAlt = utility.timeToSeconds(hourOfDay, minute);
+                timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
                 fieldTimeOutAlt.setText(timeString);
                 break;
 

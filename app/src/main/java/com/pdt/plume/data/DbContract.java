@@ -13,6 +13,8 @@ public class DbContract {
         public static final String COLUMN_OCCURRENCE = "occurrence";
         public static final String COLUMN_TIMEIN = "timein";
         public static final String COLUMN_TIMEOUT = "timeout";
+        public static final String COLUMN_TIMEIN_ALT = "timeinalt";
+        public static final String COLUMN_TIMEOUT_ALT = "timeoutalt";
         public static final String COLUMN_ICON = "icon";
     }
 

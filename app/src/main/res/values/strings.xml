@@ -28,8 +28,8 @@
     <string name="new_schedule_hint">Enter title here&#8230;</string>
     <string name="new_schedule_add_class_time">Add Class Time</string>
     <string name="new_schedule_repeats">Repeats</string>
-    <string name="new_schedule_time_in">Start time</string>
-    <string name="new_schedule_time_out">End time</string>
+    <string name="new_schedule_time_in">From</string>
+    <string name="new_schedule_time_out">To</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
@@ -42,6 +42,7 @@
     <string name="class_time_two_sameweek">Same time every week</string>
     <string name="class_time_two_altweeks">Alternating weeks</string>
 
+    <string name="class_time_three_select_days">Select when your class takes place.</string>
     <string name="class_time_three_weekone">Week 1</string>
     <string name="class_time_three_weektwo">Week 2</string>
     <string name="class_time_three_sunday">Sunday</string>

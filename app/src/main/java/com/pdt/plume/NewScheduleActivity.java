@@ -4,7 +4,6 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -39,6 +38,8 @@ public class NewScheduleActivity extends AppCompatActivity
     ArrayList<String> occurrenceList;
     ArrayList<Integer> timeInList;
     ArrayList<Integer> timeOutList;
+    ArrayList<Integer> timeInAltList;
+    ArrayList<Integer> timeOutAltList;
     //    int timeInSeconds;
 //    int timeOutSeconds;
     int scheduleIconResource = -1;
@@ -63,6 +64,8 @@ public class NewScheduleActivity extends AppCompatActivity
     int timeSelectedResourceId = -1;
     int previousTimeInSeconds;
     int previousTimeOutSeconds;
+    int previousTimeInAltSeconds;
+    int previousTimeOutAltSeconds;
     int[] previousButtonsChecked;
 
 
@@ -83,6 +86,8 @@ public class NewScheduleActivity extends AppCompatActivity
         occurrenceList = new ArrayList<>();
         timeInList = new ArrayList<>();
         timeOutList = new ArrayList<>();
+        timeInAltList = new ArrayList<>();
+        timeOutAltList = new ArrayList<>();
 
 
         fieldAddClassTime.setOnClickListener(addClassTime());
@@ -95,9 +100,6 @@ public class NewScheduleActivity extends AppCompatActivity
                 scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
                 editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
                 FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
-
-//                timeInHour = timeInSeconds;
-//                timeOutHour = timeOutSeconds;
             }
         }
         isEdited = FLAG_EDIT;
@@ -112,6 +114,8 @@ public class NewScheduleActivity extends AppCompatActivity
                     occurrenceList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
                     timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
+                    timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    timeOutAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
                     if (!cursor.moveToNext())
                         cursor.moveToFirst();
                 }
@@ -174,13 +178,17 @@ public class NewScheduleActivity extends AppCompatActivity
                 String occurrence = occurrenceList.get(i);
                 int timeIn = -1;
                 int timeOut = -1;
+                int timeInAlt = -1;
+                int timeOutAlt = -1;
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
+                    timeInAlt = timeInAltList.get(i);
+                    timeOutAlt = timeOutAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -191,13 +199,17 @@ public class NewScheduleActivity extends AppCompatActivity
                 String occurrence = occurrenceList.get(i);
                 int timeIn = -1;
                 int timeOut = -1;
+                int timeInAlt = -1;
+                int timeOutAlt = -1;
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
+                    timeInAlt = timeInAltList.get(i);
+                    timeOutAlt = timeOutAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -234,6 +246,8 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("minute", minute);
         args.putInt("timeInSeconds", previousTimeInSeconds);
         args.putInt("timeOutSeconds", previousTimeOutSeconds);
+        args.putInt("timeInAltSeconds", previousTimeInAltSeconds);
+        args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
         args.putIntArray("buttonsChecked", previousButtonsChecked);
         ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
         fragment.setArguments(args);
@@ -264,7 +278,7 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds) {
+    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds) {
         this.classDays = classDays;
         getSupportFragmentManager().beginTransaction()
                 .remove(getSupportFragmentManager().findFragmentByTag("TAG"))
@@ -272,6 +286,8 @@ public class NewScheduleActivity extends AppCompatActivity
         occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
         timeInList.add(timeInSeconds);
         timeOutList.add(timeOutSeconds);
+        timeInAltList.add(timeInSeconds);
+        timeOutAltList.add(timeOutSeconds);
         classTimeAdapter.notifyDataSetChanged();
     }
 
@@ -280,10 +296,12 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int[] buttonsChecked) {
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
         timeSelectedResourceId = resourceId;
         this.previousTimeInSeconds = previousTimeInSeconds;
         this.previousTimeOutSeconds = previousTimeOutSeconds;
+        this.previousTimeInAltSeconds = previousTimeInAltSeconds;
+        this.previousTimeOutAltSeconds = previousTimeOutAltSeconds;
         previousButtonsChecked = buttonsChecked;
     }
 }
