@@ -26,9 +26,10 @@ public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
         ClassTimeOneFragment.onBasisSelectedListener,
         ClassTimeTwoFragment.onWeekTypeSelectedListener,
+        ClassTimeThreeFragmentTime.onTimeSelectedListener,
         ClassTimeThreeFragmentTime.onDaysSelectedListener,
         ClassTimeThreeFragmentPeriod.onDaysSelectedListener,
-        ClassTimeThreeFragmentTime.onTimeSelectedListener {
+        ClassTimeThreeFragmentBlock.onDaysSelectedListener {
 
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -43,8 +44,6 @@ public class NewScheduleActivity extends AppCompatActivity
     ArrayList<Integer> timeOutAltList;
     ArrayList<String> periodsList;
     ArrayList<String> periodsAltList;
-    //    int timeInSeconds;
-//    int timeOutSeconds;
     int scheduleIconResource = -1;
 
     EditText fieldTitle;
@@ -61,8 +60,8 @@ public class NewScheduleActivity extends AppCompatActivity
     int editId = -1;
     public static int resourceId = -1;
 
-    String basis;
-    String weekType;
+    String basis = "-1";
+    String weekType = "-1";
     String classDays;
     int timeSelectedResourceId = -1;
     int previousTimeInSeconds;
@@ -272,9 +271,17 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onBasisSelected(String basis) {
         this.basis = basis;
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new ClassTimeTwoFragment())
-                .commit();
+        if (!basis.equals("2")){
+            weekType = "-1";
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new ClassTimeTwoFragment())
+                    .commit();
+        }
+
+        else
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new ClassTimeThreeFragmentBlock(), "TAG")
+                    .commit();
     }
 
     @Override

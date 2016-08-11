@@ -1,281 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="16dp"
     android:background="@color/white"
-    android:elevation="4dp"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/class_time_one_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp" />
-
-    <TextView
-        android:id="@+id/class_time_two_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp" />
-
-    <TextView
-        android:id="@+id/class_three_item_header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp"
-        android:text="@string/class_time_three_select_days" />
+    android:elevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp">
-
-        <ImageView
-            android:id="@+id/class_three_sunday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_saturday_sunday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_monday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_monday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_tuesday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_tuesday_thursday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_wednesday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_wednesday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_thursday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_tuesday_thursday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_friday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_friday_unselected" />
-
-        <ImageView
-            android:id="@+id/class_three_saturday"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:src="@drawable/ui_saturday_sunday_unselected" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/class_three_period_one"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_one" />
-
-            <Button
-                android:id="@+id/class_three_period_two"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_two" />
-
-            <Button
-                android:id="@+id/class_three_period_three"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_three" />
-
-            <Button
-                android:id="@+id/class_three_period_four"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_four" />
-
-            <Button
-                android:id="@+id/class_three_period_five"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_five" />
-
-            <Button
-                android:id="@+id/class_three_period_six"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_six" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/class_three_period_seven"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_seven" />
-
-            <Button
-                android:id="@+id/class_three_period_eight"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_eight" />
-
-            <Button
-                android:id="@+id/class_three_period_nine"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_nine" />
-
-            <Button
-                android:id="@+id/class_three_period_ten"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_ten" />
-
-            <Button
-                android:id="@+id/class_three_period_eleven"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_eleven" />
-
-            <Button
-                android:id="@+id/class_three_period_twelve"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/class_time_period_twelve" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/class_time_three_week_type_alt_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/class_three_item_header_alt"
+            android:id="@+id/class_time_one_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/class_time_three_weektwo" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/class_time_two_value"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp">
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp" />
 
-            <ImageView
-                android:id="@+id/class_three_sunday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_saturday_sunday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_monday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_monday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_tuesday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_tuesday_thursday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_wednesday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_wednesday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_thursday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_tuesday_thursday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_friday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_friday_unselected" />
-
-            <ImageView
-                android:id="@+id/class_three_saturday_alt"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:src="@drawable/ui_saturday_sunday_unselected" />
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/class_three_item_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/class_time_block_day_a" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -288,111 +46,105 @@
                 android:layout_height="wrap_content">
 
                 <Button
-                    android:id="@+id/class_three_period_one_alt"
+                    android:id="@+id/class_three_period_one"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/class_time_period_one" />
 
                 <Button
-                    android:id="@+id/class_three_period_two_alt"
+                    android:id="@+id/class_three_period_two"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/class_time_period_two" />
 
                 <Button
-                    android:id="@+id/class_three_period_three_alt"
+                    android:id="@+id/class_three_period_three"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/class_time_period_three" />
 
                 <Button
-                    android:id="@+id/class_three_period_four_alt"
+                    android:id="@+id/class_three_period_four"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/class_time_period_four" />
-
-                <Button
-                    android:id="@+id/class_three_period_five_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_five" />
-
-                <Button
-                    android:id="@+id/class_three_period_six_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_six" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/class_time_three_week_type_alt_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/class_three_period_seven_alt"
-                    android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/class_three_item_header_alt"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_seven" />
+                    android:layout_margin="16dp"
+                    android:text="@string/class_time_block_day_b" />
 
-                <Button
-                    android:id="@+id/class_three_period_eight_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_eight" />
 
-                <Button
-                    android:id="@+id/class_three_period_nine_alt"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_nine" />
+                    android:layout_marginTop="4dp"
+                    android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/class_three_period_ten_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_ten" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                <Button
-                    android:id="@+id/class_three_period_eleven_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_eleven" />
+                        <Button
+                            android:id="@+id/class_three_period_one_alt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/class_time_period_one" />
 
-                <Button
-                    android:id="@+id/class_three_period_twelve_alt"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/class_time_period_twelve" />
+                        <Button
+                            android:id="@+id/class_three_period_two_alt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/class_time_period_two" />
+
+                        <Button
+                            android:id="@+id/class_three_period_three_alt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/class_time_period_three" />
+
+                        <Button
+                            android:id="@+id/class_three_period_four_alt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/class_time_period_four" />
+
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
 
     <Button
         android:id="@+id/class_three_done"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
+        android:layout_gravity="end|bottom"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp"
         android:background="@android:color/transparent"
         android:text="@string/done"
         android:textColor="@color/colorAccent" />
 
 
-</LinearLayout>
+</FrameLayout>

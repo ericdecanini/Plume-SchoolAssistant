@@ -63,6 +63,32 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         ImageView fridayAlt = (ImageView) rootView.findViewById(R.id.class_three_friday_alt);
         ImageView saturdayAlt = (ImageView) rootView.findViewById(R.id.class_three_saturday_alt);
 
+        Button periodOne = (Button) rootView.findViewById(R.id.class_three_period_one);
+        Button periodTwo = (Button) rootView.findViewById(R.id.class_three_period_two);
+        Button periodThree = (Button) rootView.findViewById(R.id.class_three_period_three);
+        Button periodFour = (Button) rootView.findViewById(R.id.class_three_period_four);
+        Button periodFive = (Button) rootView.findViewById(R.id.class_three_period_five);
+        Button periodSix = (Button) rootView.findViewById(R.id.class_three_period_six);
+        Button periodSeven = (Button) rootView.findViewById(R.id.class_three_period_seven);
+        Button periodEight = (Button) rootView.findViewById(R.id.class_three_period_eight);
+        Button periodNine = (Button) rootView.findViewById(R.id.class_three_period_nine);
+        Button periodTen = (Button) rootView.findViewById(R.id.class_three_period_ten);
+        Button periodEleven = (Button) rootView.findViewById(R.id.class_three_period_eleven);
+        Button periodTwelve = (Button) rootView.findViewById(R.id.class_three_period_twelve);
+
+        Button periodOneAlt = (Button) rootView.findViewById(R.id.class_three_period_one_alt);
+        Button periodTwoAlt = (Button) rootView.findViewById(R.id.class_three_period_two_alt);
+        Button periodThreeAlt = (Button) rootView.findViewById(R.id.class_three_period_three_alt);
+        Button periodFourAlt = (Button) rootView.findViewById(R.id.class_three_period_four_alt);
+        Button periodFiveAlt = (Button) rootView.findViewById(R.id.class_three_period_five_alt);
+        Button periodSixAlt = (Button) rootView.findViewById(R.id.class_three_period_six_alt);
+        Button periodSevenAlt = (Button) rootView.findViewById(R.id.class_three_period_seven_alt);
+        Button periodEightAlt = (Button) rootView.findViewById(R.id.class_three_period_eight_alt);
+        Button periodNineAlt = (Button) rootView.findViewById(R.id.class_three_period_nine_alt);
+        Button periodTenAlt = (Button) rootView.findViewById(R.id.class_three_period_ten_alt);
+        Button periodElevenAlt = (Button) rootView.findViewById(R.id.class_three_period_eleven_alt);
+        Button periodTwelveAlt = (Button) rootView.findViewById(R.id.class_three_period_twelve_alt);
+
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
         tuesday.setOnClickListener(listener());
@@ -79,6 +105,32 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         thursdayAlt.setOnClickListener(listener());
         fridayAlt.setOnClickListener(listener());
         saturdayAlt.setOnClickListener(listener());
+
+        periodOne.setOnClickListener(listener());
+        periodTwo.setOnClickListener(listener());
+        periodThree.setOnClickListener(listener());
+        periodFour.setOnClickListener(listener());
+        periodFive.setOnClickListener(listener());
+        periodSix.setOnClickListener(listener());
+        periodSeven.setOnClickListener(listener());
+        periodEight.setOnClickListener(listener());
+        periodNine.setOnClickListener(listener());
+        periodTen.setOnClickListener(listener());
+        periodEleven.setOnClickListener(listener());
+        periodTwelve.setOnClickListener(listener());
+
+        periodOneAlt.setOnClickListener(listener());
+        periodTwoAlt.setOnClickListener(listener());
+        periodThreeAlt.setOnClickListener(listener());
+        periodFourAlt.setOnClickListener(listener());
+        periodFiveAlt.setOnClickListener(listener());
+        periodSixAlt.setOnClickListener(listener());
+        periodSevenAlt.setOnClickListener(listener());
+        periodEightAlt.setOnClickListener(listener());
+        periodNineAlt.setOnClickListener(listener());
+        periodTenAlt.setOnClickListener(listener());
+        periodElevenAlt.setOnClickListener(listener());
+        periodTwelveAlt.setOnClickListener(listener());
 
         Bundle args = getArguments();
         if (args != null){

@@ -66,6 +66,9 @@
     <string name="class_time_period_eleven">11th</string>
     <string name="class_time_period_twelve">12th</string>
 
+    <string name="class_time_block_day_a">A Day</string>
+    <string name="class_time_block_day_b">B Day</string>
+
     <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
     <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
     <string name="new_schedule_room_key" translatable="false">KEY_NEW_SCHEDULE_ROOM</string>
