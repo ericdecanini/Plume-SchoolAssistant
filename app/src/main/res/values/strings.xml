@@ -53,6 +53,19 @@
     <string name="class_time_three_friday">Friday</string>
     <string name="class_time_three_saturday">Saturday</string>
 
+    <string name="class_time_period_one">1st</string>
+    <string name="class_time_period_two">2nd</string>
+    <string name="class_time_period_three">3rd</string>
+    <string name="class_time_period_four">4th</string>
+    <string name="class_time_period_five">5th</string>
+    <string name="class_time_period_six">6th</string>
+    <string name="class_time_period_seven">7th</string>
+    <string name="class_time_period_eight">8th</string>
+    <string name="class_time_period_nine">9th</string>
+    <string name="class_time_period_ten">10th</string>
+    <string name="class_time_period_eleven">11th</string>
+    <string name="class_time_period_twelve">12th</string>
+
     <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
     <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
     <string name="new_schedule_room_key" translatable="false">KEY_NEW_SCHEDULE_ROOM</string>

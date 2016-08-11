@@ -26,8 +26,9 @@ public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
         ClassTimeOneFragment.onBasisSelectedListener,
         ClassTimeTwoFragment.onWeekTypeSelectedListener,
-        ClassTimeThreeFragment.onDaysSelectedListener,
-        ClassTimeThreeFragment.onTimeSelectedListener {
+        ClassTimeThreeFragmentTime.onDaysSelectedListener,
+        ClassTimeThreeFragmentPeriod.onDaysSelectedListener,
+        ClassTimeThreeFragmentTime.onTimeSelectedListener {
 
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -40,6 +41,8 @@ public class NewScheduleActivity extends AppCompatActivity
     ArrayList<Integer> timeOutList;
     ArrayList<Integer> timeInAltList;
     ArrayList<Integer> timeOutAltList;
+    ArrayList<String> periodsList;
+    ArrayList<String> periodsAltList;
     //    int timeInSeconds;
 //    int timeOutSeconds;
     int scheduleIconResource = -1;
@@ -88,6 +91,8 @@ public class NewScheduleActivity extends AppCompatActivity
         timeOutList = new ArrayList<>();
         timeInAltList = new ArrayList<>();
         timeOutAltList = new ArrayList<>();
+        periodsList = new ArrayList<>();
+        periodsAltList = new ArrayList<>();
 
 
         fieldAddClassTime.setOnClickListener(addClassTime());
@@ -180,15 +185,19 @@ public class NewScheduleActivity extends AppCompatActivity
                 int timeOut = -1;
                 int timeInAlt = -1;
                 int timeOutAlt = -1;
+                String periods = "-1";
+                String periodsAlt = "-1";
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
                     timeInAlt = timeInAltList.get(i);
                     timeOutAlt = timeOutAltList.get(i);
+                    periods = periodsList.get(i);
+                    periodsAlt = periodsAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, periodsAlt, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -201,15 +210,19 @@ public class NewScheduleActivity extends AppCompatActivity
                 int timeOut = -1;
                 int timeInAlt = -1;
                 int timeOutAlt = -1;
+                String periods = "-1";
+                String periodsAlt = "-1";
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
                     timeInAlt = timeInAltList.get(i);
                     timeOutAlt = timeOutAltList.get(i);
+                    periods = periodsList.get(i);
+                    periodsAlt = periodsAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, periods, periodsAlt, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -249,7 +262,7 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("timeInAltSeconds", previousTimeInAltSeconds);
         args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
         args.putIntArray("buttonsChecked", previousButtonsChecked);
-        ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
+        ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
         fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, fragment, "TAG")
@@ -270,15 +283,23 @@ public class NewScheduleActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putString("basis", basis);
         args.putString("weekType", weekType);
-        ClassTimeThreeFragment fragment = new ClassTimeThreeFragment();
-        fragment.setArguments(args);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment, "TAG")
-                .commit();
+        if (basis.equals("0")){
+            ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
+            fragment.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment, "TAG")
+                    .commit();
+        } else if (basis.equals("1")){
+                ClassTimeThreeFragmentPeriod fragment = new ClassTimeThreeFragmentPeriod();
+                fragment.setArguments(args);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, fragment, "TAG")
+                        .commit();
+        }
     }
 
     @Override
-    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds) {
+    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt) {
         this.classDays = classDays;
         getSupportFragmentManager().beginTransaction()
                 .remove(getSupportFragmentManager().findFragmentByTag("TAG"))
@@ -288,6 +309,8 @@ public class NewScheduleActivity extends AppCompatActivity
         timeOutList.add(timeOutSeconds);
         timeInAltList.add(timeInSeconds);
         timeOutAltList.add(timeOutSeconds);
+        periodsList.add(periods);
+        periodsAltList.add(periodsAlt);
         classTimeAdapter.notifyDataSetChanged();
     }
 

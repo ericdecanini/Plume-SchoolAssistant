@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -42,13 +41,13 @@ public class TimePickerFragment extends DialogFragment {
         int hour;
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragment.timeInHour;
+                hour = ClassTimeThreeFragmentTime.timeInHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 1;
         }
         else {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragment.timeOutHour;
+                hour = ClassTimeThreeFragmentTime.timeOutHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 2;
         }

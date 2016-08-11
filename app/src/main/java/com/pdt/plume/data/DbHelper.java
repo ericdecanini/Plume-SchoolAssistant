@@ -38,7 +38,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 + ScheduleEntry.COLUMN_TIMEIN + " REAL NOT NULL, "
                 + ScheduleEntry.COLUMN_TIMEOUT + " REAL NOT NULL, "
                 + ScheduleEntry.COLUMN_TIMEIN_ALT + " REAL NOT NULL, "
-                + ScheduleEntry.COLUMN_TIMEOUT_ALT + " REAL NOT NULL "
+                + ScheduleEntry.COLUMN_TIMEOUT_ALT + " REAL NOT NULL, "
+                + ScheduleEntry.COLUMN_PERIODS + " TEXT NOT NULL, "
+                + ScheduleEntry.COLUMN_PERIODS_ALT + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_ICON + " INTEGER NOT NULL "
                 + " );";
 
@@ -117,7 +119,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, int icon){
+    public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String periodsAlt, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -128,12 +130,14 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeout);
         contentValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeinalt);
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeoutalt);
+        contentValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
+        contentValues.put(ScheduleEntry.COLUMN_PERIODS_ALT, periodsAlt);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.insert(ScheduleEntry.TABLE_NAME, null, contentValues);
         return true;
     }
 
-    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, int icon){
+    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String periodsAlt, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -144,6 +148,8 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeout);
         contentValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeinalt);
         contentValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeoutalt);
+        contentValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
+        contentValues.put(ScheduleEntry.COLUMN_PERIODS_ALT, periodsAlt);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.update(ScheduleEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
         return true;

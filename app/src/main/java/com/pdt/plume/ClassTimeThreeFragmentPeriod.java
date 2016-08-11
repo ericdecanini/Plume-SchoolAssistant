@@ -1,10 +1,8 @@
 package com.pdt.plume;
 
 
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,63 +10,42 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TimePicker;
-
-import java.util.Calendar;
 
 
-public class ClassTimeThreeFragment extends Fragment
-        implements TimePickerDialog.OnTimeSetListener{
-
-    Utility utility = new Utility();
+public class ClassTimeThreeFragmentPeriod extends Fragment {
 
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
-    EditText fieldTimeIn;
-    EditText fieldTimeOut;
-    EditText fieldTimeInAlt;
-    EditText fieldTimeOutAlt;
-    public static int timeInHour;
-    public static int timeOutHour;
-    public static int timeInAltHour;
-    public static int timeOutAltHour;
-    int timeInSeconds;
-    int timeOutSeconds;
-    int timeInAltSeconds;
-    int timeOutAltSeconds;
-    int resourceId = -1;
+    String[] isPeriodChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
+    String[] isPeriodAltChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
+    onDaysSelectedListener daysSelectedListener;
 
 
-    public ClassTimeThreeFragment() {
+    public ClassTimeThreeFragmentPeriod() {
         // Required empty public constructor
     }
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt);
     }
-
-    public interface onTimeSelectedListener {
-        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
-    }
-
-    onDaysSelectedListener daysSelectedListener;
-    onTimeSelectedListener timeSelectedListener;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
             daysSelectedListener = (onDaysSelectedListener) context;
-            timeSelectedListener = (onTimeSelectedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.class_time_three, container, false);
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.class_time_three_period, container, false);
+
         ImageView sunday = (ImageView) rootView.findViewById(R.id.class_three_sunday);
         ImageView monday = (ImageView) rootView.findViewById(R.id.class_three_monday);
         ImageView tuesday = (ImageView) rootView.findViewById(R.id.class_three_tuesday);
@@ -76,8 +53,6 @@ public class ClassTimeThreeFragment extends Fragment
         ImageView thursday = (ImageView) rootView.findViewById(R.id.class_three_thursday);
         ImageView friday = (ImageView) rootView.findViewById(R.id.class_three_friday);
         ImageView saturday = (ImageView) rootView.findViewById(R.id.class_three_saturday);
-        fieldTimeIn = (EditText) rootView.findViewById(R.id.field_new_schedule_timein);
-        fieldTimeOut = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout);
         Button done = (Button) rootView.findViewById(R.id.class_three_done);
 
         ImageView sundayAlt = (ImageView) rootView.findViewById(R.id.class_three_sunday_alt);
@@ -87,8 +62,6 @@ public class ClassTimeThreeFragment extends Fragment
         ImageView thursdayAlt = (ImageView) rootView.findViewById(R.id.class_three_thursday_alt);
         ImageView fridayAlt = (ImageView) rootView.findViewById(R.id.class_three_friday_alt);
         ImageView saturdayAlt = (ImageView) rootView.findViewById(R.id.class_three_saturday_alt);
-        fieldTimeInAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timein_alt);
-        fieldTimeOutAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout_alt);
 
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
@@ -97,8 +70,6 @@ public class ClassTimeThreeFragment extends Fragment
         thursday.setOnClickListener(listener());
         friday.setOnClickListener(listener());
         saturday.setOnClickListener(listener());
-        fieldTimeIn.setOnClickListener(showTimePickerDialog());
-        fieldTimeOut.setOnClickListener(showTimePickerDialog());
         done.setOnClickListener(listener());
 
         sundayAlt.setOnClickListener(listener());
@@ -108,95 +79,14 @@ public class ClassTimeThreeFragment extends Fragment
         thursdayAlt.setOnClickListener(listener());
         fridayAlt.setOnClickListener(listener());
         saturdayAlt.setOnClickListener(listener());
-        fieldTimeInAlt.setOnClickListener(showTimePickerDialog());
-        fieldTimeOutAlt.setOnClickListener(showTimePickerDialog());
 
         Bundle args = getArguments();
         if (args != null){
             if (!args.getString("weekType", "-1").equals("1"))
                 //Change the layout based on weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
-
-            //Set the variables for timeIn and timeOut if the fragment was restarted by onTimeSet
-            if (args.containsKey("hourOfDay")){
-                int hourOfDay = args.getInt("hourOfDay");
-                int minute = args.getInt("minute");
-                int previousTimeInSeconds = args.getInt("timeInSeconds");
-                int previousTimeOutSeconds = args.getInt("timeOutSeconds");
-                int previousTimeInAltSeconds = args.getInt("timeInAltSeconds");
-                int previousTimeOutAltSeconds = args.getInt("timeOutAltSeconds");
-                isButtonChecked = args.getIntArray("buttonsChecked");;
-                switch (args.getInt("resourceId")){
-                    case R.id.field_new_schedule_timein:
-                        timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
-                        timeOutSeconds = previousTimeOutSeconds;
-                        timeInAltSeconds = previousTimeInAltSeconds;
-                        timeOutAltSeconds = previousTimeOutAltSeconds;
-                        if (minute < 10)
-                            fieldTimeIn.setText(hourOfDay + ":0" + minute);
-                        else
-                            fieldTimeIn.setText(hourOfDay + ":" + minute);
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
-                        break;
-                    case R.id.field_new_schedule_timeout:
-                        timeInSeconds = previousTimeInSeconds;
-                        timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
-                        timeInAltSeconds = previousTimeInAltSeconds;
-                        timeOutAltSeconds = previousTimeOutAltSeconds;
-                        if (minute < 10)
-                            fieldTimeOut.setText(hourOfDay + ":0" + minute);
-                        else
-                            fieldTimeOut.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
-                        break;
-                    case R.id.field_new_schedule_timein_alt:
-                        timeInSeconds = previousTimeInSeconds;
-                        timeOutSeconds = previousTimeOutSeconds;
-                        timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                        timeOutAltSeconds = previousTimeOutAltSeconds;
-                        if (minute < 10)
-                            fieldTimeInAlt.setText(hourOfDay + ":0" + minute);
-                        else
-                            fieldTimeInAlt.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
-                        break;
-                    case R.id.field_new_schedule_timeout_alt:
-                        timeInSeconds = previousTimeInSeconds;
-                        timeOutSeconds = previousTimeOutSeconds;
-                        timeInAltSeconds = previousTimeInAltSeconds;
-                        timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                        if (minute < 10)
-                            fieldTimeOutAlt.setText(hourOfDay + ":0" + minute);
-                        else
-                            fieldTimeOutAlt.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
-                        break;
-                }
-            }
-            else {
-                Calendar c = Calendar.getInstance();
-                timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
-                timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
-                timeInAltHour = c.get(Calendar.HOUR_OF_DAY) + 1;
-                timeOutAltHour = c.get(Calendar.HOUR_OF_DAY) + 2;
-                timeInSeconds = utility.timeToSeconds(timeInHour, 0);
-                timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
-                timeInAltSeconds = utility.timeToSeconds(timeInHour, 0);
-                timeOutAltSeconds = utility.timeToSeconds(timeOutHour, 0);
-                fieldTimeIn.setText(timeInHour + ":00");
-                fieldTimeOut.setText(timeOutHour + ":00");
-                fieldTimeInAlt.setText(timeInAltHour + ":00");
-                fieldTimeOutAlt.setText(timeOutAltHour + ":00");
-            }
         }
+
         return rootView;
     }
 
@@ -346,54 +236,137 @@ public class ClassTimeThreeFragment extends Fragment
                         else if (isButtonChecked[6] == 3)
                             isButtonChecked[6] = 1;
                         break;
+
+                    case R.id.class_three_period_one:
+                        if (isPeriodChecked[0].equals("0"))
+                            isPeriodChecked[0] = "1";
+                        else isPeriodChecked[0] = "0";
+                        break;
+                    case R.id.class_three_period_two:
+                        if (isPeriodChecked[1].equals("0"))
+                            isPeriodChecked[1] = "1";
+                        else isPeriodChecked[1] = "0";
+                        break;
+                    case R.id.class_three_period_three:
+                        if (isPeriodChecked[2].equals("0"))
+                            isPeriodChecked[2] = "1";
+                        else isPeriodChecked[2] = "0";
+                        break;
+                    case R.id.class_three_period_four:
+                        if (isPeriodChecked[3].equals("0"))
+                            isPeriodChecked[3] = "1";
+                        else isPeriodChecked[3] = "0";
+                        break;
+                    case R.id.class_three_period_five:
+                        if (isPeriodChecked[4].equals("0"))
+                            isPeriodChecked[4] = "1";
+                        else isPeriodChecked[4] = "0";
+                        break;
+                    case R.id.class_three_period_six:
+                        if (isPeriodChecked[5].equals("0"))
+                            isPeriodChecked[5] = "1";
+                        else isPeriodChecked[5] = "0";
+                        break;
+                    case R.id.class_three_period_seven:
+                        if (isPeriodChecked[6].equals("0"))
+                            isPeriodChecked[6] = "1";
+                        else isPeriodChecked[6] = "0";
+                        break;
+                    case R.id.class_three_period_eight:
+                        if (isPeriodChecked[7].equals("0"))
+                            isPeriodChecked[7] = "1";
+                        else isPeriodChecked[7] = "0";
+                        break;
+                    case R.id.class_three_period_nine:
+                        if (isPeriodChecked[8].equals("0"))
+                            isPeriodChecked[8] = "1";
+                        else isPeriodChecked[8] = "0";
+                        break;
+                    case R.id.class_three_period_ten:
+                        if (isPeriodChecked[9].equals("0"))
+                            isPeriodChecked[9] = "1";
+                        else isPeriodChecked[9] = "0";
+                        break;
+                    case R.id.class_three_period_eleven:
+                        if (isPeriodChecked[10].equals("0"))
+                            isPeriodChecked[10] = "1";
+                        else isPeriodChecked[10] = "0";
+                        break;
+                    case R.id.class_three_period_twelve:
+                        if (isPeriodChecked[11].equals("0"))
+                            isPeriodChecked[11] = "1";
+                        else isPeriodChecked[11] = "0";
+                        break;
+                    case R.id.class_three_period_one_alt:
+                        if (isPeriodAltChecked[0].equals("0"))
+                            isPeriodAltChecked[0] = "1";
+                        else isPeriodAltChecked[0] = "0";
+                        break;
+                    case R.id.class_three_period_two_alt:
+                        if (isPeriodAltChecked[1].equals("0"))
+                            isPeriodAltChecked[1] = "1";
+                        else isPeriodAltChecked[1] = "0";
+                        break;
+                    case R.id.class_three_period_three_alt:
+                        if (isPeriodAltChecked[2].equals("0"))
+                            isPeriodAltChecked[2] = "1";
+                        else isPeriodAltChecked[2] = "0";
+                        break;
+                    case R.id.class_three_period_four_alt:
+                        if (isPeriodAltChecked[3].equals("0"))
+                            isPeriodAltChecked[3] = "1";
+                        else isPeriodAltChecked[3] = "0";
+                        break;
+                    case R.id.class_three_period_five_alt:
+                        if (isPeriodAltChecked[4].equals("0"))
+                            isPeriodAltChecked[4] = "1";
+                        else isPeriodAltChecked[4] = "0";
+                        break;
+                    case R.id.class_three_period_six_alt:
+                        if (isPeriodAltChecked[5].equals("0"))
+                            isPeriodAltChecked[5] = "1";
+                        else isPeriodAltChecked[5] = "0";
+                        break;
+                    case R.id.class_three_period_seven_alt:
+                        if (isPeriodAltChecked[6].equals("0"))
+                            isPeriodAltChecked[6] = "1";
+                        else isPeriodAltChecked[6] = "0";
+                        break;
+                    case R.id.class_three_period_eight_alt:
+                        if (isPeriodAltChecked[7].equals("0"))
+                            isPeriodAltChecked[7] = "1";
+                        else isPeriodAltChecked[7] = "0";
+                        break;
+                    case R.id.class_three_period_nine_alt:
+                        if (isPeriodAltChecked[8].equals("0"))
+                            isPeriodAltChecked[8] = "1";
+                        else isPeriodAltChecked[8] = "0";
+                        break;
+                    case R.id.class_three_period_ten_alt:
+                        if (isPeriodAltChecked[9].equals("0"))
+                            isPeriodAltChecked[9] = "1";
+                        else isPeriodAltChecked[9] = "0";
+                        break;
+                    case R.id.class_three_period_eleven_alt:
+                        if (isPeriodAltChecked[10].equals("0"))
+                            isPeriodAltChecked[10] = "1";
+                        else isPeriodAltChecked[10] = "0";
+                        break;
+                    case R.id.class_three_period_twelve_alt:
+                        if (isPeriodAltChecked[11].equals("0"))
+                            isPeriodAltChecked[11] = "1";
+                        else isPeriodAltChecked[11] = "0";
+                        break;
+
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
-                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds);
+                        String periods = processPeriodsString();
+                        String periodsAlt = processPeriodsAltString();
+                        daysSelectedListener.onDaysSelected(classDays, -1, -1, -1, -1, periods, periodsAlt);
                         break;
                 }
             }
         };
-    }
-
-    private View.OnClickListener showTimePickerDialog() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resourceId = v.getId();
-                DialogFragment timePickerFragment = new TimePickerFragment();
-                if (resourceId != -1)
-                    timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
-                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
-            }
-        };
-    }
-
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        String timeString;
-        if (minute < 10)
-            timeString = hourOfDay + ":0" + minute;
-        else
-            timeString = hourOfDay + ":" + minute;
-        switch (resourceId) {
-            case R.id.field_new_schedule_timein:
-                timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeIn.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timeout:
-                timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeOut.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timein_alt:
-                timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeInAlt.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timeout_alt:
-                timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeOutAlt.setText(timeString);
-                break;
-
-        }
     }
 
     private String processClassDaysString(){
@@ -404,6 +377,36 @@ public class ClassTimeThreeFragment extends Fragment
                 + isButtonChecked[4] + ":"
                 + isButtonChecked[5] + ":"
                 + isButtonChecked[6];
+    }
+
+    private String processPeriodsString(){
+        return isPeriodChecked[0] + ":"
+                + isPeriodChecked[1] + ":"
+                + isPeriodChecked[2] + ":"
+                + isPeriodChecked[3] + ":"
+                + isPeriodChecked[4] + ":"
+                + isPeriodChecked[5] + ":"
+                + isPeriodChecked[6] + ":"
+                + isPeriodChecked[7] + ":"
+                + isPeriodChecked[8] + ":"
+                + isPeriodChecked[9] + ":"
+                + isPeriodChecked[10] + ":"
+                + isPeriodChecked[11];
+    }
+
+    private String processPeriodsAltString(){
+        return isPeriodAltChecked[0] + ":"
+                + isPeriodAltChecked[1] + ":"
+                + isPeriodAltChecked[2] + ":"
+                + isPeriodAltChecked[3] + ":"
+                + isPeriodAltChecked[4] + ":"
+                + isPeriodAltChecked[5] + ":"
+                + isPeriodAltChecked[6] + ":"
+                + isPeriodAltChecked[7] + ":"
+                + isPeriodAltChecked[8] + ":"
+                + isPeriodAltChecked[9] + ":"
+                + isPeriodAltChecked[10] + ":"
+                + isPeriodAltChecked[11];
     }
 
 }
