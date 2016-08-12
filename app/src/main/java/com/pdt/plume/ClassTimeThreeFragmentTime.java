@@ -44,7 +44,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
 
     public interface onTimeSelectedListener {
@@ -460,7 +460,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         break;
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
-                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, "-1", "-1");
+                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, "-1");
                         break;
                 }
             }

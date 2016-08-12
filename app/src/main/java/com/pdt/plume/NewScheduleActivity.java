@@ -196,7 +196,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, periodsAlt, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -221,7 +221,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, periods, periodsAlt, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
                     if (i == occurrenceList.size() - 1)
                         return true;
                 } else
@@ -306,7 +306,7 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt) {
+    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods) {
         this.classDays = classDays;
         getSupportFragmentManager().beginTransaction()
                 .remove(getSupportFragmentManager().findFragmentByTag("TAG"))
@@ -317,7 +317,6 @@ public class NewScheduleActivity extends AppCompatActivity
         timeInAltList.add(timeInSeconds);
         timeOutAltList.add(timeOutSeconds);
         periodsList.add(periods);
-        periodsAltList.add(periodsAlt);
         classTimeAdapter.notifyDataSetChanged();
     }
 

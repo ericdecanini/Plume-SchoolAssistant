@@ -23,7 +23,7 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
 
                     case R.id.class_three_done:
                         String periods = processPeriodsString();
-                        daysSelectedListener.onDaysSelected("-1", -1, -1, -1, -1, periods, "-1");
+                        daysSelectedListener.onDaysSelected("-1", -1, -1, -1, -1, periods);
                         break;
                 }
             }

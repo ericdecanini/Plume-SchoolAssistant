@@ -171,7 +171,7 @@
         <TextView
             android:id="@+id/class_three_item_header_alt"
             android:layout_width="wrap_content"
-            android:text="@string/class_time_three_weektwo"
+            android:text="@string/class_three_weektwo"
             android:layout_margin="16dp"
             android:layout_height="wrap_content" />
 

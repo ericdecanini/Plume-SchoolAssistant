@@ -26,7 +26,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
 
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods, String periodsAlt);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
 
     @Override
@@ -280,7 +280,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                             ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
                         }
                         else if (isButtonChecked[0] == 1){
-                            isButtonChecked[0] = 3;
+                             isButtonChecked[0] = 3;
                             ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
                         }
                         else if (isButtonChecked[0] == 2){
@@ -401,11 +401,252 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                         }
                         break;
 
+                    case R.id.class_three_period_one:
+                        if (isPeriodChecked[0].equals("0"))
+                            isPeriodChecked[0] = "1";
+                        else if (isPeriodChecked[0].equals("1"))
+                            isPeriodChecked[0] = "0";
+                        else if (isPeriodChecked[0].equals("2"))
+                            isPeriodChecked[0] = "3";
+                        else if (isPeriodChecked[0].equals("3"))
+                            isPeriodChecked[0] = "2";
+                        break;
+                    case R.id.class_three_period_two:
+                        if (isPeriodChecked[1].equals("0"))
+                            isPeriodChecked[1] = "1";
+                        else if (isPeriodChecked[1].equals("1"))
+                            isPeriodChecked[1] = "0";
+                        else if (isPeriodChecked[1].equals("2"))
+                            isPeriodChecked[1] = "3";
+                        else if (isPeriodChecked[1].equals("3"))
+                            isPeriodChecked[1] = "2";
+                        break;
+                    case R.id.class_three_period_three:
+                        if (isPeriodChecked[2].equals("0"))
+                            isPeriodChecked[2] = "1";
+                        else if (isPeriodChecked[2].equals("1"))
+                            isPeriodChecked[2] = "0";
+                        else if (isPeriodChecked[2].equals("2"))
+                            isPeriodChecked[2] = "3";
+                        else if (isPeriodChecked[2].equals("3"))
+                            isPeriodChecked[2] = "2";
+                        break;
+                    case R.id.class_three_period_four:
+                        if (isPeriodChecked[3].equals("0"))
+                            isPeriodChecked[3] = "1";
+                        else if (isPeriodChecked[3].equals("1"))
+                            isPeriodChecked[3] = "0";
+                        else if (isPeriodChecked[3].equals("2"))
+                            isPeriodChecked[3] = "3";
+                        else if (isPeriodChecked[3].equals("3"))
+                            isPeriodChecked[3] = "2";
+                        break;
+                    case R.id.class_three_period_five:
+                        if (isPeriodChecked[4].equals("0"))
+                            isPeriodChecked[4] = "1";
+                        else if (isPeriodChecked[4].equals("1"))
+                            isPeriodChecked[4] = "0";
+                        else if (isPeriodChecked[4].equals("2"))
+                            isPeriodChecked[4] = "3";
+                        else if (isPeriodChecked[4].equals("3"))
+                            isPeriodChecked[4] = "2";
+                        break;
+                    case R.id.class_three_period_six:
+                        if (isPeriodChecked[5].equals("0"))
+                            isPeriodChecked[5] = "1";
+                        else if (isPeriodChecked[5].equals("1"))
+                            isPeriodChecked[5] = "0";
+                        else if (isPeriodChecked[5].equals("2"))
+                            isPeriodChecked[5] = "3";
+                        else if (isPeriodChecked[5].equals("3"))
+                            isPeriodChecked[5] = "2";
+                        break;
+                    case R.id.class_three_period_seven:
+                        if (isPeriodChecked[6].equals("0"))
+                            isPeriodChecked[6] = "1";
+                        else if (isPeriodChecked[6].equals("1"))
+                            isPeriodChecked[6] = "0";
+                        else if (isPeriodChecked[6].equals("2"))
+                            isPeriodChecked[6] = "3";
+                        else if (isPeriodChecked[6].equals("3"))
+                            isPeriodChecked[6] = "2";
+                        break;
+                    case R.id.class_three_period_eight:
+                        if (isPeriodChecked[7].equals("0"))
+                            isPeriodChecked[7] = "1";
+                        else if (isPeriodChecked[7].equals("1"))
+                            isPeriodChecked[7] = "0";
+                        else if (isPeriodChecked[7].equals("2"))
+                            isPeriodChecked[7] = "3";
+                        else if (isPeriodChecked[7].equals("3"))
+                            isPeriodChecked[7] = "2";
+                        break;
+                    case R.id.class_three_period_nine:
+                        if (isPeriodChecked[8].equals("0"))
+                            isPeriodChecked[8] = "1";
+                        else if (isPeriodChecked[8].equals("1"))
+                            isPeriodChecked[8] = "0";
+                        else if (isPeriodChecked[8].equals("2"))
+                            isPeriodChecked[8] = "3";
+                        else if (isPeriodChecked[8].equals("3"))
+                            isPeriodChecked[8] = "2";
+                        break;
+                    case R.id.class_three_period_ten:
+                        if (isPeriodChecked[9].equals("0"))
+                            isPeriodChecked[9] = "1";
+                        else if (isPeriodChecked[9].equals("1"))
+                            isPeriodChecked[9] = "0";
+                        else if (isPeriodChecked[9].equals("2"))
+                            isPeriodChecked[9] = "3";
+                        else if (isPeriodChecked[9].equals("3"))
+                            isPeriodChecked[9] = "2";
+                        break;
+                    case R.id.class_three_period_eleven:
+                        if (isPeriodChecked[10].equals("0"))
+                            isPeriodChecked[10] = "1";
+                        else if (isPeriodChecked[10].equals("1"))
+                            isPeriodChecked[10] = "0";
+                        else if (isPeriodChecked[10].equals("2"))
+                            isPeriodChecked[10] = "3";
+                        else if (isPeriodChecked[10].equals("3"))
+                            isPeriodChecked[10] = "2";
+                        break;
+                    case R.id.class_three_period_twelve:
+                        if (isPeriodChecked[11].equals("0"))
+                            isPeriodChecked[11] = "1";
+                        else if (isPeriodChecked[11].equals("1"))
+                            isPeriodChecked[11] = "0";
+                        else if (isPeriodChecked[11].equals("2"))
+                            isPeriodChecked[11] = "3";
+                        else if (isPeriodChecked[11].equals("3"))
+                            isPeriodChecked[11] = "2";
+                        break;
+
+                    case R.id.class_three_period_one_alt:
+                        if (isPeriodChecked[0].equals("0"))
+                            isPeriodChecked[0] = "2";
+                        else if (isPeriodChecked[0].equals("1"))
+                            isPeriodChecked[0] = "3";
+                        else if (isPeriodChecked[0].equals("2"))
+                            isPeriodChecked[0] = "0";
+                        else if (isPeriodChecked[0].equals("3"))
+                            isPeriodChecked[0] = "1";
+                        break;
+                    case R.id.class_three_period_two_alt:
+                        if (isPeriodChecked[1].equals("0"))
+                            isPeriodChecked[1] = "12";
+                        else if (isPeriodChecked[1].equals("1"))
+                            isPeriodChecked[1] = "3";
+                        else if (isPeriodChecked[1].equals("2"))
+                            isPeriodChecked[1] = "0";
+                        else if (isPeriodChecked[1].equals("3"))
+                            isPeriodChecked[1] = "1";
+                        break;
+                    case R.id.class_three_period_three_alt:
+                        if (isPeriodChecked[2].equals("0"))
+                            isPeriodChecked[2] = "2";
+                        else if (isPeriodChecked[2].equals("1"))
+                            isPeriodChecked[2] = "3";
+                        else if (isPeriodChecked[2].equals("2"))
+                            isPeriodChecked[2] = "0";
+                        else if (isPeriodChecked[2].equals("3"))
+                            isPeriodChecked[2] = "1";
+                        break;
+                    case R.id.class_three_period_four_alt:
+                        if (isPeriodChecked[3].equals("0"))
+                            isPeriodChecked[3] = "2";
+                        else if (isPeriodChecked[3].equals("1"))
+                            isPeriodChecked[3] = "3";
+                        else if (isPeriodChecked[3].equals("2"))
+                            isPeriodChecked[3] = "0";
+                        else if (isPeriodChecked[3].equals("3"))
+                            isPeriodChecked[3] = "1";
+                        break;
+                    case R.id.class_three_period_five_alt:
+                        if (isPeriodChecked[4].equals("0"))
+                            isPeriodChecked[4] = "2";
+                        else if (isPeriodChecked[4].equals("1"))
+                            isPeriodChecked[4] = "3";
+                        else if (isPeriodChecked[4].equals("2"))
+                            isPeriodChecked[4] = "0";
+                        else if (isPeriodChecked[4].equals("3"))
+                            isPeriodChecked[4] = "1";
+                        break;
+                    case R.id.class_three_period_six_alt:
+                        if (isPeriodChecked[5].equals("0"))
+                            isPeriodChecked[5] = "2";
+                        else if (isPeriodChecked[5].equals("1"))
+                            isPeriodChecked[5] = "3";
+                        else if (isPeriodChecked[5].equals("2"))
+                            isPeriodChecked[5] = "0";
+                        else if (isPeriodChecked[5].equals("3"))
+                            isPeriodChecked[5] = "1";
+                        break;
+                    case R.id.class_three_period_seven_alt:
+                        if (isPeriodChecked[6].equals("0"))
+                            isPeriodChecked[6] = "2";
+                        else if (isPeriodChecked[6].equals("1"))
+                            isPeriodChecked[6] = "3";
+                        else if (isPeriodChecked[6].equals("2"))
+                            isPeriodChecked[6] = "0";
+                        else if (isPeriodChecked[6].equals("3"))
+                            isPeriodChecked[6] = "1";
+                        break;
+                    case R.id.class_three_period_eight_alt:
+                        if (isPeriodChecked[7].equals("0"))
+                            isPeriodChecked[7] = "2";
+                        else if (isPeriodChecked[7].equals("1"))
+                            isPeriodChecked[7] = "3";
+                        else if (isPeriodChecked[7].equals("2"))
+                            isPeriodChecked[7] = "0";
+                        else if (isPeriodChecked[7].equals("3"))
+                            isPeriodChecked[7] = "1";
+                        break;
+                    case R.id.class_three_period_nine_alt:
+                        if (isPeriodChecked[8].equals("0"))
+                            isPeriodChecked[8] = "2";
+                        else if (isPeriodChecked[8].equals("1"))
+                            isPeriodChecked[8] = "3";
+                        else if (isPeriodChecked[8].equals("2"))
+                            isPeriodChecked[8] = "0";
+                        else if (isPeriodChecked[8].equals("3"))
+                            isPeriodChecked[8] = "1";
+                        break;
+                    case R.id.class_three_period_ten_alt:
+                        if (isPeriodChecked[9].equals("0"))
+                            isPeriodChecked[9] = "2";
+                        else if (isPeriodChecked[9].equals("1"))
+                            isPeriodChecked[9] = "3";
+                        else if (isPeriodChecked[9].equals("2"))
+                            isPeriodChecked[9] = "0";
+                        else if (isPeriodChecked[9].equals("3"))
+                            isPeriodChecked[9] = "1";
+                        break;
+                    case R.id.class_three_period_eleven_alt:
+                        if (isPeriodChecked[10].equals("0"))
+                            isPeriodChecked[10] = "2";
+                        else if (isPeriodChecked[10].equals("1"))
+                            isPeriodChecked[10] = "3";
+                        else if (isPeriodChecked[10].equals("2"))
+                            isPeriodChecked[10] = "0";
+                        else if (isPeriodChecked[10].equals("3"))
+                            isPeriodChecked[10] = "1";
+                        break;
+                    case R.id.class_three_period_twelve_alt:
+                        if (isPeriodChecked[11].equals("0"))
+                            isPeriodChecked[11] = "2";
+                        else if (isPeriodChecked[11].equals("1"))
+                            isPeriodChecked[11] = "3";
+                        else if (isPeriodChecked[11].equals("2"))
+                            isPeriodChecked[11] = "0";
+                        else if (isPeriodChecked[11].equals("3"))
+                            isPeriodChecked[11] = "1";
+                        break;
+
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
                         String periods = processPeriodsString();
-                        String periodsAlt = processPeriodsAltString();
-                        daysSelectedListener.onDaysSelected(classDays, -1, -1, -1, -1, periods, periodsAlt);
+                        daysSelectedListener.onDaysSelected(classDays, -1, -1, -1, -1, periods);
                         break;
                 }
             }
@@ -435,21 +676,6 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                 + isPeriodChecked[9] + ":"
                 + isPeriodChecked[10] + ":"
                 + isPeriodChecked[11];
-    }
-
-    private String processPeriodsAltString(){
-        return isPeriodAltChecked[0] + ":"
-                + isPeriodAltChecked[1] + ":"
-                + isPeriodAltChecked[2] + ":"
-                + isPeriodAltChecked[3] + ":"
-                + isPeriodAltChecked[4] + ":"
-                + isPeriodAltChecked[5] + ":"
-                + isPeriodAltChecked[6] + ":"
-                + isPeriodAltChecked[7] + ":"
-                + isPeriodAltChecked[8] + ":"
-                + isPeriodAltChecked[9] + ":"
-                + isPeriodAltChecked[10] + ":"
-                + isPeriodAltChecked[11];
     }
 
 }

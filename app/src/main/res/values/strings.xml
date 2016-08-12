@@ -43,15 +43,23 @@
     <string name="class_time_two_altweeks">Alternating weeks</string>
 
     <string name="class_time_three_select_days">Select when your class takes place.</string>
-    <string name="class_time_three_weekone">Week 1</string>
-    <string name="class_time_three_weektwo">Week 2</string>
-    <string name="class_time_three_sunday">Sunday</string>
-    <string name="class_time_three_monday">Monday</string>
-    <string name="class_time_three_tuesday">Tuesday</string>
-    <string name="class_time_three_wednesday">Wednesday</string>
-    <string name="class_time_three_thursday">Thursday</string>
-    <string name="class_time_three_friday">Friday</string>
-    <string name="class_time_three_saturday">Saturday</string>
+    <string name="class_three_weekone">Week 1</string>
+    <string name="class_three_weektwo">Week 2</string>
+    <string name="class_three_sunday">Sunday</string>
+    <string name="class_three_monday">Monday</string>
+    <string name="class_three_tuesday">Tuesday</string>
+    <string name="class_three_wednesday">Wednesday</string>
+    <string name="class_three_thursday">Thursday</string>
+    <string name="class_three_friday">Friday</string>
+    <string name="class_three_saturday">Saturday</string>
+
+    <string name="class_three_sunday_abr">Sun</string>
+    <string name="class_three_monday_abr">Mon</string>
+    <string name="class_three_tuesday_abr">Tue</string>
+    <string name="class_three_wednesday_abr">Wed</string>
+    <string name="class_three_thursday_abr">Thu</string>
+    <string name="class_three_friday_abr">Fri</string>
+    <string name="class_three_saturday_abr">Sat</string>
 
     <string name="class_time_period_one">1st</string>
     <string name="class_time_period_two">2nd</string>
