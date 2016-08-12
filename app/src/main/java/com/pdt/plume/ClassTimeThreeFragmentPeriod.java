@@ -148,266 +148,257 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
             public void onClick(View v) {
                 switch (v.getId()){
                     case R.id.class_three_sunday:
-                        if (isButtonChecked[0] == 0)
+                        if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
-                        else if (isButtonChecked[0] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 0;
-                        else if (isButtonChecked[0] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
+                        else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 3;
-                        else if (isButtonChecked[0] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
                         break;
                     case R.id.class_three_monday:
-                        if (isButtonChecked[1] == 0)
+                        if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 1;
-                        else if (isButtonChecked[1] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                        }
+                        else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 0;
-                        else if (isButtonChecked[1] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                        }
+                        else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 3;
-                        else if (isButtonChecked[1] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                        }
+                        else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                        }
                         break;
                     case R.id.class_three_tuesday:
-                        if (isButtonChecked[2] == 0)
+                        if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 1;
-                        else if (isButtonChecked[2] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 0;
-                        else if (isButtonChecked[2] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
+                        else if (isButtonChecked[2] == 2) {
                             isButtonChecked[2] = 3;
-                        else if (isButtonChecked[2] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
                         break;
                     case R.id.class_three_wednesday:
-                        if (isButtonChecked[3] == 0)
+                        if (isButtonChecked[3] == 0) {
                             isButtonChecked[3] = 1;
-                        else if (isButtonChecked[3] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                        }
+                        else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 0;
-                        else if (isButtonChecked[3] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                        }
+                        else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 3;
-                        else if (isButtonChecked[3] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                        }
+                        else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                        }
                         break;
                     case R.id.class_three_thursday:
-                        if (isButtonChecked[4] == 0)
+                        if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 1;
-                        else if (isButtonChecked[4] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 0;
-                        else if (isButtonChecked[4] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
+                        else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 3;
-                        else if (isButtonChecked[4] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
                         break;
                     case R.id.class_three_friday:
-                        if (isButtonChecked[5] == 0)
+                        if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 1;
-                        else if (isButtonChecked[5] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                        }
+                        else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 0;
-                        else if (isButtonChecked[5] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                        }
+                        else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 3;
-                        else if (isButtonChecked[5] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                        }
+                        else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                        }
                         break;
                     case R.id.class_three_saturday:
-                        if (isButtonChecked[6] == 0)
+                        if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 1;
-                        else if (isButtonChecked[6] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 0;
-                        else if (isButtonChecked[6] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
+                        else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 3;
-                        else if (isButtonChecked[6] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 2;
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
                         break;
 
                     case R.id.class_three_sunday_alt:
-                        if (isButtonChecked[0] == 0)
+                        if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
-                        else if (isButtonChecked[0] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 3;
-                        else if (isButtonChecked[0] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 0;
-                        else if (isButtonChecked[0] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
+                        else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
                         break;
                     case R.id.class_three_monday_alt:
-                        if (isButtonChecked[1] == 0)
+                        if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 2;
-                        else if (isButtonChecked[1] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                        }
+                        else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 3;
-                        else if (isButtonChecked[1] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                        }
+                        else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 0;
-                        else if (isButtonChecked[1] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                        }
+                        else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                        }
                         break;
                     case R.id.class_three_tuesday_alt:
-                        if (isButtonChecked[2] == 0)
+                        if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 2;
-                        else if (isButtonChecked[2] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 3;
-                        else if (isButtonChecked[2] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[2] == 2){
                             isButtonChecked[2] = 0;
-                        else if (isButtonChecked[2] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
+                        else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
                         break;
                     case R.id.class_three_wednesday_alt:
-                        if (isButtonChecked[3] == 0)
+                        if (isButtonChecked[3] == 0){
                             isButtonChecked[3] = 2;
-                        else if (isButtonChecked[3] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                        }
+                        else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 3;
-                        else if (isButtonChecked[3] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                        }
+                        else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 0;
-                        else if (isButtonChecked[3] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                        }
+                        else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                        }
                         break;
                     case R.id.class_three_thursday_alt:
-                        if (isButtonChecked[4] == 0)
+                        if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 2;
-                        else if (isButtonChecked[4] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 3;
-                        else if (isButtonChecked[4] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        }
+                        else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 0;
-                        else if (isButtonChecked[4] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
+                        else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                        }
                         break;
                     case R.id.class_three_friday_alt:
-                        if (isButtonChecked[5] == 0)
+                        if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 2;
-                        else if (isButtonChecked[5] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                        }
+                        else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 3;
-                        else if (isButtonChecked[5] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                        }
+                        else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 0;
-                        else if (isButtonChecked[5] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                        }
+                        else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 1;
+                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                        }
                         break;
                     case R.id.class_three_saturday_alt:
-                        if (isButtonChecked[6] == 0)
+                        if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 2;
-                        else if (isButtonChecked[6] == 1)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 3;
-                        else if (isButtonChecked[6] == 2)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        }
+                        else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 0;
-                        else if (isButtonChecked[6] == 3)
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
+                        else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 1;
-                        break;
-
-                    case R.id.class_three_period_one:
-                        if (isPeriodChecked[0].equals("0"))
-                            isPeriodChecked[0] = "1";
-                        else isPeriodChecked[0] = "0";
-                        break;
-                    case R.id.class_three_period_two:
-                        if (isPeriodChecked[1].equals("0"))
-                            isPeriodChecked[1] = "1";
-                        else isPeriodChecked[1] = "0";
-                        break;
-                    case R.id.class_three_period_three:
-                        if (isPeriodChecked[2].equals("0"))
-                            isPeriodChecked[2] = "1";
-                        else isPeriodChecked[2] = "0";
-                        break;
-                    case R.id.class_three_period_four:
-                        if (isPeriodChecked[3].equals("0"))
-                            isPeriodChecked[3] = "1";
-                        else isPeriodChecked[3] = "0";
-                        break;
-                    case R.id.class_three_period_five:
-                        if (isPeriodChecked[4].equals("0"))
-                            isPeriodChecked[4] = "1";
-                        else isPeriodChecked[4] = "0";
-                        break;
-                    case R.id.class_three_period_six:
-                        if (isPeriodChecked[5].equals("0"))
-                            isPeriodChecked[5] = "1";
-                        else isPeriodChecked[5] = "0";
-                        break;
-                    case R.id.class_three_period_seven:
-                        if (isPeriodChecked[6].equals("0"))
-                            isPeriodChecked[6] = "1";
-                        else isPeriodChecked[6] = "0";
-                        break;
-                    case R.id.class_three_period_eight:
-                        if (isPeriodChecked[7].equals("0"))
-                            isPeriodChecked[7] = "1";
-                        else isPeriodChecked[7] = "0";
-                        break;
-                    case R.id.class_three_period_nine:
-                        if (isPeriodChecked[8].equals("0"))
-                            isPeriodChecked[8] = "1";
-                        else isPeriodChecked[8] = "0";
-                        break;
-                    case R.id.class_three_period_ten:
-                        if (isPeriodChecked[9].equals("0"))
-                            isPeriodChecked[9] = "1";
-                        else isPeriodChecked[9] = "0";
-                        break;
-                    case R.id.class_three_period_eleven:
-                        if (isPeriodChecked[10].equals("0"))
-                            isPeriodChecked[10] = "1";
-                        else isPeriodChecked[10] = "0";
-                        break;
-                    case R.id.class_three_period_twelve:
-                        if (isPeriodChecked[11].equals("0"))
-                            isPeriodChecked[11] = "1";
-                        else isPeriodChecked[11] = "0";
-                        break;
-                    case R.id.class_three_period_one_alt:
-                        if (isPeriodAltChecked[0].equals("0"))
-                            isPeriodAltChecked[0] = "1";
-                        else isPeriodAltChecked[0] = "0";
-                        break;
-                    case R.id.class_three_period_two_alt:
-                        if (isPeriodAltChecked[1].equals("0"))
-                            isPeriodAltChecked[1] = "1";
-                        else isPeriodAltChecked[1] = "0";
-                        break;
-                    case R.id.class_three_period_three_alt:
-                        if (isPeriodAltChecked[2].equals("0"))
-                            isPeriodAltChecked[2] = "1";
-                        else isPeriodAltChecked[2] = "0";
-                        break;
-                    case R.id.class_three_period_four_alt:
-                        if (isPeriodAltChecked[3].equals("0"))
-                            isPeriodAltChecked[3] = "1";
-                        else isPeriodAltChecked[3] = "0";
-                        break;
-                    case R.id.class_three_period_five_alt:
-                        if (isPeriodAltChecked[4].equals("0"))
-                            isPeriodAltChecked[4] = "1";
-                        else isPeriodAltChecked[4] = "0";
-                        break;
-                    case R.id.class_three_period_six_alt:
-                        if (isPeriodAltChecked[5].equals("0"))
-                            isPeriodAltChecked[5] = "1";
-                        else isPeriodAltChecked[5] = "0";
-                        break;
-                    case R.id.class_three_period_seven_alt:
-                        if (isPeriodAltChecked[6].equals("0"))
-                            isPeriodAltChecked[6] = "1";
-                        else isPeriodAltChecked[6] = "0";
-                        break;
-                    case R.id.class_three_period_eight_alt:
-                        if (isPeriodAltChecked[7].equals("0"))
-                            isPeriodAltChecked[7] = "1";
-                        else isPeriodAltChecked[7] = "0";
-                        break;
-                    case R.id.class_three_period_nine_alt:
-                        if (isPeriodAltChecked[8].equals("0"))
-                            isPeriodAltChecked[8] = "1";
-                        else isPeriodAltChecked[8] = "0";
-                        break;
-                    case R.id.class_three_period_ten_alt:
-                        if (isPeriodAltChecked[9].equals("0"))
-                            isPeriodAltChecked[9] = "1";
-                        else isPeriodAltChecked[9] = "0";
-                        break;
-                    case R.id.class_three_period_eleven_alt:
-                        if (isPeriodAltChecked[10].equals("0"))
-                            isPeriodAltChecked[10] = "1";
-                        else isPeriodAltChecked[10] = "0";
-                        break;
-                    case R.id.class_three_period_twelve_alt:
-                        if (isPeriodAltChecked[11].equals("0"))
-                            isPeriodAltChecked[11] = "1";
-                        else isPeriodAltChecked[11] = "0";
+                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                        }
                         break;
 
                     case R.id.class_three_done:
