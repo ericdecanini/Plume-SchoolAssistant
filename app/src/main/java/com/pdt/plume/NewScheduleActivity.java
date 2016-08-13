@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -37,6 +36,8 @@ public class NewScheduleActivity extends AppCompatActivity
     String scheduleTitle;
     String scheduleTeacher;
     String scheduleRoom;
+    ArrayList<OccurrenceTimePeriod> occurrenceTimePeriodList;
+    ArrayList<String> occurenceBlockList;
     ArrayList<String> occurrenceList;
     ArrayList<Integer> timeInList;
     ArrayList<Integer> timeOutList;
@@ -53,7 +54,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
     ListView classTimeList;
     TextView fieldAddClassTime;
-    ArrayAdapter<String> classTimeAdapter;
+    OccurrenceTimePeriodAdapter classTimeAdapter;
 
     boolean FLAG_EDIT = false;
     public static boolean isEdited;
@@ -85,6 +86,7 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldAddClassTime = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
         fieldIcon = (ImageView) findViewById(R.id.new_schedule_icon);
         classTimeList = (ListView) findViewById(R.id.field_new_schedule_class_time_list);
+        occurrenceTimePeriodList = new ArrayList<>();
         occurrenceList = new ArrayList<>();
         timeInList = new ArrayList<>();
         timeOutList = new ArrayList<>();
@@ -115,7 +117,13 @@ public class NewScheduleActivity extends AppCompatActivity
                 scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
                 scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
                 for (int i = 0; i < cursor.getCount(); i++) {
-                    occurrenceList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
+                    occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
+                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE))));
                     timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
                     timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
@@ -132,7 +140,7 @@ public class NewScheduleActivity extends AppCompatActivity
             }
         }
 
-        classTimeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, occurrenceList);
+        classTimeAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, occurrenceTimePeriodList);
         classTimeList.setAdapter(classTimeAdapter);
     }
 
@@ -178,7 +186,7 @@ public class NewScheduleActivity extends AppCompatActivity
                     dbHelper.deleteScheduleItem(rowId);
                 }
             }
-            for (int i = 0; i < occurrenceList.size(); i++) {
+            for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
                 String occurrence = occurrenceList.get(i);
                 int timeIn = -1;
                 int timeOut = -1;
@@ -194,35 +202,33 @@ public class NewScheduleActivity extends AppCompatActivity
                     periods = periodsList.get(i);
                     periodsAlt = periodsAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
-                    Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
+                    Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                 }
                 if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
-                    if (i == occurrenceList.size() - 1)
+                    if (i == occurrenceTimePeriodList.size() - 1)
                         return true;
                 } else
                     Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
         } else {
-            for (int i = 0; i < occurrenceList.size(); i++) {
+            for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
                 String occurrence = occurrenceList.get(i);
                 int timeIn = -1;
                 int timeOut = -1;
                 int timeInAlt = -1;
                 int timeOutAlt = -1;
                 String periods = "-1";
-                String periodsAlt = "-1";
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
                     timeInAlt = timeInAltList.get(i);
                     timeOutAlt = timeOutAltList.get(i);
                     periods = periodsList.get(i);
-                    periodsAlt = periodsAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
-                    Log.e(LOG_TAG, "occurrenceList size is larger than timeInList and timeOutList");
+                    Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                 }
                 if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
-                    if (i == occurrenceList.size() - 1)
+                    if (i == occurrenceTimePeriodList.size() - 1)
                         return true;
                 } else
                     Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
@@ -314,9 +320,17 @@ public class NewScheduleActivity extends AppCompatActivity
         occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
         timeInList.add(timeInSeconds);
         timeOutList.add(timeOutSeconds);
-        timeInAltList.add(timeInSeconds);
-        timeOutAltList.add(timeOutSeconds);
+        timeInAltList.add(timeInAltSeconds);
+        timeOutAltList.add(timeOutAltSeconds);
         periodsList.add(periods);
+        occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                utility.secondsToTime(timeInSeconds) + "",
+                utility.secondsToTime(timeOutSeconds) + "",
+                utility.secondsToTime(timeInAltSeconds) + "",
+                utility.secondsToTime(timeOutAltSeconds) + "",
+                periods,
+                processOccurrenceString(basis, weekType, classDays)));
+        Log.v(LOG_TAG, classDays);
         classTimeAdapter.notifyDataSetChanged();
     }
 

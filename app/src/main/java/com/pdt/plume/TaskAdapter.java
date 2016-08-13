@@ -60,8 +60,7 @@ public class TaskAdapter extends ArrayAdapter {
         return row;
     }
 
-    static class ViewHolder
-    {
+    static class ViewHolder {
         ImageView icon;
         TextView title;
         TextView shared;
