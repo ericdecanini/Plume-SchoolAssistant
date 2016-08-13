@@ -5,6 +5,7 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/list_item_time_period_week"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -19,6 +20,7 @@
         android:layout_margin="8dp" />
 
     <LinearLayout
+        android:id="@+id/list_item_time_period_days"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -124,6 +126,7 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/list_item_time_period_week_alt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
@@ -138,6 +141,7 @@
             android:layout_margin="8dp" />
 
         <LinearLayout
+            android:id="@+id/list_item_time_period_days_alt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

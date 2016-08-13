@@ -37,14 +37,12 @@ public class NewScheduleActivity extends AppCompatActivity
     String scheduleTeacher;
     String scheduleRoom;
     ArrayList<OccurrenceTimePeriod> occurrenceTimePeriodList;
-    ArrayList<String> occurenceBlockList;
     ArrayList<String> occurrenceList;
     ArrayList<Integer> timeInList;
     ArrayList<Integer> timeOutList;
     ArrayList<Integer> timeInAltList;
     ArrayList<Integer> timeOutAltList;
     ArrayList<String> periodsList;
-    ArrayList<String> periodsAltList;
     int scheduleIconResource = -1;
 
     EditText fieldTitle;
@@ -93,7 +91,6 @@ public class NewScheduleActivity extends AppCompatActivity
         timeInAltList = new ArrayList<>();
         timeOutAltList = new ArrayList<>();
         periodsList = new ArrayList<>();
-        periodsAltList = new ArrayList<>();
 
 
         fieldAddClassTime.setOnClickListener(addClassTime());
@@ -178,6 +175,7 @@ public class NewScheduleActivity extends AppCompatActivity
             scheduleIconResource = R.drawable.placeholder_sixtyfour;
 
         DbHelper dbHelper = new DbHelper(this);
+        // If the activity was started by edit rather than inserting a new item
         if (FLAG_EDIT) {
             Cursor cursor = dbHelper.getScheduleDataArrayByTitle(scheduleTitle);
             for (int i = 0; i < cursor.getCount(); i++) {
@@ -193,14 +191,12 @@ public class NewScheduleActivity extends AppCompatActivity
                 int timeInAlt = -1;
                 int timeOutAlt = -1;
                 String periods = "-1";
-                String periodsAlt = "-1";
                 try {
                     timeIn = timeInList.get(i);
                     timeOut = timeOutList.get(i);
                     timeInAlt = timeInAltList.get(i);
                     timeOutAlt = timeOutAltList.get(i);
                     periods = periodsList.get(i);
-                    periodsAlt = periodsAltList.get(i);
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                 }
@@ -210,7 +206,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 } else
                     Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
-        } else {
+        } else { // Insert a new row into the database
             for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
                 String occurrence = occurrenceList.get(i);
                 int timeIn = -1;
@@ -227,7 +223,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 } catch (IndexOutOfBoundsException exception) {
                     Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                 }
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut,timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
+                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResource)) {
                     if (i == occurrenceTimePeriodList.size() - 1)
                         return true;
                 } else
@@ -277,14 +273,12 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onBasisSelected(String basis) {
         this.basis = basis;
-        if (!basis.equals("2")){
+        if (!basis.equals("2")) {
             weekType = "-1";
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, new ClassTimeTwoFragment())
                     .commit();
-        }
-
-        else
+        } else
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, new ClassTimeThreeFragmentBlock(), "TAG")
                     .commit();
@@ -296,18 +290,18 @@ public class NewScheduleActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putString("basis", basis);
         args.putString("weekType", weekType);
-        if (basis.equals("0")){
+        if (basis.equals("0")) {
             ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
             fragment.setArguments(args);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment, "TAG")
                     .commit();
-        } else if (basis.equals("1")){
-                ClassTimeThreeFragmentPeriod fragment = new ClassTimeThreeFragmentPeriod();
-                fragment.setArguments(args);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, fragment, "TAG")
-                        .commit();
+        } else if (basis.equals("1")) {
+            ClassTimeThreeFragmentPeriod fragment = new ClassTimeThreeFragmentPeriod();
+            fragment.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment, "TAG")
+                    .commit();
         }
     }
 
