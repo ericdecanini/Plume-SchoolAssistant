@@ -21,8 +21,7 @@ import org.w3c.dom.Text;
 import java.util.Calendar;
 
 
-public class ClassTimeThreeFragmentTime extends Fragment
-        implements TimePickerDialog.OnTimeSetListener{
+public class ClassTimeThreeFragmentTime extends Fragment{
 
     // Constantly used variables
     Utility utility = new Utility();
@@ -144,15 +143,22 @@ public class ClassTimeThreeFragmentTime extends Fragment
         fieldTimeInAlt.setOnClickListener(showTimePickerDialog());
         fieldTimeOutAlt.setOnClickListener(showTimePickerDialog());
 
+        // Set the text of the hyperlink basis text to the time based string annotation
+        basisTextView.setText(getString(R.string.class_time_one_timebased));
+
         // Get the arguments of the fragment.
-        // Hide the alternate layout if the week type selected is 0 (Same time every week) and set the hyperlink week type text to the selected week type text
+        // Check week type and if it is 'Same each week', hide the alternate layout.
+        // Set the hyperlink week type text accordingly
+        // Check if fragment was restarted via Time Set, restore previous state
         Bundle args = getArguments();
         if (args != null){
+            // Hide the alternate layout if the week type selected is 0 (Same time every week) and set the hyperlink week type text to the selected week type text
             if (!args.getString("weekType", "-1").equals("1")){
                 // If weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
-            } else  weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+            }
+            else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
 
             // Check if the fragment was launched from the OnTimeSet override method in NewScheduleActivity
             // If it is, get the fragment's previous state data and update the fragment data and UI accordingly
@@ -228,29 +234,33 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         break;
                 }
             }
+
             // If the fragment was not restarted from the OnTimeSet override method in NewScheduleActivity
             // Set the global variables for the time based on the current time
             // And update the UI elements accordingly
             else {
                 Calendar c = Calendar.getInstance();
                 // Set the default value of the global time variables
+                // These variables are also used as default values in TimePickerFragment
                 timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
                 timeInAltHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutAltHour = c.get(Calendar.HOUR_OF_DAY) + 2;
+
+                // These variables are the exact convertable time data
+                // Used in the list view and stored in the database
                 timeInSeconds = utility.timeToSeconds(timeInHour, 0);
                 timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
                 timeInAltSeconds = utility.timeToSeconds(timeInAltHour, 0);
                 timeOutAltSeconds = utility.timeToSeconds(timeOutAltHour, 0);
+
+                // Update the UI elements accordingly
                 fieldTimeIn.setText(timeInHour + ":00");
                 fieldTimeOut.setText(timeOutHour + ":00");
                 fieldTimeInAlt.setText(timeInAltHour + ":00");
                 fieldTimeOutAlt.setText(timeOutAltHour + ":00");
             }
         }
-
-        // Set the text of the hyperlink basis text to the time based string annotation
-        basisTextView.setText(getString(R.string.class_time_one_timebased));
 
         return rootView;
     }
@@ -565,35 +575,9 @@ public class ClassTimeThreeFragmentTime extends Fragment
         };
     }
 
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        String timeString;
-        if (minute < 10)
-            timeString = hourOfDay + ":0" + minute;
-        else
-            timeString = hourOfDay + ":" + minute;
-        switch (resourceId) {
-            case R.id.field_new_schedule_timein:
-                timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeIn.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timeout:
-                timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeOut.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timein_alt:
-                timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeInAlt.setText(timeString);
-                break;
-            case R.id.field_new_schedule_timeout_alt:
-                timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
-                fieldTimeOutAlt.setText(timeString);
-                break;
-
-        }
-    }
-
     private String processClassDaysString(){
+        // Creates the third part of the occurrence string based on the
+        // array of buttons (days) checked
         return isButtonChecked[0] + ":"
                 + isButtonChecked[1] + ":"
                 + isButtonChecked[2] + ":"

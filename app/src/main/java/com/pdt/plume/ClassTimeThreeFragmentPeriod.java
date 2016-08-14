@@ -17,10 +17,8 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
 
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
     String[] isPeriodChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
-    String[] isPeriodAltChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
 
-    String basis;
-
+    // Interface variables
     onDaysSelectedListener daysSelectedListener;
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
     onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
@@ -65,7 +63,6 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         View rootView = inflater.inflate(R.layout.class_time_three_period, container, false);
 
         // Get references to each UI element
-
         TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);
         TextView weekTypeTextView = (TextView) rootView.findViewById(R.id.class_time_two_value);
 
@@ -159,6 +156,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         periodElevenAlt.setOnClickListener(listener());
         periodTwelveAlt.setOnClickListener(listener());
 
+
         Bundle args = getArguments();
         if (args != null){
             if (!args.getString("weekType", "-1").equals("1")){
@@ -166,8 +164,6 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             } else  weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
-
-            basis = args.getString("basis", "-1");
         }
 
         basisTextView.setText(getString(R.string.class_time_one_periodbased));
