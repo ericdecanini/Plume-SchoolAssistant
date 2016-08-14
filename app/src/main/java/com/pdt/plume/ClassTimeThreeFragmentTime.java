@@ -3,6 +3,7 @@ package com.pdt.plume;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -12,7 +13,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.TimePicker;
+
+import org.w3c.dom.Text;
 
 import java.util.Calendar;
 
@@ -20,39 +24,57 @@ import java.util.Calendar;
 public class ClassTimeThreeFragmentTime extends Fragment
         implements TimePickerDialog.OnTimeSetListener{
 
+    // Constantly used variables
     Utility utility = new Utility();
 
-    int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
+    // UI Elements
     EditText fieldTimeIn;
     EditText fieldTimeOut;
     EditText fieldTimeInAlt;
     EditText fieldTimeOutAlt;
-    public static int timeInHour;
-    public static int timeOutHour;
-    public static int timeInAltHour;
-    public static int timeOutAltHour;
+
+    // Days and time data variables
+    int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
     int timeInSeconds;
     int timeOutSeconds;
     int timeInAltSeconds;
     int timeOutAltSeconds;
+
+    public static int timeInHour;
+    public static int timeOutHour;
+    public static int timeInAltHour;
+    public static int timeOutAltHour;
+
+    // View IDs passed along activities
     int resourceId = -1;
 
+    // Interface variables
+    onDaysSelectedListener daysSelectedListener;
+    onTimeSelectedListener timeSelectedListener;
+    onBasisTextviewSelectedListener basisTextviewSelectedListener;
+    onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
 
+    // Required empty public constructor
     public ClassTimeThreeFragmentTime() {
         // Required empty public constructor
     }
 
+    // Interfaces used to pass data to NewScheduleActivity
     public interface onDaysSelectedListener {
         //Pass all data through input params here
         public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
-
     public interface onTimeSelectedListener {
         public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
     }
-
-    onDaysSelectedListener daysSelectedListener;
-    onTimeSelectedListener timeSelectedListener;
+    public interface onBasisTextviewSelectedListener {
+        //Pass all data through input params here
+        public void onBasisTextviewSelected();
+    }
+    public interface onWeektypeTextviewSelectedListener {
+        //Pass all data through input params here
+        public void onWeektypeTextViewSelectedListener(String basis);
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -60,6 +82,8 @@ public class ClassTimeThreeFragmentTime extends Fragment
         try {
             daysSelectedListener = (onDaysSelectedListener) context;
             timeSelectedListener = (onTimeSelectedListener) context;
+            basisTextviewSelectedListener = (onBasisTextviewSelectedListener) context;
+            weektypeTextviewSelectedListener = (onWeektypeTextviewSelectedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
@@ -69,6 +93,11 @@ public class ClassTimeThreeFragmentTime extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.class_time_three_time, container, false);
+
+        // Get references to each UI element
+        TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);
+        TextView weekTypeTextView = (TextView) rootView.findViewById(R.id.class_time_two_value);
+
         ImageView sunday = (ImageView) rootView.findViewById(R.id.class_three_sunday);
         ImageView monday = (ImageView) rootView.findViewById(R.id.class_three_monday);
         ImageView tuesday = (ImageView) rootView.findViewById(R.id.class_three_tuesday);
@@ -89,6 +118,10 @@ public class ClassTimeThreeFragmentTime extends Fragment
         ImageView saturdayAlt = (ImageView) rootView.findViewById(R.id.class_three_saturday_alt);
         fieldTimeInAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timein_alt);
         fieldTimeOutAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout_alt);
+
+        // Set OnClickListeners to the UI elements
+         basisTextView.setOnClickListener(listener());
+        weekTypeTextView.setOnClickListener(listener());
 
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
@@ -111,21 +144,32 @@ public class ClassTimeThreeFragmentTime extends Fragment
         fieldTimeInAlt.setOnClickListener(showTimePickerDialog());
         fieldTimeOutAlt.setOnClickListener(showTimePickerDialog());
 
+        // Get the arguments of the fragment.
+        // Hide the alternate layout if the week type selected is 0 (Same time every week) and set the hyperlink week type text to the selected week type text
         Bundle args = getArguments();
         if (args != null){
-            if (!args.getString("weekType", "-1").equals("1"))
-                //Change the layout based on weekType
+            if (!args.getString("weekType", "-1").equals("1")){
+                // If weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
+                weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
+            } else  weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
 
-            //Set the variables for timeIn and timeOut if the fragment was restarted by onTimeSet
+            // Check if the fragment was launched from the OnTimeSet override method in NewScheduleActivity
+            // If it is, get the fragment's previous state data and update the fragment data and UI accordingly
+            // If the fragment contains the 'hourOfDay' string, it must contain other previous state data
             if (args.containsKey("hourOfDay")){
+                // Get previous state data
                 int hourOfDay = args.getInt("hourOfDay");
                 int minute = args.getInt("minute");
                 int previousTimeInSeconds = args.getInt("timeInSeconds");
                 int previousTimeOutSeconds = args.getInt("timeOutSeconds");
                 int previousTimeInAltSeconds = args.getInt("timeInAltSeconds");
                 int previousTimeOutAltSeconds = args.getInt("timeOutAltSeconds");
-                isButtonChecked = args.getIntArray("buttonsChecked");;
+                isButtonChecked = args.getIntArray("buttonsChecked");
+
+                // Set the default values of the time fields accordingly
+                // as well as update the fragment's global variables of time
+                // Global variables updated: timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds
                 switch (args.getInt("resourceId")){
                     case R.id.field_new_schedule_timein:
                         timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
@@ -140,6 +184,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
                         fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
                         break;
+
                     case R.id.field_new_schedule_timeout:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
@@ -153,6 +198,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
                         fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
                         break;
+
                     case R.id.field_new_schedule_timein_alt:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = previousTimeOutSeconds;
@@ -166,6 +212,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
                         fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
                         break;
+
                     case R.id.field_new_schedule_timeout_alt:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = previousTimeOutSeconds;
@@ -181,22 +228,30 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         break;
                 }
             }
+            // If the fragment was not restarted from the OnTimeSet override method in NewScheduleActivity
+            // Set the global variables for the time based on the current time
+            // And update the UI elements accordingly
             else {
                 Calendar c = Calendar.getInstance();
+                // Set the default value of the global time variables
                 timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
                 timeInAltHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutAltHour = c.get(Calendar.HOUR_OF_DAY) + 2;
                 timeInSeconds = utility.timeToSeconds(timeInHour, 0);
                 timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
-                timeInAltSeconds = utility.timeToSeconds(timeInHour, 0);
-                timeOutAltSeconds = utility.timeToSeconds(timeOutHour, 0);
+                timeInAltSeconds = utility.timeToSeconds(timeInAltHour, 0);
+                timeOutAltSeconds = utility.timeToSeconds(timeOutAltHour, 0);
                 fieldTimeIn.setText(timeInHour + ":00");
                 fieldTimeOut.setText(timeOutHour + ":00");
                 fieldTimeInAlt.setText(timeInAltHour + ":00");
                 fieldTimeOutAlt.setText(timeOutAltHour + ":00");
             }
         }
+
+        // Set the text of the hyperlink basis text to the time based string annotation
+        basisTextView.setText(getString(R.string.class_time_one_timebased));
+
         return rootView;
     }
 
@@ -205,6 +260,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
+                    // In the case that it's one of the day buttons
                     case R.id.class_three_sunday:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
@@ -332,6 +388,7 @@ public class ClassTimeThreeFragmentTime extends Fragment
                         }
                         break;
 
+                    // In the case that it's one of the alternate day buttons
                     case R.id.class_three_sunday_alt:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
@@ -458,6 +515,22 @@ public class ClassTimeThreeFragmentTime extends Fragment
                             ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
                         }
                         break;
+
+                    // In the case that it's one of the hyperlink text views to the
+                    // previous stages of the add class time process
+                    case R.id.class_time_one_value:
+                        basisTextviewSelectedListener.onBasisTextviewSelected();
+                        break;
+
+                    // 0 is the fixed value passed as the basis because the activity itself
+                    // (TimeBased) was launched as a result of the basis being 0
+                    case R.id.class_time_two_value:
+                        weektypeTextviewSelectedListener.onWeektypeTextViewSelectedListener("0");
+                        break;
+
+                    // In the case that the 'Done' button was clicked.
+                    // This runs the interface that leads to the insertion of data into the database
+                    // and into the list view in the NewScheduleActivity
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
                         daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, "-1");
@@ -468,13 +541,25 @@ public class ClassTimeThreeFragmentTime extends Fragment
     }
 
     private View.OnClickListener showTimePickerDialog() {
+        // OnClickListener set to launch a TimePickerFragment to input the time on a particular field
+        // When this happens, data of the current state of the fragment is sent to the NewScheduleActivity
+        // As the TimeSetListener can only be implemented in an activity and not a fragment
+        // Therefore upon Time Set, the fragment is restarted along with data sent through the interface
+        // and data from the TimePickerDialog and the UI elements are updated with the corresponding data
+
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Get the id of the view clicked. This id is the view whose text will be updated
+                // Upon restart of the fragment
                 resourceId = v.getId();
+
+                // Launch a new TimePickerFragment
                 DialogFragment timePickerFragment = new TimePickerFragment();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
+
+                // Launch the interface to send the fragment's current state data to the activity
                 timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
             }
         };

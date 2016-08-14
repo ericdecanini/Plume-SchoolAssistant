@@ -9,16 +9,16 @@
 
     <TextView
         android:id="@+id/class_time_one_value"
+        android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:layout_marginTop="4dp" />
 
     <TextView
         android:id="@+id/class_time_two_value"
+        android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:layout_marginTop="4dp" />
 
     <TextView
@@ -43,15 +43,15 @@
             android:id="@+id/class_three_sunday"
             android:layout_width="0dp"
             android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
             android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
             android:src="@drawable/ui_saturday_sunday_unselected" />
 
         <ImageView
             android:id="@+id/class_three_monday"
+            android:layout_gravity="center_horizontal"
             android:layout_width="0dp"
             android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:src="@drawable/ui_monday_unselected" />
 

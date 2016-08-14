@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 
 public class ClassTimeThreeFragmentPeriod extends Fragment {
@@ -17,7 +18,12 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
     String[] isPeriodChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
     String[] isPeriodAltChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
+
+    String basis;
+
     onDaysSelectedListener daysSelectedListener;
+    onBasisTextviewSelectedListener basisTextviewSelectedListener;
+    onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
 
 
     public ClassTimeThreeFragmentPeriod() {
@@ -29,11 +35,23 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
 
+    public interface onBasisTextviewSelectedListener {
+        //Pass all data through input params here
+        public void onBasisTextviewSelected();
+    }
+
+    public interface onWeektypeTextviewSelectedListener {
+        //Pass all data through input params here
+        public void onWeektypeTextViewSelectedListener(String basis);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
             daysSelectedListener = (onDaysSelectedListener) context;
+            basisTextviewSelectedListener = (onBasisTextviewSelectedListener) context;
+            weektypeTextviewSelectedListener = (onWeektypeTextviewSelectedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
@@ -45,6 +63,11 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.class_time_three_period, container, false);
+
+        // Get references to each UI element
+
+        TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);
+        TextView weekTypeTextView = (TextView) rootView.findViewById(R.id.class_time_two_value);
 
         ImageView sunday = (ImageView) rootView.findViewById(R.id.class_three_sunday);
         ImageView monday = (ImageView) rootView.findViewById(R.id.class_three_monday);
@@ -88,6 +111,10 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         Button periodTenAlt = (Button) rootView.findViewById(R.id.class_three_period_ten_alt);
         Button periodElevenAlt = (Button) rootView.findViewById(R.id.class_three_period_eleven_alt);
         Button periodTwelveAlt = (Button) rootView.findViewById(R.id.class_three_period_twelve_alt);
+
+        // Set the OnClickListeners of each UI element
+        basisTextView.setOnClickListener(listener());
+        weekTypeTextView.setOnClickListener(listener());
 
         sunday.setOnClickListener(listener());
         monday.setOnClickListener(listener());
@@ -134,10 +161,16 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
 
         Bundle args = getArguments();
         if (args != null){
-            if (!args.getString("weekType", "-1").equals("1"))
+            if (!args.getString("weekType", "-1").equals("1")){
                 //Change the layout based on weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
+                weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
+            } else  weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+
+            basis = args.getString("basis", "-1");
         }
+
+        basisTextView.setText(getString(R.string.class_time_one_periodbased));
 
         return rootView;
     }
@@ -147,6 +180,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
+                    // In the case that a day button was selected
                     case R.id.class_three_sunday:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
@@ -274,6 +308,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                         }
                         break;
 
+                    // In the case that an alternate day button was selected
                     case R.id.class_three_sunday_alt:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
@@ -401,6 +436,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                         }
                         break;
 
+                    // In the case that a period button was selected
                     case R.id.class_three_period_one:
                         if (isPeriodChecked[0].equals("0"))
                             isPeriodChecked[0] = "1";
@@ -522,6 +558,7 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                             isPeriodChecked[11] = "2";
                         break;
 
+                    // In the case that an alternate period button was selected
                     case R.id.class_three_period_one_alt:
                         if (isPeriodChecked[0].equals("0"))
                             isPeriodChecked[0] = "2";
@@ -641,6 +678,10 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                             isPeriodChecked[11] = "0";
                         else if (isPeriodChecked[11].equals("3"))
                             isPeriodChecked[11] = "1";
+                        break;
+
+                    case R.id.class_time_one_value:
+                        basisTextviewSelectedListener.onBasisTextviewSelected();
                         break;
 
                     case R.id.class_three_done:

@@ -43,6 +43,7 @@ public class ClassTimeTwoFragment extends Fragment {
 
         weekSameButton.setOnClickListener(listener());
         weekAltButton.setOnClickListener(listener());
+
         return rootView;
     }
 

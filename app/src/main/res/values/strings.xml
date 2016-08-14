@@ -1,13 +1,17 @@
 <resources>
     <string name="app_name">Plume - School Assistant</string>
     <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
 
     <!-- Lorem Ipsum strings -->
     <string name="lorem_ipsum_paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </string>
     <string name="lorem_ipsum_sentence">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
     </string>
+
+    <!-- General Actions -->
+    <string name="delete">Delete</string>
+    <string name="done">Done</string>
+    <string name="edit">Edit</string>
 
     <!-- Strings for tabbed layout -->
     <string name="tab_one">Schedule</string>
@@ -17,99 +21,98 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <!-- Strings for Action Mode -->
-    <string name="delete">Delete</string>
-    <string name="edit">Edit</string>
 
     <!-- Strings for NewActivity (General) -->
-    <string name="done">Done</string>
+
 
     <!-- Strings for NewScheduleActivity -->
-    <string name="new_schedule_hint">Enter title here&#8230;</string>
-    <string name="new_schedule_add_class_time">Add Class Time</string>
-    <string name="new_schedule_repeats">Repeats</string>
-    <string name="new_schedule_time_in">From</string>
-    <string name="new_schedule_time_out">To</string>
-    <string name="new_schedule_teacher">Teacher</string>
-    <string name="new_schedule_room">Room</string>
-    <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
-    <string name="class_time_one_title">Select your school\'s class schedule type.</string>
-    <string name="class_time_one_timebased">Time Based (8:00&#8211;9:00)</string>
-    <string name="class_time_one_periodbased">Period Based (1st Period)</string>
-    <string name="class_time_one_blockbased">Block Based (1st Block)</string>
+        <!-- Main UI -->
+        <string name="new_schedule_hint">Enter title here&#8230;</string>
+        <string name="new_schedule_add_class_time">Add Class Time</string>
+        <string name="new_schedule_repeats">Repeats</string>
+        <string name="new_schedule_time_in">From</string>
+        <string name="new_schedule_time_out">To</string>
+        <string name="new_schedule_teacher">Teacher</string>
+        <string name="new_schedule_room">Room</string>
 
-    <string name="class_time_two_sameweek">Same time every week</string>
-    <string name="class_time_two_altweeks">Alternating weeks</string>
+        <!-- UI for Add Class Time Fragment One -->
+        <string name="class_time_one_title">Select your school\'s class schedule type.</string>
+        <string name="class_time_one_timebased">Time based (Mon 08:00 &#8211; 09:00)</string>
+        <string name="class_time_one_periodbased">Period based (Mon 2nd period)</string>
+        <string name="class_time_one_blockbased">Block based (A day 2nd period)</string>
 
-    <string name="class_time_three_select_days">Select when your class takes place.</string>
-    <string name="class_three_weekone">Week 1</string>
-    <string name="class_three_weektwo">Week 2</string>
-    <string name="class_three_sunday">Sunday</string>
-    <string name="class_three_monday">Monday</string>
-    <string name="class_three_tuesday">Tuesday</string>
-    <string name="class_three_wednesday">Wednesday</string>
-    <string name="class_three_thursday">Thursday</string>
-    <string name="class_three_friday">Friday</string>
-    <string name="class_three_saturday">Saturday</string>
+        <!-- UI for Add Class Time Fragment Two -->
+        <string name="class_time_two_sameweek">Same time every week</string>
+        <string name="class_time_two_altweeks">Alternating weeks</string>
 
-    <string name="class_three_sunday_abr">Sun</string>
-    <string name="class_three_monday_abr">Mon</string>
-    <string name="class_three_tuesday_abr">Tue</string>
-    <string name="class_three_wednesday_abr">Wed</string>
-    <string name="class_three_thursday_abr">Thu</string>
-    <string name="class_three_friday_abr">Fri</string>
-    <string name="class_three_saturday_abr">Sat</string>
+        <!-- Add Class Time Fragment Three -->
+        <string name="class_time_three_select_days">Select when your class takes place.</string>
 
-    <string name="class_time_period_one">1st</string>
-    <string name="class_time_period_two">2nd</string>
-    <string name="class_time_period_three">3rd</string>
-    <string name="class_time_period_four">4th</string>
-    <string name="class_time_period_five">5th</string>
-    <string name="class_time_period_six">6th</string>
-    <string name="class_time_period_seven">7th</string>
-    <string name="class_time_period_eight">8th</string>
-    <string name="class_time_period_nine">9th</string>
-    <string name="class_time_period_ten">10th</string>
-    <string name="class_time_period_eleven">11th</string>
-    <string name="class_time_period_twelve">12th</string>
+            <!-- Days and Week Number -->
+            <string name="class_three_weekone">Week 1</string>
+            <string name="class_three_weektwo">Week 2</string>
+            <string name="class_three_sunday">Sunday</string>
+            <string name="class_three_monday">Monday</string>
+            <string name="class_three_tuesday">Tuesday</string>
+            <string name="class_three_wednesday">Wednesday</string>
+            <string name="class_three_thursday">Thursday</string>
+            <string name="class_three_friday">Friday</string>
+            <string name="class_three_saturday">Saturday</string>
 
-    <string name="class_time_block_day_a">A Day</string>
-    <string name="class_time_block_day_b">B Day</string>
+            <string name="class_three_sunday_abr">Sun</string>
+            <string name="class_three_monday_abr">Mon</string>
+            <string name="class_three_tuesday_abr">Tue</string>
+            <string name="class_three_wednesday_abr">Wed</string>
+            <string name="class_three_thursday_abr">Thu</string>
+            <string name="class_three_friday_abr">Fri</string>
+            <string name="class_three_saturday_abr">Sat</string>
 
-    <string name="new_schedule_title_key" translatable="false">KEY_NEW_SCHEDULE_TITLE</string>
-    <string name="new_schedule_teacher_key" translatable="false">KEY_NEW_SCHEDULE_TEACHER</string>
-    <string name="new_schedule_room_key" translatable="false">KEY_NEW_SCHEDULE_ROOM</string>
-    <string name="new_schedule_occurrence_key" translatable="false">KEY_NEW_SCHEDULE_OCCURRENCE</string>
-    <string name="new_schedule_timein_key" translatable="false">KEY_NEW_SCHEDULE_TIMEIN</string>
-    <string name="new_schedule_timeout_key" translatable="false">KEY_NEW_SCHEDULE_TIMEOUT</string>
-    <string name="new_schedule_icon_key" translatable="false">KEY_NEW_SCHEDULE_ICON</string>
+            <!-- Periods -->
+            <string name="class_time_period_one">1st</string>
+            <string name="class_time_period_two">2nd</string>
+            <string name="class_time_period_three">3rd</string>
+            <string name="class_time_period_four">4th</string>
+            <string name="class_time_period_five">5th</string>
+            <string name="class_time_period_six">6th</string>
+            <string name="class_time_period_seven">7th</string>
+            <string name="class_time_period_eight">8th</string>
+            <string name="class_time_period_nine">9th</string>
+            <string name="class_time_period_ten">10th</string>
+            <string name="class_time_period_eleven">11th</string>
+            <string name="class_time_period_twelve">12th</string>
 
-    <string name="SCHEDULE_EXTRA_ID" translatable="false">SCHEDULE_EXTRA_ID</string>
-    <string name="SCHEDULE_EXTRA_TITLE" translatable="false">SCHEDULE_EXTRA_TITLE</string>
-    <string name="SCHEDULE_EXTRA_TEACHER" translatable="false">SCHEDULE_EXTRA_TEACHER</string>
-    <string name="SCHEDULE_EXTRA_ROOM" translatable="false">SCHEDULE_EXTRA_ROOM</string>
-    <string name="SCHEDULE_EXTRA_TIMEIN" translatable="false">SCHEDULE_EXTRA_TIMEIN</string>
-    <string name="SCHEDULE_EXTRA_TIMEOUT" translatable="false">SCHEDULE_EXTRA_TIMEOUT</string>
-    <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
+            <!-- Block Days -->
+            <string name="class_time_block_day_a">A Day</string>
+            <string name="class_time_block_day_b">B Day</string>
 
-    <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
-    <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
+
+        <!-- Intent extras to check if the activity was started by an intent from one of its fragments or from an edit action -->
+         <string name="SCHEDULE_EXTRA_ID" translatable="false">SCHEDULE_EXTRA_ID</string>
+         <string name="SCHEDULE_EXTRA_TITLE" translatable="false">SCHEDULE_EXTRA_TITLE</string>
+         <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
+
+        <!-- Keys used in saving to SharedPreferences -->
+        <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
+        <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
+
     <!-- Strings for NewTasksActivity -->
 
-    <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
-    <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
-    <string name="TASKS_EXTRA_SHARER" translatable="false">TASKS_EXTRA_SHARER</string>
-    <string name="TASKS_EXTRA_DESCRIPTION" translatable="false">TASKS_EXTRA_DESCRIPTION</string>
-    <string name="TASKS_EXTRA_ATTACHMENT" translatable="false">TASKS_EXTRA_ATTACHMENT</string>
-    <string name="TASKS_EXTRA_DUEDATE" translatable="false">TASKS_EXTRA_DUEDATE</string>
-    <string name="TASKS_EXTRA_ALARMTIME" translatable="false">TASKS_EXTRA_ALARMTIME</string>
-    <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
+        <!-- Intent extras to check if the activity was started from an edit action -->
+        <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
+        <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
+        <string name="TASKS_EXTRA_SHARER" translatable="false">TASKS_EXTRA_SHARER</string>
+        <string name="TASKS_EXTRA_DESCRIPTION" translatable="false">TASKS_EXTRA_DESCRIPTION</string>
+        <string name="TASKS_EXTRA_ATTACHMENT" translatable="false">TASKS_EXTRA_ATTACHMENT</string>
+        <string name="TASKS_EXTRA_DUEDATE" translatable="false">TASKS_EXTRA_DUEDATE</string>
+        <string name="TASKS_EXTRA_ALARMTIME" translatable="false">TASKS_EXTRA_ALARMTIME</string>
+        <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
+        <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
     <!-- Strings for Database -->
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
 
 </resources>

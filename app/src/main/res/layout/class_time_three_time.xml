@@ -8,25 +8,18 @@
     android:orientation="vertical">
 
     <TextView
-        android:layout_marginTop="4dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/class_time_one_title" />
-
-    <TextView
         android:id="@+id/class_time_one_value"
         android:layout_marginTop="4dp"
+        android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/class_time_two_value"
         android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
+        android:textColor="@color/colorPrimary"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/class_three_item_header"
