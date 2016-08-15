@@ -3,18 +3,25 @@ package com.pdt.plume;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 
 
-public class ClassTimeTwoFragment extends Fragment {
+public class ClassTimeTwoFragment extends DialogFragment {
 
-    // Required empty public constructor
-    public ClassTimeTwoFragment() {
-        // Required empty public constructor
+    // Public Constructor
+    public static ClassTimeTwoFragment newInstance(int title) {
+        ClassTimeTwoFragment fragment = new ClassTimeTwoFragment();
+        Bundle args = new Bundle();
+        args.putInt("title", title);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     public interface onWeekTypeSelectedListener {
@@ -31,6 +38,14 @@ public class ClassTimeTwoFragment extends Fragment {
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Set the fragment's window size to match the screen
+        Window window = this.getDialog().getWindow();
+        window.setLayout(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
     }
 
     @Override

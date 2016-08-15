@@ -1,15 +1,20 @@
 package com.pdt.plume;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -181,13 +186,22 @@ public class NewScheduleActivity extends AppCompatActivity
                 finish();
                 break;
 
+            // Validate input fields then
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
-                Intent intent = new Intent(this, MainActivity.class);
-                if (insertScheduleDataIntoDatabase()) {
+                // Check if the title field is empty, disallow insertion of it is
+                if ((fieldTitle.getText().toString().equals(""))){
+                    Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_error_title_not_found),
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                // If all fields are valid, perform database insertion
+                else if (insertScheduleDataIntoDatabase()) {
+                    Intent intent = new Intent(this, MainActivity.class);
                     startActivity(intent);
                     finish();
-                } else finish();
+                }
+                else finish();
                 break;
         }
         return true;
@@ -290,16 +304,22 @@ public class NewScheduleActivity extends AppCompatActivity
 
                 // Get the stored preference
                 SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-                String basis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
-                String weekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
+                basis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
+                weekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
 
                 // Check if preferences were not stored
                 if (basis.equals("-1") || weekType.equals("-1")){
-                    // If none were previously stored, launch ClassTimeOneFragment
-                    ClassTimeOneFragment fragment = new ClassTimeOneFragment();
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, fragment)
-                            .commit();
+                    // Check if other dialogs are present and remove them if so
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                    if (prev != null) {
+                        ft.remove(prev);
+                    }
+                    ft.addToBackStack(null);
+
+                    // Show the dialog
+                    DialogFragment fragment = ClassTimeOneFragment.newInstance(0);
+                    fragment.show(getSupportFragmentManager(), "dialog");
                 }
                 // If stored preferences were found, launch ClassTimeThreeFragment with arguments basis and weekType
                 else {
@@ -311,31 +331,51 @@ public class NewScheduleActivity extends AppCompatActivity
                     // Start necessary ClassTimeThreeFragment based on basis
                     switch (basis){
                         case "0":
-                            ClassTimeThreeFragmentTime fragmentTime = new ClassTimeThreeFragmentTime();
+                            // Check if other dialogs are present and remove them if so
+                            FragmentTransaction ftTime = getFragmentManager().beginTransaction();
+                            Fragment prevTime = getFragmentManager().findFragmentByTag("dialog");
+                            if (prevTime != null) {
+                                ftTime.remove(prevTime);
+                            }
+                            ftTime.addToBackStack(null);
+
+                            // Show the dialog
+                            DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
                             fragmentTime.setArguments(args);
-                            getSupportFragmentManager().beginTransaction()
-                                    .add(R.id.container, fragmentTime, "TAG")
-                                    .commit();
+                            fragmentTime.show(getSupportFragmentManager(), "dialog");
                             break;
 
                         case "1":
-                            ClassTimeThreeFragmentPeriod fragmentPeriod = new ClassTimeThreeFragmentPeriod();
+                            // Check if other dialogs are present and remove them if so
+                            FragmentTransaction ftPeriod = getFragmentManager().beginTransaction();
+                            Fragment prevPeriod = getFragmentManager().findFragmentByTag("dialog");
+                            if (prevPeriod != null) {
+                                ftPeriod.remove(prevPeriod);
+                            }
+                            ftPeriod.addToBackStack(null);
+
+                            // Show the dialog
+                            DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
                             fragmentPeriod.setArguments(args);
-                            getSupportFragmentManager().beginTransaction()
-                                    .add(R.id.container, fragmentPeriod, "TAG")
-                                    .commit();
+                            fragmentPeriod.show(getSupportFragmentManager(), "dialog");
                             break;
 
                         case "2":
-                            ClassTimeThreeFragmentTime fragmentBlock = new ClassTimeThreeFragmentTime();
+                            // Check if other dialogs are present and remove them if so
+                            FragmentTransaction ftBlock = getFragmentManager().beginTransaction();
+                            Fragment prevBlock = getFragmentManager().findFragmentByTag("dialog");
+                            if (prevBlock != null) {
+                                ftBlock.remove(prevBlock);
+                            }
+                            ftBlock.addToBackStack(null);
+
+                            // Show the dialog
+                            DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
                             fragmentBlock.setArguments(args);
-                            getSupportFragmentManager().beginTransaction()
-                                    .add(R.id.container, fragmentBlock, "TAG")
-                                    .commit();
+                            fragmentBlock.show(getSupportFragmentManager(), "dialog");
                             break;
                     }
-                }
-            }
+                }}
         };
     }
 
@@ -358,15 +398,20 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putIntArray("buttonsChecked", previousButtonsChecked);
 
         // Launch the fragment
-        ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
+        // Check if other dialogs are present and remove them if so
+        android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+        transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+        transactionWeekType.addToBackStack(null).commit();
+
+        // Show the dialog
+        DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
         fragment.setArguments(args);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment, "TAG")
-                .commit();
+        fragment.show(getSupportFragmentManager(), "dialog");
     }
 
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds,
+                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
         // Interface from ClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
         // This creates the illusion that the fragment was never restarted and creates a smooth user experience
         timeSelectedResourceId = resourceId;
@@ -389,14 +434,25 @@ public class NewScheduleActivity extends AppCompatActivity
         // else blockBased is selected, launch ClassTimeTwoFragment (WeekType Selection)
         if (!basis.equals("2")) {
             weekType = "-1";
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new ClassTimeTwoFragment())
-                    .commit();
+            // Check if other dialogs are present and remove them if so
+            android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+            transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+            transactionWeekType.addToBackStack(null).commit();
+
+            // Show the dialog
+            DialogFragment fragment = ClassTimeTwoFragment.newInstance(0);
+            fragment.show(getSupportFragmentManager(), "dialog");
         }
-        else
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new ClassTimeThreeFragmentBlock(), "TAG")
-                    .commit();
+        else{
+            // Check if other dialogs are present and remove them if so
+            android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+            transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+            transactionWeekType.addToBackStack(null).commit();
+
+            // Show the dialog
+            DialogFragment fragment = ClassTimeThreeFragmentBlock.newInstance(0);
+            fragment.show(getSupportFragmentManager(), "dialog");
+        }
     }
 
     @Override
@@ -413,24 +469,30 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // If basis is TimeBased, launch ClassTimeThreeFragmentTime
         // Else if basis is PeriodBased, launch ClassTimeThreeFragmentPeriod
-        if (basis.equals("0")) {
-            ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
-            fragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, fragment, "TAG")
-                    .commit();
+        if (basis.equals("0")) {// Check if other dialogs are present and remove them if so
+            android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+            transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+            transactionWeekType.addToBackStack(null).commit();
+
+            // Show the dialog
+            DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
+            fragment.show(getSupportFragmentManager(), "dialog");
         }
         else if (basis.equals("1")) {
-            ClassTimeThreeFragmentPeriod fragment = new ClassTimeThreeFragmentPeriod();
-            fragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, fragment, "TAG")
-                    .commit();
+            // Check if other dialogs are present and remove them if so
+            android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+            transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+            transactionWeekType.addToBackStack(null).commit();
+
+            // Show the dialog
+            DialogFragment fragment = ClassTimeThreeFragmentPeriod.newInstance(0);
+            fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
 
     @Override
-    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods) {
+    public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
+                               int timeInAltSeconds, int timeOutAltSeconds, String periods) {
         // Interface launched by ClassTimeThreeFragment in the final stage of adding a new class time
         // The fragment is removed (identified by its tag "TAG")
         // Occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, and periodsList are all added to their respective Array Lists. These will later be added to the database
@@ -440,7 +502,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Remove the fragment
         getSupportFragmentManager().beginTransaction()
-                .remove(getSupportFragmentManager().findFragmentByTag("TAG"))
+                .remove(getSupportFragmentManager().findFragmentByTag("dialog"))
                 .commit();
 
         // Add values into Array Lists to be inserted into the database
@@ -473,9 +535,14 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public void onBasisTextviewSelected() {
         // Interface launched from ClassTime[Two/Three]Fragment to restart the basis selection
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new ClassTimeOneFragment())
-                .commit();
+        // Check if other dialogs are present and remove them if so
+        android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+        transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+        transactionWeekType.addToBackStack(null).commit();
+
+        // Show the dialog
+        DialogFragment fragment = ClassTimeOneFragment.newInstance(0);
+        fragment.show(getSupportFragmentManager(), "dialog");
     }
 
     @Override
@@ -483,10 +550,15 @@ public class NewScheduleActivity extends AppCompatActivity
         // Interface launched from ClassTimeThreeFragment to restart the weekType selection
         // It takes in the string basis and sets the basis to the received value
         this.basis = basis;
+        android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+        transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+        transactionWeekType.addToBackStack(null).commit();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new ClassTimeTwoFragment())
-                .commit();
+        // Show the dialog
+        DialogFragment fragment = ClassTimeTwoFragment.newInstance(0);
+        fragment.show(getSupportFragmentManager(), "dialog");
+        // Check if other dialogs are present and remove them if so
+
     }
 
     private String processOccurrenceString(String basis, String weekType, String classDays) {

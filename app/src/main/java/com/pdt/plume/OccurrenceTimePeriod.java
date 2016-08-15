@@ -68,7 +68,7 @@ public class OccurrenceTimePeriod {
             if (splitPeriods[0].equals("1"))
                 periodList.add("1st");
             if (splitPeriods[1].equals("1"))
-                periodList.add("2nt");
+                periodList.add("2nd");
             if (splitPeriods[2].equals("1"))
                 periodList.add("3rd");
             if (splitPeriods[3].equals("1"))
@@ -133,7 +133,7 @@ public class OccurrenceTimePeriod {
             if (splitPeriods[0].equals("1"))
                 periodList.add("1st");
             if (splitPeriods[1].equals("1"))
-                periodList.add("2nt");
+                periodList.add("2nd");
             if (splitPeriods[2].equals("1"))
                 periodList.add("3rd");
             if (splitPeriods[3].equals("1"))

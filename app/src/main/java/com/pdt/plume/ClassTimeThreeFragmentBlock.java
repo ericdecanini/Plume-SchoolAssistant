@@ -3,16 +3,19 @@ package com.pdt.plume;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
-public class ClassTimeThreeFragmentBlock extends Fragment {
+public class ClassTimeThreeFragmentBlock extends DialogFragment {
 
     // Fragment input storage variables
     String[] isPeriodChecked = {"0", "0", "0", "0"};
@@ -21,9 +24,13 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
     onDaysSelectedListener daysSelectedListener;
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
 
-    // Required empty public constructor
-    public ClassTimeThreeFragmentBlock() {
-        // Required empty public constructor
+    // Public Constructor
+    public static ClassTimeThreeFragmentBlock newInstance(int title) {
+        ClassTimeThreeFragmentBlock fragment = new ClassTimeThreeFragmentBlock();
+        Bundle args = new Bundle();
+        args.putInt("title", title);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     // Interfaces used to pass data to NewScheduleActivity
@@ -47,6 +54,13 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Set the fragment's window size to match the screen
+        Window window = this.getDialog().getWindow();
+        window.setLayout(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

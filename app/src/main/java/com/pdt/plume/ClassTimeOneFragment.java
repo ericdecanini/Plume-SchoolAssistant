@@ -1,20 +1,28 @@
 package com.pdt.plume;
 
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 
 
-public class ClassTimeOneFragment extends Fragment {
+public class ClassTimeOneFragment extends DialogFragment {
 
-    // Required empty public constructor
-    public ClassTimeOneFragment() {
-        // Required empty public constructor
+    // Public Constructor
+    public static ClassTimeOneFragment newInstance(int title) {
+        ClassTimeOneFragment fragment = new ClassTimeOneFragment();
+        Bundle args = new Bundle();
+        args.putInt("title", title);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     public interface onBasisSelectedListener {
@@ -32,6 +40,14 @@ public class ClassTimeOneFragment extends Fragment {
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Set the fragment's window size to match the screen
+        Window window = this.getDialog().getWindow();
+        window.setLayout(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
     }
 
     @Override

@@ -28,6 +28,9 @@
 
     <!-- Strings for NewScheduleActivity -->
 
+        <!-- Actions and Toasts -->
+        <string name="new_schedule_toast_error_title_not_found">Please enter a title</string>
+
         <!-- Main UI -->
         <string name="new_schedule_hint">Enter title here&#8230;</string>
         <string name="new_schedule_add_class_time">Add Class Time</string>

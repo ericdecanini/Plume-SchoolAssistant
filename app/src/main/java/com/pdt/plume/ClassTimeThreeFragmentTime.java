@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,7 +23,7 @@ import org.w3c.dom.Text;
 import java.util.Calendar;
 
 
-public class ClassTimeThreeFragmentTime extends Fragment{
+public class ClassTimeThreeFragmentTime extends DialogFragment{
 
     // Constantly used variables
     Utility utility = new Utility();
@@ -53,9 +55,13 @@ public class ClassTimeThreeFragmentTime extends Fragment{
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
     onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
 
-    // Required empty public constructor
-    public ClassTimeThreeFragmentTime() {
-        // Required empty public constructor
+    // Public Constructor
+    public static ClassTimeThreeFragmentTime newInstance(int title) {
+        ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
+        Bundle args = new Bundle();
+        args.putInt("title", title);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     // Interfaces used to pass data to NewScheduleActivity
@@ -86,6 +92,14 @@ public class ClassTimeThreeFragmentTime extends Fragment{
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Set the fragment's window size to match the screen
+        Window window = this.getDialog().getWindow();
+        window.setLayout(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT);
     }
 
     @Override
