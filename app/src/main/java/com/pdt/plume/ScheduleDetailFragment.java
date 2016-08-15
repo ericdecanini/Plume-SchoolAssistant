@@ -13,6 +13,7 @@ import android.view.ViewGroup;
  */
 public class ScheduleDetailFragment extends Fragment {
 
+    // Required empty public constructor
     public ScheduleDetailFragment() {
         // Required empty public constructor
     }

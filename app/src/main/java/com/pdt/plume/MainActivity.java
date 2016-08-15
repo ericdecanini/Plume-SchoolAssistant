@@ -31,8 +31,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
 
+    // UI Elements
     Toolbar mToolbar;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -42,11 +44,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Set the custom toolbar as the action bar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        // Check if the device is a phone or tablet, then initialise the tab layout
-        // based on that
+        // Check if the device is a phone or tablet, then
+        // initialise the tab layout based on that
         boolean isTablet = getResources().getBoolean(R.bool.isTablet);
         if (isTablet)
             initSpinner();
@@ -68,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    // Include back button action to close
+    // navigation drawer if open
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -79,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
     }
 
+    // Method to handle item selections of the navigation drawer
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -99,12 +105,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
 
+        // Close the navigation drawer upon item selection
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null)
             drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -138,10 +145,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (mViewPager != null)
             mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // Initialise the tab layout and set it up with the pager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout!= null)
             tabLayout.setupWithViewPager(mViewPager);
 
+        // Check if the activity was started from the NewTaskActivity
+        // and automatically direct the tab to Tasks if it has
         Intent intent = getIntent();
         if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
             mViewPager.setCurrentItem(1);
@@ -149,14 +159,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void initSpinner(){
+        // Get a reference to the action bar and
+        // disable its title display
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
             actionBar.setDisplayShowTitleEnabled(false);
-
-
-        // Setup spinner
+        
+        // Get a reference to the spinner UI element
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         if (spinner != null) {
+            // Set the adapter of the spinner
             spinner.setAdapter(new mSpinnerAdapter(
                     mToolbar.getContext(),
                     new String[]{
@@ -164,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             getResources().getString(R.string.tab_two),
                     }));
 
+            // Set the Listener of the spinner
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -175,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     .replace(R.id.container, new ScheduleFragment())
                                     .commit();
                             break;
+
                         case 1:
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.container, new TasksFragment())
@@ -183,13 +197,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }
 
-
-
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
                 }
 
             });
+
             // Check if the activity was started from the tasks activity
             // and automatically switch back to tasks if it did
             Intent intent = getIntent();
@@ -198,55 +211,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-
-    private static class mSpinnerAdapter extends ArrayAdapter<String> implements ThemedSpinnerAdapter {
-        private final ThemedSpinnerAdapter.Helper mDropDownHelper;
-
-        public mSpinnerAdapter(Context context, String[] objects) {
-            super(context, android.R.layout.simple_list_item_1, objects);
-            mDropDownHelper = new ThemedSpinnerAdapter.Helper(context);
-        }
-
-        @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            View view;
-
-            if (convertView == null) {
-                // Inflate the drop down using the helper's LayoutInflater
-                LayoutInflater inflater = mDropDownHelper.getDropDownViewInflater();
-                view = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
-            } else {
-                view = convertView;
-            }
-
-            TextView textView = (TextView) view.findViewById(android.R.id.text1);
-            textView.setText(getItem(position));
-
-            return view;
-        }
-
-        @Override
-        public Resources.Theme getDropDownViewTheme() {
-            return mDropDownHelper.getDropDownViewTheme();
-        }
-
-        @Override
-        public void setDropDownViewTheme(Resources.Theme theme) {
-            mDropDownHelper.setDropDownViewTheme(theme);
-        }
-    }
-
-
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        // Default public constructor
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        // getItem is called to instantiate the fragment for the given page.
+        // and return the corresponding fragment.
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position){
                 case 0:
                     return new ScheduleFragment();
@@ -277,4 +252,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+
+    private static class mSpinnerAdapter extends ArrayAdapter<String> implements ThemedSpinnerAdapter {
+        private final ThemedSpinnerAdapter.Helper mDropDownHelper;
+
+        // Constructor method where helper is initialised
+        public mSpinnerAdapter(Context context, String[] objects) {
+            super(context, android.R.layout.simple_list_item_1, objects);
+            mDropDownHelper = new ThemedSpinnerAdapter.Helper(context);
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            View view;
+
+            // If the given row is a new row
+            // Inflate the dropdown menu using a simple list item layout
+            if (convertView == null) {
+                // Inflate the drop down using the helper's LayoutInflater
+                LayoutInflater inflater = mDropDownHelper.getDropDownViewInflater();
+                view = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            }
+
+            // If the given row is simply being recycled,
+            // set the view to the recycled view
+            else {
+                view = convertView;
+            }
+
+            // Set the text of the dropdown list item
+            TextView textView = (TextView) view.findViewById(android.R.id.text1);
+            textView.setText(getItem(position));
+
+            return view;
+        }
+
+        @Override
+        public Resources.Theme getDropDownViewTheme() {
+            return mDropDownHelper.getDropDownViewTheme();
+        }
+
+        @Override
+        public void setDropDownViewTheme(Resources.Theme theme) {
+            mDropDownHelper.setDropDownViewTheme(theme);
+        }
+    }
+
 }

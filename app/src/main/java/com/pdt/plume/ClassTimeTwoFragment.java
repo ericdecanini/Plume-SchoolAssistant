@@ -12,13 +12,12 @@ import android.widget.Button;
 
 public class ClassTimeTwoFragment extends Fragment {
 
-
+    // Required empty public constructor
     public ClassTimeTwoFragment() {
         // Required empty public constructor
     }
 
     public interface onWeekTypeSelectedListener {
-        //Pass all data through input params here
         public void onWeekTypeSelected(String weekType);
     }
 
@@ -38,9 +37,12 @@ public class ClassTimeTwoFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.class_time_two, container, false);
+
+        // Get references to each UI element
         Button weekSameButton = (Button) rootView.findViewById(R.id.class_two_weeksame);
         Button weekAltButton = (Button) rootView.findViewById(R.id.class_two_weekalt);
 
+        // Set the OnClickListener of each UI element
         weekSameButton.setOnClickListener(listener());
         weekAltButton.setOnClickListener(listener());
 
@@ -52,6 +54,8 @@ public class ClassTimeTwoFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
+                    // Run the interface sending the week type parameter
+                    // based on the button selected
                     case R.id.class_two_weeksame:
                         weekTypeSelectedListener.onWeekTypeSelected("0");
                         break;
@@ -62,6 +66,5 @@ public class ClassTimeTwoFragment extends Fragment {
             }
         };
     }
-
 
 }

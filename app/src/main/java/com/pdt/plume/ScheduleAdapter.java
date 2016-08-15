@@ -13,12 +13,13 @@ import java.util.ArrayList;
 
 public class ScheduleAdapter extends ArrayAdapter {
 
+    // Staple adapter variables
     Context context;
-    Utility utility = new Utility();
     int layoutResourceId;
     ArrayList<Schedule> data = null;
     private int mItemSelected = -1 ;
 
+    // Default public constructor
     public ScheduleAdapter(Context context, int layoutResourceId, ArrayList<Schedule> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
@@ -28,14 +29,18 @@ public class ScheduleAdapter extends ArrayAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        // Initialise variables for the Row and View Holder
         View row = convertView;
         ViewHolder holder = null;
 
-        if(row == null)
-        {
+        // If the row hasn't been used by the adapter before
+        // create a new row
+        if(row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             row = inflater.inflate(layoutResourceId, parent, false);
 
+            // Get references to the View Holder's views
+            // by searching the row for the UI element
             holder = new ViewHolder();
             holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
             holder.lesson = (TextView)row.findViewById(R.id.schedule_lesson);
@@ -46,12 +51,18 @@ public class ScheduleAdapter extends ArrayAdapter {
 
             row.setTag(holder);
         }
-        else
-        {
+
+        // If the row is simply being recycled
+        // Get the tag of the recycled row
+        else {
             holder = (ViewHolder)row.getTag();
         }
 
+        // Create a new list item using the data passed into the adapter
         Schedule schedule = data.get(position);
+
+        // Set the UI elements contained in the View Holder
+        // using data constructed in the Schedule class object
         holder.icon.setImageResource(schedule.scheduleIcon);
         holder.lesson.setText(schedule.scheduleLesson);
         holder.teacher.setText(schedule.scheduleTeacher);
@@ -59,9 +70,10 @@ public class ScheduleAdapter extends ArrayAdapter {
         holder.timeIn.setText(schedule.scheduleTimeIn);
         holder.timeOut.setText(schedule.scheduleTimeOut);
 
+        // Set the activated state of the list item if it's selected
         if(mItemSelected==position){
             row.setActivated(true);
-        }else{
+        } else{
             row.setActivated(false);
         }
 
@@ -72,8 +84,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         mItemSelected=position;
     }
 
-    static class ViewHolder
-    {
+    static class ViewHolder {
         ImageView icon;
         TextView lesson;
         TextView teacher;
@@ -81,6 +92,5 @@ public class ScheduleAdapter extends ArrayAdapter {
         TextView timeIn;
         TextView timeOut;
     }
-
 
 }

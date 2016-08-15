@@ -10,6 +10,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_detail);
 
+        // Inflate the fragment into the activity
         ScheduleDetailFragment fragment = new ScheduleDetailFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.container, fragment)

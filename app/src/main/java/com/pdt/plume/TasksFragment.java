@@ -2,7 +2,6 @@ package com.pdt.plume;
 
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,14 +29,18 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class TasksFragment extends Fragment {
+    // Constantly used variables
     String LOG_TAG = TasksFragment.class.getSimpleName();
+
+    // UI Elements
+    ListView listView;
+    private Menu mActionMenu;
+    private int mOptionsMenuCount;
+
+    // Flags
     boolean isTablet;
 
-    ListView listView;
-    private int mOptionMenu;
-    private Menu mActionMenu;
-
-    // TODO: Implement automatic switch to Tasks tab on returning from NewTaskActivity
+    // Required empty public constructor
     public TasksFragment() {
         // Required empty public constructor
     }
@@ -47,18 +50,35 @@ public class TasksFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        DbHelper dbHelper = new DbHelper(getActivity());
         View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
+
+        // Check if the used device is a tablet
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+
+        // Get a reference to the database
+        DbHelper dbHelper = new DbHelper(getActivity());
+
+        // Get a reference to the list view and create its adapter
+        // using the current day schedule data
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
         TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getTaskDataArray());
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(clickListener());
-        listView.setMultiChoiceModeListener(new ModeCallback());
-        if (getResources().getBoolean(R.bool.isTablet))
-            listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
 
-        //Initialise the fab
+        // Set the adapter and listeners of the listview
+        if (listView != null){
+            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            listView.setAdapter(mAdapter);
+            listView.setOnItemClickListener(listener());
+            listView.setMultiChoiceModeListener(new ModeCallback());
+            if (getResources().getBoolean(R.bool.isTablet))
+                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+
+            if (isTablet)
+                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+        }
+
+
+        // Get a reference to the FAB and set its OnClickListener
+        // which is an intent to add a new schedule
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,54 +88,28 @@ public class TasksFragment extends Fragment {
             }
         });
 
+        // Inflate the layout for this fragment
         return rootView;
     }
 
-//    private Task generateDummyTask(int count){
-//        Resources resources = getResources();
-//        int[] taskIcons = {
-//                R.drawable.placeholder_sixtyfour,
-//                R.drawable.placeholder_sixtyfour,
-//                R.drawable.placeholder_sixtyfour
-//        };
-//
-//        long[] taskDates = {
-//                1,
-//                2,
-//                3
-//        };
-//
-//        return new Task(
-//                taskIcons[count],
-//                resources.getStringArray(R.array.tasks_titles)[count],
-//                resources.getStringArray(R.array.tasks_shareds)[count],
-//                resources.getStringArray(R.array.tasks_descriptions)[count],
-//                resources.getStringArray(R.array.tasks_attachments)[count],
-//                taskDates[count]);
-//    }
-//
-//    private Task[] generateDummyTaskArray(){
-//        return new Task[]{
-//                generateDummyTask(0),
-//                generateDummyTask(1),
-//                generateDummyTask(2)
-//        };
-//    }
 
-
-    public AdapterView.OnItemClickListener clickListener() {
+    public AdapterView.OnItemClickListener listener() {
 
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Replace fragment if device is a tablet
+                // If the used device is a tablet, replace the
+                // right-hand side fragment with a TasksDetailFragment
+                // passing the data of the clicked row to the fragment
                 if (isTablet) {
                     TasksDetailFragment fragment = new TasksDetailFragment();
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.detail_container, fragment)
                             .commit();
                 }
-                //Start a new activity if device is a phone
+
+                // If the used device is a phone, start a new TasksDetailActivity
+                // passing the data of the clicked row to the fragment
                 else {
                     Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
                     startActivity(intent);
@@ -127,61 +121,90 @@ public class TasksFragment extends Fragment {
 
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
-        List<Integer> positionsList = new ArrayList<>();
+        List<Integer> CAMselectedItemsList = new ArrayList<>();
 
         @Override
         public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
+            // Get the number of list items selected
+            // and set the window subtitle based on that
             final int checkedCount = listView.getCheckedItemCount();
             switch (checkedCount) {
                 case 0:
                     mode.setSubtitle(null);
                     break;
+
                 case 1:
-                    mOptionMenu = 0;
+                    mOptionsMenuCount = 0;
                     mode.setSubtitle("One item selected");
                     break;
+
                 default:
-                    mOptionMenu = 1;
+                    mOptionsMenuCount = 1;
                     mode.setSubtitle("" + checkedCount + " items selected");
                     break;
+
             }
+
+            // If the clicked item became selected, add it to
+            // an array list of selected items
             if (checked)
-                positionsList.add(position);
+                CAMselectedItemsList.add(position);
+
+            // If the clicked item became deselected, get its item id
+            // and remove it from the array list
             else {
                 int itemId = -1;
-                for (int i = 0; i < positionsList.size(); i++) {
-                    if (position == positionsList.get(i)) {
+                // Scan through the array list until the
+                // item's value matches its position
+                // When it does, set the itemId to the matched position
+                // and then remove the item in that array list
+                // matching that position
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    if (position == CAMselectedItemsList.get(i)) {
                         itemId = i;
                     }
                 }
                 if (itemId != -1)
-                    positionsList.remove(itemId);
+                    CAMselectedItemsList.remove(itemId);
             }
+
+            // Invalidating the Action Mode calls onPrepareActionMode
+            // which will show or hide the edit menu action based on
+            // the number of items selected
             mode.invalidate();
         }
 
 
         @Override
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
+            // Inflate the action menu and set the global menu variable
             MenuInflater inflater = getActivity().getMenuInflater();
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
+
+            // Set the title and colour of the contextual action bar
             mode.setTitle("Select Items");
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
             getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
             if (!isTablet)
                 getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
+
             return true;
         }
 
         @Override
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+            // Checks the count of items selected.
+            // If it is one, show the edit menu action.
+            // If it is more than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
-            if (mOptionMenu == 0)
+            if (mOptionsMenuCount == 0)
                 menuItem.setVisible(true);
             else
                 menuItem.setVisible(false);
+
             return true;
         }
 
@@ -191,19 +214,25 @@ public class TasksFragment extends Fragment {
                 case R.id.action_delete:
                     deleteSelectedItems();
                     break;
+
                 case R.id.action_edit:
                     editSelectedItem();
                     break;
+
                 default:
                     Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
                             Toast.LENGTH_SHORT).show();
                     break;
             }
+
             return true;
         }
 
         @Override
         public void onDestroyActionMode(android.view.ActionMode mode) {
+            // Clear the array list of selected items and revert the window colour back to normal
+            CAMselectedItemsList.clear();
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
             getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
@@ -212,26 +241,42 @@ public class TasksFragment extends Fragment {
         }
 
         private void deleteSelectedItems() {
-
+            // Get a reference to the database
             DbHelper db = new DbHelper(getActivity());
+
+            // Get a cursor by getting the TaskData
+            // Which should match the list view of the TasksFragment
             Cursor cursor = db.getTaskData();
-            for(int i = 0; i < positionsList.size(); i++) {
-                if (cursor.moveToPosition(positionsList.get(i))) {
+
+            // Delete all the selected items based on the itemIDs
+            // Stored in the array list
+            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+                if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
                     db.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
             }
+
             cursor.close();
+
+            // Get the list view's current adapter, clear it,
+            // and query the database again for the current day
+            // data, then notify the adapter for the changes
             TaskAdapter adapter = (TaskAdapter) listView.getAdapter();
             adapter.clear();
             adapter.addAll(db.getTaskDataArray());
             adapter.notifyDataSetChanged();
-            positionsList.clear();
+
+            // Then clear the selected items array list and emulate
+            // a back button press to exit the Action Mode
+            CAMselectedItemsList.clear();
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
         private void editSelectedItem(){
-            if (positionsList.size() == 1){
+            // Ensure that only one item is selected
+            if (CAMselectedItemsList.size() == 1){
+                // Initialise intent data variables
                 int id;
                 String title = "";
                 String sharer = "";
@@ -239,9 +284,15 @@ public class TasksFragment extends Fragment {
                 String attachment = "";
                 float dueDate = 0f;
                 float alarmTime = 0f;
+
+                // Get a reference to the database and
+                // Get a cursor of the Task Data
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getTaskData();
-                if (cursor.moveToPosition(positionsList.get(0))){
+
+                // Move the cursor to the position of the selected item
+                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                    // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                     sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
@@ -250,6 +301,9 @@ public class TasksFragment extends Fragment {
                     dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
                     alarmTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ALARMTIME));
                     cursor.close();
+
+                    // Create an intent to NewScheduleActivity and include the selected
+                    // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(getActivity(), NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE),title);
@@ -259,14 +313,21 @@ public class TasksFragment extends Fragment {
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ALARMTIME), alarmTime);
                     intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+
+                    // Clear the selected items list, exit the CAM and launch the activity
+                    CAMselectedItemsList.clear();
+                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
                     startActivity(intent);
                 }
-            } else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
             }
 
+            // If more than one item was selected, throw a warning log
+            else {
+                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+            }
         }
-    }
 
+    }
 
 }

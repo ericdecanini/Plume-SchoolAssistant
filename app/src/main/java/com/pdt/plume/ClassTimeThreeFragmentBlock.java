@@ -14,20 +14,23 @@ import android.widget.TextView;
 
 public class ClassTimeThreeFragmentBlock extends Fragment {
 
+    // Fragment input storage variables
     String[] isPeriodChecked = {"0", "0", "0", "0"};
+
+    // Interface variables
     onDaysSelectedListener daysSelectedListener;
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
 
-
+    // Required empty public constructor
     public ClassTimeThreeFragmentBlock() {
         // Required empty public constructor
     }
 
+    // Interfaces used to pass data to NewScheduleActivity
     public interface onDaysSelectedListener {
         //Pass all data through input params here
         public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
-
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
         public void onBasisTextviewSelected();
@@ -81,6 +84,7 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
 
         done.setOnClickListener(listener());
 
+        // Set text of hyperlink basis text
         basisTextView.setText(getString(R.string.class_time_one_blockbased));
 
         return rootView;
@@ -175,6 +179,7 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
                             isPeriodChecked[3] = "1";
                         break;
 
+                    // In the case that the hyperlink basis text view was selected
                     case R.id.class_time_one_value:
                         basisTextviewSelectedListener.onBasisTextviewSelected();
                         break;
@@ -189,6 +194,8 @@ public class ClassTimeThreeFragmentBlock extends Fragment {
     }
 
     private String processPeriodsString(){
+        // Creates the convertible period string
+        // for database storage
         return isPeriodChecked[0] + ":"
                 + isPeriodChecked[1] + ":"
                 + isPeriodChecked[2] + ":"

@@ -21,8 +21,8 @@ public class TimePickerFragment extends DialogFragment {
         super.onAttach(activity);
         mActivity = activity;
 
-        // This error will remind you to implement an OnTimeSetListener
-        //   in your Activity if you forget
+        //  This error will remind you to implement an OnTimeSetListener
+        //  in your Activity if you forget
         try {
             mListener = (TimePickerDialog.OnTimeSetListener) activity;
         } catch (ClassCastException e) {
@@ -34,11 +34,19 @@ public class TimePickerFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the current time as the default values for the picker
+        // Get the public static variables from NewScheduleActivity
+        // to acquire edit flag and view selected
         boolean FLAG_EDIT = NewScheduleActivity.isEdited;
         int resourceId = NewScheduleActivity.resourceId;
+
+        // Get the current time
         final Calendar c = Calendar.getInstance();
+        // If the NewScheduleActivity was launched through an edit action
+        // Set the default time of the dialog to the corresponding
+        // public static variable from the ClassTimeThreeFragmentTime
+        // and if not, base it on the current time
         int hour;
+
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
                 hour = ClassTimeThreeFragmentTime.timeInHour;

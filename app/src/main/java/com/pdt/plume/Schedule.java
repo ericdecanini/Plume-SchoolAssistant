@@ -11,6 +11,8 @@ public class Schedule {
         super();
     }
 
+    // The global variables are accessed by the adapter
+    // Set them using the input parameters
     public Schedule(int icon, String lesson, String teacher, String room, String timeIn, String timeOut) {
         super();
         this.scheduleIcon = icon;

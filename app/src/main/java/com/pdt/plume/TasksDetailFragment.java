@@ -13,7 +13,7 @@ import android.view.ViewGroup;
  */
 public class TasksDetailFragment extends Fragment {
 
-
+    // Required empty public constructor
     public TasksDetailFragment() {
         // Required empty public constructor
     }

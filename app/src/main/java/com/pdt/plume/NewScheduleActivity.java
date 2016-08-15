@@ -137,6 +137,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Get database values to put in activity Array Lists
                 for (int i = 0; i < cursor.getCount(); i++) {
                     occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                            this,
                             utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
                             utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                             utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
@@ -179,6 +180,7 @@ public class NewScheduleActivity extends AppCompatActivity
             case android.R.id.home:
                 finish();
                 break;
+
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
                 Intent intent = new Intent(this, MainActivity.class);
@@ -451,6 +453,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Add an item into the visual list view
         occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                this,
                 utility.secondsToTime(timeInSeconds) + "",
                 utility.secondsToTime(timeOutSeconds) + "",
                 utility.secondsToTime(timeInAltSeconds) + "",

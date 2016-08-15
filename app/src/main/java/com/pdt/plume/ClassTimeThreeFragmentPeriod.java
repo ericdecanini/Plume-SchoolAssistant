@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 public class ClassTimeThreeFragmentPeriod extends Fragment {
 
+    // Fragment input storage variables
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
     String[] isPeriodChecked = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
 
@@ -23,21 +24,20 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
     onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
 
-
+    // Required empty public constructor
     public ClassTimeThreeFragmentPeriod() {
         // Required empty public constructor
     }
 
+    // Interfaces used to pass data to NewScheduleActivity
     public interface onDaysSelectedListener {
         //Pass all data through input params here
         public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
     }
-
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
         public void onBasisTextviewSelected();
     }
-
     public interface onWeektypeTextviewSelectedListener {
         //Pass all data through input params here
         public void onWeektypeTextViewSelectedListener(String basis);
@@ -156,17 +156,18 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
         periodElevenAlt.setOnClickListener(listener());
         periodTwelveAlt.setOnClickListener(listener());
 
-
+        // Get the arguments of the fragment and
+        // Set the hyperlink basis week type text accordingly
+        basisTextView.setText(getString(R.string.class_time_one_periodbased));
         Bundle args = getArguments();
         if (args != null){
             if (!args.getString("weekType", "-1").equals("1")){
                 //Change the layout based on weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
-            } else  weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+            }
+            else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
         }
-
-        basisTextView.setText(getString(R.string.class_time_one_periodbased));
 
         return rootView;
     }
@@ -676,6 +677,8 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
                             isPeriodChecked[11] = "1";
                         break;
 
+                    // In the case that it's one of the hyperlink text views to the
+                    // previous stages of the add class time process
                     case R.id.class_time_one_value:
                         basisTextviewSelectedListener.onBasisTextviewSelected();
                         break;
@@ -691,6 +694,8 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
     }
 
     private String processClassDaysString(){
+        // Creates the third part of the occurrence string based on the
+        // array of buttons (days) checked
         return isButtonChecked[0] + ":"
                 + isButtonChecked[1] + ":"
                 + isButtonChecked[2] + ":"
@@ -701,6 +706,8 @@ public class ClassTimeThreeFragmentPeriod extends Fragment {
     }
 
     private String processPeriodsString(){
+        // Creates the convertible period string
+        // for database storage
         return isPeriodChecked[0] + ":"
                 + isPeriodChecked[1] + ":"
                 + isPeriodChecked[2] + ":"

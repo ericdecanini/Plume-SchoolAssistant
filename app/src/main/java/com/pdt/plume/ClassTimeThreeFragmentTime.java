@@ -32,7 +32,7 @@ public class ClassTimeThreeFragmentTime extends Fragment{
     EditText fieldTimeInAlt;
     EditText fieldTimeOutAlt;
 
-    // Days and time data variables
+    // Fragment input storage variables
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
     int timeInSeconds;
     int timeOutSeconds;
@@ -119,7 +119,7 @@ public class ClassTimeThreeFragmentTime extends Fragment{
         fieldTimeOutAlt = (EditText) rootView.findViewById(R.id.field_new_schedule_timeout_alt);
 
         // Set OnClickListeners to the UI elements
-         basisTextView.setOnClickListener(listener());
+        basisTextView.setOnClickListener(listener());
         weekTypeTextView.setOnClickListener(listener());
 
         sunday.setOnClickListener(listener());
@@ -152,9 +152,10 @@ public class ClassTimeThreeFragmentTime extends Fragment{
         // Check if fragment was restarted via Time Set, restore previous state
         Bundle args = getArguments();
         if (args != null){
-            // Hide the alternate layout if the week type selected is 0 (Same time every week) and set the hyperlink week type text to the selected week type text
+            // Hide the alternate layout if the week type selected is 0 (Same time every week)
+            // and set the hyperlink week type text to the selected week type text
             if (!args.getString("weekType", "-1").equals("1")){
-                // If weekType
+                // If weekType is 0 (Same each week), hide the alternate layout
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             }

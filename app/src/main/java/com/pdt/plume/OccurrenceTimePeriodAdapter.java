@@ -17,10 +17,12 @@ import java.util.List;
 
 public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
+    // Staple adapter variables
     Context context;
     int layoutResourceId;
     ArrayList<OccurrenceTimePeriod> objects = null;
 
+    // Default adapter constructor
     public OccurrenceTimePeriodAdapter(Context context, int resource, ArrayList<OccurrenceTimePeriod> objects) {
         super(context, resource, objects);
         this.context = context;
@@ -30,13 +32,18 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        // Initialise variables for the Row and View Holder
         View row = convertView;
         ViewHolder holder;
 
+        // If the row hasn't been used by the adapter before
+        // create a new row
         if (row == null){
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             row = inflater.inflate(layoutResourceId, parent, false);
 
+            // Get references to the View Holder's views
+            // by searching the row for the UI element
             holder = new ViewHolder();
             holder.period = (TextView) row.findViewById(R.id.list_item_time_period_textview);
             holder.sun = (TextView) row.findViewById(R.id.list_item_time_period_sun);
@@ -58,13 +65,20 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
             row.setTag(holder);
         }
+
+        // If the row is simply being recycled
+        // Get the tag of the recycled row
         else holder = (ViewHolder) row.getTag();
 
+        // Create a new list item using the data passed into the adapter
         OccurrenceTimePeriod occurrenceTimePeriod = objects.get(position);
+
+        // Set the text of the main header
         holder.period.setText(occurrenceTimePeriod.time_period);
 
+        // If the item's basis is Time or Period based, highlight the background colour
+        // Of the day buttons corresponding to the activated day binary code
         if (occurrenceTimePeriod.basis.equals("0") || occurrenceTimePeriod.basis.equals("1")) {
-            //Set the colours of the days layout
             if (occurrenceTimePeriod.sunday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.sun.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
@@ -141,18 +155,22 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
                         holder.sat_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.sat_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
             }
-        } else { // If the basis is 2
+        }
+
+        // If the item's basis is Block based, change the week text to Day A and Day B
+        // and hide the row of day buttons
+        else {
             ((TextView) row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_time_block_day_a));
             ((TextView) row.findViewById(R.id.list_item_time_period_week_alt)).setText(context.getString(R.string.class_time_block_day_b));
             row.findViewById(R.id.list_item_time_period_days).setVisibility(View.GONE);
             row.findViewById(R.id.list_item_time_period_days_alt).setVisibility(View.GONE);
         }
 
-
-
         return row;
     }
 
+    // A View Holder containing variables that reference to
+    // the UI elements of the given row
     static class ViewHolder
     {
         TextView period;

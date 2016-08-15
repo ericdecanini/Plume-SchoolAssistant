@@ -12,7 +12,7 @@ import android.widget.Button;
 
 public class ClassTimeOneFragment extends Fragment {
 
-
+    // Required empty public constructor
     public ClassTimeOneFragment() {
         // Required empty public constructor
     }
@@ -38,13 +38,17 @@ public class ClassTimeOneFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.class_time_one, container, false);
+
+        // Get references to each UI element
         Button timeBasedButton = (Button) rootView.findViewById(R.id.class_one_timebased);
         Button periodBasedButton = (Button) rootView.findViewById(R.id.class_one_periodbased);
         Button blockBasedButton = (Button) rootView.findViewById(R.id.class_one_blockbased);
 
+        // Set the OnClickListener of each UI element
         timeBasedButton.setOnClickListener(listener());
         periodBasedButton.setOnClickListener(listener());
         blockBasedButton.setOnClickListener(listener());
+
         return rootView;
     }
 
@@ -53,6 +57,8 @@ public class ClassTimeOneFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
+                    // Run the interface sending the basis parameter
+                    // based on the button selected
                     case R.id.class_one_timebased:
                         basisSelectedListener.onBasisSelected("0");
                         break;

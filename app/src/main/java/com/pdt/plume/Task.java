@@ -12,6 +12,8 @@ public class Task {
         super();
     }
 
+    // The global variables are accessed by the adapter
+    // Set them using the input parameters
     public Task(int icon, String title, String shared, String description, String attachment, float dueDate, float alarmTime) {
         super();
         this.taskIcon = icon;

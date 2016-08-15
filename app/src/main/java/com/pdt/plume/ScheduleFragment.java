@@ -19,7 +19,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
@@ -27,14 +26,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScheduleFragment extends Fragment {
+    // Constantly used variables
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
+
+    // UI Elements
+    ListView listView;
+    private Menu mActionMenu;
+    private int mOptionMenuCount;
+
+    // Flags
     boolean isTablet;
 
-    ListView listView;
-    private int mOptionMenu;
-    private Menu mActionMenu;
-
-
+    // Required empty public constructor
     public ScheduleFragment() {
         // Required empty public constructor
     }
@@ -44,24 +47,32 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+
+        // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
-        // Get Schedule Data
+
+        // Get a reference to the database
         DbHelper dbHelper = new DbHelper(getContext());
 
-        // Initialise Schedule List
+        // Get a reference to the list view and create its adapter
+        // using the current day schedule data
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
-        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(), R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
+        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
+                R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
+
+        // Set the adapter and listeners of the listview
         if (listView != null) {
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setAdapter(mScheduleAdapter);
-            listView.setOnItemClickListener(clickListener());
+            listView.setOnItemClickListener(listener());
             listView.setMultiChoiceModeListener(new ModeCallback());
 
             if (isTablet)
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
-        //Initialise fab
+        // Get a reference to the FAB and set its OnClickListener
+        // which is an intent to add a new schedule
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,24 +82,26 @@ public class ScheduleFragment extends Fragment {
             }
         });
 
-
         // Inflate the layout for this fragment
         return rootView;
     }
 
-    public AdapterView.OnItemClickListener clickListener() {
-
+    public AdapterView.OnItemClickListener listener() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Replace fragment if device is a tablet
+                // If the used device is a tablet, replace the
+                // right-hand side fragment with a ScheduleDetailFragment
+                // passing the data of the clicked row to the fragment
                 if (isTablet) {
                     ScheduleDetailFragment fragment = new ScheduleDetailFragment();
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.detail_container, fragment)
                             .commit();
                 }
-                //Start a new activity if device is a phone
+
+                // If the used device is a phone, start a new ScheduleDetailActivity
+                // passing the data of the clicked row to the fragment
                 else {
                     Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
                     startActivity(intent);
@@ -100,58 +113,82 @@ public class ScheduleFragment extends Fragment {
 
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
-        List<Integer> positionsList = new ArrayList<>();
+        List<Integer> CAMselectedItemsList = new ArrayList<>();
 
         @Override
         public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
+            // Get the number of list items selected
+            // and set the window subtitle based on that
             final int checkedCount = listView.getCheckedItemCount();
             switch (checkedCount) {
                 case 0:
                     mode.setSubtitle(null);
                     break;
                 case 1:
-                    mOptionMenu = 0;
+                    mOptionMenuCount = 0;
                     mode.setSubtitle("One item selected");
                     break;
                 default:
-                    mOptionMenu = 1;
+                    mOptionMenuCount = 1;
                     mode.setSubtitle("" + checkedCount + " items selected");
                     break;
             }
-                    if (checked)
-                        positionsList.add(position);
-                    else {
-                        int itemId = -1;
-                        for (int i = 0; i < positionsList.size(); i++) {
-                            if (position == positionsList.get(i)) {
-                                itemId = i;
-                            }
-                        }
-                        if (itemId != -1)
-                            positionsList.remove(itemId);
+
+            // If the clicked item became selected, add it to
+            // an array list of selected items
+            if (checked)
+                CAMselectedItemsList.add(position);
+
+            // If the clicked item became deselected, get its item id
+            // and remove it from the array list
+            else {
+                int itemId = -1;
+                // Scan through the array list until the
+                // item's value matches its position
+                // When it does, set the itemId to the matched position
+                // and then remove the item in that array list
+                // matching that position
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    if (position == CAMselectedItemsList.get(i)) {
+                        itemId = i;
                     }
+                }
+                if (itemId != -1)
+                    CAMselectedItemsList.remove(itemId);
+            }
+
+            // Invalidating the Action Mode calls onPrepareActionMode
+            // which will show or hide the edit menu action based on
+            // the number of items selected
             mode.invalidate();
         }
 
-
         @Override
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
+            // Inflate the action menu and set the global menu variable
             MenuInflater inflater = getActivity().getMenuInflater();
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
-            mode.setTitle("Select Items");
+
+            // Set the title and colour of the contextual action bar
+            mode.setTitle(getContext().getString(R.string.select_items));
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
             getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
             if (!isTablet)
                 getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
+
             return true;
         }
 
         @Override
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+            // Checks the count of items selected.
+            // If it is one, show the edit menu action.
+            // If it is more than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
-            if (mOptionMenu == 0)
+            if (mOptionMenuCount == 0)
                 menuItem.setVisible(true);
             else
                 menuItem.setVisible(false);
@@ -164,9 +201,11 @@ public class ScheduleFragment extends Fragment {
                 case R.id.action_delete:
                     deleteSelectedItems();
                     break;
+
                 case R.id.action_edit:
                     editSelectedItem();
                     break;
+
                 default:
                     Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
                             Toast.LENGTH_SHORT).show();
@@ -177,7 +216,9 @@ public class ScheduleFragment extends Fragment {
 
         @Override
         public void onDestroyActionMode(android.view.ActionMode mode) {
-            positionsList.clear();
+            // Clear the array list of selected items and revert the window colour back to normal
+            CAMselectedItemsList.clear();
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
             getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
@@ -186,55 +227,77 @@ public class ScheduleFragment extends Fragment {
         }
 
         private void deleteSelectedItems() {
-
+            // Get a reference to the database
             DbHelper db = new DbHelper(getActivity());
+
+            // Get a cursor by getting the currentDayScheduleData
+            // Which should match the list view of the ScheduleFragment
             Cursor cursor = db.getCurrentDayScheduleData();
-            for(int i = 0; i < positionsList.size(); i++) {
-                if (cursor.moveToPosition(positionsList.get(i))) {
+
+            // Delete all the selected items based on the itemIDs
+            // Stored in the array list
+            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+                if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
                     db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                 }
             }
+
             cursor.close();
+
+            // Get the list view's current adapter, clear it,
+            // and query the database again for the current day
+            // data, then notify the adapter for the changes
             ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
             adapter.clear();
             adapter.addAll(db.getCurrentDayScheduleArray());
             adapter.notifyDataSetChanged();
-            positionsList.clear();
+
+            // Then clear the selected items array list and emulate
+            // a back button press to exit the Action Mode
+            CAMselectedItemsList.clear();
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
         private void editSelectedItem(){
-            if (positionsList.size() == 1){
+            // Ensure that only one item is selected
+            if (CAMselectedItemsList.size() == 1){
+                // Initialise Id and Title variables
                 int id;
                 String title;
+
+                // Get a reference to the database and
+                // Get a cursor of the current day schedule data
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getCurrentDayScheduleData();
-                if (cursor.moveToPosition(positionsList.get(0))){
+
+                // Move the cursor to the position of the selected item
+                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                    // Get its Id and Title
                     id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
                     cursor.close();
+
+                    // Create an intent to NewScheduleActivity and include the selected
+                    // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
-                    positionsList.clear();
+
+                    // Clear the selected items list, exit the CAM and launch the activity
+                    CAMselectedItemsList.clear();
                     getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
                     getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
                     startActivity(intent);
                 }
-            } else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
             }
 
+            // If more than one item was selected, throw a warning log
+            else {
+                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+            }
         }
     }
-
-
-
-
-
-
-
 
 }

@@ -8,10 +8,15 @@
     <string name="lorem_ipsum_sentence">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
     </string>
 
-    <!-- General Actions -->
-    <string name="delete">Delete</string>
-    <string name="done">Done</string>
-    <string name="edit">Edit</string>
+    <!-- General Strings -->
+
+        <!-- Actions -->
+        <string name="delete">Delete</string>
+        <string name="done">Done</string>
+        <string name="edit">Edit</string>
+
+        <!-- Contextual Action Mode -->
+        <string name="select_items">Select Items</string>
 
     <!-- Strings for tabbed layout -->
     <string name="tab_one">Schedule</string>
@@ -20,10 +25,6 @@
     <!-- Strings for navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
-
-    <!-- Strings for NewActivity (General) -->
-
 
     <!-- Strings for NewScheduleActivity -->
 
@@ -35,6 +36,11 @@
         <string name="new_schedule_time_out">To</string>
         <string name="new_schedule_teacher">Teacher</string>
         <string name="new_schedule_room">Room</string>
+    
+            <!-- Class Time List -->
+            <string name="class_time_list_header_substring_and">period</string>
+            <string name="class_time_list_header_substring_period">period</string>
+            <string name="class_time_list_header_substring_periods">periods</string>
 
         <!-- UI for Add Class Time Fragment One -->
         <string name="class_time_one_title">Select your school\'s class schedule type.</string>
