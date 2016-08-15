@@ -83,36 +83,62 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.sun.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.sun.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.sun.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.sun.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
             if (occurrenceTimePeriod.monday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.mon.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.mon.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.mon.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.mon.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+
 
             if (occurrenceTimePeriod.tuesday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.tue.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.tue.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.tue.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.tue.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+
 
             if (occurrenceTimePeriod.wednesday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.wed.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.wed.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.wed.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.wed.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+
 
             if (occurrenceTimePeriod.thursday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.thu.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.thu.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.thu.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.thu.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+
 
             if (occurrenceTimePeriod.friday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.fri.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.fri.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.fri.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.fri.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+
 
             if (occurrenceTimePeriod.saturday.equals("1"))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     holder.sat.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                 } else holder.sat.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                holder.sat.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+            } else holder.sat.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
             //Hide the alt layout if the weekType is 0, set the colours of the alternate days layout if it is 1
             if (occurrenceTimePeriod.weekType.equals("0"))
@@ -120,40 +146,62 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
             else {
                 holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
 
+                // Set the background colour of the day buttons
                 if (occurrenceTimePeriod.sunday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.sun_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.sun_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.sun_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.sun_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.monday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.mon_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.mon_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.mon_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.mon_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.tuesday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.tue_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.tue_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.tue_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.tue_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.wednesday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.wed_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.wed_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.wed_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.wed_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.thursday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.thu_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.thu_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.thu_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.thu_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.friday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.fri_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.fri_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.fri_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.fri_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
                 if (occurrenceTimePeriod.saturday_alt.equals("1"))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         holder.sat_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.sat_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    holder.sun_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.sun_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
             }
         }
 

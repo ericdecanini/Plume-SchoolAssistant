@@ -8,13 +8,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -68,7 +67,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int scheduleIconResourceId = -1;
 
     // Intent Data
-    boolean FLAG_EDIT = false;
+    boolean INTENT_FLAG_EDIT = false;
     public static boolean isEdited;
     int editId = -1;
 
@@ -122,14 +121,14 @@ public class NewScheduleActivity extends AppCompatActivity
             if (extras != null) {
                 scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
                 editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
-                FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
+                INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
             }
         }
 
         // isEdited is a constant used in the TimePickerFragment to set the default selected time
         // upon creation of the dialog to be the previously selected time if the activity has been
         // launched through an edit action
-        isEdited = FLAG_EDIT;
+        isEdited = INTENT_FLAG_EDIT;
 
         // Get schedule data in database based on the schedule title to auto-fill the fields in the UI element
         if (isEdited) {
@@ -165,10 +164,11 @@ public class NewScheduleActivity extends AppCompatActivity
             }
         }
 
-        // Initialise the adapter for the addClassTime UI. If the activity was launched through edit, occurrenceTimePeriodList
+        // Initialise the adapter and listener for the addClassTime UI. If the activity was launched through edit, occurrenceTimePeriodList
         // will have been previously populated and therefore the list view will contain the class time list items
         classTimeAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, occurrenceTimePeriodList);
         classTimeList.setAdapter(classTimeAdapter);
+        classTimeList.setOnItemClickListener(OccurrenceTimePeriodListener());
     }
 
     @Override
@@ -218,7 +218,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
-        if (FLAG_EDIT) {
+        if (INTENT_FLAG_EDIT) {
             // Delete the previous all instances of the schedule (based on the title)
             Cursor cursor = dbHelper.getScheduleDataArrayByTitle(scheduleTitle);
             for (int i = 0; i < cursor.getCount(); i++) {
@@ -379,47 +379,72 @@ public class NewScheduleActivity extends AppCompatActivity
         };
     }
 
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        // Interface launched by TimePickerDialog to restart ClassTimeThreeFragmentTime with data from the dialog
+    private AdapterView.OnItemClickListener OccurrenceTimePeriodListener(){
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the data of the selected row through the Array Lists
+                // and put it in a bundle
+                Bundle args = new Bundle();
+                String occurrence = occurrenceList.get(position);
+                args.putString("occurrence", occurrence);
+                args.putString("weekType", occurrence.split(":")[1]);
+                args.putString("period", periodsList.get(position));
+                args.putInt("rowId", position);
+                args.putInt("timeInSeconds", timeInList.get(position));
+                args.putInt("timeOutSeconds", timeOutList.get(position));
+                args.putInt("timeInAltSeconds", timeInAltList.get(position));
+                args.putInt("timeOutAltSeconds", timeOutAltList.get(position));
 
-        // Create the arguments bundle for the fragment
-        Bundle args = new Bundle();
-        int resourceId = timeSelectedResourceId;
-        args.putString("basis", basis);
-        args.putString("weekType", weekType);
-        args.putInt("resourceId", resourceId);
-        args.putInt("hourOfDay", hourOfDay);
-        args.putInt("minute", minute);
-        args.putInt("timeInSeconds", previousTimeInSeconds);
-        args.putInt("timeOutSeconds", previousTimeOutSeconds);
-        args.putInt("timeInAltSeconds", previousTimeInAltSeconds);
-        args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
-        args.putIntArray("buttonsChecked", previousButtonsChecked);
+                // Create a new fragment based on the basis and launch it
+                switch (occurrence.split(":")[0]){
+                    case "0":
+                        // Check if other dialogs are present and remove them if so
+                        FragmentTransaction ftTime = getFragmentManager().beginTransaction();
+                        Fragment prevTime = getFragmentManager().findFragmentByTag("dialog");
+                        if (prevTime != null) {
+                            ftTime.remove(prevTime);
+                        }
+                        ftTime.addToBackStack(null);
 
-        // Launch the fragment
-        // Check if other dialogs are present and remove them if so
-        android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
-        transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
-        transactionWeekType.addToBackStack(null).commit();
+                        // Show the dialog
+                        DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
+                        fragmentTime.setArguments(args);
+                        fragmentTime.show(getSupportFragmentManager(), "dialog");
+                        break;
 
-        // Show the dialog
-        DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
-        fragment.setArguments(args);
-        fragment.show(getSupportFragmentManager(), "dialog");
-    }
+                    case "1":
+                        // Check if other dialogs are present and remove them if so
+                        FragmentTransaction ftPeriod = getFragmentManager().beginTransaction();
+                        Fragment prevPeriod = getFragmentManager().findFragmentByTag("dialog");
+                        if (prevPeriod != null) {
+                            ftPeriod.remove(prevPeriod);
+                        }
+                        ftPeriod.addToBackStack(null);
 
-    @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds,
-                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
-        // Interface from ClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
-        // This creates the illusion that the fragment was never restarted and creates a smooth user experience
-        timeSelectedResourceId = resourceId;
-        this.previousTimeInSeconds = previousTimeInSeconds;
-        this.previousTimeOutSeconds = previousTimeOutSeconds;
-        this.previousTimeInAltSeconds = previousTimeInAltSeconds;
-        this.previousTimeOutAltSeconds = previousTimeOutAltSeconds;
-        previousButtonsChecked = buttonsChecked;
+                        // Show the dialog
+                        DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
+                        fragmentPeriod.setArguments(args);
+                        fragmentPeriod.show(getSupportFragmentManager(), "dialog");
+                        break;
+
+                    case "2":
+                        // Check if other dialogs are present and remove them if so
+                        FragmentTransaction ftBlock = getFragmentManager().beginTransaction();
+                        Fragment prevBlock = getFragmentManager().findFragmentByTag("dialog");
+                        if (prevBlock != null) {
+                            ftBlock.remove(prevBlock);
+                        }
+                        ftBlock.addToBackStack(null);
+
+                        // Show the dialog
+                        DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
+                        fragmentBlock.setArguments(args);
+                        fragmentBlock.show(getSupportFragmentManager(), "dialog");
+                        break;
+                }
+            }
+        };
     }
 
     @Override
@@ -476,6 +501,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Show the dialog
             DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
+            fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
         else if (basis.equals("1")) {
@@ -486,13 +512,15 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Show the dialog
             DialogFragment fragment = ClassTimeThreeFragmentPeriod.newInstance(0);
+            fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
 
     @Override
     public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
-                               int timeInAltSeconds, int timeOutAltSeconds, String periods) {
+                               int timeInAltSeconds, int timeOutAltSeconds, String periods,
+                               boolean FLAG_EDIT, int rowId) {
         // Interface launched by ClassTimeThreeFragment in the final stage of adding a new class time
         // The fragment is removed (identified by its tag "TAG")
         // Occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, and periodsList are all added to their respective Array Lists. These will later be added to the database
@@ -505,23 +533,84 @@ public class NewScheduleActivity extends AppCompatActivity
                 .remove(getSupportFragmentManager().findFragmentByTag("dialog"))
                 .commit();
 
-        // Add values into Array Lists to be inserted into the database
-        occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
-        timeInList.add(timeInSeconds);
-        timeOutList.add(timeOutSeconds);
-        timeInAltList.add(timeInAltSeconds);
-        timeOutAltList.add(timeOutAltSeconds);
-        periodsList.add(periods);
+        // Check the interface for the edit flag and choose
+        // to either update or insert
+        // If the interface contains an edit flag, update the array list items
+        if (FLAG_EDIT){
+            // Create temporary array lists to hold the list's data as it is cleared for bulk re-inserting
+            ArrayList<String> previousStringObjects = new ArrayList<>();
+            ArrayList<Integer> previousIntObjects = new ArrayList<>();
 
-        // Add an item into the visual list view
-        occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
-                this,
-                utility.secondsToTime(timeInSeconds) + "",
-                utility.secondsToTime(timeOutSeconds) + "",
-                utility.secondsToTime(timeInAltSeconds) + "",
-                utility.secondsToTime(timeOutAltSeconds) + "",
-                periods,
-                processOccurrenceString(basis, weekType, classDays)));
+            // Update occurrenceList
+            previousStringObjects.addAll(occurrenceList);
+            occurrenceList.clear();
+            occurrenceList.addAll(utility.updateStringArrayListItemAtPosition(
+                    previousStringObjects, rowId, processOccurrenceString(basis, weekType, classDays)));
+            previousStringObjects.clear();
+            // Update periodList
+            previousStringObjects.addAll(periodsList);
+            periodsList.clear();
+            periodsList.addAll(utility.updateStringArrayListItemAtPosition(periodsList, rowId, periods));
+            previousStringObjects.clear();
+            // Update timeInList
+            previousIntObjects.addAll(timeInList);
+            timeInList.clear();
+            timeInList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            previousIntObjects.clear();
+            // Update timeOutList
+            previousIntObjects.addAll(timeOutList);
+            timeOutList.clear();
+            timeOutList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            previousIntObjects.clear();
+            // Update timeInAltList
+            previousIntObjects.addAll(timeInAltList);
+            timeInAltList.clear();
+            timeInAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            previousIntObjects.clear();
+            // Update timeOutAltList
+            previousIntObjects.addAll(timeOutAltList);
+            timeOutAltList.clear();
+            timeOutAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            previousIntObjects.clear();
+
+            // Update the item in the visual list view
+            ArrayList<OccurrenceTimePeriod> previousOccurrenceTimePeriodObjects = new ArrayList<>();
+            previousOccurrenceTimePeriodObjects.addAll(occurrenceTimePeriodList);
+            occurrenceTimePeriodList.clear();
+            occurrenceTimePeriodList.addAll(utility.updateOccurrenceTimePeriodArrayListItemAtPosition(
+                    previousOccurrenceTimePeriodObjects, rowId, new OccurrenceTimePeriod(
+                            this,
+                            utility.secondsToTime(timeInSeconds) + "",
+                            utility.secondsToTime(timeOutSeconds) + "",
+                            utility.secondsToTime(timeInAltSeconds) + "",
+                            utility.secondsToTime(timeOutAltSeconds) + "",
+                            periods,
+                            processOccurrenceString(basis, weekType, classDays))));
+            previousOccurrenceTimePeriodObjects.clear();
+        }
+
+        // If the interface does not contain an edit flag
+        // Add values into Array Lists to be inserted into the database
+        else{
+            occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
+            timeInList.add(timeInSeconds);
+            timeOutList.add(timeOutSeconds);
+            timeInAltList.add(timeInAltSeconds);
+            timeOutAltList.add(timeOutAltSeconds);
+            periodsList.add(periods);
+
+            // Add an item into the visual list view
+            occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                    this,
+                    utility.secondsToTime(timeInSeconds) + "",
+                    utility.secondsToTime(timeOutSeconds) + "",
+                    utility.secondsToTime(timeInAltSeconds) + "",
+                    utility.secondsToTime(timeOutAltSeconds) + "",
+                    periods,
+                    processOccurrenceString(basis, weekType, classDays)));
+        }
+
+        // Update the list view's UI to correspond with the data
         classTimeAdapter.notifyDataSetChanged();
 
         // Store the shared preferences for "basis" and "weekType"
@@ -559,6 +648,49 @@ public class NewScheduleActivity extends AppCompatActivity
         fragment.show(getSupportFragmentManager(), "dialog");
         // Check if other dialogs are present and remove them if so
 
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        // Interface launched by TimePickerDialog to restart ClassTimeThreeFragmentTime with data from the dialog
+
+        // Create the arguments bundle for the fragment
+        Bundle args = new Bundle();
+        int resourceId = timeSelectedResourceId;
+        args.putString("basis", basis);
+        args.putString("weekType", weekType);
+        args.putInt("resourceId", resourceId);
+        args.putInt("hourOfDay", hourOfDay);
+        args.putInt("minute", minute);
+        args.putInt("timeInSeconds", previousTimeInSeconds);
+        args.putInt("timeOutSeconds", previousTimeOutSeconds);
+        args.putInt("timeInAltSeconds", previousTimeInAltSeconds);
+        args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
+        args.putIntArray("buttonsChecked", previousButtonsChecked);
+
+        // Launch the fragment
+        // Check if other dialogs are present and remove them if so
+        android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
+        transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
+        transactionWeekType.addToBackStack(null).commit();
+
+        // Show the dialog
+        DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
+        fragment.setArguments(args);
+        fragment.show(getSupportFragmentManager(), "dialog");
+    }
+
+    @Override
+    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds,
+                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
+        // Interface from ClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
+        // This creates the illusion that the fragment was never restarted and creates a smooth user experience
+        timeSelectedResourceId = resourceId;
+        this.previousTimeInSeconds = previousTimeInSeconds;
+        this.previousTimeOutSeconds = previousTimeOutSeconds;
+        this.previousTimeInAltSeconds = previousTimeInAltSeconds;
+        this.previousTimeOutAltSeconds = previousTimeOutAltSeconds;
+        previousButtonsChecked = buttonsChecked;
     }
 
     private String processOccurrenceString(String basis, String weekType, String classDays) {

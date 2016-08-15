@@ -39,7 +39,9 @@ public class ClassTimeThreeFragmentPeriod extends DialogFragment {
     // Interfaces used to pass data to NewScheduleActivity
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
+                                   int timeInAltSeconds, int timeOutAltSeconds, String periods,
+                                   boolean FLAG_EDIT, int rowId);
     }
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
@@ -181,6 +183,195 @@ public class ClassTimeThreeFragmentPeriod extends DialogFragment {
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             }
             else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+
+            // Check if the fragment was started through the list view's OnItemClick
+            // If it is, receive the corresponding data and auto-fill that item's UI
+            if (args.containsKey("occurrence")) {
+                // Get the data from the arguments bundle
+                String occurrence = args.getString("occurrence", "-1");
+                String[] splitOccurrence = occurrence.split(":");
+                String period = args.getString("period", "-1");
+                String[] splitPeriod = period.split(":");
+
+                // Check each item in the occurrence string's day binary
+                // and set it in the activity
+                if (splitOccurrence[2].equals("1") || splitOccurrence[2].equals("3")) {
+                    isButtonChecked[0] = 1;
+                    sunday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+                if (splitOccurrence[3].equals("1") || splitOccurrence[3].equals("3")) {
+                    isButtonChecked[1] = 1;
+                    monday.setImageResource(R.drawable.ui_monday_selected);
+                }
+                if (splitOccurrence[4].equals("1") || splitOccurrence[4].equals("3")) {
+                    isButtonChecked[2] = 1;
+                    tuesday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitOccurrence[5].equals("1") || splitOccurrence[5].equals("3")) {
+                    isButtonChecked[3] = 1;
+                    wednesday.setImageResource(R.drawable.ui_wednesday_selected);
+                }
+                if (splitOccurrence[6].equals("1") || splitOccurrence[6].equals("3")) {
+                    isButtonChecked[4] = 1;
+                    thursday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitOccurrence[7].equals("1") || splitOccurrence[7].equals("3")) {
+                    isButtonChecked[5] = 1;
+                    friday.setImageResource(R.drawable.ui_friday_selected);
+                }
+                if (splitOccurrence[8].equals("1") || splitOccurrence[8].equals("3")) {
+                    isButtonChecked[6] = 1;
+                    saturday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+
+                // Do so for alternate layout if it is available
+                if (splitOccurrence[1].equals("1")) {
+                    if (splitOccurrence[2].equals("2") || splitOccurrence[2].equals("3")) {
+                        if (isButtonChecked[0] == 1)
+                            isButtonChecked[0] = 3;
+                        else isButtonChecked[0] = 2;
+                        sundayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                    if (splitOccurrence[3].equals("2") || splitOccurrence[3].equals("3")) {
+                        if (isButtonChecked[1] == 1)
+                            isButtonChecked[1] = 3;
+                        else isButtonChecked[1] = 2;
+                        mondayAlt.setImageResource(R.drawable.ui_monday_selected);
+                    }
+                    if (splitOccurrence[4].equals("2") || splitOccurrence[4].equals("3")) {
+                        if (isButtonChecked[2] == 1)
+                            isButtonChecked[2] = 3;
+                        else isButtonChecked[2] = 2;
+                        tuesdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitOccurrence[5].equals("2") || splitOccurrence[5].equals("3")) {
+                        if (isButtonChecked[3] == 1)
+                            isButtonChecked[3] = 3;
+                        else isButtonChecked[3] = 2;
+                        wednesdayAlt.setImageResource(R.drawable.ui_wednesday_selected);
+                    }
+                    if (splitOccurrence[6].equals("2") || splitOccurrence[6].equals("3")) {
+                        if (isButtonChecked[4] == 1)
+                            isButtonChecked[4] = 3;
+                        else isButtonChecked[4] = 2;
+                        thursdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitOccurrence[7].equals("2") || splitOccurrence[7].equals("3")) {
+                        if (isButtonChecked[5] == 1)
+                            isButtonChecked[5] = 3;
+                        else isButtonChecked[5] = 2;
+                        fridayAlt.setImageResource(R.drawable.ui_friday_selected);
+                    }
+                    if (splitOccurrence[8].equals("2") || splitOccurrence[8].equals("3")) {
+                        if (isButtonChecked[6] == 1)
+                            isButtonChecked[6] = 3;
+                        else isButtonChecked[6] = 2;
+                        saturdayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                }
+
+                // Do so as well for the period list
+                if (splitPeriod[0].equals("1") || splitPeriod[0].equals("3")) {
+                    isPeriodChecked[0] = "1";
+                }
+                if (splitPeriod[1].equals("1") || splitPeriod[1].equals("3")) {
+                    isPeriodChecked[1] = "1";
+                }
+                if (splitPeriod[2].equals("1") || splitPeriod[2].equals("3")) {
+                    isPeriodChecked[2] = "1";
+                }
+                if (splitPeriod[3].equals("1") || splitPeriod[3].equals("3")) {
+                    isPeriodChecked[3] = "1";
+                }
+                if (splitPeriod[4].equals("1") || splitPeriod[4].equals("3")) {
+                    isPeriodChecked[4] = "1";
+                }
+                if (splitPeriod[5].equals("1") || splitPeriod[5].equals("3")) {
+                    isPeriodChecked[5] = "1";
+                }
+                if (splitPeriod[6].equals("1") || splitPeriod[6].equals("3")) {
+                    isPeriodChecked[6] = "1";
+                }
+                if (splitPeriod[7].equals("1") || splitPeriod[7].equals("3")) {
+                    isPeriodChecked[7] = "1";
+                }
+                if (splitPeriod[8].equals("1") || splitPeriod[8].equals("3")) {
+                    isPeriodChecked[8] = "1";
+                }
+                if (splitPeriod[9].equals("1") || splitPeriod[9].equals("3")) {
+                    isPeriodChecked[9] = "1";
+                }
+                if (splitPeriod[10].equals("1") || splitPeriod[10].equals("3")) {
+                    isPeriodChecked[10] = "1";
+                }
+                if (splitPeriod[11].equals("1") || splitPeriod[11].equals("3")) {
+                    isPeriodChecked[11] = "1";
+                }
+
+                // Do so as well for its alternate layout if it is available
+                if (splitOccurrence[1].equals("1")) {
+                    if (splitPeriod[0].equals("2") || splitPeriod[0].equals("3")) {
+                        if (isPeriodChecked[0].equals("1"))
+                            isPeriodChecked[0] = "3";
+                        else isPeriodChecked[0] = "2";
+                    }
+                    if (splitPeriod[1].equals("2") || splitPeriod[1].equals("3")) {
+                        if (isPeriodChecked[1].equals("1"))
+                            isPeriodChecked[1] = "3";
+                        else isPeriodChecked[1] = "2";
+                    }
+                    if (splitPeriod[2].equals("2") || splitPeriod[2].equals("3")) {
+                        if (isPeriodChecked[2].equals("1"))
+                            isPeriodChecked[2] = "3";
+                        else isPeriodChecked[2] = "2";
+                    }
+                    if (splitPeriod[3].equals("2") || splitPeriod[3].equals("3")) {
+                        if (isPeriodChecked[3].equals("1"))
+                            isPeriodChecked[3] = "3";
+                        else isPeriodChecked[3] = "2";
+                    }
+                    if (splitPeriod[4].equals("2") || splitPeriod[4].equals("3")) {
+                        if (isPeriodChecked[4].equals("1"))
+                            isPeriodChecked[4] = "3";
+                        else isPeriodChecked[4] = "2";
+                    }
+                    if (splitPeriod[5].equals("2") || splitPeriod[5].equals("3")) {
+                        if (isPeriodChecked[5].equals("1"))
+                            isPeriodChecked[5] = "3";
+                        else isPeriodChecked[5] = "2";
+                    }
+                    if (splitPeriod[6].equals("2") || splitPeriod[6].equals("3")) {
+                        if (isPeriodChecked[6].equals("1"))
+                            isPeriodChecked[6] = "3";
+                        else isPeriodChecked[6] = "2";
+                    }
+                    if (splitPeriod[7].equals("2") || splitPeriod[7].equals("3")) {
+                        if (isPeriodChecked[7].equals("1"))
+                            isPeriodChecked[7] = "3";
+                        else isPeriodChecked[7] = "2";
+                    }
+                    if (splitPeriod[8].equals("2") || splitPeriod[8].equals("3")) {
+                        if (isPeriodChecked[8].equals("1"))
+                            isPeriodChecked[8] = "3";
+                        else isPeriodChecked[8] = "2";
+                    }
+                    if (splitPeriod[9].equals("2") || splitPeriod[9].equals("3")) {
+                        if (isPeriodChecked[9].equals("1"))
+                            isPeriodChecked[9] = "3";
+                        else isPeriodChecked[9] = "2";
+                    }
+                    if (splitPeriod[10].equals("2") || splitPeriod[10].equals("3")) {
+                        if (isPeriodChecked[10].equals("1"))
+                            isPeriodChecked[10] = "3";
+                        else isPeriodChecked[10] = "2";
+                    }
+                    if (splitPeriod[11].equals("2") || splitPeriod[11].equals("3")) {
+                        if (isPeriodChecked[11].equals("1"))
+                            isPeriodChecked[11] = "3";
+                        else isPeriodChecked[11] = "2";
+                    }
+                }
+            }
         }
 
         return rootView;
@@ -326,7 +517,7 @@ public class ClassTimeThreeFragmentPeriod extends DialogFragment {
                             ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
                         }
                         else if (isButtonChecked[0] == 1){
-                             isButtonChecked[0] = 3;
+                            isButtonChecked[0] = 3;
                             ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
                         }
                         else if (isButtonChecked[0] == 2){
@@ -700,7 +891,13 @@ public class ClassTimeThreeFragmentPeriod extends DialogFragment {
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
                         String periods = processPeriodsString();
-                        daysSelectedListener.onDaysSelected(classDays, -1, -1, -1, -1, periods);
+                        // If the fragment was started through the list view's OnItemClick
+                        // Pass true as the Edit Flag to tell the activity to update instead
+                        // the occurrence item instead of adding a new item
+                        boolean FLAG_EDIT = getArguments().containsKey("occurrence");
+                        int rowId = getArguments().getInt("rowId");
+                        daysSelectedListener.onDaysSelected(classDays, -1, -1,
+                                -1, -1, periods, FLAG_EDIT, rowId);
                         break;
                 }
             }

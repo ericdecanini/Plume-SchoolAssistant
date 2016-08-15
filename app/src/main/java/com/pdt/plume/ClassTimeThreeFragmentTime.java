@@ -1,13 +1,11 @@
 package com.pdt.plume;
 
 
-import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.TimePicker;
-
-import org.w3c.dom.Text;
 
 import java.util.Calendar;
 
@@ -26,6 +21,7 @@ import java.util.Calendar;
 public class ClassTimeThreeFragmentTime extends DialogFragment{
 
     // Constantly used variables
+    String LOG_TAG = ClassTimeThreeFragmentTime.class.getSimpleName();
     Utility utility = new Utility();
 
     // UI Elements
@@ -67,7 +63,9 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
     // Interfaces used to pass data to NewScheduleActivity
     public interface onDaysSelectedListener {
         //Pass all data through input params here
-        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds, int timeInAltSeconds, int timeOutAltSeconds, String periods);
+        public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
+                                   int timeInAltSeconds, int timeOutAltSeconds, String periods,
+                                   boolean FLAG_EDIT, int rowId);
     }
     public interface onTimeSelectedListener {
         public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
@@ -248,6 +246,107 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                         fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
                         break;
                 }
+            }
+
+            // If not, check if the fragment was started through the list view's OnItemClick
+            // If it is, receive the corresponding data and auto-fill that item's UI
+            else if (args.containsKey("occurrence")){
+                // Get the data from the arguments bundle
+                String occurrence = args.getString("occurrence", "-1");
+                String[] splitOccurrence = occurrence.split(":");
+                int timeInSeconds = args.getInt("timeInSeconds");
+                int timeOutSeconds = args.getInt("timeOutSeconds");
+                int timeInAltSeconds = args.getInt("timeInAltSeconds");
+                int timeOutAltSeconds = args.getInt("timeOutAltSeconds");
+
+                // Check each item in the occurrence string's day binary
+                // and set it in the activity
+                if (splitOccurrence[2].equals("1") || splitOccurrence[2].equals("3")){
+                    isButtonChecked[0] = 1;
+                    sunday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+                if (splitOccurrence[3].equals("1") || splitOccurrence[3].equals("3")){
+                    isButtonChecked[1] = 1;
+                    monday.setImageResource(R.drawable.ui_monday_selected);
+                }
+                if (splitOccurrence[4].equals("1") || splitOccurrence[4].equals("3")){
+                    isButtonChecked[2] = 1;
+                    tuesday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitOccurrence[5].equals("1") || splitOccurrence[5].equals("3")){
+                    isButtonChecked[3] = 1;
+                    wednesday.setImageResource(R.drawable.ui_wednesday_selected);
+                }
+                if (splitOccurrence[6].equals("1") || splitOccurrence[6].equals("3")){
+                    isButtonChecked[4] = 1;
+                    thursday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitOccurrence[7].equals("1") || splitOccurrence[7].equals("3")){
+                    isButtonChecked[5] = 1;
+                    friday.setImageResource(R.drawable.ui_friday_selected);
+                }
+                if (splitOccurrence[8].equals("1") || splitOccurrence[8].equals("3")){
+                    isButtonChecked[6] = 1;
+                    saturday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+
+                // Do so for alternate layout if it is available
+                if (splitOccurrence[1].equals("1")){
+                    if (splitOccurrence[2].equals("2") || splitOccurrence[2].equals("3")){
+                        if (isButtonChecked[0] == 1)
+                            isButtonChecked[0] = 3;
+                        else isButtonChecked[0] = 2;
+                        sundayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                    if (splitOccurrence[3].equals("2") || splitOccurrence[3].equals("3")){
+                        if (isButtonChecked[1] == 1)
+                            isButtonChecked[1] = 3;
+                        else isButtonChecked[1] = 2;
+                        mondayAlt.setImageResource(R.drawable.ui_monday_selected);
+                    }
+                    if (splitOccurrence[4].equals("2") || splitOccurrence[4].equals("3")){
+                        if (isButtonChecked[2] == 1)
+                            isButtonChecked[2] = 3;
+                        else isButtonChecked[2] = 2;
+                        tuesdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitOccurrence[5].equals("2") || splitOccurrence[5].equals("3")){
+                        if (isButtonChecked[3] == 1)
+                            isButtonChecked[3] = 3;
+                        else isButtonChecked[3] = 2;
+                        wednesdayAlt.setImageResource(R.drawable.ui_wednesday_selected);
+                    }
+                    if (splitOccurrence[6].equals("2") || splitOccurrence[6].equals("3")){
+                        if (isButtonChecked[4] == 1)
+                            isButtonChecked[4] = 3;
+                        else isButtonChecked[4] = 2;
+                        thursdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitOccurrence[7].equals("2") || splitOccurrence[7].equals("3")){
+                        if (isButtonChecked[5] == 1)
+                            isButtonChecked[5] = 3;
+                        else isButtonChecked[5] = 2;
+                        fridayAlt.setImageResource(R.drawable.ui_friday_selected);
+                    }
+                    if (splitOccurrence[8].equals("2") || splitOccurrence[8].equals("3")){
+                        if (isButtonChecked[6] == 1)
+                            isButtonChecked[6] = 3;
+                        else isButtonChecked[6] = 2;
+                        saturdayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                }
+
+                // Set the global time variables
+                this.timeInSeconds = timeInSeconds;
+                this.timeOutSeconds = timeOutSeconds;
+                this.timeInAltSeconds = timeInAltSeconds;
+                this.timeOutAltSeconds = timeOutAltSeconds;
+
+                // Set the UI of the time variables
+                fieldTimeIn.setText(utility.secondsToTime(timeInSeconds));
+                fieldTimeOut.setText(utility.secondsToTime(timeOutSeconds));
+                fieldTimeInAlt.setText(utility.secondsToTime(timeInAltSeconds));
+                fieldTimeOutAlt.setText(utility.secondsToTime(timeOutAltSeconds));
             }
 
             // If the fragment was not restarted from the OnTimeSet override method in NewScheduleActivity
@@ -558,7 +657,13 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                     // and into the list view in the NewScheduleActivity
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
-                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, "-1");
+                        // If the fragment was started through the list view's OnItemClick
+                        // Pass true as the Edit Flag to tell the activity to update instead
+                        // the occurrence item instead of adding a new item
+                        boolean FLAG_EDIT = getArguments().containsKey("occurrence");
+                        int rowId = getArguments().getInt("rowId");
+                        daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds,
+                                timeInAltSeconds, timeOutAltSeconds, "-1", FLAG_EDIT, rowId);
                         break;
                 }
             }

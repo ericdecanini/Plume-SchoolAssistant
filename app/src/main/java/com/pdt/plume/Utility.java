@@ -41,10 +41,62 @@ public class Utility {
             return hourOfDay + ":" + minute;
     }
 
-    // Helper method to update an Array List item at position
-    public ArrayList<Object> updateArrayListItemAtPosition(ArrayList arrayList, int position, Object newObject){
+    // Array List update at position helper methods
+    // Helper method to update a String Array List item at position
+    public ArrayList<String> updateStringArrayListItemAtPosition(ArrayList<String> arrayList, int position, String newObject){
+        // If the sent array list is empty, return an empty array list
+        if (arrayList.size() == 0)
+            return new ArrayList<>();
+
         // Create a new instance of an Array List
-        ArrayList<Object> newArrayList = new ArrayList<>();
+        ArrayList<String> newArrayList = new ArrayList<>();
+        // Add all the previous items below position of the
+        // old Array List into the new one
+        for (int i = 0; i < position; i++)
+            newArrayList.add(arrayList.get(i));
+        // Add the new object at the top of the array list where
+        // the sent position should be
+        newArrayList.add(newObject);
+        // Add all the remaining previous items from 1 position
+        // above the sent position into the new Array List
+        for (int i = position + 1; i < arrayList.size(); i++)
+            newArrayList.add(arrayList.get(i));
+        // Finally, return the new Array List
+        return newArrayList;
+    }
+
+    // Helper method to update an Integer Array List item at position
+    public ArrayList<Integer> updateIntegerArrayListItemAtPosition(ArrayList<Integer> arrayList, int position, int newObject){
+        // If the sent array list is empty, return an empty array list
+        if (arrayList.size() == 0)
+            return new ArrayList<>();
+
+        // Create a new instance of an Array List
+        ArrayList<Integer> newArrayList = new ArrayList<>();
+        // Add all the previous items below position of the
+        // old Array List into the new one
+        for (int i = 0; i < position; i++)
+            newArrayList.add(arrayList.get(i));
+        // Add the new object at the top of the array list where
+        // the sent position should be
+        newArrayList.add(newObject);
+        // Add all the remaining previous items from 1 position
+        // above the sent position into the new Array List
+        for (int i = position + 1; i < arrayList.size(); i++)
+            newArrayList.add(arrayList.get(i));
+        // Finally, return the new Array List
+        return newArrayList;
+    }
+
+    // Helper method to update an OccurrenceTimePeriod Array List item at position
+    public ArrayList<OccurrenceTimePeriod> updateOccurrenceTimePeriodArrayListItemAtPosition
+        (ArrayList<OccurrenceTimePeriod> arrayList, int position, OccurrenceTimePeriod newObject){
+        // If the sent array list is empty, return an empty array list
+        if (arrayList.size() == 0)
+            return new ArrayList<>();
+
+        // Create a new instance of an Array List
+        ArrayList<OccurrenceTimePeriod> newArrayList = new ArrayList<>();
         // Add all the previous items below position of the
         // old Array List into the new one
         for (int i = 0; i < position; i++)
