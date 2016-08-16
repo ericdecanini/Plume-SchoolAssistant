@@ -2,12 +2,14 @@ package com.pdt.plume;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import com.pdt.plume.data.DbContract;
 
 import java.util.ArrayList;
 
 public class OccurrenceTimePeriod {
+    String LOG_TAG = OccurrenceTimePeriod.class.getSimpleName();
 
     // Basis and Week Type. The adapter will determine
     // the layout based on these variables
@@ -65,29 +67,30 @@ public class OccurrenceTimePeriod {
             // Filter out the full array of period strings and collect all
             // selected periods into the array list
             String[] splitPeriods = periods.split(":");
-            if (splitPeriods[0].equals("1"))
+            Log.v(LOG_TAG, "SplitPeriods: " + periods);
+            if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
                 periodList.add("1st");
-            if (splitPeriods[1].equals("1"))
+            if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
                 periodList.add("2nd");
-            if (splitPeriods[2].equals("1"))
+            if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
                 periodList.add("3rd");
-            if (splitPeriods[3].equals("1"))
+            if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
                 periodList.add("4th");
-            if (splitPeriods[4].equals("1"))
+            if (splitPeriods[4].equals("1") || splitPeriods[4].equals("3"))
                 periodList.add("5th");
-            if (splitPeriods[5].equals("1"))
+            if (splitPeriods[5].equals("1") || splitPeriods[5].equals("3"))
                 periodList.add("6th");
-            if (splitPeriods[6].equals("1"))
+            if (splitPeriods[6].equals("1") || splitPeriods[6].equals("3"))
                 periodList.add("7th");
-            if (splitPeriods[7].equals("1"))
+            if (splitPeriods[7].equals("1") || splitPeriods[7].equals("3"))
                 periodList.add("8th");
-            if (splitPeriods[8].equals("1"))
+            if (splitPeriods[8].equals("1") || splitPeriods[8].equals("3"))
                 periodList.add("9th");
-            if (splitPeriods[9].equals("1"))
+            if (splitPeriods[9].equals("1") || splitPeriods[9].equals("3"))
                 periodList.add("10th");
-            if (splitPeriods[10].equals("1"))
+            if (splitPeriods[10].equals("1") || splitPeriods[10].equals("3"))
                 periodList.add("11th");
-            if (splitPeriods[11].equals("1"))
+            if (splitPeriods[11].equals("1") || splitPeriods[11].equals("3"))
                 periodList.add("12th");
 
             // Build the main header string based on the
@@ -123,6 +126,65 @@ public class OccurrenceTimePeriod {
                 // Convert the StringBuilder into a string
                 time_period = builder.toString();
             }
+
+            // Build the alternate header string based on the
+            // count of selected periods using the Array List
+            periodList.clear();
+            if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
+                periodList.add("1st");
+            if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
+                periodList.add("2nd");
+            if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
+                periodList.add("3rd");
+            if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
+                periodList.add("4th");
+            if (splitPeriods[4].equals("2") || splitPeriods[4].equals("3"))
+                periodList.add("5th");
+            if (splitPeriods[5].equals("2") || splitPeriods[5].equals("3"))
+                periodList.add("6th");
+            if (splitPeriods[6].equals("2") || splitPeriods[6].equals("3"))
+                periodList.add("7th");
+            if (splitPeriods[7].equals("2") || splitPeriods[7].equals("3"))
+                periodList.add("8th");
+            if (splitPeriods[8].equals("2") || splitPeriods[8].equals("3"))
+                periodList.add("9th");
+            if (splitPeriods[9].equals("2") || splitPeriods[9].equals("3"))
+                periodList.add("10th");
+            if (splitPeriods[10].equals("2") || splitPeriods[10].equals("3"))
+                periodList.add("11th");
+            if (splitPeriods[11].equals("2") || splitPeriods[11].equals("3"))
+                periodList.add("12th");
+            if (periodList.size() != 0) {
+                // Initialise the StringBuilder variable
+                StringBuilder builder = new StringBuilder();
+
+                // Append the 1st item
+                builder.append(periodList.get(0));
+
+                // If there is only one item selected, use the appropriate ending
+                if (periodList.size() == 1) {
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_period));
+                }
+
+                // If there is more than one item selected,
+                // allow a string to fit multiple periods
+                else {
+                    for (int ii = 1; ii < periodList.size() - 1; ii++) {
+                        builder.append(", ");
+                        builder.append(periodList.get(ii));
+                    }
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_and));
+                    builder.append(" ");
+                    builder.append(periodList.get(periodList.size() - 1));
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_periods));
+                }
+
+                // Convert the StringBuilder into a string
+                time_period_alt = builder.toString();
+            }
         }
 
         // Set main header for block basis
@@ -130,13 +192,13 @@ public class OccurrenceTimePeriod {
             // Filter out the full array of period strings and collect all
             // selected periods into the array list
             String[] splitPeriods = periods.split(":");
-            if (splitPeriods[0].equals("1"))
+            if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
                 periodList.add("1st");
-            if (splitPeriods[1].equals("1"))
+            if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
                 periodList.add("2nd");
-            if (splitPeriods[2].equals("1"))
+            if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
                 periodList.add("3rd");
-            if (splitPeriods[3].equals("1"))
+            if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
                 periodList.add("4th");
 
             // Build the main header string based on the
@@ -171,6 +233,49 @@ public class OccurrenceTimePeriod {
 
                 // Convert the StringBuilder into a string
                 time_period = builder.toString();
+            }
+
+            // Build the alternate header string based on the
+            // count of selected periods using the Array List
+            periodList.clear();
+            if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
+                periodList.add("1st");
+            if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
+                periodList.add("2nd");
+            if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
+                periodList.add("3rd");
+            if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
+                periodList.add("4th");
+            if (periodList.size() != 0) {
+                // Initialise the StringBuilder variable
+                StringBuilder builder = new StringBuilder();
+
+                // Append the 1st item
+                builder.append(periodList.get(0));
+
+                // If there is only one item selected, use the appropriate ending
+                if (periodList.size() == 1) {
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_period));
+                }
+
+                // If there is more than one item selected,
+                // allow a string to fit multiple periods
+                else {
+                    for (int ii = 1; ii < periodList.size() - 1; ii++) {
+                        builder.append(", ");
+                        builder.append(periodList.get(ii));
+                    }
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_and));
+                    builder.append(" ");
+                    builder.append(periodList.get(periodList.size() - 1));
+                    builder.append(" ");
+                    builder.append(context.getString(R.string.class_time_list_header_substring_periods));
+                }
+
+                // Convert the StringBuilder into a string
+                time_period_alt = builder.toString();
             }
         }
 

@@ -29,10 +29,12 @@ public class ScheduleFragment extends Fragment {
     // Constantly used variables
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
 
-    // UI Elements
-    ListView listView;
+    // CAM Variables
     private Menu mActionMenu;
     private int mOptionMenuCount;
+
+    // UI Elements
+    ListView listView;
 
     // Flags
     boolean isTablet;
@@ -62,9 +64,9 @@ public class ScheduleFragment extends Fragment {
 
         // Set the adapter and listeners of the listview
         if (listView != null) {
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(listener());
+            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setMultiChoiceModeListener(new ModeCallback());
 
             if (isTablet)
@@ -110,7 +112,7 @@ public class ScheduleFragment extends Fragment {
         };
     }
 
-
+    // Subclass for the Contextual Action Mode
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
         List<Integer> CAMselectedItemsList = new ArrayList<>();

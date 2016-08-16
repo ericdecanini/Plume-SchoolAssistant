@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -657,6 +658,14 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                     // and into the list view in the NewScheduleActivity
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
+
+                        // Validate that at least one day has been selected
+                        if (classDays.equals("0:0:0:0:0:0:0")) {
+                            Toast.makeText(getContext(), getString(R.string.new_schedule_toast_validation_no_days_selected),
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         // If the fragment was started through the list view's OnItemClick
                         // Pass true as the Edit Flag to tell the activity to update instead
                         // the occurrence item instead of adding a new item

@@ -6,11 +6,15 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,6 +29,7 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
@@ -43,6 +48,11 @@ public class NewScheduleActivity extends AppCompatActivity
     // Constantly Used Variables
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
     Utility utility = new Utility();
+
+    // CAM Variables
+    private Menu mActionMenu;
+    private int mOptionMenuCount;
+    List<Integer> CAMselectedItemsList = new ArrayList<>();
 
     // UI Elements
     EditText fieldTitle;
@@ -83,6 +93,9 @@ public class NewScheduleActivity extends AppCompatActivity
     int[] previousButtonsChecked;
     public static int resourceId = -1;
 
+    // Flags
+    boolean isTablet;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +104,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         if (getSupportActionBar() != null)
             getSupportActionBar().setElevation(0f);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Get references to the UI elements
         fieldTitle = (EditText) findViewById(R.id.field_new_schedule_title);
@@ -169,6 +183,8 @@ public class NewScheduleActivity extends AppCompatActivity
         classTimeAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, occurrenceTimePeriodList);
         classTimeList.setAdapter(classTimeAdapter);
         classTimeList.setOnItemClickListener(OccurrenceTimePeriodListener());
+        classTimeList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        classTimeList.setMultiChoiceModeListener(new ModeCallback());
     }
 
     @Override
@@ -191,7 +207,7 @@ public class NewScheduleActivity extends AppCompatActivity
             case R.id.action_done:
                 // Check if the title field is empty, disallow insertion of it is
                 if ((fieldTitle.getText().toString().equals(""))){
-                    Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_error_title_not_found),
+                    Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_title_not_found),
                             Toast.LENGTH_SHORT).show();
                     return false;
                 }
@@ -294,6 +310,79 @@ public class NewScheduleActivity extends AppCompatActivity
         return false;
     }
 
+    private void editClassTimeItem(int position){
+        // Get the data of the selected row through the Array Lists
+        // and put it in a bundle
+        Bundle args = new Bundle();
+        String occurrence = occurrenceList.get(position);
+        args.putString("occurrence", occurrence);
+        args.putString("weekType", occurrence.split(":")[1]);
+        args.putString("period", periodsList.get(position));
+        args.putInt("rowId", position);
+        args.putInt("timeInSeconds", timeInList.get(position));
+        args.putInt("timeOutSeconds", timeOutList.get(position));
+        args.putInt("timeInAltSeconds", timeInAltList.get(position));
+        args.putInt("timeOutAltSeconds", timeOutAltList.get(position));
+
+        // Check if the activity is in Contextual Action Mode
+        // and emulate a back press to destroy it if it is
+        if (CAMselectedItemsList != null && CAMselectedItemsList.size() > 0){
+            CAMselectedItemsList.clear();
+            NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+        }
+
+        // Create a new fragment based on the basis and launch it
+        switch (occurrence.split(":")[0]){
+            case "0":
+                // Check if other dialogs are present and remove them if so
+                FragmentTransaction ftTime = getFragmentManager().beginTransaction();
+                Fragment prevTime = getFragmentManager().findFragmentByTag("dialog");
+                if (prevTime != null) {
+                    ftTime.remove(prevTime);
+                }
+                ftTime.addToBackStack(null);
+
+                // Show the dialog
+                DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
+                fragmentTime.setArguments(args);
+                fragmentTime.show(getSupportFragmentManager(), "dialog");
+                break;
+
+            case "1":
+                // Check if other dialogs are present and remove them if so
+                FragmentTransaction ftPeriod = getFragmentManager().beginTransaction();
+                Fragment prevPeriod = getFragmentManager().findFragmentByTag("dialog");
+                if (prevPeriod != null) {
+                    ftPeriod.remove(prevPeriod);
+                }
+                ftPeriod.addToBackStack(null);
+
+                // Show the dialog
+                DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
+                fragmentPeriod.setArguments(args);
+                fragmentPeriod.show(getSupportFragmentManager(), "dialog");
+
+                break;
+
+            case "2":
+                // Check if other dialogs are present and remove them if so
+                FragmentTransaction ftBlock = getFragmentManager().beginTransaction();
+                Fragment prevBlock = getFragmentManager().findFragmentByTag("dialog");
+                if (prevBlock != null) {
+                    ftBlock.remove(prevBlock);
+                }
+                ftBlock.addToBackStack(null);
+
+                // Show the dialog
+                DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
+                fragmentBlock.setArguments(args);
+                fragmentBlock.show(getSupportFragmentManager(), "dialog");
+
+                break;
+        }
+    }
+
     private View.OnClickListener addClassTime() {
         return new View.OnClickListener() {
             @Override
@@ -383,70 +472,11 @@ public class NewScheduleActivity extends AppCompatActivity
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Get the data of the selected row through the Array Lists
-                // and put it in a bundle
-                Bundle args = new Bundle();
-                String occurrence = occurrenceList.get(position);
-                args.putString("occurrence", occurrence);
-                args.putString("weekType", occurrence.split(":")[1]);
-                args.putString("period", periodsList.get(position));
-                args.putInt("rowId", position);
-                args.putInt("timeInSeconds", timeInList.get(position));
-                args.putInt("timeOutSeconds", timeOutList.get(position));
-                args.putInt("timeInAltSeconds", timeInAltList.get(position));
-                args.putInt("timeOutAltSeconds", timeOutAltList.get(position));
-
-                // Create a new fragment based on the basis and launch it
-                switch (occurrence.split(":")[0]){
-                    case "0":
-                        // Check if other dialogs are present and remove them if so
-                        FragmentTransaction ftTime = getFragmentManager().beginTransaction();
-                        Fragment prevTime = getFragmentManager().findFragmentByTag("dialog");
-                        if (prevTime != null) {
-                            ftTime.remove(prevTime);
-                        }
-                        ftTime.addToBackStack(null);
-
-                        // Show the dialog
-                        DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
-                        fragmentTime.setArguments(args);
-                        fragmentTime.show(getSupportFragmentManager(), "dialog");
-                        break;
-
-                    case "1":
-                        // Check if other dialogs are present and remove them if so
-                        FragmentTransaction ftPeriod = getFragmentManager().beginTransaction();
-                        Fragment prevPeriod = getFragmentManager().findFragmentByTag("dialog");
-                        if (prevPeriod != null) {
-                            ftPeriod.remove(prevPeriod);
-                        }
-                        ftPeriod.addToBackStack(null);
-
-                        // Show the dialog
-                        DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
-                        fragmentPeriod.setArguments(args);
-                        fragmentPeriod.show(getSupportFragmentManager(), "dialog");
-                        break;
-
-                    case "2":
-                        // Check if other dialogs are present and remove them if so
-                        FragmentTransaction ftBlock = getFragmentManager().beginTransaction();
-                        Fragment prevBlock = getFragmentManager().findFragmentByTag("dialog");
-                        if (prevBlock != null) {
-                            ftBlock.remove(prevBlock);
-                        }
-                        ftBlock.addToBackStack(null);
-
-                        // Show the dialog
-                        DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
-                        fragmentBlock.setArguments(args);
-                        fragmentBlock.show(getSupportFragmentManager(), "dialog");
-                        break;
-                }
-            }
+                editClassTimeItem(position);    }
         };
     }
 
+    // Interfaces and Override Methods
     @Override
     public void onBasisSelected(String basis) {
         // Interface launched by ClassTimeOneFragment when basis is selected
@@ -479,7 +509,6 @@ public class NewScheduleActivity extends AppCompatActivity
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
-
     @Override
     public void onWeekTypeSelected(String weekType) {
         // Interface launched by ClassTimeTwoFragment when WeekType is selected
@@ -516,7 +545,6 @@ public class NewScheduleActivity extends AppCompatActivity
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
-
     @Override
     public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
                                int timeInAltSeconds, int timeOutAltSeconds, String periods,
@@ -526,6 +554,8 @@ public class NewScheduleActivity extends AppCompatActivity
         // Occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, and periodsList are all added to their respective Array Lists. These will later be added to the database
         // A new item in the occurrenceTimePeriodList is also added. This is the visual list view from the NewScheduleActivity.
         // SharedPreferences "basis" and "weekType" will also be updated
+
+        // Set the global variable for the selected days
         this.classDays = classDays;
 
         // Remove the fragment
@@ -550,7 +580,7 @@ public class NewScheduleActivity extends AppCompatActivity
             // Update periodList
             previousStringObjects.addAll(periodsList);
             periodsList.clear();
-            periodsList.addAll(utility.updateStringArrayListItemAtPosition(periodsList, rowId, periods));
+            periodsList.addAll(utility.updateStringArrayListItemAtPosition(previousStringObjects, rowId, periods));
             previousStringObjects.clear();
             // Update timeInList
             previousIntObjects.addAll(timeInList);
@@ -620,7 +650,6 @@ public class NewScheduleActivity extends AppCompatActivity
                 .putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType)
                 .apply();
     }
-
     @Override
     public void onBasisTextviewSelected() {
         // Interface launched from ClassTime[Two/Three]Fragment to restart the basis selection
@@ -633,7 +662,6 @@ public class NewScheduleActivity extends AppCompatActivity
         DialogFragment fragment = ClassTimeOneFragment.newInstance(0);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
-
     @Override
     public void onWeektypeTextViewSelectedListener(String basis) {
         // Interface launched from ClassTimeThreeFragment to restart the weekType selection
@@ -649,7 +677,6 @@ public class NewScheduleActivity extends AppCompatActivity
         // Check if other dialogs are present and remove them if so
 
     }
-
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         // Interface launched by TimePickerDialog to restart ClassTimeThreeFragmentTime with data from the dialog
@@ -679,7 +706,6 @@ public class NewScheduleActivity extends AppCompatActivity
         fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
-
     @Override
     public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds,
                                int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
@@ -698,5 +724,140 @@ public class NewScheduleActivity extends AppCompatActivity
         return basis + ":" + weekType + ":" + classDays;
     }
 
+    // Subclass for the Contextual Action Mode
+    private class ModeCallback implements ListView.MultiChoiceModeListener {
+
+        @Override
+        public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
+            // Get the number of list items selected
+            // and set the window subtitle based on that
+            final int checkedCount = classTimeList.getCheckedItemCount();
+            switch (checkedCount) {
+                case 0:
+                    mode.setSubtitle(null);
+                    break;
+                case 1:
+                    mOptionMenuCount = 0;
+                    mode.setSubtitle("One item selected");
+                    break;
+                default:
+                    mOptionMenuCount = 1;
+                    mode.setSubtitle("" + checkedCount + " items selected");
+                    break;
+            }
+
+            // If the clicked item became selected, add it to
+            // an array list of selected items
+            if (checked)
+                CAMselectedItemsList.add(position);
+
+            // If the clicked item became deselected, get its item id
+            // and remove it from the array list
+            else {
+                int itemId = -1;
+                // Scan through the array list until the
+                // item's value matches its position
+                // When it does, set the itemId to the matched position
+                // and then remove the item in that array list
+                // matching that position
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    if (position == CAMselectedItemsList.get(i)) {
+                        itemId = i;
+                    }
+                }
+                if (itemId != -1)
+                    CAMselectedItemsList.remove(itemId);
+            }
+
+            // Invalidating the Action Mode calls onPrepareActionMode
+            // which will show or hide the edit menu action based on
+            // the number of items selected
+            mode.invalidate();
+        }
+        @Override
+        public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
+            // Inflate the action menu and set the global menu variable
+            MenuInflater inflater = NewScheduleActivity.this.getMenuInflater();
+            inflater.inflate(R.menu.menu_action_mode_single, menu);
+            mActionMenu = menu;
+
+            // Set the title of the contextual action bar
+            mode.setTitle(NewScheduleActivity.this.getString(R.string.select_items));
+
+            // Set the colour of the contextual action bar
+            ColorDrawable colorDrawable;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                colorDrawable = new ColorDrawable(getColor(R.color.gray_500));
+                NewScheduleActivity.this.getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+                findViewById(R.id.field_new_schedule_title).setBackgroundColor(getColor(R.color.gray_500));
+            } else {
+                colorDrawable = new ColorDrawable(getResources().getColor(R.color.gray_500));
+                findViewById(R.id.field_new_schedule_title).setBackgroundColor(getResources().getColor(R.color.gray_500));
+            }
+            NewScheduleActivity.this.getSupportActionBar().setBackgroundDrawable(colorDrawable);
+
+            return true;
+        }
+        @Override
+        public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+            // Checks the count of items selected.
+            // If it is one, show the edit menu action.
+            // If it is more than one, hide the edit menu action.
+            MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
+            if (mOptionMenuCount == 0)
+                menuItem.setVisible(true);
+            else
+                menuItem.setVisible(false);
+            return true;
+        }
+        @Override
+        public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_delete:
+                    deleteSelectedItems();
+                    break;
+
+                case R.id.action_edit:
+                    if (CAMselectedItemsList.size() == 1)
+                        editClassTimeItem(CAMselectedItemsList.get(0));
+                    else Log.w(LOG_TAG, "Cancelled edit action due to more than one item selected");
+                    break;
+            }
+            return true;
+        }
+        @Override
+        public void onDestroyActionMode(android.view.ActionMode mode) {
+            // Clear the array list of selected items and revert the window colour back to normal
+            CAMselectedItemsList.clear();
+
+            // Set back the colour of the action bar to normal
+            ColorDrawable colorDrawable;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                colorDrawable = new ColorDrawable(getColor(R.color.colorPrimary));
+                NewScheduleActivity.this.getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+                findViewById(R.id.field_new_schedule_title).setBackgroundColor(getColor(R.color.colorPrimary));
+            } else {
+                colorDrawable = new ColorDrawable(getResources().getColor(R.color.gray_500));
+                findViewById(R.id.field_new_schedule_title).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            }
+            NewScheduleActivity.this.getSupportActionBar().setBackgroundDrawable(colorDrawable);
+        }
+
+        private void deleteSelectedItems() {
+            // Delete all the selected items based on the itemIDs
+            // Stored in the array list
+            for(int i = 0; i < CAMselectedItemsList.size(); i++)
+                    occurrenceTimePeriodList.remove((int)CAMselectedItemsList.get(i));
+
+            // Notify the adapter of the changes
+            classTimeAdapter.notifyDataSetChanged();
+
+            // Then clear the selected items array list and emulate
+            // a back button press to exit the Action Mode
+            CAMselectedItemsList.clear();
+            NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+        }
+    }
 
 }

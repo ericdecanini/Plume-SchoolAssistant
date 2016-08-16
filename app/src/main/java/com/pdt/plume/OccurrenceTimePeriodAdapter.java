@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import java.util.List;
 
 
 public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
+    String LOG_TAG = OccurrenceTimePeriodAdapter.class.getSimpleName();
 
     // Staple adapter variables
     Context context;
@@ -207,7 +209,7 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
         // If the item's basis is Block based, change the week text to Day A and Day B
         // and hide the row of day buttons
-        else {
+        else {holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
             ((TextView) row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_time_block_day_a));
             ((TextView) row.findViewById(R.id.list_item_time_period_week_alt)).setText(context.getString(R.string.class_time_block_day_b));
             row.findViewById(R.id.list_item_time_period_days).setVisibility(View.GONE);

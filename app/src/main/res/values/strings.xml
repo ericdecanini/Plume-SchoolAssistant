@@ -29,7 +29,9 @@
     <!-- Strings for NewScheduleActivity -->
 
         <!-- Actions and Toasts -->
-        <string name="new_schedule_toast_error_title_not_found">Please enter a title</string>
+        <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
+        <string name="new_schedule_toast_validation_no_days_selected">Please select at least one day</string>
+        <string name="new_schedule_toast_validation_no_period_selected">Please select at least one period</string>
 
         <!-- Main UI -->
         <string name="new_schedule_hint">Enter title here&#8230;</string>
@@ -41,7 +43,7 @@
         <string name="new_schedule_room">Room</string>
     
             <!-- Class Time List -->
-            <string name="class_time_list_header_substring_and">period</string>
+            <string name="class_time_list_header_substring_and">and</string>
             <string name="class_time_list_header_substring_period">period</string>
             <string name="class_time_list_header_substring_periods">periods</string>
 

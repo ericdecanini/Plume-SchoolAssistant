@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class ClassTimeThreeFragmentPeriod extends DialogFragment {
@@ -888,9 +889,29 @@ public class ClassTimeThreeFragmentPeriod extends DialogFragment {
                         basisTextviewSelectedListener.onBasisTextviewSelected();
                         break;
 
+                    // 1 is the fixed value passed as the basis because the activity itself
+                    // (PeriodBased) was launched as a result of the basis being 0
+                    case R.id.class_time_two_value:
+                        weektypeTextviewSelectedListener.onWeektypeTextViewSelectedListener("1");
+                        break;
+
                     case R.id.class_three_done:
                         String classDays = processClassDaysString();
                         String periods = processPeriodsString();
+
+                        // Validate that at least one day has been selected
+                        if (classDays.equals("0:0:0:0:0:0:0")) {
+                            Toast.makeText(getContext(), getString(R.string.new_schedule_toast_validation_no_days_selected),
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // Validate that at least one period has been selected
+                        if (periods.equals("0:0:0:0:0:0:0:0:0:0:0:0")) {
+                            Toast.makeText(getContext(), getString(R.string.new_schedule_toast_validation_no_period_selected),
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         // If the fragment was started through the list view's OnItemClick
                         // Pass true as the Edit Flag to tell the activity to update instead
                         // the occurrence item instead of adding a new item
