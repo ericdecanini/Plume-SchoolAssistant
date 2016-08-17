@@ -26,9 +26,11 @@
             android:name=".NewScheduleActivity"
             android:noHistory="true"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".NewTaskActivity"
+        <activity
+            android:name=".NewTaskActivity"
             android:noHistory="true"
             android:parentActivityName=".MainActivity" />
+        <activity android:name=".ClassesActivity"></activity>
     </application>
 
 </manifest>

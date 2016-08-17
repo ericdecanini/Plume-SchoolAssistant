@@ -4,7 +4,6 @@ package com.pdt.plume;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,28 +12,29 @@ import android.view.Window;
 import android.widget.Button;
 
 
-public class ClassTimeTwoFragment extends DialogFragment {
+public class AddClassTimeOneFragment extends DialogFragment {
 
     // Public Constructor
-    public static ClassTimeTwoFragment newInstance(int title) {
-        ClassTimeTwoFragment fragment = new ClassTimeTwoFragment();
+    public static AddClassTimeOneFragment newInstance(int title) {
+        AddClassTimeOneFragment fragment = new AddClassTimeOneFragment();
         Bundle args = new Bundle();
         args.putInt("title", title);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public interface onWeekTypeSelectedListener {
-        public void onWeekTypeSelected(String weekType);
+    public interface onBasisSelectedListener {
+        //Pass all data through input params here
+        public void onBasisSelected(String basis);
     }
 
-    onWeekTypeSelectedListener weekTypeSelectedListener;
+    onBasisSelectedListener basisSelectedListener;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            weekTypeSelectedListener = (onWeekTypeSelectedListener) context;
+            basisSelectedListener = (onBasisSelectedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
         }
@@ -51,15 +51,17 @@ public class ClassTimeTwoFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.class_time_two, container, false);
+        View rootView = inflater.inflate(R.layout.add_class_time_one, container, false);
 
         // Get references to each UI element
-        Button weekSameButton = (Button) rootView.findViewById(R.id.class_two_weeksame);
-        Button weekAltButton = (Button) rootView.findViewById(R.id.class_two_weekalt);
+        Button timeBasedButton = (Button) rootView.findViewById(R.id.class_one_timebased);
+        Button periodBasedButton = (Button) rootView.findViewById(R.id.class_one_periodbased);
+        Button blockBasedButton = (Button) rootView.findViewById(R.id.class_one_blockbased);
 
         // Set the OnClickListener of each UI element
-        weekSameButton.setOnClickListener(listener());
-        weekAltButton.setOnClickListener(listener());
+        timeBasedButton.setOnClickListener(listener());
+        periodBasedButton.setOnClickListener(listener());
+        blockBasedButton.setOnClickListener(listener());
 
         return rootView;
     }
@@ -69,13 +71,16 @@ public class ClassTimeTwoFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
-                    // Run the interface sending the week type parameter
+                    // Run the interface sending the basis parameter
                     // based on the button selected
-                    case R.id.class_two_weeksame:
-                        weekTypeSelectedListener.onWeekTypeSelected("0");
+                    case R.id.class_one_timebased:
+                        basisSelectedListener.onBasisSelected("0");
                         break;
-                    case R.id.class_two_weekalt:
-                        weekTypeSelectedListener.onWeekTypeSelected("1");
+                    case R.id.class_one_periodbased:
+                        basisSelectedListener.onBasisSelected("1");
+                        break;
+                    case R.id.class_one_blockbased:
+                        basisSelectedListener.onBasisSelected("2");
                         break;
                 }
             }

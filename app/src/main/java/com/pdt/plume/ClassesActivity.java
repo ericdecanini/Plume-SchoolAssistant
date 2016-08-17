@@ -1,33 +1,30 @@
 package com.pdt.plume;
 
-
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
-import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScheduleFragment extends Fragment {
+public class ClassesActivity extends AppCompatActivity {
     // Constantly used variables
-    String LOG_TAG = ScheduleFragment.class.getSimpleName();
+    String LOG_TAG = ClassesActivity.class.getSimpleName();
 
     // CAM Variables
     private Menu mActionMenu;
@@ -39,27 +36,21 @@ public class ScheduleFragment extends Fragment {
     // Flags
     boolean isTablet;
 
-    // Required empty public constructor
-    public ScheduleFragment() {
-        // Required empty public constructor
-    }
-
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_classes);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Get a reference to the database
-        DbHelper dbHelper = new DbHelper(getContext());
+        DbHelper dbHelper = new DbHelper(this);
 
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
-        listView = (ListView) rootView.findViewById(R.id.schedule_list);
-        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
+        listView = (ListView) findViewById(R.id.schedule_list);
+        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(this,
                 R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
 
         // Set the adapter and listeners of the list view
@@ -75,40 +66,27 @@ public class ScheduleFragment extends Fragment {
 
         // Get a reference to the FAB and set its OnClickListener
         // which is an intent to add a new schedule
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        // Inflate the layout for this fragment
-        return rootView;
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (fab != null)
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(ClassesActivity.this, NewScheduleActivity.class);
+                    startActivity(intent);
+                }
+            });
     }
 
     public AdapterView.OnItemClickListener listener() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // If the used device is a tablet, replace the
-                // right-hand side fragment with a ScheduleDetailFragment
+                // Start a new ScheduleDetailActivity
                 // passing the data of the clicked row to the fragment
-                if (isTablet) {
-                    ScheduleDetailFragment fragment = new ScheduleDetailFragment();
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.detail_container, fragment)
-                            .commit();
-                }
-
-                // If the used device is a phone, start a new ScheduleDetailActivity
-                // passing the data of the clicked row to the fragment
-                else {
-                    Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                    Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                     startActivity(intent);
                 }
-            }
+
         };
     }
 
@@ -168,19 +146,17 @@ public class ScheduleFragment extends Fragment {
         @Override
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
             // Inflate the action menu and set the global menu variable
-            MenuInflater inflater = getActivity().getMenuInflater();
+            MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
-
             // Set the title and colour of the contextual action bar
-            mode.setTitle(getContext().getString(R.string.select_items));
+            mode.setTitle(getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
+                getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+            findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
             if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
-
+                findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
             return true;
         }
 
@@ -209,7 +185,7 @@ public class ScheduleFragment extends Fragment {
                     break;
 
                 default:
-                    Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
+                    Toast.makeText(ClassesActivity.this, "Clicked " + item.getTitle(),
                             Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -222,15 +198,15 @@ public class ScheduleFragment extends Fragment {
             CAMselectedItemsList.clear();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+            findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         }
 
         private void deleteSelectedItems() {
             // Get a reference to the database
-            DbHelper db = new DbHelper(getActivity());
+            DbHelper db = new DbHelper(ClassesActivity.this);
 
             // Get a cursor by getting the currentDayScheduleData
             // Which should match the list view of the ScheduleFragment
@@ -240,7 +216,7 @@ public class ScheduleFragment extends Fragment {
             // Stored in the array list
             for(int i = 0; i < CAMselectedItemsList.size(); i++) {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
-                    db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                    db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID)));
                 }
             }
 
@@ -257,8 +233,8 @@ public class ScheduleFragment extends Fragment {
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
             CAMselectedItemsList.clear();
-            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
         private void editSelectedItem(){
@@ -270,27 +246,27 @@ public class ScheduleFragment extends Fragment {
 
                 // Get a reference to the database and
                 // Get a cursor of the current day schedule data
-                DbHelper db = new DbHelper(getActivity());
+                DbHelper db = new DbHelper(ClassesActivity.this);
                 Cursor cursor = db.getCurrentDayScheduleData();
 
-                // Move the cursor to the position of the selected item
+                // Move the cursor to the first position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
                     // Get its Id and Title
-                    id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
-                    title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                    id = cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+                    title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
                     cursor.close();
 
                     // Create an intent to NewScheduleActivity and include the selected
                     // item's id, title, and an edit flag as extras
-                    Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
+                    Intent intent = new Intent(ClassesActivity.this, NewScheduleActivity.class);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
 
                     // Clear the selected items list, exit the CAM and launch the activity
                     CAMselectedItemsList.clear();
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                    dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
                     startActivity(intent);
                 }
             }

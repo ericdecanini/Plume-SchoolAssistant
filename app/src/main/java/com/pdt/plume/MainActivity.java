@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // UI Elements
     Toolbar mToolbar;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private TabsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
     @Override
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             toggle.syncState();
         }
 
+        // Initialise the Navigation View and set its listener
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null)
             navigationView.setNavigationItemSelectedListener(this);
@@ -79,7 +80,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer != null)
             if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START);
-            } else {
+            }
+            else {
                 super.onBackPressed();
             }
     }
@@ -91,18 +93,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_classes) {
+            startActivity(new Intent
+                    (this, ClassesActivity.class));
         }
 
         // Close the navigation drawer upon item selection
@@ -122,9 +115,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -138,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void initTabs(){
         // Create the adapter that will return a fragment for each of the two
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mSectionsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -166,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             actionBar.setDisplayShowTitleEnabled(false);
         
         // Get a reference to the spinner UI element
+        // and set its adapter and listener
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         if (spinner != null) {
             // Set the adapter of the spinner
@@ -188,7 +179,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     .replace(R.id.container, new ScheduleFragment())
                                     .commit();
                             break;
-
                         case 1:
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.container, new TasksFragment())
@@ -198,9 +188,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                }
-
+                public void onNothingSelected(AdapterView<?> parent) {}
             });
 
             // Check if the activity was started from the tasks activity
@@ -211,10 +199,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    public class TabsPagerAdapter extends FragmentPagerAdapter {
 
         // Default public constructor
-        public SectionsPagerAdapter(FragmentManager fm) {
+        public TabsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 

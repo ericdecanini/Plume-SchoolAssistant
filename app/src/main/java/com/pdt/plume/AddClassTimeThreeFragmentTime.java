@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,10 @@ import android.widget.Toast;
 import java.util.Calendar;
 
 
-public class ClassTimeThreeFragmentTime extends DialogFragment{
+public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
     // Constantly used variables
-    String LOG_TAG = ClassTimeThreeFragmentTime.class.getSimpleName();
+    String LOG_TAG = AddClassTimeThreeFragmentTime.class.getSimpleName();
     Utility utility = new Utility();
 
     // UI Elements
@@ -53,8 +52,8 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
     onWeektypeTextviewSelectedListener weektypeTextviewSelectedListener;
 
     // Public Constructor
-    public static ClassTimeThreeFragmentTime newInstance(int title) {
-        ClassTimeThreeFragmentTime fragment = new ClassTimeThreeFragmentTime();
+    public static AddClassTimeThreeFragmentTime newInstance(int title) {
+        AddClassTimeThreeFragmentTime fragment = new AddClassTimeThreeFragmentTime();
         Bundle args = new Bundle();
         args.putInt("title", title);
         fragment.setArguments(args);
@@ -69,7 +68,8 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                                    boolean FLAG_EDIT, int rowId);
     }
     public interface onTimeSelectedListener {
-        public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds, int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
+        public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
+                                   int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
     }
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
@@ -104,7 +104,7 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.class_time_three_time, container, false);
+        View rootView = inflater.inflate(R.layout.add_class_time_three_time, container, false);
 
         // Get references to each UI element
         TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);
@@ -179,6 +179,9 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
             // If the fragment contains the 'hourOfDay' string, it must contain other previous state data
             if (args.containsKey("hourOfDay")){
                 // Get previous state data
+                String weekType = args.getString("weekType", "-1");
+                String classDays = args.getString("classDays", "-1");
+                String[] splitClassDays = classDays.split(":");
                 int hourOfDay = args.getInt("hourOfDay");
                 int minute = args.getInt("minute");
                 int previousTimeInSeconds = args.getInt("timeInSeconds");
@@ -186,6 +189,82 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                 int previousTimeInAltSeconds = args.getInt("timeInAltSeconds");
                 int previousTimeOutAltSeconds = args.getInt("timeOutAltSeconds");
                 isButtonChecked = args.getIntArray("buttonsChecked");
+
+                // Auto-fill the days row and binary data
+                if (splitClassDays[0].equals("1") || splitClassDays[0].equals("3")){
+                    isButtonChecked[0] = 1;
+                    sunday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+                if (splitClassDays[1].equals("1") || splitClassDays[1].equals("3")){
+                    isButtonChecked[1] = 1;
+                    monday.setImageResource(R.drawable.ui_monday_selected);
+                }
+                if (splitClassDays[2].equals("1") || splitClassDays[2].equals("3")){
+                    isButtonChecked[2] = 1;
+                    tuesday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitClassDays[3].equals("1") || splitClassDays[3].equals("3")){
+                    isButtonChecked[3] = 1;
+                    wednesday.setImageResource(R.drawable.ui_wednesday_selected);
+                }
+                if (splitClassDays[4].equals("1") || splitClassDays[4].equals("3")){
+                    isButtonChecked[4] = 1;
+                    thursday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                }
+                if (splitClassDays[5].equals("1") || splitClassDays[5].equals("3")){
+                    isButtonChecked[5] = 1;
+                    friday.setImageResource(R.drawable.ui_friday_selected);
+                }
+                if (splitClassDays[6].equals("1") || splitClassDays[6].equals("3")){
+                    isButtonChecked[6] = 1;
+                    saturday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                }
+
+                // Do so for alternate layout if it is available
+                if (weekType.equals("1")){
+                    if (splitClassDays[0].equals("2") || splitClassDays[0].equals("3")){
+                        if (isButtonChecked[0] == 1)
+                            isButtonChecked[0] = 3;
+                        else isButtonChecked[0] = 2;
+                        sundayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                    if (splitClassDays[1].equals("2") || splitClassDays[1].equals("3")){
+                        if (isButtonChecked[1] == 1)
+                            isButtonChecked[1] = 3;
+                        else isButtonChecked[1] = 2;
+                        mondayAlt.setImageResource(R.drawable.ui_monday_selected);
+                    }
+                    if (splitClassDays[2].equals("2") || splitClassDays[2].equals("3")){
+                        if (isButtonChecked[2] == 1)
+                            isButtonChecked[2] = 3;
+                        else isButtonChecked[2] = 2;
+                        tuesdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitClassDays[3].equals("2") || splitClassDays[3].equals("3")){
+                        if (isButtonChecked[3] == 1)
+                            isButtonChecked[3] = 3;
+                        else isButtonChecked[3] = 2;
+                        wednesdayAlt.setImageResource(R.drawable.ui_wednesday_selected);
+                    }
+                    if (splitClassDays[4].equals("2") || splitClassDays[4].equals("3")){
+                        if (isButtonChecked[4] == 1)
+                            isButtonChecked[4] = 3;
+                        else isButtonChecked[4] = 2;
+                        thursdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    }
+                    if (splitClassDays[5].equals("2") || splitClassDays[5].equals("3")){
+                        if (isButtonChecked[5] == 1)
+                            isButtonChecked[5] = 3;
+                        else isButtonChecked[5] = 2;
+                        fridayAlt.setImageResource(R.drawable.ui_friday_selected);
+                    }
+                    if (splitClassDays[6].equals("2") || splitClassDays[6].equals("3")){
+                        if (isButtonChecked[6] == 1)
+                            isButtonChecked[6] = 3;
+                        else isButtonChecked[6] = 2;
+                        saturdayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    }
+                }
 
                 // Set the default values of the time fields accordingly
                 // as well as update the fragment's global variables of time
@@ -699,7 +778,8 @@ public class ClassTimeThreeFragmentTime extends DialogFragment{
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
 
                 // Launch the interface to send the fragment's current state data to the activity
-                timeSelectedListener.onTimeSelected(resourceId, timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
+                timeSelectedListener.onTimeSelected(resourceId, processClassDaysString(), timeInSeconds, timeOutSeconds,
+                        timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
             }
         };
     }

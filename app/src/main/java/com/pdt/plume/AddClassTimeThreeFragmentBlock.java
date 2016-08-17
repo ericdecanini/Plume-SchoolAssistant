@@ -4,19 +4,17 @@ package com.pdt.plume;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class ClassTimeThreeFragmentBlock extends DialogFragment {
+public class AddClassTimeThreeFragmentBlock extends DialogFragment {
 
     // Fragment input storage variables
     String[] isPeriodChecked = {"0", "0", "0", "0"};
@@ -26,8 +24,8 @@ public class ClassTimeThreeFragmentBlock extends DialogFragment {
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
 
     // Public Constructor
-    public static ClassTimeThreeFragmentBlock newInstance(int title) {
-        ClassTimeThreeFragmentBlock fragment = new ClassTimeThreeFragmentBlock();
+    public static AddClassTimeThreeFragmentBlock newInstance(int title) {
+        AddClassTimeThreeFragmentBlock fragment = new AddClassTimeThreeFragmentBlock();
         Bundle args = new Bundle();
         args.putInt("title", title);
         fragment.setArguments(args);
@@ -69,7 +67,7 @@ public class ClassTimeThreeFragmentBlock extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.class_time_three_block, container, false);
+        View rootView = inflater.inflate(R.layout.add_class_time_three_block, container, false);
 
         // Get references to each UI element
         TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);

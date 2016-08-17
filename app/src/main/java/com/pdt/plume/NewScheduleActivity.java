@@ -33,17 +33,17 @@ import java.util.List;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
-        ClassTimeOneFragment.onBasisSelectedListener,
-        ClassTimeTwoFragment.onWeekTypeSelectedListener,
-        ClassTimeThreeFragmentTime.onTimeSelectedListener,
-        ClassTimeThreeFragmentTime.onDaysSelectedListener,
-        ClassTimeThreeFragmentPeriod.onDaysSelectedListener,
-        ClassTimeThreeFragmentBlock.onDaysSelectedListener,
-        ClassTimeThreeFragmentTime.onBasisTextviewSelectedListener,
-        ClassTimeThreeFragmentPeriod.onBasisTextviewSelectedListener,
-        ClassTimeThreeFragmentBlock.onBasisTextviewSelectedListener,
-        ClassTimeThreeFragmentTime.onWeektypeTextviewSelectedListener,
-        ClassTimeThreeFragmentPeriod.onWeektypeTextviewSelectedListener {
+        AddClassTimeOneFragment.onBasisSelectedListener,
+        AddClassTimeTwoFragment.onWeekTypeSelectedListener,
+        AddClassTimeThreeFragmentTime.onTimeSelectedListener,
+        AddClassTimeThreeFragmentTime.onDaysSelectedListener,
+        AddClassTimeThreeFragmentPeriod.onDaysSelectedListener,
+        AddClassTimeThreeFragmentBlock.onDaysSelectedListener,
+        AddClassTimeThreeFragmentTime.onBasisTextviewSelectedListener,
+        AddClassTimeThreeFragmentPeriod.onBasisTextviewSelectedListener,
+        AddClassTimeThreeFragmentBlock.onBasisTextviewSelectedListener,
+        AddClassTimeThreeFragmentTime.onWeektypeTextviewSelectedListener,
+        AddClassTimeThreeFragmentPeriod.onWeektypeTextviewSelectedListener {
 
     // Constantly Used Variables
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
@@ -344,7 +344,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 ftTime.addToBackStack(null);
 
                 // Show the dialog
-                DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
+                DialogFragment fragmentTime = AddClassTimeThreeFragmentTime.newInstance(0);
                 fragmentTime.setArguments(args);
                 fragmentTime.show(getSupportFragmentManager(), "dialog");
                 break;
@@ -359,7 +359,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 ftPeriod.addToBackStack(null);
 
                 // Show the dialog
-                DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
+                DialogFragment fragmentPeriod = AddClassTimeThreeFragmentPeriod.newInstance(0);
                 fragmentPeriod.setArguments(args);
                 fragmentPeriod.show(getSupportFragmentManager(), "dialog");
 
@@ -375,7 +375,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 ftBlock.addToBackStack(null);
 
                 // Show the dialog
-                DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
+                DialogFragment fragmentBlock = AddClassTimeThreeFragmentBlock.newInstance(0);
                 fragmentBlock.setArguments(args);
                 fragmentBlock.show(getSupportFragmentManager(), "dialog");
 
@@ -389,7 +389,7 @@ public class NewScheduleActivity extends AppCompatActivity
             public void onClick(View v) {
                 // Check if any SharedPreferences for the basis or weekType was previously stored
                 // If there are, jump to ClassTimeThreeFragment (Time/Period/Block Selection)
-                // If there are none, start from ClassTimeOneFragment (Basis Selection)
+                // If there are none, start from AddClassTimeOneFragment (Basis Selection)
 
                 // Get the stored preference
                 SharedPreferences preferences = getPreferences(MODE_PRIVATE);
@@ -407,7 +407,7 @@ public class NewScheduleActivity extends AppCompatActivity
                     ft.addToBackStack(null);
 
                     // Show the dialog
-                    DialogFragment fragment = ClassTimeOneFragment.newInstance(0);
+                    DialogFragment fragment = AddClassTimeOneFragment.newInstance(0);
                     fragment.show(getSupportFragmentManager(), "dialog");
                 }
                 // If stored preferences were found, launch ClassTimeThreeFragment with arguments basis and weekType
@@ -429,7 +429,7 @@ public class NewScheduleActivity extends AppCompatActivity
                             ftTime.addToBackStack(null);
 
                             // Show the dialog
-                            DialogFragment fragmentTime = ClassTimeThreeFragmentTime.newInstance(0);
+                            DialogFragment fragmentTime = AddClassTimeThreeFragmentTime.newInstance(0);
                             fragmentTime.setArguments(args);
                             fragmentTime.show(getSupportFragmentManager(), "dialog");
                             break;
@@ -444,7 +444,7 @@ public class NewScheduleActivity extends AppCompatActivity
                             ftPeriod.addToBackStack(null);
 
                             // Show the dialog
-                            DialogFragment fragmentPeriod = ClassTimeThreeFragmentPeriod.newInstance(0);
+                            DialogFragment fragmentPeriod = AddClassTimeThreeFragmentPeriod.newInstance(0);
                             fragmentPeriod.setArguments(args);
                             fragmentPeriod.show(getSupportFragmentManager(), "dialog");
                             break;
@@ -459,7 +459,7 @@ public class NewScheduleActivity extends AppCompatActivity
                             ftBlock.addToBackStack(null);
 
                             // Show the dialog
-                            DialogFragment fragmentBlock = ClassTimeThreeFragmentBlock.newInstance(0);
+                            DialogFragment fragmentBlock = AddClassTimeThreeFragmentBlock.newInstance(0);
                             fragmentBlock.setArguments(args);
                             fragmentBlock.show(getSupportFragmentManager(), "dialog");
                             break;
@@ -479,14 +479,14 @@ public class NewScheduleActivity extends AppCompatActivity
     // Interfaces and Override Methods
     @Override
     public void onBasisSelected(String basis) {
-        // Interface launched by ClassTimeOneFragment when basis is selected
+        // Interface launched by AddClassTimeOneFragment when basis is selected
         // Selected basis is stored in this activity
-        // If TimeBased or PeriodBased was selected, launch ClassTimeTwoFragment (WeekType Selection)
+        // If TimeBased or PeriodBased was selected, launch AddClassTimeTwoFragment (WeekType Selection)
         // If BlockBased was selected, launch classTimeThreeFragment (Block Selection)
         this.basis = basis;
 
-        // If TimeBased/PeriodBased is selected, launch ClassTimeTwoFragment (WeekType Selection)
-        // else blockBased is selected, launch ClassTimeTwoFragment (WeekType Selection)
+        // If TimeBased/PeriodBased is selected, launch AddClassTimeTwoFragment (WeekType Selection)
+        // else blockBased is selected, launch AddClassTimeTwoFragment (WeekType Selection)
         if (!basis.equals("2")) {
             weekType = "-1";
             // Check if other dialogs are present and remove them if so
@@ -495,7 +495,7 @@ public class NewScheduleActivity extends AppCompatActivity
             transactionWeekType.addToBackStack(null).commit();
 
             // Show the dialog
-            DialogFragment fragment = ClassTimeTwoFragment.newInstance(0);
+            DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
         else{
@@ -505,13 +505,13 @@ public class NewScheduleActivity extends AppCompatActivity
             transactionWeekType.addToBackStack(null).commit();
 
             // Show the dialog
-            DialogFragment fragment = ClassTimeThreeFragmentBlock.newInstance(0);
+            DialogFragment fragment = AddClassTimeThreeFragmentBlock.newInstance(0);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
     @Override
     public void onWeekTypeSelected(String weekType) {
-        // Interface launched by ClassTimeTwoFragment when WeekType is selected
+        // Interface launched by AddClassTimeTwoFragment when WeekType is selected
         // Store the selected WeekType in this activity
         // Launch the corresponding ClassTimeThreeFragment based on stored basis
         this.weekType = weekType;
@@ -521,15 +521,15 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putString("basis", basis);
         args.putString("weekType", weekType);
 
-        // If basis is TimeBased, launch ClassTimeThreeFragmentTime
-        // Else if basis is PeriodBased, launch ClassTimeThreeFragmentPeriod
+        // If basis is TimeBased, launch AddClassTimeThreeFragmentTime
+        // Else if basis is PeriodBased, launch AddClassTimeThreeFragmentPeriod
         if (basis.equals("0")) {// Check if other dialogs are present and remove them if so
             android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
             transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
             transactionWeekType.addToBackStack(null).commit();
 
             // Show the dialog
-            DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
+            DialogFragment fragment = AddClassTimeThreeFragmentTime.newInstance(0);
             fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
@@ -540,7 +540,7 @@ public class NewScheduleActivity extends AppCompatActivity
             transactionWeekType.addToBackStack(null).commit();
 
             // Show the dialog
-            DialogFragment fragment = ClassTimeThreeFragmentPeriod.newInstance(0);
+            DialogFragment fragment = AddClassTimeThreeFragmentPeriod.newInstance(0);
             fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
@@ -659,7 +659,7 @@ public class NewScheduleActivity extends AppCompatActivity
         transactionWeekType.addToBackStack(null).commit();
 
         // Show the dialog
-        DialogFragment fragment = ClassTimeOneFragment.newInstance(0);
+        DialogFragment fragment = AddClassTimeOneFragment.newInstance(0);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
     @Override
@@ -672,20 +672,21 @@ public class NewScheduleActivity extends AppCompatActivity
         transactionWeekType.addToBackStack(null).commit();
 
         // Show the dialog
-        DialogFragment fragment = ClassTimeTwoFragment.newInstance(0);
+        DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
         fragment.show(getSupportFragmentManager(), "dialog");
         // Check if other dialogs are present and remove them if so
 
     }
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        // Interface launched by TimePickerDialog to restart ClassTimeThreeFragmentTime with data from the dialog
+        // Interface launched by TimePickerDialog to restart AddClassTimeThreeFragmentTime with data from the dialog
 
         // Create the arguments bundle for the fragment
         Bundle args = new Bundle();
         int resourceId = timeSelectedResourceId;
         args.putString("basis", basis);
         args.putString("weekType", weekType);
+        args.putString("classDays", classDays);
         args.putInt("resourceId", resourceId);
         args.putInt("hourOfDay", hourOfDay);
         args.putInt("minute", minute);
@@ -702,16 +703,17 @@ public class NewScheduleActivity extends AppCompatActivity
         transactionWeekType.addToBackStack(null).commit();
 
         // Show the dialog
-        DialogFragment fragment = ClassTimeThreeFragmentTime.newInstance(0);
+        DialogFragment fragment = AddClassTimeThreeFragmentTime.newInstance(0);
         fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
     @Override
-    public void onTimeSelected(int resourceId, int previousTimeInSeconds, int previousTimeOutSeconds,
+    public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
                                int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
-        // Interface from ClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
+        // Interface from AddClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
         // This creates the illusion that the fragment was never restarted and creates a smooth user experience
         timeSelectedResourceId = resourceId;
+        this.classDays = classDays;
         this.previousTimeInSeconds = previousTimeInSeconds;
         this.previousTimeOutSeconds = previousTimeOutSeconds;
         this.previousTimeInAltSeconds = previousTimeInAltSeconds;

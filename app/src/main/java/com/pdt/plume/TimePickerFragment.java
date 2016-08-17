@@ -43,19 +43,19 @@ public class TimePickerFragment extends DialogFragment {
         final Calendar c = Calendar.getInstance();
         // If the NewScheduleActivity was launched through an edit action
         // Set the default time of the dialog to the corresponding
-        // public static variable from the ClassTimeThreeFragmentTime
+        // public static variable from the AddClassTimeThreeFragmentTime
         // and if not, base it on the current time
         int hour;
 
         if (resourceId == R.id.field_new_schedule_timein) {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragmentTime.timeInHour;
+                hour = AddClassTimeThreeFragmentTime.timeInHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 1;
         }
         else {
             if (FLAG_EDIT)
-                hour = ClassTimeThreeFragmentTime.timeOutHour;
+                hour = AddClassTimeThreeFragmentTime.timeOutHour;
             else
                 hour = c.get(Calendar.HOUR_OF_DAY) + 2;
         }
