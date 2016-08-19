@@ -49,6 +49,8 @@ public class DbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_TASKS_TABLE = "CREATE TABLE " + TasksEntry.TABLE_NAME + " ("
                 + TasksEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TasksEntry.COLUMN_TITLE + " TEXT NOT NULL, "
+                + TasksEntry.COLUMN_CLASS + " TEXT NOT NULL, "
+                + TasksEntry.COLUMN_TYPE + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_SHARER + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_ATTACHMENT + " TEXT NOT NULL, "
@@ -67,6 +69,18 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS tasks");
         onCreate(db);
     }
+
+    /**
+     * Schedule Database Functions
+     * getCursor
+     * getCurrentDayCursor
+     * getCursorByTitle
+     * getArray
+     * getCurrentDayArray
+     * InsertRow
+     * UpdateRow
+     * DeleteRow
+     */
 
     public Cursor getAllScheduleData(){
         SQLiteDatabase db = this.getReadableDatabase();
@@ -91,7 +105,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-    public Cursor getScheduleDataArrayByTitle(String title){
+    public Cursor getScheduleDataByTitle(String title){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
                 null,
@@ -271,6 +285,15 @@ public class DbHelper extends SQLiteOpenHelper {
         return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
+    /**
+     * Task Database Functions
+     * getCursor
+     * getArray
+     * InsertRow
+     * UpdateRow
+     * DeleteRow
+     */
+
     public Cursor getTaskData(){
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TasksEntry.TABLE_NAME,
@@ -301,10 +324,12 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
+        contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
+        contentValues.put(TasksEntry.COLUMN_TYPE, type);
         contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
@@ -315,10 +340,12 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
+        contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
+        contentValues.put(TasksEntry.COLUMN_TYPE, type);
         contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);

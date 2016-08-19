@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/dropdown_type_item_none"
+        android:title="@string/none" />
+
+    <item
+        android:id="@+id/dropdown_type_item_homework"
+        android:title="@string/field_dropdown_type_menu_item_homework" />
+
+    <item
+        android:id="@+id/dropdown_type_item_test"
+        android:title="@string/field_dropdown_type_menu_item_test" />
+
+    <item
+        android:id="@+id/dropdown_type_item_revision"
+        android:title="@string/field_dropdown_type_menu_item_revision" />
+
+    <item
+        android:id="@+id/dropdown_type_item_project"
+        android:title="@string/field_dropdown_type_menu_item_project" />
+
+    <item
+        android:id="@+id/dropdown_type_item_other"
+        android:title="@string/field_dropdown_type_menu_item_other" />
+
+</menu>

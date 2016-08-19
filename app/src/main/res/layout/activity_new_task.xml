@@ -13,66 +13,89 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <ImageView
             android:id="@+id/new_task_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/placeholder_sixtyfour" />
+
         <EditText
             android:id="@+id/field_new_task_title"
             android:layout_width="match_parent"
-            android:hint="@string/new_schedule_hint"
-            android:layout_toRightOf="@id/new_task_icon"
+            android:layout_height="wrap_content"
             android:layout_toEndOf="@id/new_task_icon"
-            android:layout_height="wrap_content" />
+            android:layout_toRightOf="@id/new_task_icon"
+            android:hint="@string/new_schedule_hint" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/field_new_task_title"
-            android:layout_toRightOf="@id/new_task_icon"
-            android:layout_toEndOf="@id/new_task_icon">
-            <TextView
+            android:layout_toEndOf="@id/new_task_icon"
+            android:layout_toRightOf="@id/new_task_icon">
+
+            <LinearLayout
+                android:id="@+id/field_class_dropdown"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Subject"/>
-            <Spinner
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/field_class_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/field_dropdown_class" />
+                <ImageView
+                    android:src="@drawable/ic_dropdown_black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/field_type_dropdown"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Type"/>
-            <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/field_type_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/field_dropdown_type" />
+                <ImageView
+                    android:src="@drawable/ic_dropdown_black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
         </LinearLayout>
+
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#777777" />
+
     <EditText
         android:id="@+id/field_new_task_description"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@null"
-        android:hint="Description"
-        android:gravity="center_vertical|start"
+        android:gravity="start"
+        android:hint="@string/field_hint_description"
+        android:minLines="5"
         android:minHeight="?listPreferredItemHeight"
-        android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:paddingLeft="?listPreferredItemPaddingLeft"
-        android:paddingRight="?listPreferredItemPaddingRight" />
+        android:paddingRight="?listPreferredItemPaddingRight"
+        android:paddingTop="8dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Attach File"/>
+        android:text="Attach File" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Reminder"/>
+        android:text="Set Reminder" />
 
 </LinearLayout>

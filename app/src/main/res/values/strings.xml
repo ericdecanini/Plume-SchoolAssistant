@@ -9,6 +9,7 @@
     </string>
 
     <!-- General Strings -->
+    <string name="none">None</string>
 
     <!-- Menu Actions -->
     <string name="delete">Delete</string>
@@ -119,6 +120,23 @@
 
     <!-- Strings for NewTasksActivity -->
     <string name="activity_new_task_label">New Task</string>
+
+    <!-- Actions and Toasts -->
+    <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
+
+    <!-- Main UI -->
+    <string name="field_dropdown_class">Class</string>
+    <string name="field_dropdown_type">Type</string>
+    <string name="field_hint_description">Description</string>
+
+
+    <!-- Dropdown Menu Items -->
+    <string name="field_dropdown_class_menu_item_new_class">Add a new class</string>
+    <string name="field_dropdown_type_menu_item_homework">Homework</string>
+    <string name="field_dropdown_type_menu_item_test">Test</string>
+    <string name="field_dropdown_type_menu_item_revision">Revision</string>
+    <string name="field_dropdown_type_menu_item_project">Project</string>
+    <string name="field_dropdown_type_menu_item_other">Other</string>
 
     <!-- Intent extras to check if the activity was started from an edit action -->
     <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
