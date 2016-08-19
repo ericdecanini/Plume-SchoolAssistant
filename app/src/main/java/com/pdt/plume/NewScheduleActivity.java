@@ -154,18 +154,24 @@ public class NewScheduleActivity extends AppCompatActivity
                 scheduleIconResourceId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
                 // Get database values to put in activity Array Lists
                 for (int i = 0; i < cursor.getCount(); i++) {
-                    occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
-                            this,
-                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                            utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
-                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
-                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE))));
-                    timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
-                    timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
-                    timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
-                    timeOutAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+                    String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                    if (!occurrence.equals("-1")){
+                        occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                                this,
+                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
+                                occurrence));
+                        occurrenceList.add(occurrence);
+                        periodsList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)));
+                        timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                        timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
+                        timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                        timeOutAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+                    }
+
                     if (!cursor.moveToNext())
                         cursor.moveToFirst();
                 }
@@ -244,65 +250,87 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
             }
 
-            // Insert a row for each occurrence item
-            for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
-                // Initialise occurrence, time, and period strings
-                String occurrence = occurrenceList.get(i);
-                int timeIn = -1;
-                int timeOut = -1;
-                int timeInAlt = -1;
-                int timeOutAlt = -1;
-                String periods = "-1";
-                // Get time and period data from Array Lists. Class items that do not utilise
-                // the variables are inserted as -1.
-                // Variables include: timeIn, timeOut, timeInAlt, timeOutAlt, periods
-                try {
-                    timeIn = timeInList.get(i);
-                    timeOut = timeOutList.get(i);
-                    timeInAlt = timeInAltList.get(i);
-                    timeOutAlt = timeOutAltList.get(i);
-                    periods = periodsList.get(i);
-                } catch (IndexOutOfBoundsException exception) {
-                    Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
+            // Insert a row for each occurrence item. If there is no occurrence item
+            // Insert a single row
+            if (occurrenceTimePeriodList.size() != 0)
+                for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
+                    // Initialise occurrence, time, and period strings
+                    String occurrence = occurrenceList.get(i);
+                    int timeIn = -1;
+                    int timeOut = -1;
+                    int timeInAlt = -1;
+                    int timeOutAlt = -1;
+                    String periods = "-1";
+                    // Get time and period data from Array Lists. Class items that do not utilise
+                    // the variables are inserted as -1.
+                    // Variables include: timeIn, timeOut, timeInAlt, timeOutAlt, periods
+                    try {
+                        timeIn = timeInList.get(i);
+                        timeOut = timeOutList.get(i);
+                        timeInAlt = timeInAltList.get(i);
+                        timeOutAlt = timeOutAltList.get(i);
+                        periods = periodsList.get(i);
+                    } catch (IndexOutOfBoundsException exception) {
+                        Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
+                    }
+                    // Database insert function
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
+                        if (i == occurrenceTimePeriodList.size() - 1)
+                            return true;
+                    }
+                    else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
                 }
-                // Database insert function
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
-                    if (i == occurrenceTimePeriodList.size() - 1)
-                        return true;
-                } else
-                    Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+            else {
+                // Database insert function without any occurrences
+                if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
+                        -1, -1, "-1", scheduleIconResourceId)) {
+                    Log.v(LOG_TAG, "Inserting single schedule returned true");
+                    return true;
+                }
+                else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
+
         }
         // If the activity was not started by an edit action, insert a new row into the database
         else {
             // Insert a row for each occurrence item
-            for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
-                // Initialise occurrence, time, and period strings
-                String occurrence = occurrenceList.get(i);
-                int timeIn = -1;
-                int timeOut = -1;
-                int timeInAlt = -1;
-                int timeOutAlt = -1;
-                String periods = "-1";
-                // Get time and period data from Array Lists. Class items that do not utilise
-                // the variables are inserted as -1.
-                // Variables include: timeIn, timeOut, timeInAlt, timeOutAlt, periods
-                try {
-                    timeIn = timeInList.get(i);
-                    timeOut = timeOutList.get(i);
-                    timeInAlt = timeInAltList.get(i);
-                    timeOutAlt = timeOutAltList.get(i);
-                    periods = periodsList.get(i);
-                } catch (IndexOutOfBoundsException exception) {
-                    Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
-                }
+            if (occurrenceTimePeriodList.size() != 0)
+                for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
+                    // Initialise occurrence, time, and period strings
+                    String occurrence = occurrenceList.get(i);
+                    int timeIn = -1;
+                    int timeOut = -1;
+                    int timeInAlt = -1;
+                    int timeOutAlt = -1;
+                    String periods = "-1";
+                    // Get time and period data from Array Lists. Class items that do not utilise
+                    // the variables are inserted as -1.
+                    // Variables include: timeIn, timeOut, timeInAlt, timeOutAlt, periods
+                    try {
+                        timeIn = timeInList.get(i);
+                        timeOut = timeOutList.get(i);
+                        timeInAlt = timeInAltList.get(i);
+                        timeOutAlt = timeOutAltList.get(i);
+                        periods = periodsList.get(i);
+                    } catch (IndexOutOfBoundsException exception) {
+                        Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
+                    }
 
-                // Database insert function
-                if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
-                    if (i == occurrenceTimePeriodList.size() - 1)
-                        return true;
-                } else
-                    Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+                    // Database insert function
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
+                        if (i == occurrenceTimePeriodList.size() - 1)
+                            return true;
+                    } else
+                        Toast.makeText(NewScheduleActivity.this, "Error creating new schedule", Toast.LENGTH_SHORT).show();
+                }
+            else {
+                // Database insert function without any occurrences
+                if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
+                        -1, -1, "-1", scheduleIconResourceId)) {
+                    Log.v(LOG_TAG, "Inserting single schedule returned true");
+                    return true;
+                }
+                else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -316,6 +344,8 @@ public class NewScheduleActivity extends AppCompatActivity
         Bundle args = new Bundle();
         String occurrence = occurrenceList.get(position);
         args.putString("occurrence", occurrence);
+        basis = occurrence.split(":")[0];
+        weekType = occurrence.split(":")[1];
         args.putString("weekType", occurrence.split(":")[1]);
         args.putString("period", periodsList.get(position));
         args.putInt("rowId", position);

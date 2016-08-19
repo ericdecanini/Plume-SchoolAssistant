@@ -1,7 +1,9 @@
 package com.pdt.plume;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +25,8 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class ScheduleFragment extends Fragment {
@@ -60,7 +64,7 @@ public class ScheduleFragment extends Fragment {
         // using the current day schedule data
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
-                R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
+                R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
 
         // Set the adapter and listeners of the list view
         if (listView != null) {
@@ -251,7 +255,7 @@ public class ScheduleFragment extends Fragment {
             // data, then notify the adapter for the changes
             ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
             adapter.clear();
-            adapter.addAll(db.getCurrentDayScheduleArray());
+            adapter.addAll(db.getCurrentDayScheduleArray(getContext()));
             adapter.notifyDataSetChanged();
 
             // Then clear the selected items array list and emulate

@@ -51,7 +51,7 @@ public class ClassesActivity extends AppCompatActivity {
         // using the current day schedule data
         listView = (ListView) findViewById(R.id.schedule_list);
         final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(this,
-                R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray());
+                R.layout.list_item_schedule, dbHelper.getAllClassesArray(this));
 
         // Set the adapter and listeners of the list view
         if (listView != null) {
@@ -154,9 +154,7 @@ public class ClassesActivity extends AppCompatActivity {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-            findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
-            if (!isTablet)
-                findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
+
             return true;
         }
 
@@ -179,14 +177,8 @@ public class ClassesActivity extends AppCompatActivity {
                 case R.id.action_delete:
                     deleteSelectedItems();
                     break;
-
                 case R.id.action_edit:
                     editSelectedItem();
-                    break;
-
-                default:
-                    Toast.makeText(ClassesActivity.this, "Clicked " + item.getTitle(),
-                            Toast.LENGTH_SHORT).show();
                     break;
             }
             return true;
@@ -199,9 +191,6 @@ public class ClassesActivity extends AppCompatActivity {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
-            findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-            if (!isTablet)
-                findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         }
 
         private void deleteSelectedItems() {
@@ -227,7 +216,7 @@ public class ClassesActivity extends AppCompatActivity {
             // data, then notify the adapter for the changes
             ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
             adapter.clear();
-            adapter.addAll(db.getCurrentDayScheduleArray());
+            adapter.addAll(db.getAllClassesArray(ClassesActivity.this));
             adapter.notifyDataSetChanged();
 
             // Then clear the selected items array list and emulate

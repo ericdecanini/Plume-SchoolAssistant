@@ -67,7 +67,6 @@ public class OccurrenceTimePeriod {
             // Filter out the full array of period strings and collect all
             // selected periods into the array list
             String[] splitPeriods = periods.split(":");
-            Log.v(LOG_TAG, "SplitPeriods: " + periods);
             if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
                 periodList.add("1st");
             if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))

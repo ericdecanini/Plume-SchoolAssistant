@@ -29,7 +29,14 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <!-- Strings for Database -->
+    <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
+
+    <!-- Strings for ClassesActivity -->
+    <string name="activity_classes_label">Classes</string>
+
     <!-- Strings for NewScheduleActivity -->
+    <string name="activity_new_schedule_label">New Class</string>
 
     <!-- Actions and Toasts -->
     <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
@@ -111,6 +118,7 @@
     <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
 
     <!-- Strings for NewTasksActivity -->
+    <string name="activity_new_task_label">New Task</string>
 
     <!-- Intent extras to check if the activity was started from an edit action -->
     <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
@@ -122,9 +130,6 @@
     <string name="TASKS_EXTRA_ALARMTIME" translatable="false">TASKS_EXTRA_ALARMTIME</string>
     <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
-
-    <!-- Strings for Database -->
-    <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
 
 </resources>

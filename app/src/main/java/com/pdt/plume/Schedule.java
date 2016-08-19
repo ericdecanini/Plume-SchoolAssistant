@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import android.content.Context;
+
 public class Schedule {
     public int scheduleIcon;
     public String scheduleLesson;
@@ -13,13 +15,25 @@ public class Schedule {
 
     // The global variables are accessed by the adapter
     // Set them using the input parameters
-    public Schedule(int icon, String lesson, String teacher, String room, String timeIn, String timeOut) {
+    public Schedule(Context context, int icon, String lesson, String teacher, String room, String timeIn, String timeOut, String period) {
         super();
         this.scheduleIcon = icon;
         this.scheduleLesson = lesson;
         this.scheduleTeacher = teacher;
         this.scheduleRoom = room;
-        this.scheduleTimeIn = timeIn;
-        this.scheduleTimeOut = timeOut;
+
+        // Find out the basis of the item based on the timeIn and period Strings
+        // and set the in and out strings based on that
+        // Time based
+        if (!timeIn.equals("")){
+            this.scheduleTimeIn = timeIn;
+            this.scheduleTimeOut = timeOut;
+        }
+        // Period/Block based
+        else {
+            this.scheduleTimeIn = period;
+            this.scheduleTimeOut = context.getString(R.string.class_time_list_header_substring_period);
+        }
+
     }
 }

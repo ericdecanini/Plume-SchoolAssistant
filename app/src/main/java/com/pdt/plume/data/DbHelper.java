@@ -1,5 +1,6 @@
 package com.pdt.plume.data;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,6 +15,8 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -100,21 +103,131 @@ public class DbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-    public ArrayList<Schedule> getCurrentDayScheduleArray(){
-        Cursor cursor = getCurrentDayScheduleData();
+    public ArrayList<Schedule> getAllClassesArray(Context context){
+        Cursor cursor = getAllScheduleData();
         ArrayList<Schedule> arrayList = new ArrayList<>();
+        ArrayList<String> usedTitles = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++){
-            if (cursor.moveToPosition(i)){
-                arrayList.add(i, new Schedule(
-                        cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
-                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
-                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT)))
-                ));
+            if (cursor.moveToPosition(i)) {
+                String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                if (!usedTitles.contains(title)) {
+                    arrayList.add(i, new Schedule(
+                            context,
+                            cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
+                            cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
+                            cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
+                            cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
+                            utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
+                            utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
+                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))
+                    ));
+                }
             }
         }
+        return arrayList;
+    }
+
+    public ArrayList<Schedule> getCurrentDayScheduleArray(Context context){
+        // Query the cursor, calendar, initialise the Array List
+        // and get the preference for the week number
+        Cursor cursor = getCurrentDayScheduleData();
+        Calendar c = Calendar.getInstance();
+        Date date = new Date();
+        c.setTime(date);
+        ArrayList<Schedule> arrayList = new ArrayList<>();
+        int weekNumber = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
+                .getInt("weekNumber", 0);
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+        // Check for week 1 or week 2 and add into the array list based on that
+        if (weekNumber == 0){
+            for (int i = 0; i < cursor.getCount(); i++){
+                if (cursor.moveToPosition(i)){
+                    // Get the variables to check from the database
+                    String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+
+                    // Add the time based list item
+                    if (!timeIn.equals("")) {
+                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                        if (utility.occurrenceMatchesCurrentDay(context ,occurrence, periods, weekNumber, dayOfWeek))
+                            arrayList.add(new Schedule(
+                                    context,
+                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
+                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                    ""
+                            ));
+                    }
+                    // Add the period/block based list item
+                    else if (!periods.equals("-1")){
+                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 0);
+                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
+                            for (int ii = 0; ii < periodList.size() - 1; ii ++) {
+                                arrayList.add(new Schedule(
+                                        context,
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
+                                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                        periodList.get(ii)));
+                            }
+                    }
+                }
+            }
+        }
+        // Week 2: Use alternate data
+        else {
+            for (int i = 0; i < cursor.getCount(); i++){
+                if (cursor.moveToPosition(i)){
+                    // Get the variables to check from the database
+                    String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+
+                    // Add the time based list item
+                    if (!timeIn.equals("")) {
+                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
+                            arrayList.add(i, new Schedule(
+                                    context,
+                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
+                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                    ""
+                            ));
+                    }
+                    // Add the period/block based list item
+                    else {
+                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
+                            ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 1);
+                            for (int ii = 0; ii < periodList.size(); ii++) {
+                                arrayList.add(i, new Schedule(
+                                        context,
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
+                                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                        utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                        periodList.get(ii)));
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
         return arrayList;
     }
 

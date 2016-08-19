@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -30,6 +31,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
@@ -38,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Toolbar mToolbar;
     private TabsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
+
+    // Variables aiding schedule
+    int weekNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +76,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null)
             navigationView.setNavigationItemSelectedListener(this);
+
+        // Get the current date and toggle the week number
+        // Get the current date
+        Date date = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        int currentWeek = c.get(Calendar.WEEK_OF_YEAR);
+        // Get the previous date
+        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
+        weekNumber = preferences.getInt("weekNumber", 0);
+        int lastCheckedWeekOfYear = preferences.getInt("weekOfYear", -1);
+        // Toggle the weekNumber for each week passed since last check
+        // If the preference wasn't found, don't toggle and simply store the preference.
+        // The weekNumber will be saved as 0 by default
+        if (lastCheckedWeekOfYear != -1){
+            for (int i = lastCheckedWeekOfYear; i < currentWeek; i++){
+                Log.v(LOG_TAG, "weekNumber toggled");
+                if (weekNumber == 0)
+                    weekNumber = 1;
+                else weekNumber = 0;
+                Log.v(LOG_TAG, "Week number: " + weekNumber);
+            }
+        }
+        else lastCheckedWeekOfYear = currentWeek;
+        // Save the new date data to SharedPreferences
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("weekNumber", weekNumber)
+                .putInt("weekOfYear", currentWeek)
+                .apply();
 
     }
 
