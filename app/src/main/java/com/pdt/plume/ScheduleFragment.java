@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbHelper;
@@ -42,6 +43,8 @@ public class ScheduleFragment extends Fragment {
 
     // Flags
     boolean isTablet;
+    public static boolean showBlockHeaderA = false;
+    public static boolean showBlockHeaderB = false;
 
     // Required empty public constructor
     public ScheduleFragment() {
@@ -65,6 +68,15 @@ public class ScheduleFragment extends Fragment {
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
+        TextView blockHeaderTextview = (TextView) rootView.findViewById(R.id.schedule_block_header);
+        if (showBlockHeaderA){
+            blockHeaderTextview.setVisibility(View.VISIBLE);
+            blockHeaderTextview.setText(getString(R.string.class_time_block_day_a));
+        } else if (showBlockHeaderB){
+            blockHeaderTextview.setVisibility(View.VISIBLE);
+            blockHeaderTextview.setText(getString(R.string.class_time_block_day_b));
+        } else
+            blockHeaderTextview.setVisibility(View.GONE);
 
         // Set the adapter and listeners of the list view
         if (listView != null) {

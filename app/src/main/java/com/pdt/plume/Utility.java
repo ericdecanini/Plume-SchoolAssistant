@@ -3,6 +3,7 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -221,43 +222,59 @@ public class Utility {
 
         String[] splitOccurrence = occurrence.split(":");
         String[] splitPeriods = periods.split(":");
-        Log.v(LOG_TAG, "Occurrence: " + occurrence);
-        Log.v(LOG_TAG, "Periods: " + periods);
+        ScheduleFragment.showBlockHeaderA = false;
+        ScheduleFragment.showBlockHeaderB = false;
 
         // Block Based Day Check
         if (splitOccurrence[0].equals("2")){
-            // Get the preference for the Block format
+            // Get the preference for the Block format and set the boolean to show the block header
             String blockFormat = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
                     .getString("blockFormat", "0:1:2:1:2:1:0");
             String[] splitBlockFormat = blockFormat.split(":");
 
             // Day A Check
             if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("1"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("1")){
+                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
+                }
             if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("1"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("1")){
+                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
+                }
             if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("1"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("1")){
+                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
+                }
             if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("1"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("1")){
+                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
+                }
 
             // Day B Check
             if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("2"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("2")){
+                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
+                }
             if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("2"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("2")){
+                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
+                }
             if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("2"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("2")){
+                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
+                }
             if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
-                if (splitBlockFormat[dayOfWeek].equals("2"))
+                if (splitBlockFormat[dayOfWeek - 1].equals("2")){
+                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
+                }
         }
 
         // Time/Period Based Day Check
