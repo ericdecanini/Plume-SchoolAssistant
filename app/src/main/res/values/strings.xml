@@ -128,6 +128,9 @@
     <string name="field_dropdown_class">Class</string>
     <string name="field_dropdown_type">Type</string>
     <string name="field_hint_description">Description</string>
+    <string name="field_due_date">Due date</string>
+    <string name="field_attach_file">Attach file</string>
+    <string name="field_set_reminder">Set reminder</string>
 
 
     <!-- Dropdown Menu Items -->

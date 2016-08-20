@@ -89,13 +89,21 @@
         android:paddingTop="8dp" />
 
     <TextView
+        android:id="@+id/field_new_task_duedate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Attach File" />
+        android:text="@string/field_due_date" />
 
     <TextView
+        android:id="@+id/field_new_task_attach"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Reminder" />
+        android:text="@string/field_attach_file" />
+
+    <TextView
+        android:id="@+id/field_new_task_reminder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/field_set_reminder" />
 
 </LinearLayout>

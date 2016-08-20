@@ -34,8 +34,13 @@
         <activity
             android:name=".NewTaskActivity"
             android:label="@string/activity_new_task_label"
-            android:noHistory="true"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <data android:mimeType="*/*" />
+                <category android:name="android.intent.category.OPENABLE" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"

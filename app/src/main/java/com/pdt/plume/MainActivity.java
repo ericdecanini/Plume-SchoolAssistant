@@ -30,6 +30,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Variables aiding schedule
     int weekNumber;
+
+    // Intent Data
+    static final int REQUEST_FILE_GET = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

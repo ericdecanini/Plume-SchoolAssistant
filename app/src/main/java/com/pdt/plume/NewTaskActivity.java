@@ -1,7 +1,12 @@
 package com.pdt.plume;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.PopupMenu;
@@ -9,18 +14,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.File;
+import java.net.URI;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
-public class NewTaskActivity extends AppCompatActivity {
+public class NewTaskActivity extends AppCompatActivity
+        implements TimePickerDialog.OnTimeSetListener,
+        DatePickerDialog.OnDateSetListener{
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
 
@@ -35,15 +51,23 @@ public class NewTaskActivity extends AppCompatActivity {
     LinearLayout fieldTypeDropdown;
     TextView fieldTypeTextview;
 
+    TextView fieldDueDate;
+    TextView fieldAttachFile;
+    TextView fieldSetReminder;
+
     // UI Data
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
     String classTitle;
     String type;
+    String attachedFileUriString;
+    float alarmNotificationSeconds;
+
 
     // Intent Data
     boolean FLAG_EDIT = false;
     int editId = -1;
+    static final int REQUEST_FILE_GET = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +81,9 @@ public class NewTaskActivity extends AppCompatActivity {
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
         fieldTypeDropdown = (LinearLayout) findViewById(R.id.field_type_dropdown);
         fieldTypeTextview = (TextView) findViewById(R.id.field_type_textview);
+        fieldDueDate = (TextView) findViewById(R.id.field_new_task_duedate);
+        fieldAttachFile = (TextView) findViewById(R.id.field_new_task_attach);
+        fieldSetReminder = (TextView) findViewById(R.id.field_new_task_reminder);
 
         // Initialise the dropdown box default data
         classTitle = getString(R.string.none);
@@ -65,10 +92,15 @@ public class NewTaskActivity extends AppCompatActivity {
         // Set the listeners of the UI
         fieldClassDropdown.setOnClickListener(listener());
         fieldTypeDropdown.setOnClickListener(listener());
+        fieldAttachFile.setOnClickListener(listener());
+        fieldSetReminder.setOnClickListener(listener());
+        fieldDueDate.setOnClickListener(listener());
+
 
         // Initialise the class dropdown data
         DbHelper dbHelper = new DbHelper(this);
         Cursor cursor = dbHelper.getAllScheduleData();
+
         // Scan through the cursor and add in each class title into the array list
         if (cursor.moveToFirst()){
             for (int i = 0; i < cursor.getCount(); i++){
@@ -162,7 +194,7 @@ public class NewTaskActivity extends AppCompatActivity {
         }
         // Else, insert a new database row
         else {
-            if (dbHelper.insertTask(title, classTitle, type, "", description, "", 0, 0, icon)){
+            if (dbHelper.insertTask(title, classTitle, type, "", description, attachedFileUriString, 0, alarmNotificationSeconds, icon)){
                 return true;
             } else Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
             Log.v(LOG_TAG, "Error creating new task");
@@ -278,8 +310,92 @@ public class NewTaskActivity extends AppCompatActivity {
                     case R.id.field_type_dropdown:
                         showTypeDropdownMenu();
                         break;
+                    case R.id.field_new_task_duedate:
+                        Calendar c = Calendar.getInstance();
+                        Date date = new Date();
+                        c.setTime(date);
+                        int year = c.get(Calendar.YEAR);
+                        int month = c.get(Calendar.MONTH);
+                        int day = c.get(Calendar.DAY_OF_MONTH);
+                        DatePickerDialog datePickerDialog = new DatePickerDialog(NewTaskActivity.this, dateSetListener(), year, month, day);
+                        datePickerDialog.show();
+                        break;
+                    case R.id.field_new_task_attach:
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("*/*");
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        startActivityForResult(intent, REQUEST_FILE_GET);
+                        break;
+                    case R.id.field_new_task_reminder:
+                        DialogFragment timePickerFragment = new TimePickerFragment();
+                        timePickerFragment.show(getSupportFragmentManager(), "time picker");
+                        break;
                 }
             }
         };
+    }
+
+    // This method is called when a file is selected after the ACTION_GET
+    // intent was called
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK){
+            // Get the Uri and UriString from the intent and save its global variable
+            Uri filePathUri = data.getData();
+            attachedFileUriString = data.getDataString();
+
+            // Get the filename of the file and set the field's text to that
+            Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
+            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            returnCursor.moveToFirst();
+            String fileName = returnCursor.getString(nameIndex);
+            returnCursor.close();
+            fieldAttachFile.setText(fileName);
+        }
+    }
+
+    // This method is called when a time for the reminding notification is set
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        alarmNotificationSeconds = new Utility().timeToSeconds(hourOfDay, minute);
+    }
+
+    private DatePickerDialog.OnDateSetListener dateSetListener() {
+        return new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                Log.v(LOG_TAG, "onDateSet Called");
+                String myDate = dayOfMonth + "-" + monthOfYear + "-" + year;
+                String toParse = myDate; // Results in "2-5-2012 20:43"
+                SimpleDateFormat formatter = new SimpleDateFormat("d-M-yyyy"); // I assume d-M, you may refer to M-d for month-day instead.
+                Date date = null; // You will need try/catch around this
+                try {
+                    date = formatter.parse(toParse);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                long millis = date.getTime();
+                Log.v(LOG_TAG, "Date In Milliseconds: " + millis);
+            }
+        };
+
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        Log.v(LOG_TAG, "onDateSet Called");
+        String myDate = dayOfMonth + "-" + monthOfYear + "-" + year;
+        String toParse = myDate; // Results in "2-5-2012 20:43"
+        SimpleDateFormat formatter = new SimpleDateFormat("d-M-yyyy"); // I assume d-M, you may refer to M-d for month-day instead.
+        Date date = null; // You will need try/catch around this
+        try {
+            date = formatter.parse(toParse);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        long millis = date.getTime();
+        Log.v(LOG_TAG, "Date In Milliseconds: " + millis);
     }
 }
