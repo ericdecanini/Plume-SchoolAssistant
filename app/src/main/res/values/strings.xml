@@ -139,16 +139,25 @@
     <string name="field_dropdown_type_menu_item_test">Test</string>
     <string name="field_dropdown_type_menu_item_revision">Revision</string>
     <string name="field_dropdown_type_menu_item_project">Project</string>
+    <string name="field_dropdown_type_menu_item_presentation">Presentation</string>
+    <string name="field_dropdown_type_menu_item_detention">Detention</string>
     <string name="field_dropdown_type_menu_item_other">Other</string>
+
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="set_date">Set date</string>
 
     <!-- Intent extras to check if the activity was started from an edit action -->
     <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
     <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
+    <string name="TASKS_EXTRA_CLASS" translatable="false">TASKS_EXTRA_CLASS</string>
+    <string name="TASKS_EXTRA_TYPE" translatable="false">TASKS_EXTRA_TYPE</string>
     <string name="TASKS_EXTRA_SHARER" translatable="false">TASKS_EXTRA_SHARER</string>
     <string name="TASKS_EXTRA_DESCRIPTION" translatable="false">TASKS_EXTRA_DESCRIPTION</string>
     <string name="TASKS_EXTRA_ATTACHMENT" translatable="false">TASKS_EXTRA_ATTACHMENT</string>
     <string name="TASKS_EXTRA_DUEDATE" translatable="false">TASKS_EXTRA_DUEDATE</string>
-    <string name="TASKS_EXTRA_ALARMTIME" translatable="false">TASKS_EXTRA_ALARMTIME</string>
+    <string name="TASKS_EXTRA_REMINDERDATE" translatable="false">TASKS_EXTRA_REMINDERDATE</string>
+    <string name="TASKS_EXTRA_REMINDERTIME" translatable="false">TASKS_EXTRA_REMINDERTIME</string>
     <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
 

@@ -172,7 +172,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         periodTwelveAlt.setOnClickListener(listener());
 
         // Get the arguments of the fragment and
-        // Set the hyperlink basis week type text accordingly
+        // Set the hyperlink basis week classType text accordingly
         basisTextView.setText(getString(R.string.class_time_one_periodbased));
         Bundle args = getArguments();
         if (args != null){

@@ -6,7 +6,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 public class Utility {
@@ -335,6 +337,16 @@ public class Utility {
         }
         // If above methods did not resolve, return false by default
         return false;
+    }
+
+    public String formatDateString(Context context, int year, int monthOfYear, int dayOfMonth) {
+        // Get the current time and day of the week
+        Calendar c = Calendar.getInstance();
+        c.set(year, monthOfYear, dayOfMonth);
+
+        // Create a date formatter and create a new string with the formatted date
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy", java.util.Locale.getDefault());
+        return formatter.format(c.getTime());
     }
 
 }

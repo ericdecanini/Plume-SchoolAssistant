@@ -68,7 +68,7 @@ public class TaskAdapter extends ArrayAdapter {
         holder.shared.setText(task.taskShared);
         holder.description.setText(task.taskDescription);
         holder.attachment.setText(task.taskAttachment);
-        holder.date.setText("" + task.taskDueDate);
+        holder.date.setText(Float.toString(task.taskDueDate));
 
         return row;
     }

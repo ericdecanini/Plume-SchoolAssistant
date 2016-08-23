@@ -278,28 +278,36 @@ public class TasksFragment extends Fragment {
             if (CAMselectedItemsList.size() == 1){
                 // Initialise intent data variables
                 int id;
-                String title = "";
-                String sharer = "";
-                String description = "";
-                String attachment = "";
-                float dueDate = 0f;
-                float alarmTime = 0f;
+                String title;
+                String classTitle;
+                String classType;
+                String sharer;
+                String description;
+                String attachment;
+                float dueDate;
+                float reminderDate;
+                float reminderTime;
 
                 // Get a reference to the database and
                 // Get a cursor of the Task Data
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getTaskData();
 
+                Log.v(LOG_TAG, "CursorSize: " + cursor.getCount());
+
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                    classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
+                    classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
                     sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
                     description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
                     attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
                     dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
-                    alarmTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ALARMTIME));
+                    reminderDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+                    reminderTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
                     cursor.close();
 
                     // Create an intent to NewScheduleActivity and include the selected
@@ -307,11 +315,14 @@ public class TasksFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE),title);
+                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
+                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_SHARER), sharer);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ALARMTIME), alarmTime);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime);
                     intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
 
                     // Clear the selected items list, exit the CAM and launch the activity

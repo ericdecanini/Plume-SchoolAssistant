@@ -28,7 +28,8 @@ public class DbContract {
         public static final String COLUMN_DESCRIPTION = "description";
         public static final String COLUMN_ATTACHMENT = "attachment";
         public static final String COLUMN_DUEDATE = "duedate";
-        public static final String COLUMN_ALARMTIME = "alarmtime";
+        public static final String COLUMN_REMINDER_DATE = "reminderdate";
+        public static final String COLUMN_REMINDER_TIME = "remindertime";
         public static final String COLUMN_ICON = "icon";
     }
 

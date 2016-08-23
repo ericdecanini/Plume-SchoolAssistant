@@ -160,13 +160,13 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
         basisTextView.setText(getString(R.string.class_time_one_timebased));
 
         // Get the arguments of the fragment.
-        // Check week type and if it is 'Same each week', hide the alternate layout.
-        // Set the hyperlink week type text accordingly
+        // Check week classType and if it is 'Same each week', hide the alternate layout.
+        // Set the hyperlink week classType text accordingly
         // Check if fragment was restarted via Time Set, restore previous state
         Bundle args = getArguments();
         if (args != null){
-            // Hide the alternate layout if the week type selected is 0 (Same time every week)
-            // and set the hyperlink week type text to the selected week type text
+            // Hide the alternate layout if the week classType selected is 0 (Same time every week)
+            // and set the hyperlink week classType text to the selected week classType text
             if (!args.getString("weekType", "-1").equals("1")){
                 // If weekType is 0 (Same each week), hide the alternate layout
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);

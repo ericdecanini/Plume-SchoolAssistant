@@ -55,7 +55,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 + TasksEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_ATTACHMENT + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DUEDATE + " REAL NOT NULL, "
-                + TasksEntry.COLUMN_ALARMTIME + " REAL NOT NULL, "
+                + TasksEntry.COLUMN_REMINDER_DATE + " REAL NOT NULL, "
+                + TasksEntry.COLUMN_REMINDER_TIME + " REAL NOT NULL, "
                 + TasksEntry.COLUMN_ICON + " INTEGER NOT NULL "
                 + " );";
 
@@ -317,14 +318,14 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
-                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_ALARMTIME))
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
                 ));
             }
         }
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -334,13 +335,14 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
         contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
-        contentValues.put(TasksEntry.COLUMN_ALARMTIME, alarmTime);
+        contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
+        contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
         contentValues.put(TasksEntry.COLUMN_ICON, icon);
         db.insert(TasksEntry.TABLE_NAME, null, contentValues);
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float alarmTime, int icon){
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, int icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -350,7 +352,8 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
         contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
-        contentValues.put(TasksEntry.COLUMN_ALARMTIME, alarmTime);
+        contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
+        contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
         contentValues.put(TasksEntry.COLUMN_ICON, icon);
         db.update(TasksEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
         return true;
