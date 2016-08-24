@@ -78,6 +78,10 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
         // Set the text of the main header
         holder.period.setText(occurrenceTimePeriod.time_period);
 
+        // If the week type is the same each week, remove the week one label
+        if (occurrenceTimePeriod.weekType.equals("0"))
+            ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_three_everyweek));
+
         // If the item's basis is Time or Period based, highlight the background colour
         // Of the day buttons corresponding to the activated day binary code
         if (occurrenceTimePeriod.basis.equals("0") || occurrenceTimePeriod.basis.equals("1")) {

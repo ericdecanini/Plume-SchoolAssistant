@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:padding="8dp"
+    android:paddingRight="16dp"
+    android:paddingEnd="16dp"
     android:layout_height="wrap_content">
 
     <ImageView
@@ -21,7 +24,6 @@
             android:id="@+id/task_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lorem Ipsum"
             android:textColor="#000000"
             android:textAppearance="?android:attr/textAppearanceLarge"/>
 
@@ -35,7 +37,6 @@
             android:id="@+id/task_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/lorem_ipsum_sentence"
             android:textColor="#000000"/>
 
         <TextView
@@ -49,7 +50,6 @@
         android:id="@+id/task_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Due date: 18/06/15"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/task_linear_layout"/>

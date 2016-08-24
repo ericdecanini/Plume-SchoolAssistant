@@ -36,6 +36,9 @@
     <!-- Strings for ClassesActivity -->
     <string name="activity_classes_label">Classes</string>
 
+    <!-- Strings for Task List Items -->
+    <string name="due_date">Due date:</string>
+
     <!-- Strings for NewScheduleActivity -->
     <string name="activity_new_schedule_label">New Class</string>
 
@@ -72,6 +75,7 @@
     <string name="class_time_three_select_days">Select when your class takes place.</string>
 
     <!-- Days and Week Number -->
+    <string name="class_three_everyweek">Every week</string>
     <string name="class_three_weekone">Week 1</string>
     <string name="class_three_weektwo">Week 2</string>
     <string name="class_three_sunday">Sunday</string>

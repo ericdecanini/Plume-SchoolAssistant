@@ -10,8 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class TaskAdapter extends ArrayAdapter {
+
+    // Constantly used variables
+    Utility utility = new Utility();
 
     // Staple adapter variables
     Context context;
@@ -63,12 +67,18 @@ public class TaskAdapter extends ArrayAdapter {
 
         // Set the UI elements contained in the View Holder
         // using data constructed in the Task class object
-        holder.icon.setImageResource(task.taskIcon);
+//        holder.icon.setImageResource(task.taskIcon);
+        holder.icon.setImageResource(R.drawable.art_task);
         holder.title.setText(task.taskTitle);
         holder.shared.setText(task.taskShared);
+        if (task.taskShared.equals(""))
+            holder.shared.setVisibility(View.GONE);
         holder.description.setText(task.taskDescription);
         holder.attachment.setText(task.taskAttachment);
-        holder.date.setText(Float.toString(task.taskDueDate));
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(((long)task.taskDueDate));
+        holder.date.setText(context.getString(R.string.due_date) + " "
+               + utility.formatDateString(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
 
         return row;
     }

@@ -24,9 +24,8 @@
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/activity_horizontal_margin">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -34,6 +33,7 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:padding="@dimen/activity_horizontal_margin"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -41,36 +41,85 @@
                         android:id="@+id/new_schedule_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_sixtyfour" />
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/art_class" />
 
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:orientation="vertical"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_person_black"
+                                android:layout_gravity="center"
+                                android:tint="@color/gray_700"/>
+                            <EditText
+                                android:id="@+id/field_new_schedule_teacher"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/new_schedule_teacher" />
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_location_black"
+                                android:layout_gravity="center"
+                                android:tint="@color/gray_700"/>
+                            <EditText
+                                android:id="@+id/field_new_schedule_room"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/new_schedule_room" />
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <EditText
-                    android:id="@+id/field_new_schedule_teacher"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/new_schedule_teacher" />
+                    android:layout_height="1dp"
+                    android:background="@color/gray_500" />
 
-                <EditText
-                    android:id="@+id/field_new_schedule_room"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/new_schedule_room" />
-
-                <ListView
+                <com.pdt.plume.NonScrollListView
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
                     android:id="@+id/field_new_schedule_class_time_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp" />
+                    android:layout_marginStart="8dp"/>
 
                 <LinearLayout
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
                     <ImageView
-                        android:src="@drawable/ic_add"
+                        android:src="@drawable/ic_add_class_time"
                         android:layout_width="wrap_content"
+                        android:layout_marginRight="4dp"
+                        android:tint="@color/colorPrimary"
+                        android:layout_marginEnd="4dp"
                         android:layout_height="wrap_content" />
 
                     <TextView
@@ -78,6 +127,7 @@
                         android:id="@+id/field_new_schedule_add_class_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="@color/colorPrimary"
                         android:text="@string/new_schedule_add_class_time"/>
                 </LinearLayout>
 

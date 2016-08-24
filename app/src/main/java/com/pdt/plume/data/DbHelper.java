@@ -132,8 +132,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)),
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
-                            utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
-                            utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
+                            " ",
+                            " ",
                             cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))
                     ));
                 }

@@ -63,7 +63,8 @@ public class ScheduleAdapter extends ArrayAdapter {
 
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
-        holder.icon.setImageResource(schedule.scheduleIcon);
+//        holder.icon.setImageResource(schedule.scheduleIcon);
+        holder.icon.setImageResource(R.drawable.art_class);
         holder.lesson.setText(schedule.scheduleLesson);
         holder.teacher.setText(schedule.scheduleTeacher);
         holder.room.setText(schedule.scheduleRoom);

@@ -74,7 +74,7 @@ public class NewScheduleActivity extends AppCompatActivity
     ArrayList<Integer> timeOutAltList;
     ArrayList<String> periodsList;
     OccurrenceTimePeriodAdapter classTimeAdapter;
-    int scheduleIconResourceId = -1;
+    int scheduleIconResourceId = R.drawable.art_class;
 
     // Intent Data
     boolean INTENT_FLAG_EDIT = false;
@@ -152,6 +152,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
                 scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
                 scheduleIconResourceId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+                scheduleIconResourceId = R.drawable.art_class;
                 // Get database values to put in activity Array Lists
                 for (int i = 0; i < cursor.getCount(); i++) {
                     String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
@@ -182,6 +183,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 fieldRoom.setText(scheduleRoom);
                 fieldIcon.setImageResource(scheduleIconResourceId);
             }
+            cursor.close();
         }
 
         // Initialise the adapter and listener for the addClassTime UI. If the activity was launched through edit, occurrenceTimePeriodList

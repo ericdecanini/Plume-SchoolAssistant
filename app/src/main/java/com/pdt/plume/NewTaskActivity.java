@@ -101,7 +101,7 @@ public class NewTaskActivity extends AppCompatActivity
 
         // Initialise the class dropdown data
         DbHelper dbHelper = new DbHelper(this);
-        Cursor cursor = dbHelper.getTaskData();
+        Cursor cursor = dbHelper.getAllScheduleData();
 
         // Scan through the cursor and add in each class title into the array list
         if (cursor.moveToFirst()) {
@@ -109,6 +109,7 @@ public class NewTaskActivity extends AppCompatActivity
                 String classTitle = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
                 if (!classTitleArray.contains(classTitle))
                     classTitleArray.add(classTitle);
+                cursor.moveToNext();
             }
         }
 
