@@ -9,8 +9,12 @@
         android:layout_height="match_parent">
 
     <TextView
-        android:visibility="gone"
-        android:id="@+id/schedule_block_header"
+        android:id="@+id/header_textview"
+        android:layout_marginLeft="80dp"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="8dp"
+        android:textSize="15sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

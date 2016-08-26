@@ -13,7 +13,7 @@
 
     <!-- Menu Actions -->
     <string name="delete">Delete</string>
-    <string name="done">Done</string>
+    <string name="save">Save</string>
     <string name="edit">Edit</string>
 
     <!-- Navigation Drawer -->

@@ -1,9 +1,7 @@
 package com.pdt.plume;
 
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,12 +25,12 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class ScheduleFragment extends Fragment {
     // Constantly used variables
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
+    Utility utility = new Utility();
 
     // CAM Variables
     private Menu mActionMenu;
@@ -68,15 +66,15 @@ public class ScheduleFragment extends Fragment {
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
-        TextView blockHeaderTextview = (TextView) rootView.findViewById(R.id.schedule_block_header);
+        TextView headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
         if (showBlockHeaderA){
-            blockHeaderTextview.setVisibility(View.VISIBLE);
-            blockHeaderTextview.setText(getString(R.string.class_time_block_day_a));
+            headerTextView.setText(getString(R.string.class_time_block_day_a));
         } else if (showBlockHeaderB){
-            blockHeaderTextview.setVisibility(View.VISIBLE);
-            blockHeaderTextview.setText(getString(R.string.class_time_block_day_b));
-        } else
-            blockHeaderTextview.setVisibility(View.GONE);
+            headerTextView.setText(getString(R.string.class_time_block_day_b));
+        } else {
+            Calendar c = Calendar.getInstance();
+            headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        }
 
         // Set the adapter and listeners of the list view
         if (listView != null) {

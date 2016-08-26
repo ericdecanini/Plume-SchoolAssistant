@@ -137,7 +137,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginBottom="12dp"
         android:background="@android:color/transparent"
-        android:text="@string/done"
+        android:text="@string/save"
         android:textColor="@color/colorAccent" />
 
 
