@@ -71,9 +71,11 @@ public class ScheduleFragment extends Fragment {
             headerTextView.setText(getString(R.string.class_time_block_day_a));
         } else if (showBlockHeaderB){
             headerTextView.setText(getString(R.string.class_time_block_day_b));
-        } else {
+        } else if (mScheduleAdapter.getCount() != 0) {
             Calendar c = Calendar.getInstance();
             headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        } else {
+            headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
         }
 
         // Set the adapter and listeners of the list view

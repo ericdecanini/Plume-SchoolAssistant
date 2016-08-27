@@ -4,20 +4,20 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:id="@+id/schedule_icon"
         android:minHeight="48dp"
         android:minWidth="48dp"
         android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="56dp"
+        android:layout_height="56dp" />
 
     <LinearLayout
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_width="0dp"
@@ -28,44 +28,47 @@
         <TextView
             android:id="@+id/schedule_lesson"
             android:textColor="@color/black"
-            android:textAppearance="?android:textAppearanceMedium"
+            android:textSize="15sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/schedule_teacher"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:paddingRight="16dp"
+            android:paddingEnd="16dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/schedule_teacher"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/schedule_time_in"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_gravity="end"
+                android:layout_height="wrap_content" />
+        </FrameLayout>
 
-        <TextView
-            android:id="@+id/schedule_room"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:paddingRight="16dp"
+            android:paddingEnd="16dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/schedule_room"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/schedule_time_out"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_gravity="end"
+                android:layout_height="wrap_content" />
+        </FrameLayout>
 
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/schedule_time_in"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/schedule_time_out"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

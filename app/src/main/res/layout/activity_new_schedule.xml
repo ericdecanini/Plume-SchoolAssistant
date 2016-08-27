@@ -37,10 +37,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <ImageView
+                    <com.pdt.plume.CircularImageView
                         android:id="@+id/new_schedule_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/art_class" />
 
@@ -84,6 +84,7 @@
                                 android:id="@+id/field_new_schedule_room"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
                                 android:hint="@string/new_schedule_room" />
                         </LinearLayout>
 

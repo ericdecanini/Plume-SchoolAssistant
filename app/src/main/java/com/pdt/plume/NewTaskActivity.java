@@ -355,7 +355,11 @@ public class NewTaskActivity extends AppCompatActivity
                 // Auto-fill the title editText if there isn't any user-inputted title yet
                 String titleText = fieldTitle.getText().toString();
                 if (titleText.equals(""))
-                    fieldTitle.setText(NewTaskActivity.this.classTitle);
+                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                        fieldTitle.setText("");
+                else fieldTitle.setText(NewTaskActivity.this.classTitle);
+                if (titleText.equals(classType) && NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                    fieldTitle.setText(classType);
                     // Check if another class was set before
                 else if (classTitleArray.contains(titleText))
                     if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
@@ -398,9 +402,11 @@ public class NewTaskActivity extends AppCompatActivity
 
                 // Auto-fill the title editText if there isn't any user-inputted title yet
                 String titleText = fieldTitle.getText().toString();
-                if (titleText.equals(""))
+                if (titleText.equals("") && !NewTaskActivity.this.classType.equals(getString(R.string.none)))
                     fieldTitle.setText(NewTaskActivity.this.classType);
-                    // Check if another classType was set before
+                if (titleText.contains(classTitle) && NewTaskActivity.this.classType.equals(getString(R.string.none)))
+                    fieldTitle.setText(classTitle);
+               // Check if another classType was set before
                 else if (classTypeArray.contains(titleText))
                     if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
                         fieldTitle.setText("");

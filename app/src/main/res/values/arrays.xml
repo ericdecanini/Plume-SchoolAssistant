@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Array containing built-in class icons -->
+    <integer-array name="builtin_icons">
+        <item>@drawable/art_business_64dp</item>
+        <item>@drawable/art_childdevelopment_64dp</item>
+        <item>@drawable/art_french_64dp</item>
+        <item>@drawable/art_geography_64dp</item>
+        <item>@drawable/art_ict_64dp</item>
+        <item>@drawable/art_maths_64dp</item>
+        <item>@drawable/art_spanish_64dp</item>
+    </integer-array>
+
+</resources>

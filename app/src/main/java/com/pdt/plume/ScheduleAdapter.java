@@ -2,6 +2,9 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ScheduleAdapter extends ArrayAdapter {
@@ -64,7 +68,13 @@ public class ScheduleAdapter extends ArrayAdapter {
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
 //        holder.icon.setImageResource(schedule.scheduleIcon);
-        holder.icon.setImageResource(R.drawable.art_class);
+        Bitmap setImageBitmap = null;
+        try {
+            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(schedule.scheduleIcon));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        holder.icon.setImageBitmap(setImageBitmap);
         holder.lesson.setText(schedule.scheduleLesson);
         holder.teacher.setText(schedule.scheduleTeacher);
         holder.room.setText(schedule.scheduleRoom);

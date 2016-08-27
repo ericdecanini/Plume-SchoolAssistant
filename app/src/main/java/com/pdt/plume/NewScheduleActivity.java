@@ -3,15 +3,22 @@ package com.pdt.plume;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,11 +36,13 @@ import android.widget.Toast;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
+        IconDialogFragment.iconDialogListener,
         AddClassTimeOneFragment.onBasisSelectedListener,
         AddClassTimeTwoFragment.onWeekTypeSelectedListener,
         AddClassTimeThreeFragmentTime.onTimeSelectedListener,
@@ -63,6 +73,7 @@ public class NewScheduleActivity extends AppCompatActivity
     TextView fieldAddClassTime;
 
     // UI Data
+    String scheduleIconUriString;
     String scheduleTitle;
     String scheduleTeacher;
     String scheduleRoom;
@@ -76,10 +87,21 @@ public class NewScheduleActivity extends AppCompatActivity
     OccurrenceTimePeriodAdapter classTimeAdapter;
     int scheduleIconResourceId = R.drawable.art_class;
 
+    private Integer[] mThumbIds = {
+            R.drawable.art_business_64dp,
+            R.drawable.art_childdevelopment_64dp,
+            R.drawable.art_french_64dp,
+            R.drawable.art_geography_64dp,
+            R.drawable.art_ict_64dp,
+            R.drawable.art_maths_64dp,
+            R.drawable.art_spanish_64dp
+    };
+
     // Intent Data
     boolean INTENT_FLAG_EDIT = false;
     public static boolean isEdited;
     int editId = -1;
+    int REQUEST_IMAGE_GET = 2;
 
     // Interface Data
     String basis = "-1";
@@ -124,6 +146,7 @@ public class NewScheduleActivity extends AppCompatActivity
         periodsList = new ArrayList<>();
 
         // Set the OnClickListener for the UI elements
+        fieldIcon.setOnClickListener(showIconDialog());
         fieldAddClassTime.setOnClickListener(addClassTime());
 
         // Check if the activity was started by an intent from an edit action
@@ -151,8 +174,7 @@ public class NewScheduleActivity extends AppCompatActivity
             if (cursor.moveToFirst()) {
                 scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
                 scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                scheduleIconResourceId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-                scheduleIconResourceId = R.drawable.art_class;
+                scheduleIconUriString = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
                 // Get database values to put in activity Array Lists
                 for (int i = 0; i < cursor.getCount(); i++) {
                     String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
@@ -181,9 +203,22 @@ public class NewScheduleActivity extends AppCompatActivity
                 fieldTitle.setText(scheduleTitle);
                 fieldTeacher.setText(scheduleTeacher);
                 fieldRoom.setText(scheduleRoom);
-                fieldIcon.setImageResource(scheduleIconResourceId);
+                Bitmap setImageBitmap = null;
+                try {
+                    setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(scheduleIconUriString));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                fieldIcon.setImageBitmap(setImageBitmap);
             }
             cursor.close();
+        } else {
+            // Set any default data
+            Resources resources = getResources();
+            int resId = R.drawable.art_class;
+            Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                    + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+            scheduleIconUriString = drawableUri.toString();
         }
 
         // Initialise the adapter and listener for the addClassTime UI. If the activity was launched through edit, occurrenceTimePeriodList
@@ -231,6 +266,69 @@ public class NewScheduleActivity extends AppCompatActivity
         return true;
     }
 
+    private View.OnClickListener showIconDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new IconDialogFragment();
+                dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    private void showBuiltInIconsDialog() {
+        // Prepare grid view
+        GridView gridView = new GridView(this);
+        final AlertDialog dialog;
+
+        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
+        List<Integer>  mList = new ArrayList<>();
+        for (int i = 1; i < builtinIcons.length; i++) {
+            mList.add(builtinIcons[i]);
+        }
+
+        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setNumColumns(4);
+        gridView.setPadding(0, 16, 0, 16);
+        gridView.setGravity(Gravity.CENTER);
+        // Set grid view to alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(gridView);
+        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
+        dialog = builder.show();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int resId = mThumbIds[position];
+                fieldIcon.setImageResource(resId);
+                Resources resources = getResources();
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                scheduleIconUriString = drawableUri.toString();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
+            Bitmap thumbnail = data.getParcelableExtra("data");
+            Uri fullPhotoUri = data.getData();
+            Bitmap setImageBitmap = null;
+
+            try {
+                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fullPhotoUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            fieldIcon.setImageBitmap(setImageBitmap);
+        }
+    }
+
     private boolean insertScheduleDataIntoDatabase() {
         // Store data from UI input fields to variables to prepare them for insertion into the database
         String title = fieldTitle.getText().toString();
@@ -276,7 +374,7 @@ public class NewScheduleActivity extends AppCompatActivity
                         Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                     }
                     // Database insert function
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     }
@@ -285,7 +383,7 @@ public class NewScheduleActivity extends AppCompatActivity
             else {
                 // Database insert function without any occurrences
                 if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
-                        -1, -1, "-1", scheduleIconResourceId)) {
+                        -1, -1, "-1", scheduleIconUriString)) {
                     Log.v(LOG_TAG, "Inserting single schedule returned true");
                     return true;
                 }
@@ -319,7 +417,7 @@ public class NewScheduleActivity extends AppCompatActivity
                     }
 
                     // Database insert function
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconResourceId)) {
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     } else
@@ -328,7 +426,7 @@ public class NewScheduleActivity extends AppCompatActivity
             else {
                 // Database insert function without any occurrences
                 if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
-                        -1, -1, "-1", scheduleIconResourceId)) {
+                        -1, -1, "-1", scheduleIconUriString)) {
                     Log.v(LOG_TAG, "Inserting single schedule returned true");
                     return true;
                 }
@@ -756,6 +854,21 @@ public class NewScheduleActivity extends AppCompatActivity
     private String processOccurrenceString(String basis, String weekType, String classDays) {
         // Helper method to create the computer-readable occurrence string
         return basis + ":" + weekType + ":" + classDays;
+    }
+
+    @Override
+    public void OnIconListItemSelected(int item) {
+        switch (item){
+            case 0:
+                showBuiltInIconsDialog();
+                break;
+            case 1:
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                if (intent.resolveActivity(getPackageManager()) != null)
+                    startActivityForResult(intent, REQUEST_IMAGE_GET);
+                break;
+        }
     }
 
     // Subclass for the Contextual Action Mode

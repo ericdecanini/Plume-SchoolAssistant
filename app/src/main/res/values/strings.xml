@@ -39,6 +39,9 @@
     <!-- Strings for Task List Items -->
     <string name="due_date">Due date:</string>
 
+    <!-- Strings for ScheduleFragment -->
+    <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
+
     <!-- Strings for NewScheduleActivity -->
     <string name="activity_new_schedule_label">New Class</string>
 
@@ -55,6 +58,18 @@
     <string name="new_schedule_time_out">To</string>
     <string name="new_schedule_teacher">Teacher</string>
     <string name="new_schedule_room">Room</string>
+
+    <!-- Icon Dialog List -->
+    <string name="new_schedule_icon_list_title">Change photo</string>
+    <string name="new_schedule_icon_list_builtin">Built-in icons</string>
+    <string name="new_schedule_icon_list_upload">Upload from gallery</string>
+    <string-array name="new_schedule_icon_list_array">
+        <item>@string/new_schedule_icon_list_builtin</item>
+        <item>@string/new_schedule_icon_list_upload</item>
+    </string-array>
+
+    <!-- Built in icons dialog -->
+    <string name="new_schedule_icon_builtin_title">Choose an icon</string>
 
     <!-- Class Time List -->
     <string name="class_time_list_header_substring_and">and</string>
