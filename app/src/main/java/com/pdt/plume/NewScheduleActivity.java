@@ -266,51 +266,6 @@ public class NewScheduleActivity extends AppCompatActivity
         return true;
     }
 
-    private View.OnClickListener showIconDialog() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment dialog = new IconDialogFragment();
-                dialog.show(getSupportFragmentManager(), "dialog");
-            }
-        };
-    }
-
-    private void showBuiltInIconsDialog() {
-        // Prepare grid view
-        GridView gridView = new GridView(this);
-        final AlertDialog dialog;
-
-        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
-        List<Integer>  mList = new ArrayList<>();
-        for (int i = 1; i < builtinIcons.length; i++) {
-            mList.add(builtinIcons[i]);
-        }
-
-        gridView.setAdapter(new BuiltInIconsAdapter(this));
-        gridView.setNumColumns(4);
-        gridView.setPadding(0, 16, 0, 16);
-        gridView.setGravity(Gravity.CENTER);
-        // Set grid view to alertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(gridView);
-        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
-        dialog = builder.show();
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int resId = mThumbIds[position];
-                fieldIcon.setImageResource(resId);
-                Resources resources = getResources();
-                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
-                scheduleIconUriString = drawableUri.toString();
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -869,6 +824,51 @@ public class NewScheduleActivity extends AppCompatActivity
                     startActivityForResult(intent, REQUEST_IMAGE_GET);
                 break;
         }
+    }
+
+    private View.OnClickListener showIconDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new IconDialogFragment();
+                dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    private void showBuiltInIconsDialog() {
+        // Prepare grid view
+        GridView gridView = new GridView(this);
+        final AlertDialog dialog;
+
+        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
+        List<Integer>  mList = new ArrayList<>();
+        for (int i = 1; i < builtinIcons.length; i++) {
+            mList.add(builtinIcons[i]);
+        }
+
+        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setNumColumns(4);
+        gridView.setPadding(0, 16, 0, 16);
+        gridView.setGravity(Gravity.CENTER);
+        // Set grid view to alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(gridView);
+        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
+        dialog = builder.show();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int resId = mThumbIds[position];
+                fieldIcon.setImageResource(resId);
+                Resources resources = getResources();
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                scheduleIconUriString = drawableUri.toString();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     // Subclass for the Contextual Action Mode

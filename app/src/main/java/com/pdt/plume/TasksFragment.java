@@ -216,7 +216,7 @@ public class TasksFragment extends Fragment {
                     break;
 
                 case R.id.action_edit:
-                    editSelectedItem();
+                    editSelectedItem(CAMselectedItemsList.get(0));
                     break;
 
                 default:
@@ -273,7 +273,7 @@ public class TasksFragment extends Fragment {
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(){
+        private void editSelectedItem(int position){
             // Ensure that only one item is selected
             if (CAMselectedItemsList.size() == 1){
                 // Initialise intent data variables
@@ -292,8 +292,6 @@ public class TasksFragment extends Fragment {
                 // Get a cursor of the Task Data
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getTaskData();
-
-                Log.v(LOG_TAG, "CursorSize: " + cursor.getCount());
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
@@ -323,6 +321,7 @@ public class TasksFragment extends Fragment {
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime);
+                    intent.putExtra("position", position);
                     intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
 
                     // Clear the selected items list, exit the CAM and launch the activity

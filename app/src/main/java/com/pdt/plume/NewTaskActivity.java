@@ -2,21 +2,30 @@ package com.pdt.plume;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -25,12 +34,15 @@ import android.widget.Toast;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class NewTaskActivity extends AppCompatActivity
-        implements TimePickerDialog.OnTimeSetListener {
+        implements TimePickerDialog.OnTimeSetListener,
+        IconDialogFragment.iconDialogListener {
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -39,7 +51,7 @@ public class NewTaskActivity extends AppCompatActivity
     EditText fieldTitle;
     CheckBox fieldShared;
     EditText fieldDescription;
-    int iconResource = R.drawable.placeholder_sixtyfour;
+    ImageView fieldIcon;
 
     LinearLayout fieldClassDropdown;
     TextView fieldClassTextview;
@@ -55,6 +67,7 @@ public class NewTaskActivity extends AppCompatActivity
     TextView fieldSetReminderTimeTextview;
 
     // UI Data
+    String scheduleIconUriString;
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
     String classTitle = "None";
@@ -66,11 +79,22 @@ public class NewTaskActivity extends AppCompatActivity
 
     String attachedFileUriString = "";
 
+    private Integer[] mThumbIds = {
+            R.drawable.art_business_64dp,
+            R.drawable.art_childdevelopment_64dp,
+            R.drawable.art_french_64dp,
+            R.drawable.art_geography_64dp,
+            R.drawable.art_ict_64dp,
+            R.drawable.art_maths_64dp,
+            R.drawable.art_spanish_64dp
+    };
+
 
     // Intent Data
     boolean FLAG_EDIT = false;
     int editId = -1;
     static final int REQUEST_FILE_GET = 1;
+    static final int REQUEST_IMAGE_GET = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +103,7 @@ public class NewTaskActivity extends AppCompatActivity
 
         // Get references to the UI elements
         fieldTitle = (EditText) findViewById(R.id.field_new_task_title);
+        fieldIcon = (ImageView) findViewById(R.id.field_new_task_icon);
         fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
         fieldClassDropdown = (LinearLayout) findViewById(R.id.field_class_dropdown);
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
@@ -97,6 +122,7 @@ public class NewTaskActivity extends AppCompatActivity
         classType = getString(R.string.none);
 
         // Set the listeners of the UI
+        fieldIcon.setOnClickListener(showIconDialog());
         fieldClassDropdown.setOnClickListener(listener());
         fieldTypeDropdown.setOnClickListener(listener());
         fieldAttachFile.setOnClickListener(listener());
@@ -107,15 +133,15 @@ public class NewTaskActivity extends AppCompatActivity
 
         // Initialise the class dropdown data
         DbHelper dbHelper = new DbHelper(this);
-        Cursor cursor = dbHelper.getAllScheduleData();
+        Cursor scheduleCursor = dbHelper.getAllScheduleData();
 
         // Scan through the cursor and add in each class title into the array list
-        if (cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                String classTitle = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+        if (scheduleCursor.moveToFirst()) {
+            for (int i = 0; i < scheduleCursor.getCount(); i++) {
+                String classTitle = scheduleCursor.getString(scheduleCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
                 if (!classTitleArray.contains(classTitle))
                     classTitleArray.add(classTitle);
-                cursor.moveToNext();
+                scheduleCursor.moveToNext();
             }
         }
 
@@ -145,30 +171,52 @@ public class NewTaskActivity extends AppCompatActivity
                 float dueDate = extras.getFloat(getString(R.string.TASKS_EXTRA_DUEDATE));
                 float reminderDate = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERDATE));
                 float reminderTime = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERTIME));
+                int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
 
-                // Auto-fill the text fields with the intent data
-                fieldTitle.setText(title);
-                fieldDescription.setText(description);
+                if (FLAG_EDIT){
+                    Cursor cursor = dbHelper.getTaskData();
+                    if (cursor.moveToPosition(position)){
+                        scheduleIconUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                        Bitmap setImageBitmap = null;
+                        try {
+                            setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(scheduleIconUriString));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        fieldIcon.setImageBitmap(setImageBitmap);
 
-                // Set the current state of the dropdown text views
-                fieldClassTextview.setText(classTitle);
-                this.classTitle = classTitle;
-                fieldTypeTextview.setText(classType);
-                this.classType = classType;
+                        // Auto-fill the text fields with the intent data
+                        fieldTitle.setText(title);
+                        fieldDescription.setText(description);
 
-                // Set the file name of the attach file field
-                attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-                Uri filePathUri = Uri.parse(attachment);
-                if (!attachment.equals("")) {
-                    Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
-                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (returnCursor.moveToFirst()) {
-                        String fileName = returnCursor.getString(nameIndex);
-                        returnCursor.close();
-                        fieldAttachFile.setText(fileName);
-                        this.attachedFileUriString = filePathUri.toString();
+                        // Set the current state of the dropdown text views
+                        fieldClassTextview.setText(classTitle);
+                        this.classTitle = classTitle;
+                        fieldTypeTextview.setText(classType);
+                        this.classType = classType;
+
+                        // Set the file name of the attach file field
+                        attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                        Uri filePathUri = Uri.parse(attachment);
+                        if (!attachment.equals("")) {
+                            Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
+                            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                            if (returnCursor.moveToFirst()) {
+                                String fileName = returnCursor.getString(nameIndex);
+                                returnCursor.close();
+                                fieldAttachFile.setText(fileName);
+                                this.attachedFileUriString = filePathUri.toString();
+                            }
+                        }
                     }
+                } else {
+                    // Set any default data
+                    Resources resources = getResources();
+                    int resId = R.drawable.art_class;
+                    Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                            + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                    scheduleIconUriString = drawableUri.toString();
                 }
 
                 // Set the current state of the due date
@@ -193,7 +241,6 @@ public class NewTaskActivity extends AppCompatActivity
                     this.reminderDateMillis = c.getTimeInMillis();
                 }
 
-                Log.v(LOG_TAG, "Reminder Time: " + reminderTime);
                 if (reminderTime != 0f){
                     fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTime));
                     this.reminderTimeSeconds = reminderTime;
@@ -223,7 +270,7 @@ public class NewTaskActivity extends AppCompatActivity
 
         }
 
-        cursor.close();
+        scheduleCursor.close();
     }
 
 
@@ -307,28 +354,27 @@ public class NewTaskActivity extends AppCompatActivity
         // as well as the iconResource and database
         String title = fieldTitle.getText().toString();
         String description = fieldDescription.getText().toString();
-        int icon = iconResource;
+        String icon = attachedFileUriString;
         DbHelper dbHelper = new DbHelper(this);
 
         // If the activity was launched through an edit action
         // Update the database row
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(reminderDateMillis);
-        Log.v(LOG_TAG, "Reminder Time Before Insert: " + reminderTimeSeconds);
 
         if (FLAG_EDIT){
             if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, icon)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, scheduleIconUriString)){
                 return true;
             } else Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
         }
         // Else, insert a new database row
         else {
             if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, icon)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, scheduleIconUriString)){
                 return true;
             } else Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
-            Log.v(LOG_TAG, "Error creating new task");
+            Log.w(LOG_TAG, "Error creating new task");
         }
 
         return false;
@@ -542,5 +588,67 @@ public class NewTaskActivity extends AppCompatActivity
         reminderTimeSeconds = utility.timeToSeconds(hourOfDay, minute);
         fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));
     }
+
+    private View.OnClickListener showIconDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new IconDialogFragment();
+                dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    private void showBuiltInIconsDialog() {
+        // Prepare grid view
+        GridView gridView = new GridView(this);
+        final AlertDialog dialog;
+
+        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
+        List<Integer> mList = new ArrayList<>();
+        for (int i = 1; i < builtinIcons.length; i++) {
+            mList.add(builtinIcons[i]);
+        }
+
+        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setNumColumns(4);
+        gridView.setPadding(0, 16, 0, 16);
+        gridView.setGravity(Gravity.CENTER);
+        // Set grid view to alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(gridView);
+        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
+        dialog = builder.show();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int resId = mThumbIds[position];
+                fieldIcon.setImageResource(resId);
+                Resources resources = getResources();
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                scheduleIconUriString = drawableUri.toString();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    public void OnIconListItemSelected(int item) {
+        switch (item){
+            case 0:
+                showBuiltInIconsDialog();
+                break;
+            case 1:
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                if (intent.resolveActivity(getPackageManager()) != null)
+                    startActivityForResult(intent, REQUEST_IMAGE_GET);
+                break;
+        }
+    }
+
+
 
 }

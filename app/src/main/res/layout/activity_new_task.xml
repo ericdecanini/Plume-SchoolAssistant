@@ -16,9 +16,9 @@
         android:paddingStart="@dimen/activity_horizontal_margin">
 
         <ImageView
-            android:id="@+id/new_task_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/field_new_task_icon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_gravity="center"
             android:src="@drawable/art_task" />
 

@@ -2,6 +2,9 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -67,8 +71,13 @@ public class TaskAdapter extends ArrayAdapter {
 
         // Set the UI elements contained in the View Holder
         // using data constructed in the Task class object
-//        holder.icon.setImageResource(task.taskIcon);
-        holder.icon.setImageResource(R.drawable.art_task);
+        Bitmap setImageBitmap = null;
+        try {
+            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(task.taskIcon));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        holder.icon.setImageBitmap(setImageBitmap);
         holder.title.setText(task.taskTitle);
         holder.shared.setText(task.taskShared);
         if (task.taskShared.equals(""))

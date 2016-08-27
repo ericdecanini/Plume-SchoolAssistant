@@ -1,7 +1,7 @@
 package com.pdt.plume;
 
 public class Task {
-    public int taskIcon;
+    public String taskIcon;
     public String taskTitle;
     public String taskShared;
     public String taskDescription;
@@ -14,7 +14,7 @@ public class Task {
 
     // The global variables are accessed by the adapter
     // Set them using the input parameters
-    public Task(int icon, String title, String shared, String description, String attachment, float dueDate, float alarmTime) {
+    public Task(String icon, String title, String shared, String description, String attachment, float dueDate, float alarmTime) {
         super();
         this.taskIcon = icon;
         this.taskTitle = title;

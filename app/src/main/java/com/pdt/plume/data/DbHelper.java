@@ -312,7 +312,7 @@ public class DbHelper extends SQLiteOpenHelper {
         for (int i = 0; i < cursor.getCount(); i++){
             if (cursor.moveToPosition(i)){
                 arrayList.add(i, new Task(
-                        cursor.getInt(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
@@ -325,7 +325,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, int icon){
+    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -342,7 +342,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, int icon){
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
