@@ -25,6 +25,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -65,7 +67,7 @@ public class NewScheduleActivity extends AppCompatActivity
     List<Integer> CAMselectedItemsList = new ArrayList<>();
 
     // UI Elements
-    EditText fieldTitle;
+    AutoCompleteTextView fieldTitle;
     EditText fieldTeacher;
     EditText fieldRoom;
     ImageView fieldIcon;
@@ -129,7 +131,7 @@ public class NewScheduleActivity extends AppCompatActivity
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Get references to the UI elements
-        fieldTitle = (EditText) findViewById(R.id.field_new_schedule_title);
+        fieldTitle = (AutoCompleteTextView) findViewById(R.id.field_new_schedule_title);
         fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
         fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
         fieldAddClassTime = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
@@ -148,6 +150,11 @@ public class NewScheduleActivity extends AppCompatActivity
         // Set the OnClickListener for the UI elements
         fieldIcon.setOnClickListener(showIconDialog());
         fieldAddClassTime.setOnClickListener(addClassTime());
+
+        // Set the adapter for the title auto-complete text view
+        String[] subjects = getResources().getStringArray(R.array.subjects);
+        ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, subjects);
+        fieldTitle.setAdapter(autoCompleteAdapter);
 
         // Check if the activity was started by an intent from an edit action
         Intent intent = getIntent();

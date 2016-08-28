@@ -12,4 +12,34 @@
         <item>@drawable/art_spanish_64dp</item>
     </integer-array>
 
+    <!-- Array containing auto-complete fields for the NewScheduleActivity title field -->
+    <string-array name="subjects">
+        <item>@string/maths</item>
+        <item>@string/science</item>
+        <item>@string/biology</item>
+        <item>@string/chemistry</item>
+        <item>@string/physics</item>
+        <item>@string/psychology</item>
+        <item>@string/english</item>
+        <item>@string/re</item>
+        <item>@string/pe</item>
+        <item>@string/ict</item>
+        <item>@string/ict</item>
+        <item>@string/computing</item>
+        <item>@string/creative_studies</item>
+        <item>@string/graphics</item>
+        <item>@string/arts</item>
+        <item>@string/dance</item>
+        <item>@string/music</item>
+        <item>@string/drama</item>
+        <item>@string/french</item>
+        <item>@string/spanish</item>
+        <item>@string/german</item>
+        <item>@string/chinese_mandarin</item>
+        <item>@string/hospitality_and_catering</item>
+        <item>@string/child_development</item>
+        <item>@string/engineering</item>
+        <item>@string/resistant_materials</item>
+    </string-array>
+
 </resources>

@@ -76,6 +76,9 @@ public class TasksFragment extends Fragment {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
+        if (mAdapter.getCount() == 0)
+            rootView.findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+
 
         // Get a reference to the FAB and set its OnClickListener
         // which is an intent to add a new schedule

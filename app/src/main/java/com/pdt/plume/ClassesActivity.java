@@ -64,6 +64,9 @@ public class ClassesActivity extends AppCompatActivity {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
+        if (mScheduleAdapter.getCount() == 0)
+            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+
         // Get a reference to the FAB and set its OnClickListener
         // which is an intent to add a new schedule
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);

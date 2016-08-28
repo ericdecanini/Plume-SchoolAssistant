@@ -16,6 +16,10 @@
     <string name="save">Save</string>
     <string name="edit">Edit</string>
 
+    <!--
+    MAIN ACTIVITY
+    -->
+
     <!-- Navigation Drawer -->
     <string name="nav_classes">Classes</string>
 
@@ -30,14 +34,20 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <!--
+    MAIN ACTIVITY END
+    -->
+
     <!-- Strings for Database -->
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
 
     <!-- Strings for ClassesActivity -->
     <string name="activity_classes_label">Classes</string>
+    <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
 
-    <!-- Strings for Task List Items -->
-    <string name="due_date">Due date:</string>
+    <!--
+    SCHEDULE STRINGS
+    -->
 
     <!-- Strings for ScheduleFragment -->
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
@@ -137,6 +147,17 @@
     <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
     <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
 
+    <!--
+    SCHEDULE STRINGS END
+    -->
+
+    <!--
+    TASKS STRINGS
+    -->
+
+    <!-- Strings for TasksFragment -->
+    <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done.</string>
+
     <!-- Strings for NewTasksActivity -->
     <string name="activity_new_task_label">New Task</string>
 
@@ -166,6 +187,9 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="set_date">Set date</string>
 
+    <!-- Strings for Task List Items -->
+    <string name="due_date">Due date:</string>
+
     <!-- Intent extras to check if the activity was started from an edit action -->
     <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
     <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
@@ -180,5 +204,37 @@
     <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
     <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
 
+    <!--
+    TASKS STRINGS END
+    -->
+    
+    <!--
+    ARRAY STRINGS
+    -->
+    <string name="maths">Maths</string>
+    <string name="science">Science</string>
+    <string name="biology">Biology</string>
+    <string name="chemistry">Chemistry</string>
+    <string name="physics">Physics</string>
+    <string name="psychology">Psychology</string>
+    <string name="english">English</string>
+    <string name="re">RE</string>
+    <string name="pe">PE</string>
+    <string name="ict">ICT</string>
+    <string name="computing">Computing</string>
+    <string name="creative_studies">Creative Studies</string>
+    <string name="graphics">Graphics</string>
+    <string name="arts">Arts</string>
+    <string name="dance">Dance</string>
+    <string name="music">Music</string>
+    <string name="drama">Drama</string>
+    <string name="french">French</string>
+    <string name="spanish">Spanish</string>
+    <string name="german">German</string>
+    <string name="chinese_mandarin">Chinese Mandarin</string>
+    <string name="hospitality_and_catering">Hospitality and Catering</string>
+    <string name="child_development">Child Development</string>
+    <string name="engineering">Engineering</string>
+    <string name="resistant_materials">Resistant Materials</string>
 
 </resources>

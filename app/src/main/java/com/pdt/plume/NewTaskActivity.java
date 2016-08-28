@@ -151,6 +151,7 @@ public class NewTaskActivity extends AppCompatActivity
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_test));
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_revision));
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_project));
+        classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_detention));
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_other));
 
         // Check if the activity was started by an edit action
