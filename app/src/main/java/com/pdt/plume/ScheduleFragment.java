@@ -121,8 +121,15 @@ public class ScheduleFragment extends Fragment {
                 // If the used device is a phone, start a new ScheduleDetailActivity
                 // passing the data of the clicked row to the fragment
                 else {
-                    Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
-                    startActivity(intent);
+                    DbHelper dbHelper = new DbHelper(getActivity());
+                    Cursor cursor = dbHelper.getCurrentDayScheduleData();
+                    if (cursor.moveToPosition(position)) {
+                        Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                        intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
+                        startActivity(intent);
+                    } else {
+                        Log.w(LOG_TAG, "Error getting title of selected item");
+                    }
                 }
             }
         };

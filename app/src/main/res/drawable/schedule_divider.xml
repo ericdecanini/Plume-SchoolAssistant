@@ -7,7 +7,7 @@
         android:shape="line" >
         <stroke
             android:width="0.8dp"
-            android:color="@color/gray_500" />
+            android:color="@color/dividerColor" />
 
         <size android:height="1.34dp" />
 

@@ -181,7 +181,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     else if (!periods.equals("-1")){
                         ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 0);
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                        Log.v(LOG_TAG, "MatchBoolean: " + utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek));
                         if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
                             for (int ii = 0; ii < periodList.size() - 1; ii ++) {
                                 arrayList.add(new Schedule(
@@ -213,7 +212,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             arrayList.add(i, new Schedule(
                                     context,
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
-                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                     utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),

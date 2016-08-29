@@ -51,6 +51,13 @@
 
     <!-- Strings for ScheduleFragment -->
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
+    
+    <!-- Strings for ScheduleDetailActivity -->
+    <string name="schedule_detail_teacher_subtitle">Teacher</string>
+    <string name="schedule_detail_room_subtitle">Room</string>
+    <string name="schedule_detail_periods_title">Periods</string>
+    
+    <string name="KEY_SCHEDULE_DETAIL_TITLE">KEY_SCHEDULE_DETAIL_TITLE</string>
 
     <!-- Strings for NewScheduleActivity -->
     <string name="activity_new_schedule_label">New Class</string>
@@ -62,7 +69,7 @@
 
     <!-- Main UI -->
     <string name="new_schedule_hint">Enter title here&#8230;</string>
-    <string name="new_schedule_add_class_time">Add Class Time</string>
+    <string name="new_schedule_add_class_time">Add Period</string>
     <string name="new_schedule_repeats">Repeats</string>
     <string name="new_schedule_time_in">From</string>
     <string name="new_schedule_time_out">To</string>
