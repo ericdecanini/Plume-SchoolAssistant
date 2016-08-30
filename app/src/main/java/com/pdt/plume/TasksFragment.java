@@ -115,7 +115,8 @@ public class TasksFragment extends Fragment {
                 // passing the data of the clicked row to the fragment
                 else {
                     Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
-                    startActivity(intent);
+                        intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
+                        startActivity(intent);
                 }
             }
         };

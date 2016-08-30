@@ -97,7 +97,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray_500" />
+        android:background="@color/dividerColor" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -110,7 +110,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_subject_black"
+            android:src="@drawable/ic_subject_black_24dp"
             android:tint="@color/gray_700" />
 
         <EditText
@@ -128,7 +128,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray_500" />
+        android:background="@color/dividerColor" />
 
     <LinearLayout
         android:id="@+id/field_new_task_duedate"
@@ -142,7 +142,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_time_black"
+            android:src="@drawable/ic_time_black_32dp"
             android:tint="@color/gray_700" />
 
         <LinearLayout
@@ -293,7 +293,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray_500" />
+        android:background="@color/dividerColor" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -306,7 +306,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_attachment_black"
+            android:src="@drawable/ic_attachment_black_24dp"
             android:tint="@color/gray_700" />
 
         <TextView

@@ -47,7 +47,7 @@
             android:paddingTop="16dp">
 
             <ImageView
-                android:id="@+id/schedule_detail_teacher_icon"
+                android:id="@+id/task_detail_class_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -57,13 +57,13 @@
                 android:tint="@color/gray_700" />
 
             <TextView
-                android:id="@+id/schedule_detail_teacher"
+                android:id="@+id/task_detail_class"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="40dp"
                 android:layout_marginStart="40dp"
-                android:layout_toEndOf="@id/schedule_detail_teacher_icon"
-                android:layout_toRightOf="@id/schedule_detail_teacher_icon"
+                android:layout_toEndOf="@id/task_detail_class_icon"
+                android:layout_toRightOf="@id/task_detail_class_icon"
                 android:text="Mr Ali"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/black" />
@@ -72,11 +72,11 @@
                 android:id="@+id/schedule_detail_teacher_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/schedule_detail_teacher"
+                android:layout_below="@id/task_detail_class"
                 android:layout_marginLeft="40dp"
                 android:layout_marginStart="40dp"
-                android:layout_toEndOf="@id/schedule_detail_teacher_icon"
-                android:layout_toRightOf="@id/schedule_detail_teacher_icon"
+                android:layout_toEndOf="@id/task_detail_class_icon"
+                android:layout_toRightOf="@id/task_detail_class_icon"
                 android:text="@string/schedule_detail_teacher_subtitle"
                 android:textColor="@color/gray_700" />
         </RelativeLayout>
@@ -88,7 +88,7 @@
             android:paddingTop="16dp">
 
             <ImageView
-                android:id="@+id/schedule_detail_room_icon"
+                android:id="@+id/task_detail_type_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -98,13 +98,13 @@
                 android:tint="@color/gray_700" />
 
             <TextView
-                android:id="@+id/schedule_detail_room"
+                android:id="@+id/task_detail_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="40dp"
                 android:layout_marginStart="40dp"
-                android:layout_toEndOf="@id/schedule_detail_room_icon"
-                android:layout_toRightOf="@id/schedule_detail_room_icon"
+                android:layout_toEndOf="@id/task_detail_type_icon"
+                android:layout_toRightOf="@id/task_detail_type_icon"
                 android:text="103"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/black" />
@@ -113,11 +113,11 @@
                 android:id="@+id/schedule_detail_room_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/schedule_detail_room"
+                android:layout_below="@id/task_detail_type"
                 android:layout_marginLeft="40dp"
                 android:layout_marginStart="40dp"
-                android:layout_toEndOf="@id/schedule_detail_room_icon"
-                android:layout_toRightOf="@id/schedule_detail_room_icon"
+                android:layout_toEndOf="@id/task_detail_type_icon"
+                android:layout_toRightOf="@id/task_detail_type_icon"
                 android:text="@string/schedule_detail_room_subtitle"
                 android:textColor="@color/gray_700" />
         </RelativeLayout>

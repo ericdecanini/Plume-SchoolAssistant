@@ -95,7 +95,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/gray_500" />
+                    android:background="@color/dividerColor" />
 
                 <com.pdt.plume.NonScrollListView
                     android:paddingLeft="@dimen/activity_horizontal_margin"

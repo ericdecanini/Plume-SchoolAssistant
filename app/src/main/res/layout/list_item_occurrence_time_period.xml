@@ -36,7 +36,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_time_black"
+            android:src="@drawable/ic_time_black_32dp"
             android:tint="@color/gray_700"/>
         <TextView
             android:id="@+id/list_item_time_period_textview"
@@ -185,7 +185,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_time_black"
+                android:src="@drawable/ic_time_black_32dp"
                 android:tint="@color/gray_700"/>
             <TextView
                 android:id="@+id/list_item_time_period_textview_alt"

@@ -24,7 +24,9 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity" />
 
-        <activity android:name=".TasksDetailActivity" />
+        <activity android:name=".TasksDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".MainActivity" />
 
         <activity
             android:name=".NewScheduleActivity"

@@ -1,22 +1,22 @@
 package com.pdt.plume;
 
-import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,9 +33,14 @@ import java.util.ArrayList;
 public class ScheduleDetailActivity extends AppCompatActivity {
 
     // Constantly used variables
+    String LOG_TAG = ScheduleDetailActivity.class.getSimpleName();
     Utility utility = new Utility();
 
     String title;
+    String teacher;
+    String room;
+
+    ShareActionProvider mShareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +48,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_schedule_detail);
 
         // Get references to the UI elements
-        TextView teacherTextview = (TextView) findViewById(R.id.schedule_detail_teacher);
-        TextView roomTextview = (TextView) findViewById(R.id.schedule_detail_room);
+        TextView teacherTextview = (TextView) findViewById(R.id.task_detail_class);
+        TextView roomTextview = (TextView) findViewById(R.id.task_detail_type);
 
         // Set the attributes of the window
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -62,9 +67,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             // Set the values of the main UI elements
             if (cursor.moveToFirst()){
-                collapsingToolbar.setTitle(cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
-                teacherTextview.setText(cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER)));
-                roomTextview.setText(cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)));
+                teacher = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TEACHER));
+                room = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM));
+                collapsingToolbar.setTitle(title);
+                teacherTextview.setText(teacher);
+                roomTextview.setText(room);
 
                 String iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
                 Uri iconUri = Uri.parse(iconUriString);
@@ -92,6 +99,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 // Inflate the listview of periods
                 ArrayList<OccurrenceTimePeriod> periods = new ArrayList<>();
                 for (int i = 0; i < cursor.getCount(); i ++){
+                    String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
+                    if (!occurrence.equals("-1"))
                     periods.add(new OccurrenceTimePeriod(this,
                             utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
                             utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
@@ -126,6 +135,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_detail, menu);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -148,6 +158,21 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         .setNegativeButton(getString(R.string.cancel), null)
                         .show();
                 break;
+
+            case R.id.action_share:
+                String shareString = title
+                        + "\n" + getString(R.string.new_schedule_teacher) + ": " + teacher
+                        + "\n" + getString(R.string.new_schedule_room) + ": " + room;
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareString);
+                shareIntent.setType("text/plain");
+                if (mShareActionProvider != null) {
+                    mShareActionProvider.setShareIntent(shareIntent);
+                }
+                startActivity(shareIntent);
+                break;
+
         }
         return super.onOptionsItemSelected(item);
     }
