@@ -126,7 +126,7 @@ public class DbHelper extends SQLiteOpenHelper {
             if (cursor.moveToPosition(i)) {
                 String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
                 if (!usedTitles.contains(title)) {
-                    arrayList.add(i, new Schedule(
+                    arrayList.add(new Schedule(
                             context,
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)),
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)),
@@ -136,6 +136,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             " ",
                             cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))
                     ));
+
+                    usedTitles.add(title);
                 }
             }
         }
@@ -209,7 +211,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     if (!timeIn.equals("")) {
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
                         if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
-                            arrayList.add(i, new Schedule(
+                            // Changed from arrayList.add(i, new Schedule);
+                            arrayList.add(new Schedule(
                                     context,
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
@@ -283,6 +286,11 @@ public class DbHelper extends SQLiteOpenHelper {
     public Integer deleteScheduleItem(Integer id){
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
+    }
+
+    public Integer deleteScheduleItemByTitle(String title){
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(ScheduleEntry.TABLE_NAME, ScheduleEntry.COLUMN_TITLE + " = ?", new String[]{title});
     }
 
     /**

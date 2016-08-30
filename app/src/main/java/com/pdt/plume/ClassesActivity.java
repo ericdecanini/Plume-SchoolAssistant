@@ -84,10 +84,15 @@ public class ClassesActivity extends AppCompatActivity {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Start a new ScheduleDetailActivity
-                // passing the data of the clicked row to the fragment
+                DbHelper dbHelper = new DbHelper(ClassesActivity.this);
+                Cursor cursor = dbHelper.getCurrentDayScheduleData();
+                if (cursor.moveToPosition(position)) {
                     Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
+                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
                     startActivity(intent);
+                } else {
+                    Log.w(LOG_TAG, "Error getting title of selected item");
+                }
                 }
 
         };

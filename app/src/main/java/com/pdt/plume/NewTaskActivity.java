@@ -67,7 +67,7 @@ public class NewTaskActivity extends AppCompatActivity
     TextView fieldSetReminderTimeTextview;
 
     // UI Data
-    String scheduleIconUriString;
+    String iconUriString;
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
     String classTitle = "None";
@@ -178,10 +178,10 @@ public class NewTaskActivity extends AppCompatActivity
                 if (FLAG_EDIT){
                     Cursor cursor = dbHelper.getTaskData();
                     if (cursor.moveToPosition(position)){
-                        scheduleIconUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                        iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
                         Bitmap setImageBitmap = null;
                         try {
-                            setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(scheduleIconUriString));
+                            setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUriString));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -217,7 +217,7 @@ public class NewTaskActivity extends AppCompatActivity
                     int resId = R.drawable.art_class;
                     Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                             + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
-                    scheduleIconUriString = drawableUri.toString();
+                    iconUriString = drawableUri.toString();
                 }
 
                 // Set the current state of the due date
@@ -267,6 +267,10 @@ public class NewTaskActivity extends AppCompatActivity
                 c = Calendar.getInstance();
                 reminderTimeSeconds = utility.timeToSeconds(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
                 fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));
+
+                iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
+                        "://" + getResources().getResourcePackageName(R.drawable.art_task)
+                        + '/' + getResources().getResourceTypeName(R.drawable.art_task) + '/' + getResources().getResourceEntryName(R.drawable.art_task);
             }
 
         }
@@ -365,14 +369,14 @@ public class NewTaskActivity extends AppCompatActivity
 
         if (FLAG_EDIT){
             if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, scheduleIconUriString)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)){
                 return true;
             } else Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
         }
         // Else, insert a new database row
         else {
             if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, scheduleIconUriString)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)){
                 return true;
             } else Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
             Log.w(LOG_TAG, "Error creating new task");
@@ -628,7 +632,7 @@ public class NewTaskActivity extends AppCompatActivity
                 Resources resources = getResources();
                 Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                         + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
-                scheduleIconUriString = drawableUri.toString();
+                iconUriString = drawableUri.toString();
                 dialog.dismiss();
             }
         });

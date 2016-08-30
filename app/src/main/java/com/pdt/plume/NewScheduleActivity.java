@@ -164,7 +164,7 @@ public class NewScheduleActivity extends AppCompatActivity
             // Get the title and edit flag sent through the intent
             if (extras != null) {
                 scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
-                editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
+//                editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
                 INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
             }
         }
