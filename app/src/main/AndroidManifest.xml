@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdt.plume">
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission-sdk-23 android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,17 +24,18 @@
 
         <activity
             android:name=".ScheduleDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
 
-        <activity android:name=".TasksDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".TasksDetailActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".NewScheduleActivity"
             android:label="@string/activity_new_schedule_label"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
                 <data android:mimeType="image/*" />
@@ -46,7 +50,7 @@
         <activity
             android:name=".NewTaskActivity"
             android:label="@string/activity_new_task_label"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
                 <data android:mimeType="*/*" />
@@ -54,9 +58,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ClassesActivity"
+        <activity
+            android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
+
+        <receiver android:name=".AlarmReceiver"></receiver>
 
     </application>
 

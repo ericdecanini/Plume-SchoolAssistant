@@ -68,9 +68,13 @@ public class TasksDetailActivity extends AppCompatActivity {
         // Get the class's data based on the title and fill in the fields
         Intent intent = getIntent();
         if (intent != null){
-            int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), -1);
+            int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
             DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor = dbHelper.getTaskData();
+            Cursor cursor = null;
+            if (intent.hasExtra("_ID")){
+                cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
+            } else cursor = dbHelper.getTaskData();
+
 
 
             // Set the values of the main UI elements
@@ -190,6 +194,10 @@ public class TasksDetailActivity extends AppCompatActivity {
                     mShareActionProvider.setShareIntent(shareIntent);
                 }
                 startActivity(shareIntent);
+                break;
+
+            case android.R.id.home:
+                finish();
                 break;
 
         }

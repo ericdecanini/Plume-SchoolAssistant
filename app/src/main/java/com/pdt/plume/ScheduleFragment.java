@@ -1,6 +1,8 @@
 package com.pdt.plume;
 
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
@@ -122,7 +124,7 @@ public class ScheduleFragment extends Fragment {
                 // passing the data of the clicked row to the fragment
                 else {
                     DbHelper dbHelper = new DbHelper(getActivity());
-                    Cursor cursor = dbHelper.getCurrentDayScheduleData();
+                    Cursor cursor = dbHelper.getCurrentDayScheduleData(getActivity());
                     if (cursor.moveToPosition(position)) {
                         Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
                         intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
@@ -200,9 +202,22 @@ public class ScheduleFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
-            if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
+
+            int colorFrom = getResources().getColor(R.color.colorPrimary);
+            int colorTo = getResources().getColor(R.color.gray_500);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(200); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                    if (!isTablet)
+                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
 
             return true;
         }
@@ -246,9 +261,22 @@ public class ScheduleFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-            if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+
+            int colorFrom = getResources().getColor(R.color.gray_500);
+            int colorTo = getResources().getColor(R.color.colorPrimary);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(800); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                    if (!isTablet)
+                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
         }
 
         private void deleteSelectedItems() {
@@ -257,7 +285,7 @@ public class ScheduleFragment extends Fragment {
 
             // Get a cursor by getting the currentDayScheduleData
             // Which should match the list view of the ScheduleFragment
-            Cursor cursor = db.getCurrentDayScheduleData();
+            Cursor cursor = db.getCurrentDayScheduleData(getActivity());
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
@@ -294,10 +322,11 @@ public class ScheduleFragment extends Fragment {
                 // Get a reference to the database and
                 // Get a cursor of the current day schedule data
                 DbHelper db = new DbHelper(getActivity());
-                Cursor cursor = db.getCurrentDayScheduleData();
+                Cursor cursor = db.getCurrentDayScheduleData(getActivity());
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                    Log.v(LOG_TAG, "CurrentDay Cursor Count: " + cursor.getCount());
                     // Get its Id and Title
                     id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));

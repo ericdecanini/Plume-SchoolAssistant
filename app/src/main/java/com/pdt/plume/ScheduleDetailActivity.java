@@ -173,6 +173,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 startActivity(shareIntent);
                 break;
 
+            case android.R.id.home:
+                onBackPressed();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

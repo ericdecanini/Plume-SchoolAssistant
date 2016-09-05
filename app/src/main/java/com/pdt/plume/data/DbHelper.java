@@ -94,7 +94,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 null);
     }
 
-    public Cursor getCurrentDayScheduleData(){
+    public Cursor getCurrentDayScheduleData(Context context){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
                 null,
@@ -103,7 +103,33 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null);
-        return cursor;
+
+        ArrayList<String> returningRowIDs = new ArrayList<>();
+        Calendar c = Calendar.getInstance();
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+        int weekNumber = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
+                .getInt("weekNumber", 0);
+
+        for (int i = 0; i < cursor.getCount(); i ++){
+            if (cursor.moveToPosition(i)){
+                String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+                if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)){
+                    returningRowIDs.add("" + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                }
+            }
+        }
+
+        cursor.close();
+
+        Cursor currentDayCursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                ScheduleEntry._ID + "=?",
+                returningRowIDs.toArray(new String[0]),
+                null,
+                null,
+                null);
+        return currentDayCursor;
     }
 
     public Cursor getScheduleDataByTitle(String title){
@@ -147,10 +173,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Schedule> getCurrentDayScheduleArray(Context context){
         // Query the cursor, calendar, initialise the Array List
         // and get the preference for the week number
-        Cursor cursor = getCurrentDayScheduleData();
+        Cursor cursor = getCurrentDayScheduleData(context);
         Calendar c = Calendar.getInstance();
-        Date date = new Date();
-        c.setTime(date);
         ArrayList<Schedule> arrayList = new ArrayList<>();
         int weekNumber = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
                 .getInt("weekNumber", 0);
@@ -246,6 +270,8 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
 
+        cursor.close();
+
         return arrayList;
     }
 
@@ -308,6 +334,17 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null);
+    }
+
+    public Cursor getTaskById(int _ID){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TasksEntry.TABLE_NAME,
+                null,
+                TasksEntry._ID + "=?",
+                new String[]{Integer.toString(_ID)},
                 null,
                 null,
                 null);

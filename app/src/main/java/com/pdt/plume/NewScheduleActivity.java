@@ -104,6 +104,7 @@ public class NewScheduleActivity extends AppCompatActivity
     public static boolean isEdited;
     int editId = -1;
     int REQUEST_IMAGE_GET = 2;
+    boolean STARTED_BY_NEWTASKACTIVITY = false;
 
     // Interface Data
     String basis = "-1";
@@ -119,7 +120,6 @@ public class NewScheduleActivity extends AppCompatActivity
 
     // Flags
     boolean isTablet;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,8 +164,8 @@ public class NewScheduleActivity extends AppCompatActivity
             // Get the title and edit flag sent through the intent
             if (extras != null) {
                 scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
-//                editId = extras.getInt(getResources().getString(R.string.SCHEDULE_EXTRA_ID));
                 INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
+                STARTED_BY_NEWTASKACTIVITY = extras.getBoolean("STARTED_BY_NEWTASKACTIVITY", false);
             }
         }
 
@@ -263,8 +263,10 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
                 // If all fields are valid, perform database insertion
                 else if (insertScheduleDataIntoDatabase()) {
-                    Intent intent = new Intent(this, MainActivity.class);
-                    startActivity(intent);
+                    if (!STARTED_BY_NEWTASKACTIVITY) {
+                        Intent intent = new Intent(this, MainActivity.class);
+                        startActivity(intent);
+                    }
                     finish();
                 }
                 else finish();

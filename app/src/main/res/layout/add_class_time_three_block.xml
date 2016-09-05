@@ -15,7 +15,10 @@
         <TextView
             android:id="@+id/class_time_one_value"
             android:layout_width="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:textColor="@color/colorPrimary"
             android:layout_marginTop="4dp" />
 
@@ -39,33 +42,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_one"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_one" />
+                    android:textOn="@string/class_time_period_one"
+                    android:textOff="@string/class_time_period_one" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_two"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_two" />
+                    android:textOn="@string/class_time_period_two"
+                    android:textOff="@string/class_time_period_two" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_three"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_three" />
+                    android:textOn="@string/class_time_period_three"
+                    android:textOff="@string/class_time_period_three" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_four"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_four" />
+                    android:textOn="@string/class_time_period_four"
+                    android:textOff="@string/class_time_period_four" />
             </LinearLayout>
 
             <LinearLayout
@@ -92,33 +99,37 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <Button
+                        <ToggleButton
                             android:id="@+id/class_three_period_one_alt"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/class_time_period_one" />
+                            android:textOn="@string/class_time_period_one"
+                            android:textOff="@string/class_time_period_one" />
 
-                        <Button
+                        <ToggleButton
                             android:id="@+id/class_three_period_two_alt"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/class_time_period_two" />
+                            android:textOn="@string/class_time_period_two"
+                            android:textOff="@string/class_time_period_two" />
 
-                        <Button
+                        <ToggleButton
                             android:id="@+id/class_three_period_three_alt"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/class_time_period_three" />
+                            android:textOn="@string/class_time_period_three"
+                            android:textOff="@string/class_time_period_three" />
 
-                        <Button
+                        <ToggleButton
                             android:id="@+id/class_three_period_four_alt"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/class_time_period_four" />
+                            android:textOn="@string/class_time_period_four"
+                            android:textOff="@string/class_time_period_four" />
 
                     </LinearLayout>
                 </LinearLayout>

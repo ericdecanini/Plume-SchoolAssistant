@@ -11,6 +11,8 @@
         android:id="@+id/class_time_one_value"
         android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp" />
 
@@ -18,6 +20,8 @@
         android:id="@+id/class_time_two_value"
         android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp" />
 
@@ -107,94 +111,106 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_one"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_one" />
+                android:textOn="@string/class_time_period_one"
+                android:textOff="@string/class_time_period_one"/>
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_two"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_two" />
+                android:textOn="@string/class_time_period_two"
+                android:textOff="@string/class_time_period_two" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_three"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_three" />
+                android:textOn="@string/class_time_period_three"
+                android:textOff="@string/class_time_period_three" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_four"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_four" />
+                android:textOn="@string/class_time_period_four"
+                android:textOff="@string/class_time_period_four" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_five"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_five" />
+                android:textOn="@string/class_time_period_five"
+                android:textOff="@string/class_time_period_five" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_six"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_six" />
+                android:textOn="@string/class_time_period_six"
+                android:textOff="@string/class_time_period_six" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_seven"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_seven" />
+                android:textOn="@string/class_time_period_seven"
+                android:textOff="@string/class_time_period_seven" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_eight"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_eight" />
+                android:textOn="@string/class_time_period_eight"
+                android:textOff="@string/class_time_period_eight" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_nine"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_nine" />
+                android:textOn="@string/class_time_period_nine"
+                android:textOff="@string/class_time_period_nine" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_ten"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_ten" />
+                android:textOn="@string/class_time_period_ten"
+                android:textOff="@string/class_time_period_ten" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_eleven"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_eleven" />
+                android:textOn="@string/class_time_period_eleven"
+                android:textOff="@string/class_time_period_eleven" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/class_three_period_twelve"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/class_time_period_twelve" />
+                android:textOn="@string/class_time_period_twelve"
+                android:textOff="@string/class_time_period_twelve" />
         </LinearLayout>
     </LinearLayout>
 
@@ -287,94 +303,106 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_one_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_one" />
+                    android:textOn="@string/class_time_period_one"
+                    android:textOff="@string/class_time_period_one" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_two_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_two" />
+                    android:textOn="@string/class_time_period_two"
+                    android:textOff="@string/class_time_period_two" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_three_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_three" />
+                    android:textOn="@string/class_time_period_three"
+                    android:textOff="@string/class_time_period_three" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_four_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_four" />
+                    android:textOn="@string/class_time_period_four"
+                    android:textOff="@string/class_time_period_four" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_five_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_five" />
+                    android:textOn="@string/class_time_period_five"
+                    android:textOff="@string/class_time_period_five" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_six_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_six" />
+                    android:textOn="@string/class_time_period_six"
+                    android:textOff="@string/class_time_period_six" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_seven_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_seven" />
+                    android:textOn="@string/class_time_period_seven"
+                    android:textOff="@string/class_time_period_seven" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_eight_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_eight" />
+                    android:textOn="@string/class_time_period_eight"
+                    android:textOff="@string/class_time_period_eight" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_nine_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_nine" />
+                    android:textOn="@string/class_time_period_nine"
+                    android:textOff="@string/class_time_period_nine" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_ten_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_ten" />
+                    android:textOn="@string/class_time_period_ten"
+                    android:textOff="@string/class_time_period_ten" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_eleven_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_eleven" />
+                    android:textOn="@string/class_time_period_eleven"
+                    android:textOff="@string/class_time_period_eleven" />
 
-                <Button
+                <ToggleButton
                     android:id="@+id/class_three_period_twelve_alt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_time_period_twelve" />
+                    android:textOn="@string/class_time_period_twelve"
+                    android:textOff="@string/class_time_period_twelve" />
             </LinearLayout>
         </LinearLayout>
 

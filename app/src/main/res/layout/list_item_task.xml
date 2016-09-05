@@ -4,6 +4,7 @@
     android:padding="8dp"
     android:paddingRight="16dp"
     android:paddingEnd="16dp"
+    android:background="@drawable/touch_selector"
     android:layout_height="wrap_content">
 
     <ImageView

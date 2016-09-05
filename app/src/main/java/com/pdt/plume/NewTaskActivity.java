@@ -1,13 +1,20 @@
 package com.pdt.plume;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.DialogFragment;
@@ -95,6 +102,7 @@ public class NewTaskActivity extends AppCompatActivity
     int editId = -1;
     static final int REQUEST_FILE_GET = 1;
     static final int REQUEST_IMAGE_GET = 2;
+    boolean LAUNCHED_NEW_CLASS = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,9 +183,9 @@ public class NewTaskActivity extends AppCompatActivity
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
 
-                if (FLAG_EDIT){
+                if (FLAG_EDIT) {
                     Cursor cursor = dbHelper.getTaskData();
-                    if (cursor.moveToPosition(position)){
+                    if (cursor.moveToPosition(position)) {
                         iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
                         Bitmap setImageBitmap = null;
                         try {
@@ -211,12 +219,15 @@ public class NewTaskActivity extends AppCompatActivity
                             }
                         }
                     }
+
+                    cursor.close();
+
                 } else {
                     // Set any default data
                     Resources resources = getResources();
                     int resId = R.drawable.art_class;
                     Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                            + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                            + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
                     iconUriString = drawableUri.toString();
                 }
 
@@ -242,7 +253,7 @@ public class NewTaskActivity extends AppCompatActivity
                     this.reminderDateMillis = c.getTimeInMillis();
                 }
 
-                if (reminderTime != 0f){
+                if (reminderTime != 0f) {
                     fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTime));
                     this.reminderTimeSeconds = reminderTime;
                 }
@@ -278,6 +289,48 @@ public class NewTaskActivity extends AppCompatActivity
         scheduleCursor.close();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (LAUNCHED_NEW_CLASS){
+            DbHelper dbHelper = new DbHelper(this);
+            Cursor cursor = dbHelper.getAllScheduleData();
+            if (cursor.moveToLast()) {
+                String newClassTitle = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+                fieldClassTextview.setText(newClassTitle);
+                classTitle = newClassTitle;
+                LAUNCHED_NEW_CLASS = false;
+            }
+
+            // Auto-fill the title editText if there isn't any user-inputted title yet
+            String titleText = fieldTitle.getText().toString();
+            if (titleText.equals(""))
+                if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                    fieldTitle.setText("");
+                else fieldTitle.setText(NewTaskActivity.this.classTitle);
+            if (titleText.equals(classType) && NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                fieldTitle.setText(classType);
+                // Check if another class was set before
+            else if (classTitleArray.contains(titleText))
+                if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                    fieldTitle.setText("");
+                else fieldTitle.setText(NewTaskActivity.this.classTitle);
+                // Check if the classType was set before the class
+            else if (classTypeArray.contains(titleText))
+                fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
+                // Check if the title editText contains text as a result
+                // of previously using the dropdown lists
+            else {
+                String[] splitFieldTitle = titleText.split(" ");
+                if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
+                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                        fieldTitle.setText(splitFieldTitle[1]);
+                    else
+                        fieldTitle.setText(NewTaskActivity.this.classTitle + " " + splitFieldTitle[1]);
+                }
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -287,7 +340,7 @@ public class NewTaskActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             // Without this, the up button will not do anything and return the error 'Cancelling event due to no window focus'
             case android.R.id.home:
                 finish();
@@ -296,7 +349,7 @@ public class NewTaskActivity extends AppCompatActivity
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
                 // Validate that the title field is not empty
-                if (fieldTitle.getText().toString().equals("")){
+                if (fieldTitle.getText().toString().equals("")) {
                     Toast.makeText(NewTaskActivity.this, getString(R.string.new_tasks_toast_validation_title_not_found), Toast.LENGTH_SHORT).show();
                     return false;
                 }
@@ -305,7 +358,7 @@ public class NewTaskActivity extends AppCompatActivity
                 if (insertTaskData())
                     startActivity(intent);
                 else {
-                    Log.v(LOG_TAG, "Error creating new task");
+                    Log.w(LOG_TAG, "Error creating new task");
                     finish();
                 }
                 break;
@@ -318,7 +371,7 @@ public class NewTaskActivity extends AppCompatActivity
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (v.getId()){
+                switch (v.getId()) {
                     case R.id.field_class_dropdown:
                         showClassDropdownMenu();
                         break;
@@ -354,7 +407,7 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
-    private boolean insertTaskData(){
+    private boolean insertTaskData() {
         // Get the inputted text from the title and description fields
         // as well as the iconResource and database
         String title = fieldTitle.getText().toString();
@@ -367,22 +420,55 @@ public class NewTaskActivity extends AppCompatActivity
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(reminderDateMillis);
 
-        if (FLAG_EDIT){
+        // Set the alarm for the notification
+        Calendar cc = Calendar.getInstance();
+        cc.setTimeInMillis(reminderDateMillis);
+        int hour = (int) reminderTimeSeconds / 3600;
+        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+        cc.set(Calendar.HOUR_OF_DAY, hour);
+        cc.set(Calendar.MINUTE, minute);
+
+        if (FLAG_EDIT) {
+            long notificationMillis = (long) (reminderDateMillis + reminderTimeSeconds);
+            Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), editId, iconUriString);
+            Log.v(LOG_TAG, "MillisSet: " + notificationMillis);
             if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)) {
                 return true;
-            } else Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
         }
         // Else, insert a new database row
         else {
             if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)){
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)) {
+                Cursor cursor = dbHelper.getTaskData();
+                if (cursor.moveToLast()) {
+                    int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                    long notificationMillis = (long) (reminderDateMillis + reminderTimeSeconds);
+                    Log.v(LOG_TAG, "MillisSet: " + notificationMillis);
+                    Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), ID, iconUriString);
+                }
                 return true;
-            } else Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
             Log.w(LOG_TAG, "Error creating new task");
         }
 
         return false;
+    }
+
+    public void Remind(Date dateTime, String title, String message, int ID, String iconUriString) {
+        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+        alarmIntent.putExtra("message", message);
+        alarmIntent.putExtra("title", title);
+        alarmIntent.putExtra("ID", ID);
+        alarmIntent.putExtra("iconUriString", iconUriString);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
     }
 
     private void showClassDropdownMenu() {
@@ -403,12 +489,21 @@ public class NewTaskActivity extends AppCompatActivity
                 // Set the data to be later saved into the database
                 NewTaskActivity.this.classTitle = item.getTitle().toString();
 
+                // If Add New Class was selected, start NewScheduleActivity
+                if (NewTaskActivity.this.classTitle.equals(getString(R.string.field_dropdown_class_menu_item_new_class))){
+                    LAUNCHED_NEW_CLASS = true;
+                    Intent intent = new Intent(NewTaskActivity.this, NewScheduleActivity.class);
+                    intent.putExtra("STARTED_BY_NEWTASKACTIVITY", true);
+                    startActivity(intent);
+                    return true;
+                }
+
                 // Auto-fill the title editText if there isn't any user-inputted title yet
                 String titleText = fieldTitle.getText().toString();
                 if (titleText.equals(""))
                     if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
                         fieldTitle.setText("");
-                else fieldTitle.setText(NewTaskActivity.this.classTitle);
+                    else fieldTitle.setText(NewTaskActivity.this.classTitle);
                 if (titleText.equals(classType) && NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
                     fieldTitle.setText(classType);
                     // Check if another class was set before
@@ -423,10 +518,11 @@ public class NewTaskActivity extends AppCompatActivity
                     // of previously using the dropdown lists
                 else {
                     String[] splitFieldTitle = titleText.split(" ");
-                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])){
+                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
                         if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
                             fieldTitle.setText(splitFieldTitle[1]);
-                        else fieldTitle.setText(NewTaskActivity.this.classTitle + " " + splitFieldTitle[1]);
+                        else
+                            fieldTitle.setText(NewTaskActivity.this.classTitle + " " + splitFieldTitle[1]);
                     }
                 }
                 // Set the dropdown list text to the selected item
@@ -457,23 +553,24 @@ public class NewTaskActivity extends AppCompatActivity
                     fieldTitle.setText(NewTaskActivity.this.classType);
                 if (titleText.contains(classTitle) && NewTaskActivity.this.classType.equals(getString(R.string.none)))
                     fieldTitle.setText(classTitle);
-               // Check if another classType was set before
+                    // Check if another classType was set before
                 else if (classTypeArray.contains(titleText))
                     if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
                         fieldTitle.setText("");
                     else fieldTitle.setText(NewTaskActivity.this.classType);
                     // Check if the classType was set before the class
-                else if (classTitleArray.contains(titleText)){
+                else if (classTitleArray.contains(titleText)) {
                     fieldTitle.setText(titleText + " " + NewTaskActivity.this.classType);
                 }
                 // Check if the title editText contains text as a result
                 // of previously using the dropdown lists
                 else {
                     String[] splitFieldTitle = titleText.split(" ");
-                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])){
+                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
                         if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
                             fieldTitle.setText(splitFieldTitle[0]);
-                        else fieldTitle.setText(splitFieldTitle[0] + " " + NewTaskActivity.this.classType);
+                        else
+                            fieldTitle.setText(splitFieldTitle[0] + " " + NewTaskActivity.this.classType);
                     }
                 }
 
@@ -494,7 +591,7 @@ public class NewTaskActivity extends AppCompatActivity
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.dropdown_reminder_date_none:
                         fieldSetReminderDateTextview.setText(getString(R.string.none));
                         reminderDateMillis = 0;
@@ -547,7 +644,7 @@ public class NewTaskActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK){
+        if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK) {
             // Get the Uri and UriString from the intent and save its global variable
             Uri filePathUri = data.getData();
             attachedFileUriString = data.getDataString();
@@ -631,7 +728,7 @@ public class NewTaskActivity extends AppCompatActivity
                 fieldIcon.setImageResource(resId);
                 Resources resources = getResources();
                 Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
                 iconUriString = drawableUri.toString();
                 dialog.dismiss();
             }
@@ -641,7 +738,7 @@ public class NewTaskActivity extends AppCompatActivity
 
     @Override
     public void OnIconListItemSelected(int item) {
-        switch (item){
+        switch (item) {
             case 0:
                 showBuiltInIconsDialog();
                 break;
@@ -653,7 +750,6 @@ public class NewTaskActivity extends AppCompatActivity
                 break;
         }
     }
-
 
 
 }

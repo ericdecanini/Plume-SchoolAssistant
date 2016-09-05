@@ -85,7 +85,7 @@ public class ClassesActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DbHelper dbHelper = new DbHelper(ClassesActivity.this);
-                Cursor cursor = dbHelper.getCurrentDayScheduleData();
+                Cursor cursor = dbHelper.getAllScheduleData();
                 if (cursor.moveToPosition(position)) {
                     Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                     intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
@@ -207,7 +207,7 @@ public class ClassesActivity extends AppCompatActivity {
 
             // Get a cursor by getting the currentDayScheduleData
             // Which should match the list view of the ScheduleFragment
-            Cursor cursor = db.getCurrentDayScheduleData();
+            Cursor cursor = db.getAllScheduleData();
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
@@ -244,7 +244,7 @@ public class ClassesActivity extends AppCompatActivity {
                 // Get a reference to the database and
                 // Get a cursor of the current day schedule data
                 DbHelper db = new DbHelper(ClassesActivity.this);
-                Cursor cursor = db.getCurrentDayScheduleData();
+                Cursor cursor = db.getAllScheduleData();
 
                 // Move the cursor to the first position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){

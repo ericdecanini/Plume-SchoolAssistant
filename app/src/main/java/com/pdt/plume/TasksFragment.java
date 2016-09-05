@@ -1,6 +1,8 @@
 package com.pdt.plume;
 
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
@@ -191,9 +193,22 @@ public class TasksFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.gray_500));
-            if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.gray_500));
+
+            int colorFrom = getResources().getColor(R.color.colorPrimary);
+            int colorTo = getResources().getColor(R.color.gray_500);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(200); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                    if (!isTablet)
+                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
 
             return true;
         }
@@ -239,9 +254,22 @@ public class TasksFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
-            getActivity().findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-            if (!isTablet)
-                getActivity().findViewById(R.id.tabs).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+
+            int colorFrom = getResources().getColor(R.color.gray_500);
+            int colorTo = getResources().getColor(R.color.colorPrimary);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(800); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                    if (!isTablet)
+                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
         }
 
         private void deleteSelectedItems() {
@@ -301,6 +329,7 @@ public class TasksFragment extends Fragment {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                    Log.v(LOG_TAG, "editId: " + id);
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                     classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
                     classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
