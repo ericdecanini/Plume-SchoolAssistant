@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ScheduleAdapter extends ArrayAdapter {
+    String LOG_TAG = ScheduleAdapter.class.getSimpleName();
 
     // Staple adapter variables
     Context context;

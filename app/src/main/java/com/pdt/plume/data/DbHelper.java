@@ -3,6 +3,7 @@ package com.pdt.plume.data;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -17,6 +18,7 @@ import com.pdt.plume.data.DbContract.TasksEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -121,11 +123,21 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
+        String[] selectionArgs = returningRowIDs.toArray(new String[0]);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < selectionArgs.length; i++){
+            if (i != 0)
+                builder.append(" OR ");
+            builder.append(ScheduleEntry._ID);
+            builder.append("=?");
+        }
+
+        String selection = builder.toString();
 
         Cursor currentDayCursor = db.query(ScheduleEntry.TABLE_NAME,
                 null,
-                ScheduleEntry._ID + "=?",
-                returningRowIDs.toArray(new String[0]),
+                selection,
+                selectionArgs,
                 null,
                 null,
                 null);
@@ -142,6 +154,46 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null);
         return cursor;
+    }
+
+    public Cursor getAllClassesData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = getAllScheduleData();
+        ArrayList<String> IDs = new ArrayList<>();
+        ArrayList<String> usedTitles = new ArrayList<>();
+
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)){
+                String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                if (!usedTitles.contains(title)){
+                    IDs.add("" + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                    usedTitles.add(title);
+                }
+            }
+        }
+
+        cursor.close();
+
+        String[] selectionArgs = IDs.toArray(new String[0]);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < selectionArgs.length; i++){
+            if (i != 0)
+                builder.append(" OR ");
+            builder.append(ScheduleEntry._ID);
+            builder.append("=?");
+        }
+
+        String selection = builder.toString();
+
+        Cursor classesCursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null);
+
+        return classesCursor;
     }
 
     public ArrayList<Schedule> getAllClassesArray(Context context){
@@ -256,7 +308,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 arrayList.add(i, new Schedule(
                                         context,
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
-                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                         utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),

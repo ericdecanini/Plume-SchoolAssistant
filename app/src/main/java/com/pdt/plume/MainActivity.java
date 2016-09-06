@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int currentWeek = c.get(Calendar.WEEK_OF_YEAR);
         // Get the previous date
         SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
-        weekNumber = preferences.getInt("weekNumber", 0);
+        weekNumber = preferences.getInt("weekNumber", 1);
         int lastCheckedWeekOfYear = preferences.getInt("weekOfYear", -1);
         // Toggle the weekNumber for each week passed since last check
         // If the preference wasn't found, don't toggle and simply store the preference.

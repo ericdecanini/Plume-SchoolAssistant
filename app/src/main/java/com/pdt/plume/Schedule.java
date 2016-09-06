@@ -1,8 +1,11 @@
 package com.pdt.plume;
 
 import android.content.Context;
+import android.util.Log;
 
 public class Schedule {
+    String LOG_TAG = Schedule.class.getSimpleName();
+
     public String scheduleIcon;
     public String scheduleLesson;
     public String scheduleTeacher;
