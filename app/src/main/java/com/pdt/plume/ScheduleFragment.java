@@ -27,6 +27,7 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class ScheduleFragment extends Fragment {

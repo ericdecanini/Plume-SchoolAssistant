@@ -87,13 +87,32 @@ public class NewTaskActivity extends AppCompatActivity
     String attachedFileUriString = "";
 
     private Integer[] mThumbIds = {
+            R.drawable.art_arts_64dp,
+            R.drawable.art_biology_64dp,
             R.drawable.art_business_64dp,
+            R.drawable.art_chemistry_64dp,
             R.drawable.art_childdevelopment_64dp,
+            R.drawable.art_class_64dp,
+            R.drawable.art_computing_64dp,
+            R.drawable.art_cooking_64dp,
+            R.drawable.art_creativestudies_64dp,
+            R.drawable.art_drama_64dp,
+            R.drawable.art_english_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
+            R.drawable.art_graphics_64dp,
+            R.drawable.art_hospitality_64dp,
             R.drawable.art_ict_64dp,
             R.drawable.art_maths_64dp,
-            R.drawable.art_spanish_64dp
+            R.drawable.art_media_64dp,
+            R.drawable.art_music_64dp,
+            R.drawable.art_pe_64dp,
+            R.drawable.art_physics_64dp,
+            R.drawable.art_psychology_64dp,
+            R.drawable.art_re_64dp,
+            R.drawable.art_science_64dp,
+            R.drawable.art_spanish_64dp,
+            R.drawable.art_task_64dp
     };
 
 
@@ -225,7 +244,7 @@ public class NewTaskActivity extends AppCompatActivity
                 } else {
                     // Set any default data
                     Resources resources = getResources();
-                    int resId = R.drawable.art_class;
+                    int resId = R.drawable.art_class_64dp;
                     Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                             + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
                     iconUriString = drawableUri.toString();
@@ -280,8 +299,8 @@ public class NewTaskActivity extends AppCompatActivity
                 fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));
 
                 iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(R.drawable.art_task)
-                        + '/' + getResources().getResourceTypeName(R.drawable.art_task) + '/' + getResources().getResourceEntryName(R.drawable.art_task);
+                        "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
+                        + '/' + getResources().getResourceTypeName(R.drawable.art_task_64dp) + '/' + getResources().getResourceEntryName(R.drawable.art_task_64dp);
             }
 
         }
@@ -427,9 +446,9 @@ public class NewTaskActivity extends AppCompatActivity
         int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
         cc.set(Calendar.HOUR_OF_DAY, hour);
         cc.set(Calendar.MINUTE, minute);
+        long notificationMillis = (cc.getTimeInMillis());
 
         if (FLAG_EDIT) {
-            long notificationMillis = (long) (reminderDateMillis + reminderTimeSeconds);
             Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), editId, iconUriString);
             Log.v(LOG_TAG, "MillisSet: " + notificationMillis);
             if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
@@ -445,8 +464,6 @@ public class NewTaskActivity extends AppCompatActivity
                 Cursor cursor = dbHelper.getTaskData();
                 if (cursor.moveToLast()) {
                     int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    long notificationMillis = (long) (reminderDateMillis + reminderTimeSeconds);
-                    Log.v(LOG_TAG, "MillisSet: " + notificationMillis);
                     Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), ID, iconUriString);
                 }
                 return true;

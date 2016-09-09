@@ -3,13 +3,32 @@
 
     <!-- Array containing built-in class icons -->
     <integer-array name="builtin_icons">
+        <item>@drawable/art_arts_64dp</item>
+        <item>@drawable/art_biology_64dp</item>
         <item>@drawable/art_business_64dp</item>
+        <item>@drawable/art_chemistry_64dp</item>
         <item>@drawable/art_childdevelopment_64dp</item>
+        <item>@drawable/art_class_64dp</item>
+        <item>@drawable/art_computing_64dp</item>
+        <item>@drawable/art_cooking_64dp</item>
+        <item>@drawable/art_creativestudies_64dp</item>
+        <item>@drawable/art_drama_64dp</item>
+        <item>@drawable/art_english_64dp</item>
         <item>@drawable/art_french_64dp</item>
         <item>@drawable/art_geography_64dp</item>
+        <item>@drawable/art_graphics_64dp</item>
+        <item>@drawable/art_hospitality_64dp</item>
         <item>@drawable/art_ict_64dp</item>
         <item>@drawable/art_maths_64dp</item>
+        <item>@drawable/art_media_64dp</item>
+        <item>@drawable/art_music_64dp</item>
+        <item>@drawable/art_pe_64dp</item>
+        <item>@drawable/art_physics_64dp</item>
+        <item>@drawable/art_psychology_64dp</item>
+        <item>@drawable/art_re_64dp</item>
+        <item>@drawable/art_science_64dp</item>
         <item>@drawable/art_spanish_64dp</item>
+        <item>@drawable/art_task_64dp</item>
     </integer-array>
 
     <!-- Array containing auto-complete fields for the NewScheduleActivity title field -->

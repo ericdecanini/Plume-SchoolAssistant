@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -17,6 +18,7 @@ import com.pdt.plume.data.DbContract.TasksEntry;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
@@ -85,38 +87,47 @@ public class DbHelper extends SQLiteOpenHelper {
      * DeleteRow
      */
 
-    public Cursor getAllScheduleData(){
+    public Cursor getAllScheduleData() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(ScheduleEntry.TABLE_NAME,
                 null,
                 null,
                 null,
                 null,
-                null,
+                ScheduleEntry.COLUMN_TITLE + " ASC",
                 null);
     }
 
-    public Cursor getCurrentDayScheduleData(Context context){
+    public Cursor getCurrentDayScheduleData(Context context) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
+        SharedPreferences preferences = ((Activity) context).getPreferences(Context.MODE_PRIVATE);
+        int weekNumber = preferences.getInt("weekNumber", 0);
+        Cursor cursor;
+        if (weekNumber == 0)
+            cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    ScheduleEntry.COLUMN_TIMEIN);
+        else cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null);
+                ScheduleEntry.COLUMN_TIMEIN_ALT);
 
         ArrayList<String> returningRowIDs = new ArrayList<>();
         Calendar c = Calendar.getInstance();
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
-        int weekNumber = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
-                .getInt("weekNumber", 0);
 
-        for (int i = 0; i < cursor.getCount(); i ++){
-            if (cursor.moveToPosition(i)){
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
                 String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
                 String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
-                if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)){
+                if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
                     returningRowIDs.add("" + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                 }
             }
@@ -125,7 +136,7 @@ public class DbHelper extends SQLiteOpenHelper {
         cursor.close();
         String[] selectionArgs = returningRowIDs.toArray(new String[0]);
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < selectionArgs.length; i++){
+        for (int i = 0; i < selectionArgs.length; i++) {
             if (i != 0)
                 builder.append(" OR ");
             builder.append(ScheduleEntry._ID);
@@ -144,7 +155,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return currentDayCursor;
     }
 
-    public Cursor getScheduleDataByTitle(String title){
+    public Cursor getScheduleDataByTitle(String title) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
                 null,
@@ -163,9 +174,9 @@ public class DbHelper extends SQLiteOpenHelper {
         ArrayList<String> usedTitles = new ArrayList<>();
 
         for (int i = 0; i < cursor.getCount(); i++) {
-            if (cursor.moveToPosition(i)){
+            if (cursor.moveToPosition(i)) {
                 String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-                if (!usedTitles.contains(title)){
+                if (!usedTitles.contains(title)) {
                     IDs.add("" + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
                     usedTitles.add(title);
                 }
@@ -176,7 +187,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         String[] selectionArgs = IDs.toArray(new String[0]);
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < selectionArgs.length; i++){
+        for (int i = 0; i < selectionArgs.length; i++) {
             if (i != 0)
                 builder.append(" OR ");
             builder.append(ScheduleEntry._ID);
@@ -196,11 +207,11 @@ public class DbHelper extends SQLiteOpenHelper {
         return classesCursor;
     }
 
-    public ArrayList<Schedule> getAllClassesArray(Context context){
+    public ArrayList<Schedule> getAllClassesArray(Context context) {
         Cursor cursor = getAllScheduleData();
         ArrayList<Schedule> arrayList = new ArrayList<>();
         ArrayList<String> usedTitles = new ArrayList<>();
-        for (int i = 0; i < cursor.getCount(); i++){
+        for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
                 String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
                 if (!usedTitles.contains(title)) {
@@ -222,20 +233,20 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public ArrayList<Schedule> getCurrentDayScheduleArray(Context context){
+    public ArrayList<Schedule> getCurrentDayScheduleArray(Context context) {
         // Query the cursor, calendar, initialise the Array List
         // and get the preference for the week number
         Cursor cursor = getCurrentDayScheduleData(context);
         Calendar c = Calendar.getInstance();
         ArrayList<Schedule> arrayList = new ArrayList<>();
-        int weekNumber = ((Activity)context).getPreferences(Context.MODE_PRIVATE)
+        int weekNumber = ((Activity) context).getPreferences(Context.MODE_PRIVATE)
                 .getInt("weekNumber", 0);
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
 
         // Check for week 1 or week 2 and add into the array list based on that
-        if (weekNumber == 0){
-            for (int i = 0; i < cursor.getCount(); i++){
-                if (cursor.moveToPosition(i)){
+        if (weekNumber == 0) {
+            for (int i = 0; i < cursor.getCount(); i++) {
+                if (cursor.moveToPosition(i)) {
                     // Get the variables to check from the database
                     String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
@@ -243,7 +254,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     // Add the time based list item
                     if (!timeIn.equals("")) {
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                        if (utility.occurrenceMatchesCurrentDay(context ,occurrence, periods, weekNumber, dayOfWeek))
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
                             arrayList.add(new Schedule(
                                     context,
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
@@ -256,11 +267,11 @@ public class DbHelper extends SQLiteOpenHelper {
                             ));
                     }
                     // Add the period/block based list item
-                    else if (!periods.equals("-1")){
+                    else if (!periods.equals("-1")) {
                         ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 0);
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
                         if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
-                            for (int ii = 0; ii < periodList.size() - 1; ii ++) {
+                            for (int ii = 0; ii < periodList.size() - 1; ii++) {
                                 arrayList.add(new Schedule(
                                         context,
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
@@ -277,8 +288,8 @@ public class DbHelper extends SQLiteOpenHelper {
         }
         // Week 2: Use alternate data
         else {
-            for (int i = 0; i < cursor.getCount(); i++){
-                if (cursor.moveToPosition(i)){
+            for (int i = 0; i < cursor.getCount(); i++) {
+                if (cursor.moveToPosition(i)) {
                     // Get the variables to check from the database
                     String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
@@ -305,7 +316,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
                             ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 1);
                             for (int ii = 0; ii < periodList.size(); ii++) {
-                                arrayList.add(i, new Schedule(
+                                arrayList.add(new Schedule(
                                         context,
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
@@ -327,7 +338,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon){
+    public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -344,7 +355,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon){
+    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -361,12 +372,12 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public Integer deleteScheduleItem(Integer id){
+    public Integer deleteScheduleItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
-    public Integer deleteScheduleItemByTitle(String title){
+    public Integer deleteScheduleItemByTitle(String title) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(ScheduleEntry.TABLE_NAME, ScheduleEntry.COLUMN_TITLE + " = ?", new String[]{title});
     }
@@ -380,7 +391,7 @@ public class DbHelper extends SQLiteOpenHelper {
      * DeleteRow
      */
 
-    public Cursor getTaskData(){
+    public Cursor getTaskData() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TasksEntry.TABLE_NAME,
                 null,
@@ -391,7 +402,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 null);
     }
 
-    public Cursor getTaskById(int _ID){
+    public Cursor getTaskById(int _ID) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TasksEntry.TABLE_NAME,
                 null,
@@ -402,11 +413,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 null);
     }
 
-    public ArrayList<Task> getTaskDataArray(){
+    public ArrayList<Task> getTaskDataArray() {
         Cursor cursor = getTaskData();
         ArrayList<Task> arrayList = new ArrayList<>();
-        for (int i = 0; i < cursor.getCount(); i++){
-            if (cursor.moveToPosition(i)){
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
                 arrayList.add(i, new Task(
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
@@ -421,7 +432,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon){
+    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -438,7 +449,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon){
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -455,7 +466,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public Integer deleteTaskItem(Integer id){
+    public Integer deleteTaskItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(TasksEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
