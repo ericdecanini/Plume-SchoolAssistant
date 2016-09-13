@@ -259,6 +259,8 @@ public class ClassesActivity extends AppCompatActivity {
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
                     intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                    intent.putExtra(getResources().getString(R.string.STARTED_FROM_CLASSES_ACTIVITY), true);
+
 
                     // Clear the selected items list, exit the CAM and launch the activity
                     CAMselectedItemsList.clear();

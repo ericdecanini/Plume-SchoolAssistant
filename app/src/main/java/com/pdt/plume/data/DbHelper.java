@@ -94,8 +94,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null,
-                ScheduleEntry.COLUMN_TITLE + " ASC",
-                null);
+                null,
+                ScheduleEntry.COLUMN_TITLE + " ASC");
     }
 
     public Cursor getCurrentDayScheduleData(Context context) {
@@ -119,6 +119,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 ScheduleEntry.COLUMN_TIMEIN_ALT);
 
+        Log.v(LOG_TAG, "All cursor count: " + cursor.getCount());
+
         ArrayList<String> returningRowIDs = new ArrayList<>();
         Calendar c = Calendar.getInstance();
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
@@ -141,9 +143,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 builder.append(" OR ");
             builder.append(ScheduleEntry._ID);
             builder.append("=?");
+            Log.v(LOG_TAG, "Selection Args: " + selectionArgs[i]);
         }
 
         String selection = builder.toString();
+        Log.v(LOG_TAG, "Selection: " + selection);
 
         Cursor currentDayCursor = db.query(ScheduleEntry.TABLE_NAME,
                 null,
@@ -165,6 +169,21 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null);
         return cursor;
+    }
+
+    public String getScheduleTitleById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String idString = Integer.toString(id);
+        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                ScheduleEntry._ID + "=?",
+                new String[]{idString},
+                null,
+                null,
+                null);
+        if (cursor.moveToFirst()){
+            return cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+        } else return "";
     }
 
     public Cursor getAllClassesData() {
@@ -202,7 +221,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 selectionArgs,
                 null,
                 null,
-                null);
+                ScheduleEntry.COLUMN_TITLE + " ASC");
 
         return classesCursor;
     }

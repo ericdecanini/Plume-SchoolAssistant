@@ -206,8 +206,8 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
                         holder.sat_alt.setBackgroundColor(((Activity) context).getColor(R.color.colorAccent));
                     } else holder.sat_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.colorAccent));
                 else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    holder.sun_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
-                } else holder.sun_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
+                    holder.sat_alt.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
+                } else holder.sat_alt.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
             }
         }
 

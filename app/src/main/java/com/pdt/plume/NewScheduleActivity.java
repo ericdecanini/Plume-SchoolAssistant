@@ -196,7 +196,10 @@ public class NewScheduleActivity extends AppCompatActivity
         // Get schedule data in database based on the schedule title to auto-fill the fields in the UI element
         if (isEdited) {
             // The cursor should only contain schedule data of the item's title, so multiple rows would only include different instances of occurrence
-            Cursor cursor = new DbHelper(this).getScheduleDataByTitle(scheduleTitle);
+            DbHelper dbHelper = new DbHelper(this);
+            Cursor cursor;
+            Log.v(LOG_TAG, "Schedule Extra Id: " + Integer.toString(intent.getIntExtra(getString(R.string.SCHEDULE_EXTRA_ID), 0)));
+            cursor = dbHelper.getScheduleDataByTitle(scheduleTitle);
             if (cursor.moveToFirst()) {
                 scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
                 scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));

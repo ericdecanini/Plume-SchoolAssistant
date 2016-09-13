@@ -164,8 +164,9 @@ public class ScheduleFragment extends Fragment {
 
             // If the clicked item became selected, add it to
             // an array list of selected items
-            if (checked)
+            if (checked) {
                 CAMselectedItemsList.add(position);
+            }
 
             // If the clicked item became deselected, get its item id
             // and remove it from the array list
@@ -324,6 +325,7 @@ public class ScheduleFragment extends Fragment {
                 // Get a cursor of the current day schedule data
                 DbHelper db = new DbHelper(getActivity());
                 Cursor cursor = db.getCurrentDayScheduleData(getActivity());
+                Log.v(LOG_TAG, "Editing position " + CAMselectedItemsList.get(0));
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){

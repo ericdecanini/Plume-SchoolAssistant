@@ -53,6 +53,8 @@
     <string name="activity_classes_label">Classes</string>
     <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
 
+    <string name="STARTED_FROM_CLASSES_ACTIVITY">STARTED_FROM_CLASSES_ACTIVITY</string>
+
     <!--
     SCHEDULE STRINGS
     -->

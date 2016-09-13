@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 
 public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
+    String LOG_TAG = AddClassTimeThreeFragmentPeriod.class.getSimpleName();
 
     // Fragment input storage variables
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
@@ -308,7 +310,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 }
 
                 // Do so as well for its alternate layout if it is available
-                if (splitOccurrence[1].equals("1")) {
+                if (splitOccurrence[1].equals("2")) {
                     if (splitPeriod[0].equals("2") || splitPeriod[0].equals("3")) {
                         if (isPeriodChecked[0].equals("1"))
                             isPeriodChecked[0] = "3";
@@ -772,7 +774,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         break;
                     case R.id.class_three_period_two_alt:
                         if (isPeriodChecked[1].equals("0"))
-                            isPeriodChecked[1] = "12";
+                            isPeriodChecked[1] = "2";
                         else if (isPeriodChecked[1].equals("1"))
                             isPeriodChecked[1] = "3";
                         else if (isPeriodChecked[1].equals("2"))
