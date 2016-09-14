@@ -435,7 +435,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
             else {
                 Calendar c = Calendar.getInstance();
                 // Set the default value of the global time variables
-                // These variables are also used as default values in TimePickerFragment
+                // These variables are also used as default values in TimePickerFragmentSchedule
                 timeInHour = c.get(Calendar.HOUR_OF_DAY) + 1;
                 timeOutHour = c.get(Calendar.HOUR_OF_DAY) + 2;
                 timeInAltHour = c.get(Calendar.HOUR_OF_DAY) + 1;
@@ -759,7 +759,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
     }
 
     private View.OnClickListener showTimePickerDialog() {
-        // OnClickListener set to launch a TimePickerFragment to input the time on a particular field
+        // OnClickListener set to launch a TimePickerFragmentSchedule to input the time on a particular field
         // When this happens, data of the current state of the fragment is sent to the NewScheduleActivity
         // As the TimeSetListener can only be implemented in an activity and not a fragment
         // Therefore upon Time Set, the fragment is restarted along with data sent through the interface
@@ -772,8 +772,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 // Upon restart of the fragment
                 resourceId = v.getId();
 
-                // Launch a new TimePickerFragment
-                DialogFragment timePickerFragment = new TimePickerFragment();
+                // Launch a new TimePickerFragmentSchedule
+                DialogFragment timePickerFragment = new TimePickerFragmentSchedule();
                 if (resourceId != -1)
                     timePickerFragment.show(getActivity().getSupportFragmentManager(), "time picker");
 

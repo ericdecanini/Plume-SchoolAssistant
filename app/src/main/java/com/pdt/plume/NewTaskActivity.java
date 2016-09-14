@@ -2,8 +2,6 @@ package com.pdt.plume;
 
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
@@ -13,8 +11,6 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.DialogFragment;
@@ -284,10 +280,10 @@ public class NewTaskActivity extends AppCompatActivity
             else {
                 // Initialise the due date to be set for the next day
                 Calendar c = Calendar.getInstance();
-                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
+                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1, 0, 0);
                 dueDateMillis = c.getTimeInMillis();
                 fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
-                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1));
+                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
 
                 // Initialise the reminder date and time
                 c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
@@ -403,7 +399,7 @@ public class NewTaskActivity extends AppCompatActivity
                         c_duedate.setTime(date_duedate);
                         int year_duedate = c_duedate.get(Calendar.YEAR);
                         int month_duedate = c_duedate.get(Calendar.MONTH);
-                        int day_duedate = c_duedate.get(Calendar.DAY_OF_MONTH);
+                        int day_duedate = c_duedate.get(Calendar.DAY_OF_MONTH) + 1;
                         DatePickerDialog datePickerDialog_duedate = new DatePickerDialog(NewTaskActivity.this, dueDateSetListener(), year_duedate, month_duedate, day_duedate);
                         datePickerDialog_duedate.show();
                         break;
@@ -418,7 +414,7 @@ public class NewTaskActivity extends AppCompatActivity
                         showReminderDateDropdownMenu();
                         break;
                     case R.id.field_new_task_reminder_time:
-                        DialogFragment timePickerFragment = new TimePickerFragment();
+                        DialogFragment timePickerFragment = new TimePickerFragmentTask();
                         timePickerFragment.show(getSupportFragmentManager(), "time picker");
                         break;
                 }
@@ -630,7 +626,7 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderTime.setEnabled(true);
                         int year = c.get(Calendar.YEAR);
                         int month = c.get(Calendar.MONTH);
-                        int day = c.get(Calendar.DAY_OF_MONTH);
+                        int day = c.get(Calendar.DAY_OF_MONTH) + 1;
                         DatePickerDialog datePickerDialog =
                                 new DatePickerDialog(NewTaskActivity.this, reminderDateSetListener(),
                                         year, month, day);
@@ -701,8 +697,6 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
-    // This method is called when a time for the reminding notification is set
-    @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         reminderTimeSeconds = utility.timeToSeconds(hourOfDay, minute);
         fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));

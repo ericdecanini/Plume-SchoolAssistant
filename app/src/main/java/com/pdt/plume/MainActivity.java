@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_people:
                 Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_settings:
+            case R.id.nav_settings:
                 Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_help:

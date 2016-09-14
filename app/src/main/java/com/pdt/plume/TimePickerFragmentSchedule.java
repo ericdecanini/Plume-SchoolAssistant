@@ -11,7 +11,7 @@ import android.text.format.DateFormat;
 import java.util.Calendar;
 
 
-public class TimePickerFragment extends DialogFragment {
+public class TimePickerFragmentSchedule extends DialogFragment {
 
     private Activity mActivity;
     private TimePickerDialog.OnTimeSetListener mListener;

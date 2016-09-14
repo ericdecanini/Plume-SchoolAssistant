@@ -3,6 +3,7 @@
     package="com.pdt.plume">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <uses-permission-sdk-23 android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
@@ -11,60 +12,62 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ScheduleDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".TasksDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".NewScheduleActivity"
             android:label="@string/activity_new_schedule_label"
             android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
+
                 <data android:mimeType="image/*" />
+
                 <category android:name="android.intent.category.DEFAULT" />
-                <!-- The OPENABLE category declares that the returned file is accessible
+                <!--
+                     The OPENABLE category declares that the returned file is accessible
                      from a content provider that supports OpenableColumns
-                     and ContentResolver.openFileDescriptor() -->
+                     and ContentResolver.openFileDescriptor()
+                -->
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".NewTaskActivity"
             android:label="@string/activity_new_task_label"
             android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
+
                 <data android:mimeType="*/*" />
+
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
             android:parentActivityName=".MainActivity" />
 
-        <receiver android:name=".AlarmReceiver"></receiver>
+        <receiver android:name=".AlarmReceiver" />
 
+        <activity android:name=".empActivity"></activity>
     </application>
 
 </manifest>

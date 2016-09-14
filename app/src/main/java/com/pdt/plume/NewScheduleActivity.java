@@ -188,7 +188,7 @@ public class NewScheduleActivity extends AppCompatActivity
             }
         }
 
-        // isEdited is a constant used in the TimePickerFragment to set the default selected time
+        // isEdited is a constant used in the TimePickerFragmentSchedule to set the default selected time
         // upon creation of the dialog to be the previously selected time if the activity has been
         // launched through an edit action
         isEdited = INTENT_FLAG_EDIT;
@@ -287,6 +287,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 else if (insertScheduleDataIntoDatabase()) {
                     if (!STARTED_BY_NEWTASKACTIVITY) {
                         Intent intent = new Intent(this, MainActivity.class);
+                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
                         startActivity(intent);
                     }
                     finish();

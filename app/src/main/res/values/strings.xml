@@ -61,7 +61,7 @@
 
     <!-- Strings for ScheduleFragment -->
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
-    
+
     <!-- Strings for ScheduleDetailActivity -->
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_detail_room_subtitle">Room</string>
@@ -78,6 +78,7 @@
     <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
     <string name="new_schedule_toast_validation_no_days_selected">Please select at least one day</string>
     <string name="new_schedule_toast_validation_no_period_selected">Please select at least one period</string>
+    <string name="new_schedule_toast_class_inserted"> added to Classes</string>
 
     <!-- Main UI -->
     <string name="new_schedule_hint">Enter title here&#8230;</string>
@@ -234,7 +235,7 @@
     <!--
     TASKS STRINGS END
     -->
-    
+
     <!--
     ARRAY STRINGS
     -->
@@ -263,5 +264,8 @@
     <string name="child_development">Child Development</string>
     <string name="engineering">Engineering</string>
     <string name="resistant_materials">Resistant Materials</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
