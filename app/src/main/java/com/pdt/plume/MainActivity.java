@@ -96,11 +96,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // The weekNumber will be saved as 0 by default
         if (lastCheckedWeekOfYear != -1){
             for (int i = lastCheckedWeekOfYear; i < currentWeek; i++){
-                Log.v(LOG_TAG, "weekNumber toggled");
                 if (weekNumber == 0)
                     weekNumber = 1;
                 else weekNumber = 0;
-                Log.v(LOG_TAG, "Week number: " + weekNumber);
             }
         }
         else lastCheckedWeekOfYear = currentWeek;
@@ -140,7 +138,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_settings:
-                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 break;
             case R.id.nav_help:
                 Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();

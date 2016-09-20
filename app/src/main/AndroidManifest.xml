@@ -66,8 +66,8 @@
             android:parentActivityName=".MainActivity" />
 
         <receiver android:name=".AlarmReceiver" />
-
-        <activity android:name=".empActivity"></activity>
+<!---->
+        <activity android:name=".SettingsActivity" />
     </application>
 
 </manifest>

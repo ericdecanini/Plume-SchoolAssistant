@@ -287,7 +287,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 else if (insertScheduleDataIntoDatabase()) {
                     if (!STARTED_BY_NEWTASKACTIVITY) {
                         Intent intent = new Intent(this, MainActivity.class);
-                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
                         startActivity(intent);
                     }
                     finish();
@@ -319,6 +319,7 @@ public class NewScheduleActivity extends AppCompatActivity
     private boolean insertScheduleDataIntoDatabase() {
         // Store data from UI input fields to variables to prepare them for insertion into the database
         String title = fieldTitle.getText().toString();
+        scheduleTitle = title;
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
         // Prepare a default icon to insert if no other icon was set

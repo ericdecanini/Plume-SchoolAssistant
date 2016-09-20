@@ -32,7 +32,8 @@ public class BuiltInIconsAdapter extends BaseAdapter {
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
             imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new GridView.LayoutParams(200, 200));
+            int wh = (int) mContext.getResources().getDimension(R.dimen.def_icon_size);
+            imageView.setLayoutParams(new GridView.LayoutParams(wh, wh));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(8, 8, 8, 8);
         } else {

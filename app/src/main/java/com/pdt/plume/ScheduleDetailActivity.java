@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -85,7 +86,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     @Override
                     public void onGenerated(Palette palette) {
                         int mainColour = palette.getVibrantColor(getResources().getColor(R.color.colorPrimary));
-                        int darkColour = palette.getDarkVibrantColor(getResources().getColor(R.color.colorPrimaryDark));
+                        float[] hsv = new float[3];
+                        int color = mainColour;
+                        Color.colorToHSV(color, hsv);
+                        hsv[2] *= 0.8f; // value component
+                        int darkColour = Color.HSVToColor(hsv);
                         actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                             collapsingToolbar.setBackground(new ColorDrawable(mainColour));
@@ -135,7 +140,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_detail, menu);
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
+//        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -159,20 +164,26 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         .show();
                 break;
 
-            case R.id.action_share:
-                String shareString = title
-                        + "\n" + getString(R.string.new_schedule_teacher) + ": " + teacher
-                        + "\n" + getString(R.string.new_schedule_room) + ": " + room;
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareString);
-                shareIntent.setType("text/plain");
-                if (mShareActionProvider != null) {
-                    mShareActionProvider.setShareIntent(shareIntent);
-                }
-                startActivity(shareIntent);
-                break;
+//            case R.id.action_share:
+//                String shareString = title
+//                        + "\n" + getString(R.string.new_schedule_teacher) + ": " + teacher
+//                        + "\n" + getString(R.string.new_schedule_room) + ": " + room;
+//                Intent shareIntent = new Intent();
+//                shareIntent.setAction(Intent.ACTION_SEND);
+//                shareIntent.putExtra(Intent.EXTRA_TEXT, shareString);
+//                shareIntent.setType("text/plain");
+//                if (mShareActionProvider != null) {
+//                    mShareActionProvider.setShareIntent(shareIntent);
+//                }
+//                startActivity(shareIntent);
+//                break;
 
+            case R.id.action_edit:
+                Intent intent = new Intent(this, NewScheduleActivity.class);
+                intent.putExtra(getString(R.string.SCHEDULE_EXTRA_TITLE), title);
+                intent.putExtra(getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                startActivity(intent);
+                break;
             case android.R.id.home:
                 onBackPressed();
                 return true;

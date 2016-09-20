@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 
 public class AddClassTimeOneFragment extends DialogFragment {
@@ -54,9 +55,9 @@ public class AddClassTimeOneFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.add_class_time_one, container, false);
 
         // Get references to each UI element
-        Button timeBasedButton = (Button) rootView.findViewById(R.id.class_one_timebased);
-        Button periodBasedButton = (Button) rootView.findViewById(R.id.class_one_periodbased);
-        Button blockBasedButton = (Button) rootView.findViewById(R.id.class_one_blockbased);
+        LinearLayout timeBasedButton = (LinearLayout) rootView.findViewById(R.id.class_one_timebased);
+        LinearLayout periodBasedButton = (LinearLayout) rootView.findViewById(R.id.class_one_periodbased);
+        LinearLayout blockBasedButton = (LinearLayout) rootView.findViewById(R.id.class_one_blockbased);
 
         // Set the OnClickListener of each UI element
         timeBasedButton.setOnClickListener(listener());

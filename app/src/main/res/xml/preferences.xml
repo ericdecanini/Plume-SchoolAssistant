@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.pdt.plume.NumberPickerPreference
+        android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
+        android:defaultValue="30"
+        android:title="@string/settings_class_notification_title" />
+
+</PreferenceScreen>

@@ -186,22 +186,36 @@ public class NewTaskActivity extends AppCompatActivity
             if (extras != null) {
                 // Get the task data sent through the intent
                 editId = extras.getInt(getString(R.string.TASKS_EXTRA_ID));
-                String title = extras.getString(getString(R.string.TASKS_EXTRA_TITLE));
-                String classTitle = extras.getString(getString(R.string.TASKS_EXTRA_CLASS));
-                String classType = extras.getString(getString(R.string.TASKS_EXTRA_TYPE));
-                String sharer = extras.getString(getString(R.string.TASKS_EXTRA_SHARER));
-                String description = extras.getString(getString(R.string.TASKS_EXTRA_DESCRIPTION));
-                String attachment = extras.getString(getString(R.string.TASKS_EXTRA_ATTACHMENT));
-                float dueDate = extras.getFloat(getString(R.string.TASKS_EXTRA_DUEDATE));
-                float reminderDate = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERDATE));
-                float reminderTime = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERTIME));
+                Cursor cursor = dbHelper.getTaskById(editId);
+                String title = "";
+                String classTitle = "";
+                String classType = "";
+                String sharer = "";
+                String description = "";
+                String attachment = "";
+                float dueDate = 0f;
+                float reminderDate = 0f;
+                float reminderTime = 0f;
+
+                if (cursor.moveToFirst()){
+                    title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                    classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
+                    classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
+                    sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
+                    description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
+                    attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                    dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
+                    reminderDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+                    reminderTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+                }
+
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
 
                 if (FLAG_EDIT) {
-                    Cursor cursor = dbHelper.getTaskData();
-                    if (cursor.moveToPosition(position)) {
-                        iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                    Cursor cursorEdit = dbHelper.getTaskData();
+                    if (cursorEdit.moveToPosition(position)) {
+                        iconUriString = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
                         Bitmap setImageBitmap = null;
                         try {
                             setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUriString));
@@ -221,7 +235,7 @@ public class NewTaskActivity extends AppCompatActivity
                         this.classType = classType;
 
                         // Set the file name of the attach file field
-                        attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                        attachment = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
                         Uri filePathUri = Uri.parse(attachment);
                         if (!attachment.equals("")) {
                             Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
@@ -235,7 +249,8 @@ public class NewTaskActivity extends AppCompatActivity
                         }
                     }
 
-                    cursor.close();
+                    cursorEdit.close();
+                    fieldTitle.setSelection(fieldTitle.getText().length());
 
                 } else {
                     // Set any default data

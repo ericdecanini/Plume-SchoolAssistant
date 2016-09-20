@@ -289,8 +289,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     else if (!periods.equals("-1")) {
                         ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 0);
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
-                            for (int ii = 0; ii < periodList.size() - 1; ii++) {
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
+                            for (int ii = 0; ii < periodList.size(); ii++) {
                                 arrayList.add(new Schedule(
                                         context,
                                         cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
@@ -301,6 +301,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                         utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                         periodList.get(ii)));
                             }
+                        }
                     }
                 }
             }
@@ -316,8 +317,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     // Add the time based list item
                     if (!timeIn.equals("")) {
                         String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek))
+                        if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
                             // Changed from arrayList.add(i, new Schedule);
+                            Log.v(LOG_TAG, "MATCHED");
                             arrayList.add(new Schedule(
                                     context,
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
@@ -328,6 +330,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                     ""
                             ));
+                        }
                     }
                     // Add the period/block based list item
                     else {
@@ -353,7 +356,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-
+        Log.v(LOG_TAG, "" + arrayList.size());
         return arrayList;
     }
 

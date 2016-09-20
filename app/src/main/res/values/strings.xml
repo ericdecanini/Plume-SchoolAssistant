@@ -81,7 +81,7 @@
     <string name="new_schedule_toast_class_inserted"> added to Classes</string>
 
     <!-- Main UI -->
-    <string name="new_schedule_hint">Enter title here&#8230;</string>
+    <string name="new_schedule_hint">Enter class title&#8230;</string>
     <string name="new_schedule_add_class_time">Add Period</string>
     <string name="new_schedule_repeats">Repeats</string>
     <string name="new_schedule_time_in">From</string>
@@ -108,9 +108,9 @@
 
     <!-- UI for Add Class Time Fragment One -->
     <string name="class_time_one_title">Select your school\'s class schedule type.</string>
-    <string name="class_time_one_timebased">Time based (Mon 08:00 &#8211; 09:00)</string>
-    <string name="class_time_one_periodbased">Period based (Mon 2nd period)</string>
-    <string name="class_time_one_blockbased">Block based (A day 2nd period)</string>
+    <string name="class_time_one_timebased">Time based</string>
+    <string name="class_time_one_periodbased">Period based</string>
+    <string name="class_time_one_blockbased">Block based</string>
 
     <!-- UI for Add Class Time Fragment Two -->
     <string name="class_time_two_sameweek">Same time every week</string>
@@ -235,6 +235,12 @@
     <!--
     TASKS STRINGS END
     -->
+
+    <!--
+    PREFERENCE STRINGS
+    -->
+    <string name="settings_class_notification_title">Notification before class starts</string>
+    <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
 
     <!--
     ARRAY STRINGS
