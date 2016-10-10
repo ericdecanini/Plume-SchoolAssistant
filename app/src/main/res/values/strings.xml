@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Plume - School Assistant</string>
+    <string name="app_name">Plume - Academy Assistant</string>
     <string name="action_settings">Settings</string>
 
     <!-- Lorem Ipsum strings -->
@@ -23,6 +23,7 @@
     <!--
     MAIN ACTIVITY
     -->
+    <string name="KEY_FIRST_LAUNCH">KEY_FIRST_LAUNCH</string>
 
     <!-- Navigation Drawer -->
     <string name="nav_classes">Classes</string>
@@ -41,6 +42,13 @@
     <!-- Strings for navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Strings for theme -->
+    <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
+    <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
+
+    <!-- Strings for week number -->
+    <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
 
     <!--
     MAIN ACTIVITY END
@@ -66,6 +74,7 @@
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_detail_room_subtitle">Room</string>
     <string name="schedule_detail_periods_title">Periods</string>
+    <string name="schedule_detail_tasks_title">Tasks</string>
 
     <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
 
@@ -239,8 +248,112 @@
     <!--
     PREFERENCE STRINGS
     -->
-    <string name="settings_class_notification_title">Notification before class starts</string>
+
+    <string name="preference_category_general">General settings</string>
+    <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
+
+    <string name="settings_class_notification_title">Class notifications</string>
+    <string name="settings_class_notification_subtitle">minutes before class</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
+
+    <string name="settings_class_mute_title">Mute phone during classes</string>
+    <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>
+
+    <string name="settings_week_number_title">Week number</string>
+    <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>
+    <string-array name="settings_week_number_entries">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="settings_week_number_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string name="preference_category_appearance">Appearance settings</string>
+    <string name="KEY_SETTINGS_CATEGORY_APPEARANCE" translatable="false">KEY_SETTINGS_CATEGORY_APPEARANCE</string>
+
+    <string name="settings_theme_title">Theme</string>
+    <string name="KEY_SETTINGS_THEME" translatable="false">KEY_SETTINGS_THEME</string>
+
+    <string name="settings_date_format_title">Date format</string>
+    <string name="KEY_SETTINGS_DATE_FORMAT" translatable="false">KEY_SETTINGS_DATE_FORMAT</string>
+    <string-array name="settings_date_format_entries">
+        <item>Mon, January 5, 2000</item>
+        <item>Monday, January 5, 2000</item>
+        <item>Mon 5 January 2000</item>
+        <item>Monday 5 January 2000</item>
+        <item>Mon 5th January 2000</item>
+        <item>Monday 5th January 2000</item>
+        <item>01/05/00</item>
+        <item>05/01/00</item>
+    </string-array>
+    <string-array name="settings_date_format_values">
+        <item>EEE, MMMM d, yyyy</item>
+        <item>EEEE, MMMM d, yyyy</item>
+        <item>EEE d MMMM yyyy</item>
+        <item>EEEE d MMMM yyyy</item>
+        <item>EEE :d: MMMM yyyy</item>
+        <item>EEEE :d: MMMM yyyy</item>
+        <item>MM/dd/yy</item>
+        <item>dd/MM/yy</item>
+    </string-array>
+
+    <string name="settings_block_format_title">Block format</string>
+    <string name="KEY_SETTINGS_BLOCK_FORMAT" translatable="false">KEY_SETTINGS_BLOCK_FORMAT</string>
+    <string-array name="settings_block_format_entries">
+        <item>Day A</item>
+        <item>A Day</item>
+        <item>Day 1</item>
+        <item>1 Day</item>
+    </string-array>
+    <string-array name="settings_block_format_values">
+        <item>d:l</item>
+        <item>l:d</item>
+        <item>d:n</item>
+        <item>n:d</item>
+    </string-array>
+    <string-array name="settings_block_format_entries_b">
+        <item>Day B</item>
+        <item>B Day</item>
+        <item>Day 2</item>
+        <item>2 Day</item>
+    </string-array>
+
+    <string name="category_other_settings_title">Other settings</string>
+    <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
+
+    <string name="settings_about_plume_title">About Plume - School Assistant</string>
+    <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
+
+    <string name="settings_theme_primary_title">Primary Color</string>
+    <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
+
+    <string name="settings_theme_secondary_title">Secondary Color</string>
+    <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
+
+    <string name="color_dialog_title">Select color</string>
+
+    <!--
+    ABOUT STRINGS
+    -->
+    <string name="about_activity_label">About Plume</string>
+    <string name="Plume" translatable="false">Plume</string>
+    <string name="Assistant">Academy Assistant</string>
+    <string name="Version">Version 0.5 Alpha</string>
+    <string name="Weblink" translatable="false">https://plumeschoolassistant.co.uk</string>
+    <string name="Contact">Contact us</string>
+    <string name="Email">Email:&#160;</string>
+    <string name="Plume_Email">team@plumeschoolassistant.co.uk</string>
+    <string name="Developed">Developed by:</string>
+    <string name="PDT" translatable="false">Plume Development Team</string>
+    <string name="Coding">Software and coding:</string>
+    <string name="Eric" translatable="false">Eric Decanini</string>
+    <string name="Graphics">Graphics and design:</string>
+    <string name="Reiss" translatable="false">Reiss Tozer</string>
+    <string name="Testers">App testers:</string>
+    <string name="Connor" translatable="false">Connor Hutchings</string>
+    <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">icons8</a></string>
 
     <!--
     ARRAY STRINGS
@@ -253,6 +366,8 @@
     <string name="psychology">Psychology</string>
     <string name="english">English</string>
     <string name="re">RE</string>
+    <string name="geography">Geography</string>
+    <string name="history">History</string>
     <string name="pe">PE</string>
     <string name="ict">ICT</string>
     <string name="computing">Computing</string>
@@ -270,6 +385,7 @@
     <string name="child_development">Child Development</string>
     <string name="engineering">Engineering</string>
     <string name="resistant_materials">Resistant Materials</string>
+    <string name="woodwork">Woodwork</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

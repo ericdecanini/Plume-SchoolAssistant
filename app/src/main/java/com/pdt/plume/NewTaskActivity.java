@@ -7,10 +7,16 @@ import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.DialogFragment;
@@ -70,6 +76,10 @@ public class NewTaskActivity extends AppCompatActivity
     TextView fieldSetReminderTimeTextview;
 
     // UI Data
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
+
     String iconUriString;
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
@@ -322,6 +332,23 @@ public class NewTaskActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+            fieldTitle.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        }
+
         if (LAUNCHED_NEW_CLASS){
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor = dbHelper.getAllScheduleData();
@@ -487,7 +514,7 @@ public class NewTaskActivity extends AppCompatActivity
     }
 
     public void Remind(Date dateTime, String title, String message, int ID, String iconUriString) {
-        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+        Intent alarmIntent = new Intent(this, NotificationAlarmReceiver.class);
         alarmIntent.putExtra("message", message);
         alarmIntent.putExtra("title", title);
         alarmIntent.putExtra("ID", ID);
@@ -672,6 +699,8 @@ public class NewTaskActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // Attachment Upload
         if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK) {
             // Get the Uri and UriString from the intent and save its global variable
             Uri filePathUri = data.getData();
@@ -684,6 +713,21 @@ public class NewTaskActivity extends AppCompatActivity
             String fileName = returnCursor.getString(nameIndex);
             returnCursor.close();
             fieldAttachFile.setText(fileName);
+        }
+
+        // Custom Icon Upload
+        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
+            Bitmap thumbnail = data.getParcelableExtra("data");
+            Uri fullPhotoUri = data.getData();
+            Bitmap setImageBitmap = null;
+
+            try {
+                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fullPhotoUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            fieldIcon.setImageBitmap(setImageBitmap);
         }
     }
 

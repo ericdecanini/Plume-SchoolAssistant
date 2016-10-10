@@ -3,24 +3,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="16dp"
-    android:minHeight="300dp"
     android:background="@color/white"
-    android:elevation="4dp">
+    android:elevation="4dp"
+    android:minHeight="300dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/class_time_one_value"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginTop="4dp" />
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/colorPrimary" />
 
         <TextView
             android:id="@+id/class_three_item_header"
@@ -35,103 +39,138 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/class_three_period_one"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:maxWidth="48dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/bg_period_button"
+                android:gravity="center"
+                android:text="@string/class_time_period_one"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/class_three_period_two"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/bg_period_button"
+                android:gravity="center"
+                android:text="@string/class_time_period_two"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/class_three_period_three"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/bg_period_button"
+                android:gravity="center"
+                android:text="@string/class_time_period_three"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/class_three_period_four"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/bg_period_button"
+                android:gravity="center"
+                android:text="@string/class_time_period_four"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/class_time_three_week_type_alt_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/class_three_item_header_alt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/class_time_block_day_b" />
 
-                <ToggleButton
-                    android:id="@+id/class_three_period_one"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textOn="@string/class_time_period_one"
-                    android:textOff="@string/class_time_period_one" />
-
-                <ToggleButton
-                    android:id="@+id/class_three_period_two"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textOn="@string/class_time_period_two"
-                    android:textOff="@string/class_time_period_two" />
-
-                <ToggleButton
-                    android:id="@+id/class_three_period_three"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textOn="@string/class_time_period_three"
-                    android:textOff="@string/class_time_period_three" />
-
-                <ToggleButton
-                    android:id="@+id/class_three_period_four"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textOn="@string/class_time_period_four"
-                    android:textOff="@string/class_time_period_four" />
-            </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/class_time_three_week_type_alt_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/class_three_item_header_alt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:text="@string/class_time_block_day_b" />
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/class_three_period_one_alt"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:background="@drawable/bg_period_button"
+                        android:gravity="center"
+                        android:text="@string/class_time_period_one"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
 
-                        <ToggleButton
-                            android:id="@+id/class_three_period_one_alt"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textOn="@string/class_time_period_one"
-                            android:textOff="@string/class_time_period_one" />
+                    <TextView
+                        android:id="@+id/class_three_period_two_alt"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:background="@drawable/bg_period_button"
+                        android:gravity="center"
+                        android:text="@string/class_time_period_two"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
 
-                        <ToggleButton
-                            android:id="@+id/class_three_period_two_alt"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textOn="@string/class_time_period_two"
-                            android:textOff="@string/class_time_period_two" />
+                    <TextView
+                        android:id="@+id/class_three_period_three_alt"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:background="@drawable/bg_period_button"
+                        android:gravity="center"
+                        android:text="@string/class_time_period_three"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
 
-                        <ToggleButton
-                            android:id="@+id/class_three_period_three_alt"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textOn="@string/class_time_period_three"
-                            android:textOff="@string/class_time_period_three" />
+                    <TextView
+                        android:id="@+id/class_three_period_four_alt"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:background="@drawable/bg_period_button"
+                        android:gravity="center"
+                        android:text="@string/class_time_period_four"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
 
-                        <ToggleButton
-                            android:id="@+id/class_three_period_four_alt"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textOn="@string/class_time_period_four"
-                            android:textOff="@string/class_time_period_four" />
-
-                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -142,11 +181,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
+        android:layout_marginBottom="12dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="12dp"
         android:background="@android:color/transparent"
         android:text="@string/save"
         android:textColor="@color/colorAccent" />

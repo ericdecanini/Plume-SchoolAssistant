@@ -1,8 +1,12 @@
 package com.pdt.plume;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,6 +36,9 @@ public class ClassesActivity extends AppCompatActivity {
 
     // UI Elements
     ListView listView;
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
 
     // Flags
     boolean isTablet;
@@ -78,6 +85,20 @@ public class ClassesActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
     }
 
     public AdapterView.OnItemClickListener listener() {
@@ -85,7 +106,7 @@ public class ClassesActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DbHelper dbHelper = new DbHelper(ClassesActivity.this);
-                Cursor cursor = dbHelper.getAllScheduleData();
+                Cursor cursor = dbHelper.getAllClassesData();
                 if (cursor.moveToPosition(position)) {
                     Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                     intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));

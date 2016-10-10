@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Array containing built-in class icons -->
+    <!-- Array containing built-in class icons
+    To add new icons, add the reference here
+    in BuiltInIconsAdapter.java and in
+    NewScheduleActivity.java
+    -->
     <integer-array name="builtin_icons">
         <item>@drawable/art_arts_64dp</item>
         <item>@drawable/art_biology_64dp</item>
@@ -13,6 +17,7 @@
         <item>@drawable/art_cooking_64dp</item>
         <item>@drawable/art_creativestudies_64dp</item>
         <item>@drawable/art_drama_64dp</item>
+        <item>@drawable/art_engineering_64dp</item>
         <item>@drawable/art_english_64dp</item>
         <item>@drawable/art_french_64dp</item>
         <item>@drawable/art_geography_64dp</item>
@@ -29,6 +34,7 @@
         <item>@drawable/art_science_64dp</item>
         <item>@drawable/art_spanish_64dp</item>
         <item>@drawable/art_task_64dp</item>
+        <item>@drawable/art_woodwork_64dp</item>
     </integer-array>
 
     <!-- Array containing auto-complete fields for the NewScheduleActivity title field -->
@@ -41,6 +47,8 @@
         <item>@string/psychology</item>
         <item>@string/english</item>
         <item>@string/re</item>
+        <item>@string/geography</item>
+        <item>@string/history</item>
         <item>@string/pe</item>
         <item>@string/ict</item>
         <item>@string/ict</item>
@@ -59,6 +67,7 @@
         <item>@string/child_development</item>
         <item>@string/engineering</item>
         <item>@string/resistant_materials</item>
+        <item>@string/woodwork</item>
     </string-array>
 
 </resources>

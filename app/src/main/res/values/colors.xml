@@ -16,4 +16,6 @@
     <color name="grey">#cccccc</color>
     <color name="sunshine_light_blue">#ff64c2f4</color>
 
+    <color name="hyperlink">#0B0080</color>
+
 </resources>

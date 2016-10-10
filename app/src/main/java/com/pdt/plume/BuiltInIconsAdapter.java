@@ -56,6 +56,7 @@ public class BuiltInIconsAdapter extends BaseAdapter {
             R.drawable.art_cooking_64dp,
             R.drawable.art_creativestudies_64dp,
             R.drawable.art_drama_64dp,
+            R.drawable.art_engineering_64dp,
             R.drawable.art_english_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
@@ -71,6 +72,7 @@ public class BuiltInIconsAdapter extends BaseAdapter {
             R.drawable.art_re_64dp,
             R.drawable.art_science_64dp,
             R.drawable.art_spanish_64dp,
-            R.drawable.art_task_64dp
+            R.drawable.art_task_64dp,
+            R.drawable.art_woodwork_64dp
     };
 }

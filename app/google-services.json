@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "62922774016",
+    "firebase_url": "https://plume-academy-assistant.firebaseio.com",
+    "project_id": "plume-academy-assistant",
+    "storage_bucket": "plume-academy-assistant.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62922774016:android:814eb05f922e1f3e",
+        "android_client_info": {
+          "package_name": "com.pdt.plume"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "62922774016-dthkdc3godlv5ps9tl6qf4abdgm0tv01.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0ASVxmNL8ra_Kg5VRp9Hrh7qTDuu_UlQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

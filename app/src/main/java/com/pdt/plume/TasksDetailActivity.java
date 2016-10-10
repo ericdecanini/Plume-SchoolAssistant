@@ -21,6 +21,7 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,7 +67,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         collapsingToolbar.setTitle("");
 
-        // Get the class's data based on the title and fill in the fields
+        // Get the class's data based on the id and fill in the fields
         Intent intent = getIntent();
         if (intent != null){
             int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
@@ -206,11 +207,13 @@ public class TasksDetailActivity extends AppCompatActivity {
                 intent.putExtra(getString(R.string.TASKS_EXTRA_ID), id);
                 intent.putExtra(getString(R.string.TASKS_FLAG_EDIT), true);
                 startActivity(intent);
-                break;
+                return true;
 
             case android.R.id.home:
-                finish();
-                break;
+                Intent startMainActivity = new Intent(this, MainActivity.class);
+                startMainActivity.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
+                startActivity(startMainActivity);
+                return true;
 
         }
         return super.onOptionsItemSelected(item);

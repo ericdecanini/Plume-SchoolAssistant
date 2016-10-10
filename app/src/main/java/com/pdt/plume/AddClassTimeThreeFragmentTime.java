@@ -2,7 +2,10 @@ package com.pdt.plume;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
@@ -29,6 +32,9 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
     EditText fieldTimeOut;
     EditText fieldTimeInAlt;
     EditText fieldTimeOutAlt;
+
+    int mPrimaryColor;
+    int mSecondaryColor;
 
     // Fragment input storage variables
     int[] isButtonChecked = {0, 0, 0, 0, 0, 0, 0};
@@ -156,8 +162,18 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
         fieldTimeInAlt.setOnClickListener(showTimePickerDialog());
         fieldTimeOutAlt.setOnClickListener(showTimePickerDialog());
 
+        // Initialise the theme
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                getResources().getColor(R.color.colorPrimary));
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR),
+                getResources().getColor(R.color.colorAccent));
+
         // Set the text of the hyperlink basis text to the time based string annotation
         basisTextView.setText(getString(R.string.class_time_one_timebased));
+        basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
+                getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
 
         // Get the arguments of the fragment.
         // Check week classType and if it is 'Same each week', hide the alternate layout.
@@ -173,6 +189,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             }
             else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+            weekTypeTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
+                    getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
 
             // Check if the fragment was launched from the OnTimeSet override method in NewScheduleActivity
             // If it is, get the fragment's previous state data and update the fragment data and UI accordingly
@@ -193,31 +211,32 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 // Auto-fill the days row and binary data
                 if (splitClassDays[0].equals("1") || splitClassDays[0].equals("3")){
                     isButtonChecked[0] = 1;
-                    sunday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    sunday.setColorFilter(mSecondaryColor);
+
                 }
                 if (splitClassDays[1].equals("1") || splitClassDays[1].equals("3")){
                     isButtonChecked[1] = 1;
-                    monday.setImageResource(R.drawable.ui_monday_selected);
+                    monday.setColorFilter(mSecondaryColor);
                 }
                 if (splitClassDays[2].equals("1") || splitClassDays[2].equals("3")){
                     isButtonChecked[2] = 1;
-                    tuesday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    tuesday.setColorFilter(mSecondaryColor);
                 }
                 if (splitClassDays[3].equals("1") || splitClassDays[3].equals("3")){
                     isButtonChecked[3] = 1;
-                    wednesday.setImageResource(R.drawable.ui_wednesday_selected);
+                    wednesday.setColorFilter(mSecondaryColor);
                 }
                 if (splitClassDays[4].equals("1") || splitClassDays[4].equals("3")){
                     isButtonChecked[4] = 1;
-                    thursday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    thursday.setColorFilter(mSecondaryColor);
                 }
                 if (splitClassDays[5].equals("1") || splitClassDays[5].equals("3")){
                     isButtonChecked[5] = 1;
-                    friday.setImageResource(R.drawable.ui_friday_selected);
+                    friday.setColorFilter(mSecondaryColor);
                 }
                 if (splitClassDays[6].equals("1") || splitClassDays[6].equals("3")){
                     isButtonChecked[6] = 1;
-                    saturday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    saturday.setColorFilter(mSecondaryColor);
                 }
 
                 // Do so for alternate layout if it is available
@@ -226,43 +245,43 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         if (isButtonChecked[0] == 1)
                             isButtonChecked[0] = 3;
                         else isButtonChecked[0] = 2;
-                        sundayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        sundayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[1].equals("2") || splitClassDays[1].equals("3")){
                         if (isButtonChecked[1] == 1)
                             isButtonChecked[1] = 3;
                         else isButtonChecked[1] = 2;
-                        mondayAlt.setImageResource(R.drawable.ui_monday_selected);
+                        mondayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[2].equals("2") || splitClassDays[2].equals("3")){
                         if (isButtonChecked[2] == 1)
                             isButtonChecked[2] = 3;
                         else isButtonChecked[2] = 2;
-                        tuesdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        tuesdayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[3].equals("2") || splitClassDays[3].equals("3")){
                         if (isButtonChecked[3] == 1)
                             isButtonChecked[3] = 3;
                         else isButtonChecked[3] = 2;
-                        wednesdayAlt.setImageResource(R.drawable.ui_wednesday_selected);
+                        wednesdayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[4].equals("2") || splitClassDays[4].equals("3")){
                         if (isButtonChecked[4] == 1)
                             isButtonChecked[4] = 3;
                         else isButtonChecked[4] = 2;
-                        thursdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        thursdayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[5].equals("2") || splitClassDays[5].equals("3")){
                         if (isButtonChecked[5] == 1)
                             isButtonChecked[5] = 3;
                         else isButtonChecked[5] = 2;
-                        fridayAlt.setImageResource(R.drawable.ui_friday_selected);
+                        fridayAlt.setColorFilter(mSecondaryColor);
                     }
                     if (splitClassDays[6].equals("2") || splitClassDays[6].equals("3")){
                         if (isButtonChecked[6] == 1)
                             isButtonChecked[6] = 3;
                         else isButtonChecked[6] = 2;
-                        saturdayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        saturdayAlt.setColorFilter(mSecondaryColor);
                     }
                 }
 
@@ -468,127 +487,127 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_sunday:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_monday:
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_tuesday:
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[2] == 2) {
                             isButtonChecked[2] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_wednesday:
                         if (isButtonChecked[3] == 0) {
                             isButtonChecked[3] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_thursday:
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_friday:
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_saturday:
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
 
@@ -596,127 +615,127 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_sunday_alt:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_monday_alt:
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_monday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_tuesday_alt:
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[2] == 2){
                             isButtonChecked[2] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_wednesday_alt:
                         if (isButtonChecked[3] == 0){
                             isButtonChecked[3] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_wednesday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_thursday_alt:
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_tuesday_thursday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_friday_alt:
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_friday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
                     case R.id.class_three_saturday_alt:
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 2;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 3;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_selected);
+                            ((ImageView) v).setColorFilter(mSecondaryColor);
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 0;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 1;
-                            ((ImageView) v).setImageResource(R.drawable.ui_saturday_sunday_unselected);
+                            ((ImageView) v).setColorFilter(null);
                         }
                         break;
 

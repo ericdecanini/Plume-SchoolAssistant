@@ -1,15 +1,12 @@
 package com.pdt.plume;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Region;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationManagerCompat;
@@ -19,9 +16,9 @@ import android.util.Log;
 
 import java.io.IOException;
 
-public class AlarmReceiver extends BroadcastReceiver {
+public class NotificationAlarmReceiver extends BroadcastReceiver {
 
-    String LOG_TAG = AlarmReceiver.class.getSimpleName();
+    String LOG_TAG = NotificationAlarmReceiver.class.getSimpleName();
 
     Context c;
     PendingIntent contentIntent;
@@ -37,11 +34,10 @@ public class AlarmReceiver extends BroadcastReceiver {
         title = intent.getStringExtra("title");
          message = intent.getStringExtra("message");
         int ID = intent.getIntExtra("ID", -1);
-        Log.v(LOG_TAG, "EditId: " + ID);
         String iconUriString = intent.getStringExtra("iconUriString");
         Intent notIntent = new Intent(context, TasksDetailActivity.class);
         notIntent.putExtra("ID", ID);
-         contentIntent = PendingIntent.getActivity(context, 0, notIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+         contentIntent = PendingIntent.getActivity(context, 3, notIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         manager = NotificationManagerCompat.from(context);
 
 

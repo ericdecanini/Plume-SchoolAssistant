@@ -15,7 +15,7 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingStart="@dimen/activity_horizontal_margin">
 
-        <ImageView
+        <com.pdt.plume.CircularImageView
             android:id="@+id/field_new_task_icon"
             android:layout_width="64dp"
             android:layout_height="64dp"
@@ -33,6 +33,7 @@
             <EditText
                 android:id="@+id/field_new_task_title"
                 android:layout_width="match_parent"
+                android:textCursorDrawable="@null"
                 android:layout_height="wrap_content"
                 android:hint="@string/new_schedule_hint" />
 

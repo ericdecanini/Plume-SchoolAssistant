@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:key="@string/KEY_SETTINGS_CATEGORY_GENERAL"
+        android:title="@string/preference_category_general">
+
+        <com.pdt.plume.NumberPickerPreference
+            android:defaultValue="30"
+            android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
+            android:title="@string/settings_class_notification_title" />
+
+        <CheckBoxPreference
+            android:key="@string/KEY_SETTINGS_CLASS_MUTE"
+            android:title="@string/settings_class_mute_title" />
+
+        <ListPreference
+            android:key="@string/KEY_SETTINGS_WEEK_NUMBER"
+            android:title="@string/settings_week_number_title"
+            android:entries="@array/settings_week_number_entries"
+            android:entryValues="@array/settings_week_number_values"/>
+
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:title="@string/preference_category_appearance"
+        android:key="@string/KEY_SETTINGS_CATEGORY_APPEARANCE">
+
+        <Preference
+            android:title="@string/settings_theme_title"
+            android:key="@string/KEY_SETTINGS_THEME" />
+
+        <ListPreference
+            android:title="@string/settings_date_format_title"
+            android:key="@string/KEY_SETTINGS_DATE_FORMAT"
+            android:entries="@array/settings_date_format_entries"
+            android:entryValues="@array/settings_date_format_values"
+            android:defaultValue="EEE, MMMMM d, yyyy"/>
+
+        <ListPreference
+            android:title="@string/settings_block_format_title"
+            android:key="@string/KEY_SETTINGS_BLOCK_FORMAT"
+            android:entries="@array/settings_block_format_entries"
+            android:entryValues="@array/settings_block_format_values"
+            android:defaultValue="d:l" />
+
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:title="@string/category_other_settings_title"
+        android:key="@string/KEY_CATEGORY_OTHER_SETTINGS">
+
+        <Preference
+            android:title="@string/settings_about_plume_title"
+            android:key="@string/KEY_SETTINGS_ABOUT_PLUME" />
+
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+
+
+
+</PreferenceScreen>

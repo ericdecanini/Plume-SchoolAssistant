@@ -1,31 +1,40 @@
 package com.pdt.plume;
 
-import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.AdapterView;
+import android.widget.GridView;
 
-public class SettingsActivity extends PreferenceActivity
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class SettingsThemeActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
 
     String LOG_TAG = SettingsActivity.class.getSimpleName();
@@ -35,34 +44,45 @@ public class SettingsActivity extends PreferenceActivity
     int mPrimaryColor;
     int mDarkColor;
 
+    private Drawable[] mThumbIds = {
+            new ColorDrawable(Color.parseColor("#F44336")),
+            new ColorDrawable(Color.parseColor("#E91E63")),
+            new ColorDrawable(Color.parseColor("#9C27B0")),
+            new ColorDrawable(Color.parseColor("#673AB7")),
+            new ColorDrawable(Color.parseColor("#3F51B5")),
+            new ColorDrawable(Color.parseColor("#2196F3")),
+            new ColorDrawable(Color.parseColor("#03A9F4")),
+            new ColorDrawable(Color.parseColor("#00BCD4")),
+            new ColorDrawable(Color.parseColor("#009688")),
+            new ColorDrawable(Color.parseColor("#4CAF50")),
+            new ColorDrawable(Color.parseColor("#8BC34A")),
+            new ColorDrawable(Color.parseColor("#CDDC39")),
+            new ColorDrawable(Color.parseColor("#FFEB3B")),
+            new ColorDrawable(Color.parseColor("#FFC107")),
+            new ColorDrawable(Color.parseColor("#FF9800")),
+            new ColorDrawable(Color.parseColor("#FF5722")),
+            new ColorDrawable(Color.parseColor("#795548")),
+            new ColorDrawable(Color.parseColor("#9E9E9E")),
+            new ColorDrawable(Color.parseColor("#607D8B")),
+            new ColorDrawable(Color.parseColor("#212121"))
+    };
+
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         super.onCreate(savedInstanceState);
         // Add 'general' preferences, defined in the XML file
-        addPreferencesFromResource(R.xml.preference_main);
+        addPreferencesFromResource(R.xml.preference_theme);
 
-        // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
-        // updated when the preference changes.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_WEEK_NUMBER)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)));
-
-        // For other preferences, simply an OnClickListener is needed
-        findPreference(getString(R.string.KEY_SETTINGS_THEME)).setOnPreferenceClickListener(onPreferenceClickListener());
-        findPreference(getString(R.string.KEY_SETTINGS_ABOUT_PLUME)).setOnPreferenceClickListener(onPreferenceClickListener());
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
+        // Add the listeners to the preferences
+        findPreference(getString(R.string.KEY_SETTINGS_THEME_PRIMARY)).setOnPreferenceClickListener(onPreferenceClickListener());
+        findPreference(getString(R.string.KEY_SETTINGS_THEME_SECONDARY)).setOnPreferenceClickListener(onPreferenceClickListener());
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -87,72 +107,20 @@ public class SettingsActivity extends PreferenceActivity
         // Trigger the listener immediately with the preference's
         // current value.
         if (preference instanceof NumberPickerPreference)
-        onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getInt(preference.getKey(), 0));
+            onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                            .getInt(preference.getKey(), 0));
         else onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), "0"));
     }
 
+
     @Override
-    public boolean onPreferenceChange(Preference preference, Object value) {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        String stringValue = value.toString();
-        String prefKey = preference.getKey();
-
-        if (preference instanceof ListPreference) {
-            // For list preferences, look up the correct display value in
-            // the preference's 'entries' list (since they have separate labels/values).
-            ListPreference listPreference = (ListPreference) preference;
-            int prefIndex = listPreference.findIndexOfValue(stringValue);
-            if (prefIndex >= 0) {
-                preference.setSummary(listPreference.getEntries()[prefIndex]);
-
-                // If 'Week number'
-                if (prefKey.equals(getString(R.string.KEY_SETTINGS_WEEK_NUMBER))){
-                    editor.putInt(getString(R.string.KEY_WEEK_NUMBER), prefIndex);
-                    Log.v(LOG_TAG, "Setting week number to " + prefIndex);
-                }
-
-                // If 'Date format'
-                else if (prefKey.equals(getString(R.string.KEY_SETTINGS_DATE_FORMAT))){
-                    editor.putString("dateFormat", ((String)listPreference.getEntryValues()[prefIndex]));
-                }
-            }
-
-        } else {
-            // Roll a check for what preference has been selected
-            // If 'Notification before class starts'
-            if (prefKey.equals(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION))) {
-                NumberPickerPreference numberPickerPreference = (NumberPickerPreference) preference;
-                editor.putInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), numberPickerPreference.getValue());
-                numberPickerPreference.setSummary(stringValue + " " + getString(R.string.settings_class_notification_subtitle));
-            }
-
-            // If 'Mute phone during classes'
-            else if (prefKey.equals(getString(R.string.KEY_SETTINGS_CLASS_MUTE))){
-                editor.putBoolean(getString(R.string.KEY_SETTINGS_CLASS_MUTE), ((CheckBoxPreference)preference).isChecked());
-            }
-
-            else {
-                // For other preferences, set the summary to the value's simple string representation.
-                preference.setSummary(stringValue);
-            }
-
-        }
-
-        editor.commit();
-        return true;
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public Intent getParentActivityIntent() {
-        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        return false;
     }
 
     private Preference.OnPreferenceClickListener onPreferenceClickListener() {
@@ -161,20 +129,64 @@ public class SettingsActivity extends PreferenceActivity
             public boolean onPreferenceClick(Preference preference) {
                 String prefKey = preference.getKey();
 
-                // If 'Theme'
-                if (prefKey.equals(getString(R.string.KEY_SETTINGS_THEME))) {
-                    Intent intent = new Intent(SettingsActivity.this, SettingsThemeActivity.class);
-                    startActivity(intent);
+                // If 'Primary Color'
+                if (prefKey.equals(getString(R.string.KEY_SETTINGS_THEME_PRIMARY))) {
+                    showColorsDialog(0);
                     return true;
                 }
-                else if (prefKey.equals(getString(R.string.KEY_SETTINGS_ABOUT_PLUME))) {
-                    Intent intent = new Intent(SettingsActivity.this, AboutActivity.class);
-                    startActivity(intent);
+                // If 'Secondary Color'
+                else if (prefKey.equals(getString(R.string.KEY_SETTINGS_THEME_SECONDARY))) {
+                    showColorsDialog(1);
                     return true;
                 }
                 return false;
             }
         };
+    }
+
+    private void showColorsDialog(final int setting) {
+        // Prepare grid view
+        GridView gridView = new GridView(this);
+        final AlertDialog dialog;
+
+        gridView.setAdapter(new ColorsAdapter(this));
+        gridView.setNumColumns(5);
+        gridView.setPadding(8, 16, 8, 16);
+        gridView.setGravity(Gravity.CENTER);
+        // Set grid view to alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(gridView);
+        builder.setTitle(getString(R.string.color_dialog_title));
+        dialog = builder.show();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Drawable drawable = mThumbIds[position];
+                int color = ((ColorDrawable) drawable).getColor();
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SettingsThemeActivity.this);
+                SharedPreferences.Editor editor = preferences.edit();
+                if (setting == 0) {
+                    editor.putInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), color);
+                    mPrimaryColor = color;
+                    float[] hsv = new float[3];
+                    int tempColor = mPrimaryColor;
+                    Color.colorToHSV(tempColor, hsv);
+                    hsv[2] *= 0.8f; // value component
+                    mDarkColor = Color.HSVToColor(hsv);
+
+                    getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        getWindow().setStatusBarColor(mDarkColor);
+                    }
+                }
+                else if (setting == 1) {
+                    editor.putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), color);
+                }
+                editor.apply();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     /**
@@ -267,4 +279,5 @@ public class SettingsActivity extends PreferenceActivity
             finish();
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -4,9 +4,13 @@ package com.pdt.plume;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -38,6 +42,11 @@ public class TasksFragment extends Fragment {
     ListView listView;
     private Menu mActionMenu;
     private int mOptionsMenuCount;
+    FloatingActionButton fab;
+
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
 
     // Flags
     boolean isTablet;
@@ -84,7 +93,7 @@ public class TasksFragment extends Fragment {
 
         // Get a reference to the FAB and set its OnClickListener
         // which is an intent to add a new schedule
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +106,22 @@ public class TasksFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+    }
 
     public AdapterView.OnItemClickListener listener() {
 
@@ -194,7 +219,7 @@ public class TasksFragment extends Fragment {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
 
-            int colorFrom = getResources().getColor(R.color.colorPrimary);
+            int colorFrom = mPrimaryColor;
             int colorTo = getResources().getColor(R.color.gray_500);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(200); // milliseconds
@@ -253,10 +278,10 @@ public class TasksFragment extends Fragment {
             CAMselectedItemsList.clear();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+                getActivity().getWindow().setStatusBarColor(mDarkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
-            int colorTo = getResources().getColor(R.color.colorPrimary);
+            int colorTo = mPrimaryColor;
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(800); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -329,7 +354,6 @@ public class TasksFragment extends Fragment {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    Log.v(LOG_TAG, "editId: " + id);
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                     classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
                     classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));

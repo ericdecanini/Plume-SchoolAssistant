@@ -3,8 +3,18 @@
     package="com.pdt.plume">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.pdt.plume.permission.C2D_MESSAGE" />
 
     <uses-permission-sdk-23 android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission-sdk-23 android:name="android.permission.VIBRATE" />
+    <uses-permission-sdk-23 android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission-sdk-23 android:name="com.pdt.plume.permission.C2D_MESSAGE" />
+
+    <permission android:name="com.pdt.plume.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
 
     <application
         android:allowBackup="true"
@@ -12,6 +22,38 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- GCM SERVICES START -->
+
+        <!--<receiver-->
+            <!--android:name="com.google.android.gms.gcm.GcmReceiver"-->
+            <!--android:exported="true"-->
+            <!--android:permission="com.google.android.c2dm.permission.SEND" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.c2dm.intent.RECEIVE" />-->
+                <!--<action android:name="com.google.android.c2dm.intent.REGISTRATION" />-->
+                <!--<category android:name="com.example.gcm" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
+
+        <!--<service-->
+            <!--android:name="com.pdt.plume.services.PlumeGcmListenerService"-->
+            <!--android:exported="false" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.c2dm.intent.RECEIVE" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+
+        <!--<service-->
+            <!--android:name=".services.PlumeGcmListenerService"-->
+            <!--android:exported="false">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.gms.iid.InstanceID" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+
+        <!-- GCM SERVICES END -->
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -22,14 +64,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ScheduleDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".TasksDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".NewScheduleActivity"
             android:label="@string/activity_new_schedule_label"
@@ -48,6 +93,7 @@
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".NewTaskActivity"
             android:label="@string/activity_new_task_label"
@@ -60,14 +106,23 @@
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
             android:parentActivityName=".MainActivity" />
 
-        <receiver android:name=".AlarmReceiver" />
-<!---->
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".SettingsThemeActivity" />
+
+        <receiver android:name=".NotificationAlarmReceiver" />
+        <receiver android:name=".MuteAlarmReceiver" />
+        <receiver android:name=".UnmuteAlarmReceiver" />
+
+        <activity android:name=".AboutActivity"
+            android:label="@string/about_activity_label"
+            android:parentActivityName=".SettingsActivity" />
+
     </application>
 
 </manifest>

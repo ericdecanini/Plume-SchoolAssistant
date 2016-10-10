@@ -1,9 +1,16 @@
 package com.pdt.plume;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -28,6 +35,7 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,13 +44,26 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
 
+    // GCM Variables
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private ProgressBar mRegistrationProgressBar;
+    private TextView mInformationTextView;
+    private boolean isReceiverRegistered;
+
     // UI Elements
     Toolbar mToolbar;
+    AppBarLayout mAppbar;
     private TabsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
+
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
 
     // Variables aiding schedule
     int weekNumber;
@@ -58,6 +79,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Set the custom toolbar as the action bar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+        mAppbar = (AppBarLayout) findViewById(R.id.appbar);
+
+        // If it's the first time running the app, launch this method
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true))
+            init();
 
         // Check if the device is a phone or tablet, then
         // initialise the tab layout based on that
@@ -67,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else
             initTabs();
 
-        //Initialise Navigation Drawer
+        // Initialise Navigation Drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        if (drawer != null){
+        if (drawer != null) {
             drawer.setDrawerListener(toggle);
             toggle.syncState();
         }
@@ -81,14 +107,43 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (navigationView != null)
             navigationView.setNavigationItemSelectedListener(this);
 
+        float sw = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels) / getResources().getDisplayMetrics().density;
+        Log.v(LOG_TAG, "Smallest Width: " + sw);
+    }
+
+    private void init() {
+        // Open the shared preference
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        // Set the first launch boolean to be false
+        editor.putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false);
+
+        // Initialise the theme variables
+        mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+        mSecondaryColor = getResources().getColor(R.color.colorAccent);
+        editor.putInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
+        editor.putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), mSecondaryColor);
+
+        // Initialise the week number
+        weekNumber = 0;
+        editor.putInt(getString(R.string.KEY_WEEK_NUMBER), 0);
+
+        // Commit the preferences
+        editor.apply();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mSectionsPagerAdapter.notifyDataSetChanged();
+
         // Get the current date and toggle the week number
         // Get the current date
-        Date date = new Date();
         Calendar c = Calendar.getInstance();
-        c.setTime(date);
         int currentWeek = c.get(Calendar.WEEK_OF_YEAR);
         // Get the previous date
-        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         weekNumber = preferences.getInt("weekNumber", 1);
         int lastCheckedWeekOfYear = preferences.getInt("weekOfYear", -1);
         // Toggle the weekNumber for each week passed since last check
@@ -102,12 +157,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
         else lastCheckedWeekOfYear = currentWeek;
+
         // Save the new date data to SharedPreferences
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("weekNumber", weekNumber)
                 .putInt("weekOfYear", currentWeek)
                 .apply();
 
+        // Set the action bar colour according to the theme
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mAppbar.setBackground(new ColorDrawable(mPrimaryColor));
+        } else mAppbar.setBackgroundColor(mPrimaryColor);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
+
+        // Initialise the tab layout theme
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        if (tabLayout!= null) {
+            mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+            tabLayout.setSelectedTabIndicatorColor(mSecondaryColor);
+        }
     }
 
     // Include back button action to close
@@ -165,13 +243,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     public void initTabs(){
@@ -186,8 +264,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Initialise the tab layout and set it up with the pager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        if (tabLayout!= null)
+        if (tabLayout!= null) {
             tabLayout.setupWithViewPager(mViewPager);
+            mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+            tabLayout.setSelectedTabIndicatorColor(mSecondaryColor);
+        }
 
         // Check if the activity was started from the NewTaskActivity
         // and automatically direct the tab to Tasks if it has

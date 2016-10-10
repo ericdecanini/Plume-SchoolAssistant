@@ -9,21 +9,21 @@
 
     <TextView
         android:id="@+id/class_time_one_value"
-        android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:textColor="@color/colorPrimary" />
 
     <TextView
         android:id="@+id/class_time_two_value"
-        android:textColor="@color/colorPrimary"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:textColor="@color/colorPrimary" />
 
     <TextView
         android:id="@+id/class_three_item_header"
@@ -47,15 +47,15 @@
             android:id="@+id/class_three_sunday"
             android:layout_width="0dp"
             android:layout_height="46dp"
-            android:layout_weight="1"
             android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
             android:src="@drawable/ui_saturday_sunday_unselected" />
 
         <ImageView
             android:id="@+id/class_three_monday"
-            android:layout_gravity="center_horizontal"
             android:layout_width="0dp"
             android:layout_height="46dp"
+            android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:src="@drawable/ui_monday_unselected" />
 
@@ -109,91 +109,116 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+            
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
+            
             <TextView
                 android:id="@+id/class_three_period_one"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_one"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_one"/>
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_two"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
+                android:text="@string/class_time_period_two"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_two" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_three"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_three"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_three" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_four"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_four"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_four" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_five"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_five"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_five" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_six"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_six"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_six" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
         </LinearLayout>
 
         <LinearLayout
@@ -201,89 +226,113 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp">
 
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
+
             <TextView
                 android:id="@+id/class_three_period_seven"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:gravity="center"
+                android:text="@string/class_time_period_seven"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_seven" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_eight"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:gravity="center"
+                android:text="@string/class_time_period_eight"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_eight" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_nine"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_nine"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_nine" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_ten"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_ten"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_ten" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_eleven"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_weight="1"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_eleven"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_eleven" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/class_three_period_twelve"
-                android:layout_width="0dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
                 android:background="@drawable/bg_period_button"
                 android:gravity="center"
+                android:text="@string/class_time_period_twelve"
                 android:textAllCaps="true"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/class_time_period_twelve" />
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="invisible" />
         </LinearLayout>
     </LinearLayout>
 
@@ -367,98 +416,135 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_one_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_one"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_one" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_two_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_period_button"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
+                    android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_two"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_two" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_three_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_period_button"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
+                    android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_three"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_three" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_four_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_period_button"
-                    android:gravity="center"
-                    android:textAllCaps="true"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:textStyle="bold"
+                    android:background="@drawable/bg_period_button"
+                    android:gravity="center"
+                    android:text="@string/class_time_period_four"
+                    android:textAllCaps="true"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_four" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_five_alt"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_five"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_five" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_six_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_six"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_six" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
             </LinearLayout>
 
             <LinearLayout
@@ -466,89 +552,125 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp">
 
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
+
                 <TextView
                     android:id="@+id/class_three_period_seven_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_seven"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_seven" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_eight_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_eight"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_eight" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_nine_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_nine"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_nine" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_ten_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_ten"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_ten" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_eleven_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_eleven"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_eleven" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/class_three_period_twelve_alt"
-                    android:layout_width="0dp"
+                    android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginRight="4dp"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_period_button"
                     android:gravity="center"
+                    android:text="@string/class_time_period_twelve"
                     android:textAllCaps="true"
-                    android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:text="@string/class_time_period_twelve" />
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible" />
             </LinearLayout>
         </LinearLayout>
 

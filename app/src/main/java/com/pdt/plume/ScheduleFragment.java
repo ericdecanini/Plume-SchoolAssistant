@@ -3,10 +3,17 @@ package com.pdt.plume;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -22,9 +29,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -41,6 +50,15 @@ public class ScheduleFragment extends Fragment {
 
     // UI Elements
     ListView listView;
+    TextView headerTextView;
+    FloatingActionButton fab;
+
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
+
+    // UI Data
+    ScheduleAdapter mScheduleAdapter;
 
     // Flags
     boolean isTablet;
@@ -67,18 +85,80 @@ public class ScheduleFragment extends Fragment {
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
-        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(getContext(),
-                R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
-        TextView headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+        try {
+            mScheduleAdapter = new ScheduleAdapter(getContext(),
+                    R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
         if (showBlockHeaderA){
-            headerTextView.setText(getString(R.string.class_time_block_day_a));
+            String blockString = utility.formatBlockString(getContext(), 0);
+            headerTextView.setText(blockString);
         } else if (showBlockHeaderB){
-            headerTextView.setText(getString(R.string.class_time_block_day_b));
+            String blockString = utility.formatBlockString(getContext(), 1);
+            headerTextView.setText(blockString);
         } else if (mScheduleAdapter.getCount() != 0) {
             Calendar c = Calendar.getInstance();
             headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
         } else {
             headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
+        }
+
+        // Start the services for class notifications and muting
+        Cursor currentDayCursor = dbHelper.getCurrentDayScheduleData(getActivity());
+        if (currentDayCursor.moveToFirst()){
+            for (int i = 0; i < currentDayCursor.getCount(); i++){
+                SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                int weekNumber = preferences.getInt("weekNumber", 0);
+                float timeIn;
+                float timeOut;
+
+                if (weekNumber == 0){
+                    timeIn = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                    timeOut = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT));
+                } else {
+                    timeIn = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
+                    timeOut = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT));
+                }
+
+                AlarmManager alarmManager = (AlarmManager)getContext().getSystemService(Context.ALARM_SERVICE);
+                Calendar calendar = Calendar.getInstance();
+
+                // Set the class notification service
+                int classNotificationAdvanceValue = preferences
+                        .getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), -1);
+                if (classNotificationAdvanceValue <= 0) {
+                    Intent notifyIntent = new Intent(getContext() , NotificationAlarmReceiver.class);
+                    notifyIntent.putExtra("ID", currentDayCursor.getInt(currentDayCursor.getColumnIndex(ScheduleEntry._ID)));
+                    notifyIntent.putExtra("iconUriString", currentDayCursor.getString(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)));
+                    PendingIntent notifyPendingIntent = PendingIntent.getBroadcast(getContext(), 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    int hour = utility.getHour(timeIn);
+                    int minute = utility.getMinute(timeIn);
+                    calendar.setTimeInMillis(System.currentTimeMillis());
+                    calendar.set(Calendar.HOUR_OF_DAY, hour);
+                    calendar.set(Calendar.MINUTE, minute - classNotificationAdvanceValue);
+                    Log.v(LOG_TAG, "Notification alarm set for " + calendar.getTimeInMillis());
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY , notifyPendingIntent);
+                }
+
+                // Set the mute services during classes
+                boolean muteIsChecked = preferences.getBoolean(getString(R.string.KEY_SETTINGS_CLASS_MUTE), false);
+                if (muteIsChecked){
+                    Intent muteIntent = new Intent(getContext(), MuteAlarmReceiver.class);
+                    muteIntent.putExtra("UNMUTE_TIME", timeOut);
+                    PendingIntent mutePendingIntent = PendingIntent.getBroadcast(getContext(), 1, muteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    int hour = utility.getHour(timeIn);
+                    int minute = utility.getMinute(timeIn);
+                    calendar.setTimeInMillis(System.currentTimeMillis());
+                    calendar.set(Calendar.HOUR_OF_DAY, hour);
+                    calendar.set(Calendar.MINUTE, minute);
+                    Log.v(LOG_TAG, "Mute alarm set for " + calendar.getTimeInMillis());
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, mutePendingIntent);
+                }
+
+                currentDayCursor.moveToNext();
+            }
         }
 
         // Set the adapter and listeners of the list view
@@ -94,7 +174,7 @@ public class ScheduleFragment extends Fragment {
 
         // Get a reference to the FAB and set its OnClickListener
         // which is an intent to add a new schedule
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,6 +216,37 @@ public class ScheduleFragment extends Fragment {
                 }
             }
         };
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (showBlockHeaderA){
+            String blockString = utility.formatBlockString(getContext(), 0);
+            headerTextView.setText(blockString);
+        } else if (showBlockHeaderB){
+            String blockString = utility.formatBlockString(getContext(), 1);
+            headerTextView.setText(blockString);
+        } else if (mScheduleAdapter.getCount() != 0) {
+            Calendar c = Calendar.getInstance();
+            headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        } else {
+            headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
+        }
+
+        mScheduleAdapter.notifyDataSetChanged();
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
     // Subclass for the Contextual Action Mode
@@ -205,7 +316,7 @@ public class ScheduleFragment extends Fragment {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
 
-            int colorFrom = getResources().getColor(R.color.colorPrimary);
+            int colorFrom = mPrimaryColor;
             int colorTo = getResources().getColor(R.color.gray_500);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(200); // milliseconds
@@ -241,7 +352,11 @@ public class ScheduleFragment extends Fragment {
         public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.action_delete:
-                    deleteSelectedItems();
+                    try {
+                        deleteSelectedItems();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
 
                 case R.id.action_edit:
@@ -262,10 +377,10 @@ public class ScheduleFragment extends Fragment {
             CAMselectedItemsList.clear();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+                getActivity().getWindow().setStatusBarColor(mDarkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
-            int colorTo = getResources().getColor(R.color.colorPrimary);
+            int colorTo = mPrimaryColor;
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(800); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -279,9 +394,22 @@ public class ScheduleFragment extends Fragment {
 
             });
             colorAnimation.start();
+
+            if (showBlockHeaderA){
+                String blockString = utility.formatBlockString(getContext(), 0);
+                headerTextView.setText(blockString);
+            } else if (showBlockHeaderB){
+                String blockString = utility.formatBlockString(getContext(), 1);
+                headerTextView.setText(blockString);
+            } else if (mScheduleAdapter.getCount() != 0) {
+                Calendar c = Calendar.getInstance();
+                headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            } else {
+                headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
+            }
         }
 
-        private void deleteSelectedItems() {
+        private void deleteSelectedItems() throws IOException {
             // Get a reference to the database
             DbHelper db = new DbHelper(getActivity());
 
@@ -329,7 +457,6 @@ public class ScheduleFragment extends Fragment {
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
-                    Log.v(LOG_TAG, "CurrentDay Cursor Count: " + cursor.getCount());
                     // Get its Id and Title
                     id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));

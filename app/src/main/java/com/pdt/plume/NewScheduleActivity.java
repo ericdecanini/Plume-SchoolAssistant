@@ -1,18 +1,25 @@
 package com.pdt.plume;
 
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -39,6 +46,7 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +54,7 @@ public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
         IconDialogFragment.iconDialogListener,
         AddClassTimeOneFragment.onBasisSelectedListener,
+        AddClassTimeTwoFragment.onBasisTextviewSelectedListener,
         AddClassTimeTwoFragment.onWeekTypeSelectedListener,
         AddClassTimeThreeFragmentTime.onTimeSelectedListener,
         AddClassTimeThreeFragmentTime.onDaysSelectedListener,
@@ -73,6 +82,7 @@ public class NewScheduleActivity extends AppCompatActivity
     ImageView fieldIcon;
     ListView classTimeList;
     TextView fieldAddClassTime;
+    ImageView fieldAddClassTimeIcon;
 
     // UI Data
     String scheduleIconUriString;
@@ -89,6 +99,10 @@ public class NewScheduleActivity extends AppCompatActivity
     OccurrenceTimePeriodAdapter classTimeAdapter;
     int scheduleIconResourceId = R.drawable.art_class_64dp;
 
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
+
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -100,6 +114,7 @@ public class NewScheduleActivity extends AppCompatActivity
             R.drawable.art_cooking_64dp,
             R.drawable.art_creativestudies_64dp,
             R.drawable.art_drama_64dp,
+            R.drawable.art_engineering_64dp,
             R.drawable.art_english_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
@@ -115,7 +130,8 @@ public class NewScheduleActivity extends AppCompatActivity
             R.drawable.art_re_64dp,
             R.drawable.art_science_64dp,
             R.drawable.art_spanish_64dp,
-            R.drawable.art_task_64dp
+            R.drawable.art_task_64dp,
+            R.drawable.art_woodwork_64dp
     };
 
     // Intent Data
@@ -154,6 +170,7 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
         fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
         fieldAddClassTime = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
+        fieldAddClassTimeIcon = (ImageView) findViewById(R.id.field_new_schedule_add_class_time_icon);
         fieldIcon = (ImageView) findViewById(R.id.new_schedule_icon);
         classTimeList = (ListView) findViewById(R.id.field_new_schedule_class_time_list);
 
@@ -198,7 +215,6 @@ public class NewScheduleActivity extends AppCompatActivity
             // The cursor should only contain schedule data of the item's title, so multiple rows would only include different instances of occurrence
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor;
-            Log.v(LOG_TAG, "Schedule Extra Id: " + Integer.toString(intent.getIntExtra(getString(R.string.SCHEDULE_EXTRA_ID), 0)));
             cursor = dbHelper.getScheduleDataByTitle(scheduleTitle);
             if (cursor.moveToFirst()) {
                 scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
@@ -299,6 +315,33 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+        fieldTitle.setBackgroundColor(mPrimaryColor);
+        fieldAddClassTime.setTextColor(mPrimaryColor);
+        fieldAddClassTimeIcon.setColorFilter(mPrimaryColor);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+            fieldRoom.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
@@ -361,6 +404,13 @@ public class NewScheduleActivity extends AppCompatActivity
                     } catch (IndexOutOfBoundsException exception) {
                         Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                     }
+
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                    Intent intent = new Intent(this, MuteAlarmReceiver.class);
+                    intent.putExtra("UNMUTE_TIME", timeOut);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
+
                     // Database insert function
                     if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
@@ -403,6 +453,12 @@ public class NewScheduleActivity extends AppCompatActivity
                     } catch (IndexOutOfBoundsException exception) {
                         Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                     }
+
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                    Intent intent = new Intent(this, MuteAlarmReceiver.class);
+                    intent.putExtra("UNMUTE_TIME", timeOut);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
 
                     // Database insert function
                     if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
@@ -612,8 +668,13 @@ public class NewScheduleActivity extends AppCompatActivity
             transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
             transactionWeekType.addToBackStack(null).commit();
 
+            // Create the args
+            Bundle args = new Bundle();
+            args.putString("basis", basis);
+
             // Show the dialog
             DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
+            fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
         else{
@@ -789,8 +850,13 @@ public class NewScheduleActivity extends AppCompatActivity
         transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
         transactionWeekType.addToBackStack(null).commit();
 
+        // Create the args
+        Bundle args = new Bundle();
+        args.putString("basis", basis);
+
         // Show the dialog
         DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
+        fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
         // Check if other dialogs are present and remove them if so
 
@@ -928,8 +994,9 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // If the clicked item became selected, add it to
             // an array list of selected items
-            if (checked)
+            if (checked) {
                 CAMselectedItemsList.add(position);
+            }
 
             // If the clicked item became deselected, get its item id
             // and remove it from the array list
@@ -1026,8 +1093,15 @@ public class NewScheduleActivity extends AppCompatActivity
         private void deleteSelectedItems() {
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++)
-                    occurrenceTimePeriodList.remove((int)CAMselectedItemsList.get(i));
+            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+                occurrenceList.remove((int)CAMselectedItemsList.get(i));
+                periodsList.remove((int)CAMselectedItemsList.get(i));
+                timeInList.remove((int)CAMselectedItemsList.get(i));
+                timeOutList.remove((int)CAMselectedItemsList.get(i));
+                timeInAltList.remove((int)CAMselectedItemsList.get(i));
+                timeOutAltList.remove((int)CAMselectedItemsList.get(i));
+                occurrenceTimePeriodList.remove((int)CAMselectedItemsList.get(i));
+            }
 
             // Notify the adapter of the changes
             classTimeAdapter.notifyDataSetChanged();

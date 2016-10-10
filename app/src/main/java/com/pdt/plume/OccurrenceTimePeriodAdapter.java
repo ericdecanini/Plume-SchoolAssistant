@@ -25,11 +25,11 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
     ArrayList<OccurrenceTimePeriod> objects = null;
 
     // Default adapter constructor
-    public OccurrenceTimePeriodAdapter(Context context, int resource, ArrayList<OccurrenceTimePeriod> objects) {
-        super(context, resource, objects);
+    public OccurrenceTimePeriodAdapter(Context context, int resource, ArrayList<OccurrenceTimePeriod> occurrences) {
+        super(context, resource, occurrences);
         this.context = context;
         this.layoutResourceId = resource;
-        this.objects = objects;
+        this.objects = occurrences;
     }
 
     @Override
@@ -81,6 +81,7 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
         // If the week type is the same each week, remove the week one label
         if (occurrenceTimePeriod.weekType.equals("0"))
             ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_three_everyweek));
+        else ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_three_weekone));
 
         // If the item's basis is Time or Period based, highlight the background colour
         // Of the day buttons corresponding to the activated day binary code
@@ -146,10 +147,12 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
                 holder.sat.setBackgroundColor(((Activity) context).getColor(R.color.gray_500));
             } else holder.sat.setBackgroundColor(((Activity) context).getResources().getColor(R.color.gray_500));
 
-            //Hide the alt layout if the weekType is 0, set the colours of the alternate days layout if it is 1
-            if (occurrenceTimePeriod.weekType.equals("0"))
+            // Hide the alt layout if the weekType is 0, set the colours of the alternate days layout if it is 1
+            if (occurrenceTimePeriod.weekType.equals("0")) {
                 row.findViewById(R.id.list_item_time_period_alt_layout).setVisibility(View.GONE);
+            }
             else {
+                row.findViewById(R.id.list_item_time_period_alt_layout).setVisibility(View.VISIBLE);
                 holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
 
                 // Set the background colour of the day buttons
@@ -213,7 +216,8 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
         // If the item's basis is Block based, change the week text to Day A and Day B
         // and hide the row of day buttons
-        else {holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
+        else {
+            holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
             ((TextView) row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_time_block_day_a));
             ((TextView) row.findViewById(R.id.list_item_time_period_week_alt)).setText(context.getString(R.string.class_time_block_day_b));
             row.findViewById(R.id.list_item_time_period_days).setVisibility(View.GONE);

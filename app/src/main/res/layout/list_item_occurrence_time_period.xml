@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:background="@drawable/touch_selector"
     android:layout_height="match_parent"
     android:padding="8dp"
     android:paddingBottom="16dp"
@@ -10,8 +11,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
-        android:layout_marginStart="4dp">
+        android:paddingLeft="4dp"
+        android:paddingStart="4dp">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,7 +37,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_time_black_32dp"
+            android:src="@drawable/ic_time_black_24dp"
             android:tint="@color/gray_700"/>
         <TextView
             android:id="@+id/list_item_time_period_textview"
@@ -185,7 +186,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_time_black_32dp"
+                android:src="@drawable/ic_time_black_24dp"
                 android:tint="@color/gray_700"/>
             <TextView
                 android:id="@+id/list_item_time_period_textview_alt"
