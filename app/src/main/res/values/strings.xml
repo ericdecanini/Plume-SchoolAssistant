@@ -14,7 +14,7 @@
 
     <!-- Menu Actions -->
     <string name="delete">Delete</string>
-    <string name="save">Save</string>
+    <string name="save">SAVE</string>
     <string name="share">Share</string>
     <string name="edit">Edit</string>
     <string name="ok">OK</string>
@@ -74,6 +74,8 @@
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_detail_room_subtitle">Room</string>
     <string name="schedule_detail_periods_title">Periods</string>
+    <string name="schedule_detail_notes_title">Notes</string>
+    <string name="schedule_detail_notes_add">Add note</string>
     <string name="schedule_detail_tasks_title">Tasks</string>
 
     <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
@@ -166,6 +168,11 @@
     <string name="class_time_block_day_a">A Day</string>
     <string name="class_time_block_day_b">B Day</string>
 
+    <!-- NOTES ACTIVITY -->
+    <string name="notes_title_hint">Title</string>
+    <string name="notes_note_hint">Note</string>
+    <string name="NOTES_EXTRA_ID">NOTES_EXTRA_ID</string>
+
 
     <!-- Intent extras to check if the activity was started by an intent from one of its fragments or from an edit action -->
     <string name="SCHEDULE_EXTRA_ID" translatable="false">SCHEDULE_EXTRA_ID</string>
@@ -194,7 +201,7 @@
 
     <string name="KEY_TASKS_EXTRA_ID">KEY_TASKS_EXTRA_ID</string>
 
-    <!-- Strings for NewTasksActivity -->
+    <!-- Strings for NewTaskActivity -->
     <string name="notification_message_reminder">Touch for more details.</string>
     <string name="activity_new_task_label">New Task</string>
 
@@ -223,6 +230,20 @@
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="set_date">Set date</string>
+
+    <string name="field_new_photo_dialog_title">Insert photo</string>
+    <string-array name="field_new_photo_dialog_items">
+        <item>Take photo</item>
+        <item>Select photo from gallery</item>
+    </string-array>
+
+    <string name="field_existing_photo_dialog_title">Change photo</string>
+    <string-array name="field_existing_photo_dialog_items">
+        <item>Take a new photo</item>
+        <item>Select new photo</item>
+        <item>Clear photo</item>
+    </string-array>
+
 
     <!-- Strings for Task List Items -->
     <string name="due_date">Due date:</string>

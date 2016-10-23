@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -16,10 +17,12 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,7 +46,14 @@ import android.widget.Toast;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -67,6 +77,8 @@ public class NewTaskActivity extends AppCompatActivity
     LinearLayout fieldTypeDropdown;
     TextView fieldTypeTextview;
 
+    TextView fieldTakePhoto;
+    ImageView fieldPhotoSlot;
     LinearLayout fieldDueDate;
     TextView fieldDueDateTextView;
     TextView fieldAttachFile;
@@ -126,7 +138,12 @@ public class NewTaskActivity extends AppCompatActivity
     boolean FLAG_EDIT = false;
     int editId = -1;
     static final int REQUEST_FILE_GET = 1;
-    static final int REQUEST_IMAGE_GET = 2;
+    static final int REQUEST_IMAGE_GET_ICON = 2;
+    static final int REQUEST_IMAGE_CAPTURE = 3;
+    static final int REQUEST_IMAGE_GET_PHOTO = 4;
+    Uri mCurrentPhotoPath;
+    String mCurrentPhotoPathString;
+    URI previousPhotoPath;
     boolean LAUNCHED_NEW_CLASS = false;
 
     @Override
@@ -137,11 +154,13 @@ public class NewTaskActivity extends AppCompatActivity
         // Get references to the UI elements
         fieldTitle = (EditText) findViewById(R.id.field_new_task_title);
         fieldIcon = (ImageView) findViewById(R.id.field_new_task_icon);
-        fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
         fieldClassDropdown = (LinearLayout) findViewById(R.id.field_class_dropdown);
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
         fieldTypeDropdown = (LinearLayout) findViewById(R.id.field_type_dropdown);
         fieldTypeTextview = (TextView) findViewById(R.id.field_type_textview);
+        fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
+        fieldTakePhoto = (TextView) findViewById(R.id.field_new_task_photo);
+        fieldPhotoSlot = (ImageView) findViewById(R.id.field_new_task_photo_slot);
         fieldDueDate = (LinearLayout) findViewById(R.id.field_new_task_duedate);
         fieldDueDateTextView = (TextView) findViewById(R.id.field_new_task_duedate_textview);
         fieldAttachFile = (TextView) findViewById(R.id.field_new_task_attach);
@@ -158,10 +177,12 @@ public class NewTaskActivity extends AppCompatActivity
         fieldIcon.setOnClickListener(showIconDialog());
         fieldClassDropdown.setOnClickListener(listener());
         fieldTypeDropdown.setOnClickListener(listener());
+        fieldTakePhoto.setOnClickListener(listener());
         fieldAttachFile.setOnClickListener(listener());
         fieldSetReminderDate.setOnClickListener(listener());
         fieldSetReminderTime.setOnClickListener(listener());
         fieldDueDate.setOnClickListener(listener());
+        fieldPhotoSlot.setOnClickListener(photoListener());
 
 
         // Initialise the class dropdown data
@@ -217,6 +238,8 @@ public class NewTaskActivity extends AppCompatActivity
                     dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
                     reminderDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
                     reminderTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+                    mCurrentPhotoPath = Uri.parse(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE)));
+                    previousPhotoPath = URI.create(mCurrentPhotoPath.toString());
                 }
 
                 int position = extras.getInt("position");
@@ -226,13 +249,12 @@ public class NewTaskActivity extends AppCompatActivity
                     Cursor cursorEdit = dbHelper.getTaskData();
                     if (cursorEdit.moveToPosition(position)) {
                         iconUriString = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
-                        Bitmap setImageBitmap = null;
                         try {
-                            setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUriString));
+                            Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUriString));
+                            fieldIcon.setImageBitmap(setImageBitmap);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        fieldIcon.setImageBitmap(setImageBitmap);
 
                         // Auto-fill the text fields with the intent data
                         fieldTitle.setText(title);
@@ -257,6 +279,18 @@ public class NewTaskActivity extends AppCompatActivity
                                 this.attachedFileUriString = filePathUri.toString();
                             }
                         }
+
+                        // Set the saved image bitmap
+                        Log.v(LOG_TAG, "Photo path: " + mCurrentPhotoPath.toString());
+                        if (!mCurrentPhotoPath.toString().equals("")) {
+                            try {
+                                Bitmap setPhotoBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
+                                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(setPhotoBitmap, 160, 160, false));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                     }
 
                     cursorEdit.close();
@@ -446,11 +480,32 @@ public class NewTaskActivity extends AppCompatActivity
                         datePickerDialog_duedate.show();
                         break;
                     case R.id.field_new_task_attach:
-                        Intent intent = new Intent(Intent.ACTION_PICK);
-                        intent.setType("*/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
-                        intent.addCategory(Intent.CATEGORY_OPENABLE);
-                        startActivityForResult(intent, REQUEST_FILE_GET);
+                        Intent attach_intent = new Intent(Intent.ACTION_PICK);
+                        attach_intent.setType("*/*");
+                        attach_intent.setAction(Intent.ACTION_GET_CONTENT);
+                        attach_intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        startActivityForResult(attach_intent, REQUEST_FILE_GET);
+                        break;
+                    case R.id.field_new_task_photo:
+                        AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
+                        builder.setTitle(getString(R.string.field_new_photo_dialog_title))
+                                .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        switch (which) {
+                                            case 0:
+                                                try {
+                                                    dispatchTakePictureIntent();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                break;
+                                            case 1:
+                                                dispatchSelectPhotoIntent();
+                                                break;
+                                        }
+                                    }
+                                }).show();
                         break;
                     case R.id.field_new_task_reminder_date:
                         showReminderDateDropdownMenu();
@@ -487,30 +542,76 @@ public class NewTaskActivity extends AppCompatActivity
         long notificationMillis = (cc.getTimeInMillis());
 
         if (FLAG_EDIT) {
+            // Delete previous picture if it exists
+            if (!previousPhotoPath.toString().equals("")) {
+                File file = new File(previousPhotoPath);
+                file.delete();
+            }
+
+            Log.d(LOG_TAG, "Inserting photo path " + mCurrentPhotoPath.toString());
             Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), editId, iconUriString);
-            Log.v(LOG_TAG, "MillisSet: " + notificationMillis);
+
             if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)) {
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
                 return true;
-            } else
+            }
+
+            else
                 Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
         }
         // Else, insert a new database row
         else {
+            // First save the taken picture into the storage
+            if (mCurrentPhotoPath != null)
+                saveFile(mCurrentPhotoPath);
+            else mCurrentPhotoPath = Uri.parse("");
+
             if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString)) {
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
                 Cursor cursor = dbHelper.getTaskData();
+
                 if (cursor.moveToLast()) {
                     int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), ID, iconUriString);
                 }
+
                 return true;
-            } else
+            }
+
+            else
                 Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
             Log.w(LOG_TAG, "Error creating new task");
         }
 
         return false;
+    }
+
+    void saveFile(Uri sourceuri)
+    {
+        String sourceFilename= sourceuri.getPath();
+        String destinationFilename = android.os.Environment.getExternalStorageDirectory().getPath()+File.separatorChar+"abc.mp3";
+
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+
+        try {
+            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
+            bos = new BufferedOutputStream(new FileOutputStream(destinationFilename, false));
+            byte[] buf = new byte[1024];
+            bis.read(buf);
+            do {
+                bos.write(buf);
+            } while(bis.read(buf) != -1);
+        } catch (IOException e) {
+
+        } finally {
+            try {
+                if (bis != null) bis.close();
+                if (bos != null) bos.close();
+            } catch (IOException e) {
+
+            }
+        }
     }
 
     public void Remind(Date dateTime, String title, String message, int ID, String iconUriString) {
@@ -694,6 +795,45 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
+    private void dispatchTakePictureIntent() throws IOException {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = createImageFile();
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.pdt.plume.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                mCurrentPhotoPathString = photoURI.toString();
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private void dispatchSelectPhotoIntent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        if (intent.resolveActivity(getPackageManager()) != null)
+            startActivityForResult(intent, REQUEST_IMAGE_GET_PHOTO);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
+    }
+
     // This method is called when a file is selected after the ACTION_GET
     // intent was called from the attach file action
     @Override
@@ -715,14 +855,41 @@ public class NewTaskActivity extends AppCompatActivity
             fieldAttachFile.setText(fileName);
         }
 
+        // Take Photo
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // Set the thumbnail and set the member variable for the Uri
+            mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
+            try {
+                Bitmap thumbnail = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
+                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(thumbnail, 160, 160, false));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Photo Upload
+        if (requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
+            Uri dataUri = data.getData();
+            Bitmap bitmap = null;
+
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mCurrentPhotoPath = dataUri;
+            mCurrentPhotoPathString = mCurrentPhotoPath.toString();
+            fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 160, 160, false));
+        }
+
         // Custom Icon Upload
-        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
-            Bitmap thumbnail = data.getParcelableExtra("data");
-            Uri fullPhotoUri = data.getData();
+        if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
+            Uri dataUri = data.getData();
             Bitmap setImageBitmap = null;
 
             try {
-                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fullPhotoUri);
+                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -767,6 +934,38 @@ public class NewTaskActivity extends AppCompatActivity
             public void onClick(View v) {
                 DialogFragment dialog = new IconDialogFragment();
                 dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    private View.OnClickListener photoListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
+                builder.setTitle(getString(R.string.field_existing_photo_dialog_title))
+                        .setItems(R.array.field_existing_photo_dialog_items, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0:
+                                        try {
+                                            dispatchTakePictureIntent();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        break;
+                                    case 1:
+                                        dispatchSelectPhotoIntent();
+                                        break;
+                                    case 2:
+                                        fieldPhotoSlot.setImageBitmap(null);
+                                        mCurrentPhotoPath = null;
+                                        mCurrentPhotoPathString = "";
+                                        break;
+                                }
+                            }
+                        }).show();
             }
         };
     }
@@ -816,7 +1015,7 @@ public class NewTaskActivity extends AppCompatActivity
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
                 if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivityForResult(intent, REQUEST_IMAGE_GET);
+                    startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
                 break;
         }
     }

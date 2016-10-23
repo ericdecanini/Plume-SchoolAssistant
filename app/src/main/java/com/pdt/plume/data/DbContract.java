@@ -31,6 +31,15 @@ public class DbContract {
         public static final String COLUMN_REMINDER_DATE = "reminderdate";
         public static final String COLUMN_REMINDER_TIME = "remindertime";
         public static final String COLUMN_ICON = "icon";
+        public static final String COLUMN_PICTURE = "picture";
+        public static final String COLUMN_COMPLETED = "completed";
+    }
+
+    public static final class NotesEntry implements BaseColumns {
+        public static final String TABLE_NAME = "notes";
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_NOTE = "note";
+        public static final String COLUMN_SCHEDULE_TITLE = "schedule_key";
     }
 
 }

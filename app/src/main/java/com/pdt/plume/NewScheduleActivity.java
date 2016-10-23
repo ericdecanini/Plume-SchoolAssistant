@@ -333,8 +333,8 @@ public class NewScheduleActivity extends AppCompatActivity
         }
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
         fieldTitle.setBackgroundColor(mPrimaryColor);
-        fieldAddClassTime.setTextColor(mPrimaryColor);
-        fieldAddClassTimeIcon.setColorFilter(mPrimaryColor);
+        fieldAddClassTime.setTextColor(mSecondaryColor);
+        fieldAddClassTimeIcon.setColorFilter(mSecondaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
             fieldRoom.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
@@ -368,6 +368,7 @@ public class NewScheduleActivity extends AppCompatActivity
         // Prepare a default icon to insert if no other icon was set
         if (scheduleIconResourceId == -1)
             scheduleIconResourceId = R.drawable.art_class_64dp;
+        int notes_id = -1;
 
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
@@ -410,19 +411,23 @@ public class NewScheduleActivity extends AppCompatActivity
                     intent.putExtra("UNMUTE_TIME", timeOut);
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
+                    Log.v(LOG_TAG, "Class notification for " + title + " set for " + timeIn);
 
-                    // Database insert function
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
+                    // Database insert function performed as update
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
+                            timeIn, timeOut, timeInAlt, timeOutAlt,
+                            periods, scheduleIconUriString, notes_id)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     }
                     else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
                 }
+            // Single row edit, no occurrence
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
-                        -1, -1, "-1", scheduleIconUriString)) {
-                    Log.v(LOG_TAG, "Inserting single schedule returned true");
+                if (dbHelper.insertSchedule(title, teacher, room, "-1",
+                        -1, -1, -1, -1,
+                        "-1", scheduleIconUriString, notes_id)) {
                     return true;
                 }
                 else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
@@ -458,10 +463,13 @@ public class NewScheduleActivity extends AppCompatActivity
                     Intent intent = new Intent(this, MuteAlarmReceiver.class);
                     intent.putExtra("UNMUTE_TIME", timeOut);
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Log.v(LOG_TAG, "Class notification for " + title + " set for " + timeIn);
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
 
                     // Database insert function
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence, timeIn, timeOut, timeInAlt, timeOutAlt, periods, scheduleIconUriString)) {
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
+                            timeIn, timeOut, timeInAlt, timeOutAlt,
+                            periods, scheduleIconUriString, notes_id)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     } else
@@ -469,8 +477,9 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule(title, teacher, room, "-1", -1, -1,
-                        -1, -1, "-1", scheduleIconUriString)) {
+                if (dbHelper.insertSchedule(title, teacher, room, "-1",
+                        -1, -1, -1, -1,
+                        "-1", scheduleIconUriString, notes_id)) {
                     Log.v(LOG_TAG, "Inserting single schedule returned true");
                     return true;
                 }

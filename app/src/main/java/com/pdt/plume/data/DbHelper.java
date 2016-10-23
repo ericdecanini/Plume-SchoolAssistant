@@ -1,17 +1,13 @@
 package com.pdt.plume.data;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
@@ -19,16 +15,11 @@ import com.pdt.plume.Task;
 import com.pdt.plume.Utility;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
+import com.pdt.plume.data.DbContract.NotesEntry;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -36,9 +27,7 @@ public class DbHelper extends SQLiteOpenHelper {
     Utility utility = new Utility();
 
     private static final String DATABASE_NAME = "PlumeDb.db";
-    private static final int DATABASE_VERSION = 1;
-
-    public static BufferedWriter out;
+    private static final int DATABASE_VERSION = 2;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -71,15 +60,106 @@ public class DbHelper extends SQLiteOpenHelper {
                 + TasksEntry.COLUMN_DUEDATE + " REAL NOT NULL, "
                 + TasksEntry.COLUMN_REMINDER_DATE + " REAL NOT NULL, "
                 + TasksEntry.COLUMN_REMINDER_TIME + " REAL NOT NULL, "
-                + TasksEntry.COLUMN_ICON + " TEXT NOT NULL "
+                + TasksEntry.COLUMN_ICON + " TEXT NOT NULL, "
+                + TasksEntry.COLUMN_PICTURE + " TEXT NOT NULL, "
+                + TasksEntry.COLUMN_COMPLETED + " INTEGER NOT NULL"
+                + " );";
+
+        final String SQL_CREATE_NOTES_TABLE = "CREATE TABLE " + NotesEntry.TABLE_NAME + " ("
+                + NotesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + NotesEntry.COLUMN_TITLE + " TEXT NOT NULL, "
+                + NotesEntry.COLUMN_NOTE + " TEXT NOT NULL, "
+                + NotesEntry.COLUMN_SCHEDULE_TITLE + " TEXT NOT NULL "
                 + " );";
 
         db.execSQL(SQL_CREATE_SCHEDULE_TABLE);
         db.execSQL(SQL_CREATE_TASKS_TABLE);
+        db.execSQL(SQL_CREATE_NOTES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Cursor oldScheduleTable = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        Cursor oldTasksTable = db.query(TasksEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        ContentValues scheduleValues = new ContentValues();
+        ContentValues tasksValues = new ContentValues();
+
+        // Retrieve the data from the schedule table
+        if (oldScheduleTable.getCount() != 0)
+            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
+                oldScheduleTable.moveToPosition(i);
+
+                String title = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                String teacher = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+                String room = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+                String occurrence = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                int timeIn = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                int timeOut = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
+                int timeInAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
+                int timeOutAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
+                String periods = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+                String icon = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+
+                scheduleValues.put(ScheduleEntry.COLUMN_TITLE, title);
+                scheduleValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
+                scheduleValues.put(ScheduleEntry.COLUMN_ROOM, room);
+                scheduleValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
+                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN, timeIn);
+                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeOut);
+                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeInAlt);
+                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeOutAlt);
+                scheduleValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
+                scheduleValues.put(ScheduleEntry.COLUMN_ICON, icon);
+
+                db.insert(ScheduleEntry.TABLE_NAME, null, scheduleValues);
+            }
+
+        // Retrieve the data from the tasks table
+        if (oldTasksTable.getCount() != 0)
+            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
+                oldTasksTable.moveToPosition(i);
+
+                String title = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                String classTitle = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                String classType = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                String sharer = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_SHARER));
+                String description = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                String attachment = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+                int duedate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                int reminderdate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+                int remindertime = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+                String icon = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ICON));
+
+                tasksValues.put(TasksEntry.COLUMN_TITLE, title);
+                tasksValues.put(TasksEntry.COLUMN_CLASS, classTitle);
+                tasksValues.put(TasksEntry.COLUMN_TYPE, classType);
+                tasksValues.put(TasksEntry.COLUMN_SHARER, sharer);
+                tasksValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
+                tasksValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
+                tasksValues.put(TasksEntry.COLUMN_DUEDATE, duedate);
+                tasksValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
+                tasksValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
+                tasksValues.put(TasksEntry.COLUMN_ICON, icon);
+                tasksValues.put(TasksEntry.COLUMN_PICTURE, "");
+                tasksValues.put(TasksEntry.COLUMN_COMPLETED, 0);
+
+                db.insert(TasksEntry.TABLE_NAME, null, tasksValues);
+            }
+
+        // Drop the previous tables and create new ones
         db.execSQL("DROP TABLE IF EXISTS schedule");
         db.execSQL("DROP TABLE IF EXISTS tasks");
         onCreate(db);
@@ -289,6 +369,25 @@ public class DbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
+    public Cursor getScheduleDataByTitleWithNotes(String title) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String rawQuery = "SELECT * FROM " + ScheduleEntry.TABLE_NAME + " NATURAL JOIN " + NotesEntry.TABLE_NAME
+                + " WHERE " + ScheduleEntry.COLUMN_TITLE + " =?";
+        Cursor cursor = db.rawQuery(rawQuery, new String[]{title});
+        cursor.moveToFirst();
+        String[] columnNames = cursor.getColumnNames();
+        for (int i = 0; i < columnNames.length; i++)
+            Log.v(LOG_TAG, "Column " + columnNames[i]);
+//        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
+//                null,
+//                ScheduleEntry.COLUMN_TITLE + "=?",
+//                new String[]{title},
+//                null,
+//                null,
+//                null);
+        return cursor;
+    }
+
     public String getScheduleTitleById(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
         String idString = Integer.toString(id);
@@ -370,7 +469,9 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertSchedule(String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon) {
+    public boolean insertSchedule(String title, String teacher, String room, String occurrence,
+                                  int timein, int timeout, int timeinalt, int timeoutalt,
+                                  String periods, String icon, int notes_id) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -387,7 +488,9 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence, int timein, int timeout, int timeinalt, int timeoutalt, String periods, String icon) {
+    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence,
+                                      int timein, int timeout, int timeinalt, int timeoutalt,
+                                      String periods, String icon, int notes_id) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
@@ -402,6 +505,36 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.update(ScheduleEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
         return true;
+    }
+
+    public boolean updateScheduleItemWithNoteId(Integer id, int note_key) {
+        // Get a cursor containing the given class id
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                ScheduleEntry._ID + "=?",
+                new String[]{Integer.toString(id)},
+                null,
+                null,
+                null);
+
+        // Get the data of that item
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+        String teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+        String room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+        int timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+        int timeOut = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
+        int timeInAlt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
+        int timeOutAlt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
+        String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+        String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+
+        // Update the row
+        return updateScheduleItem(id, title, teacher, room, occurrence,
+                timeIn, timeOut, timeInAlt, timeOutAlt,
+                periods, icon, note_key);
     }
 
     public Integer deleteScheduleItem(Integer id) {
@@ -475,7 +608,10 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon) {
+    public boolean insertTask(String title, String classTitle, String type, String sharer,
+                              String description, String attachment,
+                              float dueDate, float reminderdate, float remindertime,
+                              String icon, String picture, boolean completed) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -488,11 +624,16 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
         contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
         contentValues.put(TasksEntry.COLUMN_ICON, icon);
+        contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
+        contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
         db.insert(TasksEntry.TABLE_NAME, null, contentValues);
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer, String description, String attachment, float dueDate, float reminderdate, float remindertime, String icon) {
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer,
+                                  String description, String attachment,
+                                  float dueDate, float reminderdate, float remindertime,
+                                  String icon, String picture, boolean completed) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -505,13 +646,89 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
         contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
         contentValues.put(TasksEntry.COLUMN_ICON, icon);
+        contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
+        contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
         db.update(TasksEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
         return true;
+    }
+
+    public Cursor getNoteByScheduleTitle(String schedule_title) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(NotesEntry.TABLE_NAME,
+                null,
+                NotesEntry.COLUMN_SCHEDULE_TITLE + "=?",
+                new String[]{schedule_title},
+                null,
+                null,
+                null);
+    }
+
+    public Cursor getNoteByID(int _ID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(NotesEntry.TABLE_NAME,
+                null,
+                NotesEntry._ID + "=?",
+                new String[]{Integer.toString(_ID)},
+                null,
+                null,
+                null);
+    }
+
+    public Cursor getAllNoteData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(NotesEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    public ArrayList<String> getNoteDataArray() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(NotesEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        ArrayList<String> arrayList = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
+                arrayList.add(cursor.getString(cursor.getColumnIndex(NotesEntry.COLUMN_TITLE)));
+            }
+        }
+        return arrayList;
+    }
+
+    public int insertNoteItem(String title, String note, String schedule_title) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(NotesEntry.COLUMN_TITLE, title);
+        contentValues.put(NotesEntry.COLUMN_NOTE, note);
+        contentValues.put(NotesEntry.COLUMN_SCHEDULE_TITLE, schedule_title);
+        return (int) db.insert(NotesEntry.TABLE_NAME, null, contentValues);
+    }
+
+    public int updateNoteItem(int _ID, String title, String note, String schedule_title) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(NotesEntry.COLUMN_TITLE, title);
+        contentValues.put(NotesEntry.COLUMN_NOTE, note);
+        contentValues.put(NotesEntry.COLUMN_SCHEDULE_TITLE, schedule_title);
+        return (int) db.update(NotesEntry.TABLE_NAME, contentValues, NotesEntry._ID + "=?", new String[]{Integer.toString(_ID)});
     }
 
     public Integer deleteTaskItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(TasksEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
+    }
+
+    public Integer deleteNoteItem(Integer id) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(NotesEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
 }

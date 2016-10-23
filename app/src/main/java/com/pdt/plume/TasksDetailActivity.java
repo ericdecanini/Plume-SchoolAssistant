@@ -25,12 +25,14 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,6 +50,9 @@ public class TasksDetailActivity extends AppCompatActivity {
     String description;
     String duedate;
     String attachment;
+    String photoPath;
+    Uri photoUri;
+    String attachmentPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,27 +85,53 @@ public class TasksDetailActivity extends AppCompatActivity {
 
 
             // Set the values of the main UI elements
+            // First get the data from the cursor
             if (cursor.moveToPosition(id)){
                 this.id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                 title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                 subtitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS))
                         + " " + cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
                 description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
+                photoPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
 
+                // Process the data for the duedate to a string
                 Calendar c = Calendar.getInstance();
                 c.setTimeInMillis((long) cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)));
                 duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
-                String attachmentUriString = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                // Set the attachment field data
+                attachmentPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
                 String fileName = "";
-                if (!attachmentUriString.equals("")) {
-                    Uri attachmentUri = Uri.parse(attachmentUriString);
+                if (!attachmentPath.equals("")) {
+                    Uri attachmentUri = Uri.parse(attachmentPath);
                     Cursor returnCursor = getContentResolver().query(attachmentUri, null, null, null, null);
                     int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     returnCursor.moveToFirst();
                     fileName = returnCursor.getString(nameIndex);
                     attachmentTextview.setText(fileName);
                 } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
+
+                // Set the photo field data
+                if (!photoPath.equals("")) {
+                    photoUri = Uri.parse(photoPath);
+                    try {
+                        Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
+                        ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
+                        photo.setImageBitmap(photoBitmap);
+                        photo.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setDataAndType(photoUri, "image/*");
+                                if (intent.resolveActivity(getPackageManager()) != null)
+                                    startActivity(intent);
+                            }
+                        });
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else findViewById(R.id.task_detail_photo_layout).setVisibility(View.GONE);
 
 
                 collapsingToolbar.setTitle(title);

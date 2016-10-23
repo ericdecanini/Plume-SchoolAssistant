@@ -99,6 +99,44 @@
                     android:textColor="@color/gray_700" />
             </RelativeLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/task_detail_photo_layout">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/dividerColor" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_photo_camera_black_32dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:tint="@color/gray_700" />
+
+                    <ImageView
+                        android:id="@+id/task_detail_photo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"/>
+
+                </FrameLayout>
+
+
+
+            </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
