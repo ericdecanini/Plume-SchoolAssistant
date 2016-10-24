@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group>
         <item
             android:id="@+id/nav_classes"
             android:icon="@drawable/nav_classes"
@@ -10,6 +10,10 @@
             android:id="@+id/nav_people"
             android:icon="@drawable/ic_group_black_24dp"
             android:title="@string/nav_people" />
+        <item
+            android:id="@+id/nav_completedTasks"
+            android:icon="@drawable/ic_assignment_turned_in_black_24dp"
+            android:title="@string/nav_completedTasks" />
     </group>
 
     <item

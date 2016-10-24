@@ -31,11 +31,14 @@ import android.widget.TextView;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.data.DbContract.TasksEntry;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import static com.pdt.plume.R.id.fab;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
@@ -43,6 +46,8 @@ public class TasksDetailActivity extends AppCompatActivity {
     String LOG_TAG = ScheduleDetailActivity.class.getSimpleName();
     Utility utility = new Utility();
     ShareActionProvider mShareActionProvider;
+
+    boolean FLAG_TASK_COMPLETD;
 
     int id;
     String title;
@@ -75,6 +80,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         // Get the class's data based on the id and fill in the fields
         Intent intent = getIntent();
         if (intent != null){
+            FLAG_TASK_COMPLETD = intent.getBooleanExtra(getString(R.string.FLAG_TASK_COMPLETED), false);
             int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor = null;
@@ -169,25 +175,92 @@ public class TasksDetailActivity extends AppCompatActivity {
                 // Initialise the FAB
                 FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
                 if (fab != null)
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            new AlertDialog.Builder(TasksDetailActivity.this)
-                                    .setMessage(getString(R.string.task_detail_dialog_completed_confirm))
-                                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
-                                            dbHelper.deleteTaskItem(TasksDetailActivity.this.id);
-                                            Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                                            startActivity(intent);
-                                        }
-                                    })
-                                    .setNegativeButton(getString(R.string.cancel), null)
-                                    .show();
-                        }
-                    });
+                    if (FLAG_TASK_COMPLETD) {
+                        fab.setImageResource(R.drawable.ic_refresh_white_24dp);
+                        // ACTION RESTORE TASK
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                new AlertDialog.Builder(TasksDetailActivity.this)
+                                        .setTitle(getString(R.string.activity_tasksDetail_restore_dialog_title))
+                                        .setNegativeButton(getString(R.string.cancel), null)
+                                        .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                // Set the task status to completed
+                                                DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
+                                                Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
+
+                                                if (cursorTasks.moveToFirst()) {
+                                                    String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                                                    String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                                                    String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                                                    String sharer = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_SHARER));
+                                                    String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                                                    String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+                                                    int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                                                    int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+                                                    int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+                                                    String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
+                                                    String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
+                                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType,
+                                                            sharer, description, attachment,
+                                                            duedate, reminderdate, remindertime,
+                                                            icon, picture, false);
+                                                }
+
+                                                cursorTasks.close();
+                                                Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                                startActivity(intent);
+                                            }
+                                        }).show();
+                            }
+                        });
+                    }
+                else {
+                        // ACTION COMPLETE TASK
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                new AlertDialog.Builder(TasksDetailActivity.this)
+                                        .setMessage(getString(R.string.task_detail_dialog_completed_confirm))
+                                        .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                // Set the task status to completed
+                                                DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
+                                                Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
+
+                                                if (cursorTasks.moveToFirst()) {
+                                                    String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                                                    String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                                                    String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                                                    String sharer = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_SHARER));
+                                                    String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                                                    String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+                                                    int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                                                    int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+                                                    int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+                                                    String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
+                                                    String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
+                                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType,
+                                                            sharer, description, attachment,
+                                                            duedate, reminderdate, remindertime,
+                                                            icon, picture, true);
+                                                }
+
+                                                cursorTasks.close();
+                                                Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                                startActivity(intent);
+                                            }
+                                        })
+                                        .setNegativeButton(getString(R.string.cancel), null)
+                                        .show();
+                            }
+                        });
+                    }
             }
         }
     }

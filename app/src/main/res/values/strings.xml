@@ -27,6 +27,7 @@
 
     <!-- Navigation Drawer -->
     <string name="nav_classes">Classes</string>
+    <string name="nav_completedTasks">Completed tasks</string>
     <string name="nav_people">People</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
@@ -61,7 +62,15 @@
     <string name="activity_classes_label">Classes</string>
     <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
 
-    <string name="STARTED_FROM_CLASSES_ACTIVITY">STARTED_FROM_CLASSES_ACTIVITY</string>
+    <string name="STARTED_FROM_CLASSES_ACTIVITY" translatable="false">STARTED_FROM_CLASSES_ACTIVITY</string>
+
+    <!-- Strings for CompletedTasksActivity -->
+    <string name="activity_completedTasks_label">Completed Tasks</string>
+    <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
+    <string name="FLAG_TASK_COMPLETED" translatable="false">FLAG_TASK_COMPLETED</string>
+
+    <string name="activity_completedTasks_dialog_title">Delete all items?</string>
+    <string name="activity_tasksDetail_restore_dialog_title">Restore task?</string>
 
     <!--
     SCHEDULE STRINGS

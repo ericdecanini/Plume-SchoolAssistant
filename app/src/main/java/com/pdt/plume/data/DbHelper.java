@@ -608,6 +608,66 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
+    public Cursor getUncompletedTaskData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TasksEntry.TABLE_NAME,
+                null,
+                TasksEntry.COLUMN_COMPLETED + "=?",
+                new String[]{"0"},
+                null,
+                null,
+                null);
+    }
+
+    public ArrayList<Task> getUncompletedTaskArray() {
+        Cursor cursor = getUncompletedTaskData();
+        ArrayList<Task> arrayList = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
+                arrayList.add(i, new Task(
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
+                ));
+            }
+        }
+        return arrayList;
+    }
+
+    public Cursor getCompletedTaskData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TasksEntry.TABLE_NAME,
+                null,
+                TasksEntry.COLUMN_COMPLETED + "=?",
+                new String[]{"1"},
+                null,
+                null,
+                null);
+    }
+
+    public ArrayList<Task> getCompletedTaskArray() {
+        Cursor cursor = getCompletedTaskData();
+        ArrayList<Task> arrayList = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
+                arrayList.add(i, new Task(
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
+                ));
+            }
+        }
+        return arrayList;
+    }
+
     public boolean insertTask(String title, String classTitle, String type, String sharer,
                               String description, String attachment,
                               float dueDate, float reminderdate, float remindertime,

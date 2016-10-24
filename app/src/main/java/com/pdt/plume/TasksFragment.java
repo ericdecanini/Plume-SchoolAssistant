@@ -72,7 +72,7 @@ public class TasksFragment extends Fragment {
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
-        TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getTaskDataArray());
+        TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getUncompletedTaskArray());
 
         // Set the adapter and listeners of the listview
         if (listView != null){
