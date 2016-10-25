@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import android.*;
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -9,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -21,7 +24,9 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -246,7 +251,7 @@ public class NewTaskActivity extends AppCompatActivity
                 FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
 
                 if (FLAG_EDIT) {
-                    Cursor cursorEdit = dbHelper.getTaskData();
+                    Cursor cursorEdit = dbHelper.getUncompletedTaskData();
                     if (cursorEdit.moveToPosition(position)) {
                         iconUriString = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
                         try {
@@ -568,7 +573,7 @@ public class NewTaskActivity extends AppCompatActivity
 
             if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
                     dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
-                Cursor cursor = dbHelper.getTaskData();
+                Cursor cursor = dbHelper.getUncompletedTaskData();
 
                 if (cursor.moveToLast()) {
                     int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));

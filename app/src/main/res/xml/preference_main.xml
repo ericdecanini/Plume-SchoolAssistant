@@ -35,7 +35,7 @@
             android:key="@string/KEY_SETTINGS_DATE_FORMAT"
             android:entries="@array/settings_date_format_entries"
             android:entryValues="@array/settings_date_format_values"
-            android:defaultValue="EEE, MMMMM d, yyyy"/>
+            android:defaultValue="EEE, MMMM d, yyyy"/>
 
         <ListPreference
             android:title="@string/settings_block_format_title"

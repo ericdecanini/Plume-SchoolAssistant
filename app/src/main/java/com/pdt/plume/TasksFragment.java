@@ -303,7 +303,7 @@ public class TasksFragment extends Fragment {
 
             // Get a cursor by getting the TaskData
             // Which should match the list view of the TasksFragment
-            Cursor cursor = db.getTaskData();
+            Cursor cursor = db.getUncompletedTaskData();
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
@@ -348,7 +348,7 @@ public class TasksFragment extends Fragment {
                 // Get a reference to the database and
                 // Get a cursor of the Task Data
                 DbHelper db = new DbHelper(getActivity());
-                Cursor cursor = db.getTaskData();
+                Cursor cursor = db.getUncompletedTaskData();
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){

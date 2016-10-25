@@ -10,13 +10,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.READ_DATABASE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
-
-    <uses-permission-sdk-23 android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission-sdk-23 android:name="android.permission.VIBRATE" />
-    <uses-permission-sdk-23 android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission-sdk-23 android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission-sdk-23 android:name="com.pdt.plume.permission.C2D_MESSAGE" />
-    <uses-permission-sdk-23 android:name="android.permission.MANAGE_DOCUMENTS" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <permission
         android:name="com.pdt.plume.permission.C2D_MESSAGE"
@@ -143,7 +138,20 @@
             android:label="@string/about_activity_label"
             android:parentActivityName=".SettingsActivity" />
         <activity android:name=".NoteActivity" />
-        <activity android:name=".CompletedTasksActivity"></activity>
+        <activity
+            android:name=".CompletedTasksActivity"
+            android:label="@string/activity_completedTasks_label"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".FullscreenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_fullscreen"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/FullscreenTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.pdt.plume.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

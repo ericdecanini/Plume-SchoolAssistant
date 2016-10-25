@@ -73,6 +73,7 @@ public class SettingsActivity extends PreferenceActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+
     }
 
     /**

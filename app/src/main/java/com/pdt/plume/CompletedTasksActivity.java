@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -25,9 +26,12 @@ import com.pdt.plume.data.DbHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.id;
+
 public class CompletedTasksActivity extends AppCompatActivity {
 
     String LOG_TAG = CompletedTasksActivity.class.getSimpleName();
+    ArrayList<String> taskTitles;
     ArrayList<Integer> taskIDs;
     ListView listView;
     ArrayAdapter<String> adapter;
@@ -46,21 +50,22 @@ public class CompletedTasksActivity extends AppCompatActivity {
         // Inflate the listview of task titles
         final DbHelper dbHelper = new DbHelper(this);
         final Cursor cursor = dbHelper.getCompletedTaskData();
-        ArrayList<String> taskTitles = new ArrayList<>();
+        taskTitles = new ArrayList<>();
         taskIDs = new ArrayList<>();
         if (cursor.moveToFirst()) {
-            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-            for (int i = 0; i < taskTitles.size(); i++) {
+            for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
                 taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
                 taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
             }
-        }
+        } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
         cursor.close();
 
         listView = (ListView) findViewById(R.id.completed_tasks_list);
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, taskTitles);
         listView.setAdapter(adapter);
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listView.setMultiChoiceModeListener(new ModeCallback());
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -73,7 +78,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
                 // Create an intent to the TaskDetailActivity passing on the ID
                 Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
-                intent.putExtra(getString(R.string.TASKS_EXTRA_ID), ID);
+                intent.putExtra("_ID", ID);
                 intent.putExtra(getString(R.string.FLAG_TASK_COMPLETED), true);
                 startActivity(intent);
             }
@@ -84,20 +89,21 @@ public class CompletedTasksActivity extends AppCompatActivity {
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final Cursor completedTasksCursor = dbHelper.getCompletedTaskData();
                 new AlertDialog.Builder(CompletedTasksActivity.this)
                         .setTitle(getString(R.string.activity_completedTasks_dialog_title))
                         .setNegativeButton(getString(R.string.cancel), null)
                         .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                if (cursor.moveToFirst()) {
+                                if (completedTasksCursor.moveToFirst()) {
                                     for (int i = 0; i < cursor.getCount(); i++) {
-                                        cursor.moveToPosition(i);
-                                        int id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                                        completedTasksCursor.moveToPosition(i);
+                                        int id = completedTasksCursor.getInt(completedTasksCursor.getColumnIndex(DbContract.TasksEntry._ID));
                                         dbHelper.deleteTaskItem(id);
                                     }
                                 }
-                                cursor.close();
+                                completedTasksCursor.close();
                             }
                         }).show();
             }
@@ -105,11 +111,32 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
     }
 
-    private void restoreTaskItem(int _ID) {
+    private void refreshListview() {
+        // Inflate the listview of task titles
+        final DbHelper dbHelper = new DbHelper(this);
+        final Cursor cursor = dbHelper.getCompletedTaskData();
+        taskTitles.clear();
+        taskIDs.clear();
+
+        if (cursor.moveToFirst()) {
+            for (int i = 0; i < cursor.getCount(); i++) {
+                findViewById(R.id.header_textview).setVisibility(View.GONE);
+                cursor.moveToPosition(i);
+                taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
+                taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+            }
+        } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+        cursor.close();
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private void restoreTaskItem(int position) {
         // Update the task
         DbHelper dbHelper = new DbHelper(this);
-        Cursor cursor = dbHelper.getTaskById(_ID);
-        if (cursor.moveToFirst()) {
+        Cursor cursor = dbHelper.getCompletedTaskData();
+        if (cursor.moveToPosition(position)) {
+            int _ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
             String title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
             String classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
             String classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
@@ -125,10 +152,13 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     sharer, description, attachment,
                     duedate, reminderdate, remindertime,
                     icon, picture, false);
+            cursor.close();
+
+            // Refresh the adapter so the restored task is no longer displayed
+            refreshListview();
         }
 
-        // Refresh the adapter so the restored task is no longer displayed
-        adapter.notifyDataSetChanged();
+
     }
 
     // Subclass for the Contextual Action Mode
@@ -186,7 +216,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
             // Inflate the action menu and set the global menu variable
             MenuInflater inflater = CompletedTasksActivity.this.getMenuInflater();
-            inflater.inflate(R.menu.menu_action_mode_single, menu);
+            inflater.inflate(R.menu.menu_action_mode_completed_task, menu);
             mActionMenu = menu;
 
             // Set the title of the contextual action bar
@@ -206,14 +236,6 @@ public class CompletedTasksActivity extends AppCompatActivity {
         }
         @Override
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
-            // Checks the count of items selected.
-            // If it is one, show the edit menu action.
-            // If it is more than one, hide the edit menu action.
-            MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
-            if (mOptionMenuCount == 0)
-                menuItem.setVisible(true);
-            else
-                menuItem.setVisible(false);
             return true;
         }
         @Override
@@ -223,10 +245,17 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     deleteSelectedItems();
                     break;
 
-                case R.id.action_edit:
+                case R.id.action_restore:
                     for(int i = 0; i < CAMselectedItemsList.size(); i++) {
                             restoreTaskItem(CAMselectedItemsList.get(i));
                     }
+
+                    // Then clear the selected items array list and emulate
+                    // a back button press to exit the Action Mode
+                    CAMselectedItemsList.clear();
+                    CompletedTasksActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    CompletedTasksActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+
                     break;
             }
             return true;
@@ -251,13 +280,17 @@ public class CompletedTasksActivity extends AppCompatActivity {
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
             for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                int id = CAMselectedItemsList.get(i);
+                int position = CAMselectedItemsList.get(i);
                 DbHelper dbHelper = new DbHelper(CompletedTasksActivity.this);
-                dbHelper.deleteTaskItem(id);
+                Cursor cursor = dbHelper.getCompletedTaskData();
+                if (cursor.moveToPosition(position))
+                    dbHelper.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+                cursor.close();
+
             }
 
             // Notify the adapter of the changes
-            adapter.notifyDataSetChanged();
+            refreshListview();
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode

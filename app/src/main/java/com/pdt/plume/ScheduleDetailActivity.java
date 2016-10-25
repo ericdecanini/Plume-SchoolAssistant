@@ -26,7 +26,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -458,7 +457,7 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
 
         // Get a cursor by getting the TaskData
         // Which should match the list view of the TasksFragment
-        Cursor cursor = db.getTaskData();
+        Cursor cursor = db.getUncompletedTaskData();
 
         // Delete all the selected items based on the itemIDs
         // Stored in the array list
@@ -503,7 +502,7 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
             // Get a reference to the database and
             // Get a cursor of the Task Data
             DbHelper db = new DbHelper(ScheduleDetailActivity.this);
-            Cursor cursor = db.getTaskData();
+            Cursor cursor = db.getUncompletedTaskData();
 
             // Move the cursor to the position of the selected item
             if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
@@ -715,7 +714,7 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
                 // Get a reference to the database and
                 // Get a cursor of the Task Data
                 DbHelper db = new DbHelper(ScheduleDetailActivity.this);
-                Cursor cursor = db.getTaskData();
+                Cursor cursor = db.getUncompletedTaskData();
 
                 // Move the cursor to the position of the selected item
                 if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
