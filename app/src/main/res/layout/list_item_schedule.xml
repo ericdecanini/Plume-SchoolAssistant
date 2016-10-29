@@ -10,6 +10,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:id="@+id/schedule_icon"
+        android:transitionName="@string/transition_schedule"
         android:minHeight="48dp"
         android:minWidth="48dp"
         android:layout_gravity="center"

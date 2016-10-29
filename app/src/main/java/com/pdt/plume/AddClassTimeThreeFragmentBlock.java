@@ -130,7 +130,7 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
         // Set text of hyperlink basis text
         basisTextView.setText(getString(R.string.class_time_one_blockbased));
         basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
+                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
 
         // Initialise the theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

@@ -3,7 +3,8 @@
 
     <com.pdt.plume.ColouredPreferenceCategory
         android:key="@string/KEY_SETTINGS_CATEGORY_GENERAL"
-        android:title="@string/preference_category_general">
+        android:title="@string/preference_category_general"
+        android:id="@+id/colouredPreferenceCategory">
 
         <com.pdt.plume.NumberPickerPreference
             android:defaultValue="30"
@@ -18,10 +19,10 @@
             android:key="@string/KEY_SETTINGS_WEEK_NUMBER"
             android:title="@string/settings_week_number_title"
             android:entries="@array/settings_week_number_entries"
-            android:entryValues="@array/settings_week_number_values"/>
+            android:entryValues="@array/settings_week_number_values"
+            android:defaultValue="0" />
 
     </com.pdt.plume.ColouredPreferenceCategory>
-
     <com.pdt.plume.ColouredPreferenceCategory
         android:title="@string/preference_category_appearance"
         android:key="@string/KEY_SETTINGS_CATEGORY_APPEARANCE">

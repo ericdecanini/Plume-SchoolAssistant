@@ -9,6 +9,7 @@
 
     <ImageView
         android:id="@+id/task_icon"
+        android:transitionName="@string/transition_task"
         android:layout_width="64dp"
         android:layout_height="64dp" />
 

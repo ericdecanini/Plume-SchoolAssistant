@@ -3,7 +3,9 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -39,12 +41,12 @@ public class Utility {
     }
 
     // Helper method for converting hour and minute into seconds
-    public int timeToSeconds(int hourOfDay, int minute) {
-        return (hourOfDay * 60 * 60) * 1000 + (minute * 60) * 1000;
+    public int timeToMillis(int hourOfDay, int minute) {
+        return ((hourOfDay * 60 * 60) + (minute * 60)) * 1000;
     }
 
     // Helper method for converting seconds into a time string
-    public String secondsToTime(float seconds) {
+    public String millisToHourTime(float seconds) {
         // Return a blank string if there is no time data
         if (seconds == -1)
             return "";
@@ -62,6 +64,27 @@ public class Utility {
             return hourOfDay + ":0" + minute;
         else
             return hourOfDay + ":" + minute;
+    }
+
+    // Helper method for converting seconds into a time string
+    public String secondsToMinuteTime(float seconds) {
+        // Return a blank string if there is no time data
+        if (seconds == -1)
+            return "";
+        // Get the minute
+        int minute = (int) seconds / 60;
+        // Seconds will be param - minute * 60
+        int secondsInTime = (int) seconds - (minute * 60);
+        // Return the formatted string
+        String minuteString = "";
+        String secondsString = "";
+        if (minute < 10)
+            minuteString = "0" + Integer.toString(minute);
+        else minuteString = Integer.toString(minute);
+        if (secondsInTime < 10)
+            secondsString = "0" + Integer.toString(secondsInTime);
+        else secondsString = Integer.toString(secondsInTime);
+        return minuteString + ":" + secondsString;
     }
 
     public int getHour(float millis) {
@@ -453,13 +476,43 @@ public class Utility {
         return "Day A";
     }
 
-    public Palette.PaletteAsyncListener getVibrantColorFromUri(final Context context, final Uri uri) {
-        return new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
 
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
             }
-        };
+        }
+
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeSampledBitmapFromFile(String filePath,
+                                                     int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(filePath, options);
     }
 
 }

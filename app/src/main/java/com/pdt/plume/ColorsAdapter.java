@@ -52,7 +52,8 @@ public class ColorsAdapter extends BaseAdapter {
         }
         imageView.setImageDrawable(mThumbIds[position]);
         int color = ((ColorDrawable)mThumbIds[position]).getColor();
-        Bitmap colorBitmap = Bitmap.createBitmap(120, 120, Bitmap.Config.ARGB_8888);
+        int scale = (int) mContext.getResources().getDisplayMetrics().density;
+        Bitmap colorBitmap = Bitmap.createBitmap(40 * scale, 40 * scale, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(colorBitmap);
         canvas.drawColor(color);
         Bitmap bitmap = getRoundedCornerBitmap(colorBitmap,

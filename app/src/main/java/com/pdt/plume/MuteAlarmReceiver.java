@@ -6,10 +6,12 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.NotificationManagerCompat;
@@ -24,32 +26,29 @@ public class MuteAlarmReceiver extends BroadcastReceiver {
 
     String LOG_TAG = MuteAlarmReceiver.class.getSimpleName();
     Utility utility = new Utility();
-
-    Context c;
-
-    float unmuteTime;
+    int REQUEST_UNMUTE_ALARM = 52;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        c = context;
         AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
         audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
 
-        unmuteTime = (float) intent.getIntExtra("UNMUTE_TIME", -1);
+        Log.v(LOG_TAG, "Mute alarm received");
+
+        long unmuteTime = (long) intent.getIntExtra("UNMUTE_TIME", -1);
+        Log.v(LOG_TAG, "Unmute time: " + unmuteTime);
         Intent unmuteIntent = new Intent(context, UnmuteAlarmReceiver.class);
+        unmuteIntent.putExtra(context.getString(R.string.KEY_SCHEDULE_MUTE_CURRENT_VOLUME), currentVolume);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Calendar calendar = Calendar.getInstance();
-        int hour = utility.getHour(unmuteTime);
-        int minute = utility.getMinute(unmuteTime);
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 2, unmuteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.v(LOG_TAG, "Alarm set for " + calendar.getTimeInMillis());
-        if (unmuteTime == -1)
-            return;
-        else
-            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_UNMUTE_ALARM, unmuteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean muteSettingIsChecked = preferences.getBoolean(context.getString(R.string.KEY_SETTINGS_CLASS_MUTE), false);
+
+        if (unmuteTime != -1)
+            if (muteSettingIsChecked)
+                alarmManager.set(AlarmManager.RTC_WAKEUP, unmuteTime, pendingIntent);
     }
 
 }

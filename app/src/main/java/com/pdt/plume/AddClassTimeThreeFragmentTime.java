@@ -3,7 +3,6 @@ package com.pdt.plume;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -173,7 +172,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
         // Set the text of the hyperlink basis text to the time based string annotation
         basisTextView.setText(getString(R.string.class_time_one_timebased));
         basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
+                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
 
         // Get the arguments of the fragment.
         // Check week classType and if it is 'Same each week', hide the alternate layout.
@@ -190,7 +189,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
             }
             else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
             weekTypeTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                    getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
+                    getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
 
             // Check if the fragment was launched from the OnTimeSet override method in NewScheduleActivity
             // If it is, get the fragment's previous state data and update the fragment data and UI accordingly
@@ -290,7 +289,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 // Global variables updated: timeInSeconds, timeOutSeconds, timeInAltSeconds, timeOutAltSeconds
                 switch (args.getInt("resourceId")){
                     case R.id.field_new_schedule_timein:
-                        timeInSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeInSeconds = utility.timeToMillis(hourOfDay, minute);
                         timeOutSeconds = previousTimeOutSeconds;
                         timeInAltSeconds = previousTimeInAltSeconds;
                         timeOutAltSeconds = previousTimeOutAltSeconds;
@@ -298,51 +297,51 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                             fieldTimeIn.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeIn.setText(hourOfDay + ":" + minute);
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
+                        fieldTimeOut.setText(utility.millisToHourTime(previousTimeOutSeconds));
+                        fieldTimeInAlt.setText(utility.millisToHourTime(previousTimeInAltSeconds));
+                        fieldTimeOutAlt.setText(utility.millisToHourTime(previousTimeOutAltSeconds));
                         break;
 
                     case R.id.field_new_schedule_timeout:
                         timeInSeconds = previousTimeInSeconds;
-                        timeOutSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeOutSeconds = utility.timeToMillis(hourOfDay, minute);
                         timeInAltSeconds = previousTimeInAltSeconds;
                         timeOutAltSeconds = previousTimeOutAltSeconds;
                         if (minute < 10)
                             fieldTimeOut.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeOut.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
+                        fieldTimeIn.setText(utility.millisToHourTime(previousTimeInSeconds));
+                        fieldTimeInAlt.setText(utility.millisToHourTime(previousTimeInAltSeconds));
+                        fieldTimeOutAlt.setText(utility.millisToHourTime(previousTimeOutAltSeconds));
                         break;
 
                     case R.id.field_new_schedule_timein_alt:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = previousTimeOutSeconds;
-                        timeInAltSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeInAltSeconds = utility.timeToMillis(hourOfDay, minute);
                         timeOutAltSeconds = previousTimeOutAltSeconds;
                         if (minute < 10)
                             fieldTimeInAlt.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeInAlt.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeOutAlt.setText(utility.secondsToTime(previousTimeOutAltSeconds));
+                        fieldTimeIn.setText(utility.millisToHourTime(previousTimeInSeconds));
+                        fieldTimeOut.setText(utility.millisToHourTime(previousTimeOutSeconds));
+                        fieldTimeOutAlt.setText(utility.millisToHourTime(previousTimeOutAltSeconds));
                         break;
 
                     case R.id.field_new_schedule_timeout_alt:
                         timeInSeconds = previousTimeInSeconds;
                         timeOutSeconds = previousTimeOutSeconds;
                         timeInAltSeconds = previousTimeInAltSeconds;
-                        timeOutAltSeconds = utility.timeToSeconds(hourOfDay, minute);
+                        timeOutAltSeconds = utility.timeToMillis(hourOfDay, minute);
                         if (minute < 10)
                             fieldTimeOutAlt.setText(hourOfDay + ":0" + minute);
                         else
                             fieldTimeOutAlt.setText(hourOfDay + ":" + minute);
-                        fieldTimeIn.setText(utility.secondsToTime(previousTimeInSeconds));
-                        fieldTimeOut.setText(utility.secondsToTime(previousTimeOutSeconds));
-                        fieldTimeInAlt.setText(utility.secondsToTime(previousTimeInAltSeconds));
+                        fieldTimeIn.setText(utility.millisToHourTime(previousTimeInSeconds));
+                        fieldTimeOut.setText(utility.millisToHourTime(previousTimeOutSeconds));
+                        fieldTimeInAlt.setText(utility.millisToHourTime(previousTimeInAltSeconds));
                         break;
                 }
             }
@@ -442,10 +441,10 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 this.timeOutAltSeconds = timeOutAltSeconds;
 
                 // Set the UI of the time variables
-                fieldTimeIn.setText(utility.secondsToTime(timeInSeconds));
-                fieldTimeOut.setText(utility.secondsToTime(timeOutSeconds));
-                fieldTimeInAlt.setText(utility.secondsToTime(timeInAltSeconds));
-                fieldTimeOutAlt.setText(utility.secondsToTime(timeOutAltSeconds));
+                fieldTimeIn.setText(utility.millisToHourTime(timeInSeconds));
+                fieldTimeOut.setText(utility.millisToHourTime(timeOutSeconds));
+                fieldTimeInAlt.setText(utility.millisToHourTime(timeInAltSeconds));
+                fieldTimeOutAlt.setText(utility.millisToHourTime(timeOutAltSeconds));
             }
 
             // If the fragment was not restarted from the OnTimeSet override method in NewScheduleActivity
@@ -462,10 +461,10 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
                 // These variables are the exact convertable time data
                 // Used in the list view and stored in the database
-                timeInSeconds = utility.timeToSeconds(timeInHour, 0);
-                timeOutSeconds = utility.timeToSeconds(timeOutHour, 0);
-                timeInAltSeconds = utility.timeToSeconds(timeInAltHour, 0);
-                timeOutAltSeconds = utility.timeToSeconds(timeOutAltHour, 0);
+                timeInSeconds = utility.timeToMillis(timeInHour, 0);
+                timeOutSeconds = utility.timeToMillis(timeOutHour, 0);
+                timeInAltSeconds = utility.timeToMillis(timeInAltHour, 0);
+                timeOutAltSeconds = utility.timeToMillis(timeOutAltHour, 0);
 
                 // Update the UI elements accordingly
                 fieldTimeIn.setText(timeInHour + ":00");

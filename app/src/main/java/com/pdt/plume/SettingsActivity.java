@@ -46,10 +46,10 @@ public class SettingsActivity extends PreferenceActivity
 
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_WEEK_NUMBER)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)));
+//        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
+//        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_WEEK_NUMBER)));
+//        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));
+//        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)));
 
         // For other preferences, simply an OnClickListener is needed
         findPreference(getString(R.string.KEY_SETTINGS_THEME)).setOnPreferenceClickListener(onPreferenceClickListener());
@@ -125,7 +125,8 @@ public class SettingsActivity extends PreferenceActivity
                 }
             }
 
-        } else {
+        }
+//        else {
             // Roll a check for what preference has been selected
             // If 'Notification before class starts'
             if (prefKey.equals(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION))) {
@@ -144,7 +145,7 @@ public class SettingsActivity extends PreferenceActivity
                 preference.setSummary(stringValue);
             }
 
-        }
+//        }
 
         editor.commit();
         return true;

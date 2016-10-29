@@ -1,13 +1,17 @@
 package com.pdt.plume;
 
+import android.app.ActivityOptions;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -18,6 +22,7 @@ import android.provider.OpenableColumns;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,32 +30,33 @@ import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
+import android.transition.AutoTransition;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Gallery;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
+import com.pdt.plume.services.RevisionTimerService;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-import static java.security.AccessController.getContext;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
@@ -81,13 +87,22 @@ public class TasksDetailActivity extends AppCompatActivity {
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
     View whiteDim, whiteDimStatus;
 
+    TextView fieldTimer;
+    Intent serviceIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set enter transition
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        getWindow().setEnterTransition(new AutoTransition());
+
         setContentView(R.layout.activity_tasks_detail);
 
+
         // Get references to the UI elements
-        TextView collapsingToolbarSubtitle = (TextView) findViewById(R.id.collapsingToolbarSubtitle);
+        final TextView collapsingToolbarSubtitle = (TextView) findViewById(R.id.collapsingToolbarSubtitle);
         TextView duedateTextview = (TextView) findViewById(R.id.task_detail_duedate);
         TextView descriptionTextview = (TextView) findViewById(R.id.task_detail_description);
         TextView attachmentTextview = (TextView) findViewById(R.id.task_detail_attachment);
@@ -143,16 +158,22 @@ public class TasksDetailActivity extends AppCompatActivity {
                 if (!photoPath.equals("")) {
                     photoUri = Uri.parse(photoPath);
                     try {
-                        Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
-                        ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
-                        photo.setImageBitmap(photoBitmap);
+                        float scale = getResources().getDisplayMetrics().density;
+                        final Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
+
+                        // TODO: Create new activity to load bitmap to handle open image
+                        final ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
+                        photo.setMaxWidth(((int) (getWindowManager().getDefaultDisplay().getWidth() - (140 * scale))));
+                        photo.setImageBitmap(Bitmap.createScaledBitmap(photoBitmap, ((int) (photoBitmap.getWidth() / 2.5)), ((int) (photoBitmap.getHeight() / 2.5)), false));
                         photo.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                intent.setDataAndType(photoUri, "image/*");
-                                if (intent.resolveActivity(getPackageManager()) != null)
-                                    startActivity(intent);
+                                Intent photoIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
+                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
+                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoPath);
+                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(TasksDetailActivity.this,
+                                        photo, photo.getTransitionName()).toBundle();
+                                startActivity(photoIntent, bundle);
                             }
                         });
 
@@ -168,7 +189,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                 descriptionTextview.setText(description);
 
                 String iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-                Uri iconUri = Uri.parse(iconUriString);
+                final Uri iconUri = Uri.parse(iconUriString);
                 Bitmap iconBitmap = null;
                 try {
                     iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
@@ -177,7 +198,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                 }
 
                 // Initialise the theme variables
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
                 mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
                 float[] hsv = new float[3];
                 int tempColor = mPrimaryColor;
@@ -190,17 +211,49 @@ public class TasksDetailActivity extends AppCompatActivity {
                 Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
                     @Override
                     public void onGenerated(Palette palette) {
-                        mPrimaryColor = palette.getVibrantColor(mPrimaryColor);
+                        int mainColour;
+
+                        if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                            mainColour = Color.parseColor("#29235C");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                            mainColour = Color.parseColor("#575756");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                            mainColour = Color.parseColor("#006838");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                            mainColour = Color.parseColor("#A48A7B");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                            mainColour = Color.parseColor("#7B6A58");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                            mainColour = Color.parseColor("#9E9E9E");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                            mainColour = Color.parseColor("#936037");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                            mainColour = Color.parseColor("#F39200");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                            mainColour = Color.parseColor("#432918");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                            mainColour = Color.parseColor("#D35095");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                            mainColour = Color.parseColor("#1D1D1B");
+                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                            mainColour = Color.parseColor("#424242");
+                        else {
+                            // Set the action bar colour according to the theme
+                            mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+                            mainColour = palette.getVibrantColor(mPrimaryColor);
+                        }
+
+
                         float[] hsv = new float[3];
-                        int color = mPrimaryColor;
+                        int color = mainColour;
                         Color.colorToHSV(color, hsv);
                         hsv[2] *= 0.8f; // value component
                         mDarkColor = Color.HSVToColor(hsv);
-                        actionBar.setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                        actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                            collapsingToolbar.setBackground(new ColorDrawable(mPrimaryColor));
+                            collapsingToolbar.setBackground(new ColorDrawable(mainColour));
                         } else
-                            collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                            collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             getWindow().setStatusBarColor(mDarkColor);
                         }
@@ -220,9 +273,21 @@ public class TasksDetailActivity extends AppCompatActivity {
                 fab1.setOnClickListener(fabListener());
                 if (fab != null)
                     fab.setOnClickListener(fabListener());
-
+                fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
             }
         }
+    }
+
+    private Uri getFileAbsolutePath(Uri filePath) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(filePath);
+        byte[] buffer = new byte[inputStream.available()];
+        inputStream.read(buffer);
+
+        File targetFile = new File(filePath.toString());
+        OutputStream outputStream = new FileOutputStream(targetFile);
+        outputStream.write(buffer);
+        Log.v(LOG_TAG, "File Uri: " + targetFile.getAbsolutePath());
+        return Uri.parse(targetFile.getAbsolutePath());
     }
 
     private View.OnClickListener fabListener() {
@@ -239,16 +304,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                         break;
                     case R.id.fab1:
-                        // REVISION TIMER HERE
-                        Timer timer = new Timer();
-                        Long delay = (long) 300000; // 5 MINUTES
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                promptCompleteTask();
-                            }
-                        }, delay);
-                        Toast.makeText(TasksDetailActivity.this, "Timer Started", Toast.LENGTH_SHORT).show();
+                        startTimer();
                         animateFAB();
                         break;
                 }
@@ -385,14 +441,8 @@ public class TasksDetailActivity extends AppCompatActivity {
                 return true;
 
             case android.R.id.home:
-                if (FLAG_TASK_COMPLETD) {
-                    Intent returnToCompletedTasks = new Intent(this, CompletedTasksActivity.class);
-                    startActivity(returnToCompletedTasks);
-                } else {
-                    Intent startMainActivity = new Intent(this, MainActivity.class);
-                    startMainActivity.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
-                    startActivity(startMainActivity);
-                }
+                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
 
                 return true;
         }
@@ -495,6 +545,72 @@ public class TasksDetailActivity extends AppCompatActivity {
             fab1.setClickable(true);
             isFabOpen = true;
         }
+    }
+
+    private void startTimer() {
+        // REVISION TIMER HERE
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_number_picker);
+        Button buttonDone = (Button) dialog.findViewById(R.id.button_done);
+        final NumberPicker picker = (NumberPicker) dialog.findViewById(R.id.number_picker);
+        picker.setMinValue(1);
+        picker.setMaxValue(10000);
+        picker.setWrapSelectorWheel(false);
+        buttonDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int countdown = picker.getValue();
+                serviceIntent = new Intent(TasksDetailActivity.this, RevisionTimerService.class);
+                serviceIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                serviceIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_REVISION_TIME), countdown);
+                fieldTimer.setVisibility(View.VISIBLE);
+                fieldTimer.setText(utility.secondsToMinuteTime(countdown * 60));
+                startService(serviceIntent);
+                registerReceiver(mMessageReceiver, new IntentFilter("com.pdt.plume.USER_ACTION"));
+                dialog.dismiss();
+                if (countdown == 1)
+                    Toast.makeText(TasksDetailActivity.this,
+                            getString(R.string.toast_timer_set) + " " + countdown + " " + getString(R.string.minute),
+                            Toast.LENGTH_SHORT).show();
+                else Toast.makeText(TasksDetailActivity.this,
+                        getString(R.string.toast_timer_set) + " " + countdown + " " + getString(R.string.minutes),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
+    }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("Status");
+            if (message.equals("STOP_SERVICE")) {
+                // COUNTDOWN REACHED
+                LocalBroadcastManager.getInstance(TasksDetailActivity.this).unregisterReceiver(mMessageReceiver);
+                fieldTimer.setVisibility(View.GONE);
+                Toast.makeText(context, "service stopped", Toast.LENGTH_SHORT).show();
+
+                promptCompleteTask();
+            } else {
+                fieldTimer.setVisibility(View.VISIBLE);
+                fieldTimer.setText(message);
+            }
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(
+                mMessageReceiver);
     }
 
     @Override

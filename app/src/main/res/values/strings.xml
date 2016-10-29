@@ -12,6 +12,10 @@
     <string name="none">None</string>
     <string name="coming_soon">Coming soon&#8230;</string>
 
+    <!-- Common keys -->
+    <string name="INTENT_EXTRA_TITLE" translatable="false">INTENT_EXTRA_TITLE</string>
+    <string name="INTENT_EXTRA_PATH" translatable="false">INTENT_EXTRA_PATH</string>
+
     <!-- Menu Actions -->
     <string name="delete">Delete</string>
     <string name="save">SAVE</string>
@@ -20,6 +24,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="restore">Restore</string>
+    <string name="done">Done</string>
 
     <!--
     MAIN ACTIVITY
@@ -79,6 +84,10 @@
 
     <!-- Strings for ScheduleFragment -->
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
+
+    <!-- Strings for NotificationService -->
+    <string name="schedule_notification_message">Class starts in</string>
+    <string name="KEY_SCHEDULE_MUTE_CURRENT_VOLUME" translatable="false">KEY_SCHEDULE_MUTE_CURRENT_VOLUME</string>
 
     <!-- Strings for ScheduleDetailActivity -->
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
@@ -211,12 +220,21 @@
 
     <string name="completed_task">Completed task</string>
     <string name="set_timer">Set timer</string>
+    <string name="toast_timer_set">Timer set for</string>
+    <string name="minute">minute</string>
+    <string name="minutes">minutes</string>
+
+    <string name="minute_left">less than a minute left.</string>
+    <string name="minutes_left">minutes left.</string>
+    <string name="timer_end">Countdown reached.</string>
 
     <string name="KEY_TASKS_EXTRA_ID">KEY_TASKS_EXTRA_ID</string>
+    <string name="KEY_TASKS_EXTRA_REVISION_TIME">KEY_TASKS_EXTRA_REVISION_TIME</string>
 
     <!-- Strings for NewTaskActivity -->
     <string name="notification_message_reminder">Touch for more details.</string>
     <string name="activity_new_task_label">New Task</string>
+    <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
 
     <!-- Actions and Toasts -->
     <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
@@ -357,7 +375,7 @@
     <string name="category_other_settings_title">Other settings</string>
     <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
 
-    <string name="settings_about_plume_title">About Plume - School Assistant</string>
+    <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
     <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
 
     <string name="settings_theme_primary_title">Primary Color</string>
@@ -375,10 +393,10 @@
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
     <string name="Version">Version 0.5 Alpha</string>
-    <string name="Weblink" translatable="false">https://plumeschoolassistant.co.uk</string>
+    <string name="Weblink" translatable="false">https://plumeacademylassistant.co.uk</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
-    <string name="Plume_Email">team@plumeschoolassistant.co.uk</string>
+    <string name="Plume_Email">team@plumeacademyassistant.co.uk</string>
     <string name="Developed">Developed by:</string>
     <string name="PDT" translatable="false">Plume Development Team</string>
     <string name="Coding">Software and coding:</string>
@@ -427,5 +445,12 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <!-- TRANSITION STRINGS -->
+    <string name="transition_schedule" translatable="false">TRANSITION_SCHEDULE</string>
+    <string name="transition_task" translatable="false">TRANSITION_TASK</string>
+    <string name="transition_picture" translatable="false">TRANSITION_PICTURE</string>
+
+    <string name="title_activity_temp_fullscreen">tempFullscreenActivity</string>
 
 </resources>

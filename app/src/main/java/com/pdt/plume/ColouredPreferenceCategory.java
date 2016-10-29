@@ -34,10 +34,11 @@ public class ColouredPreferenceCategory extends PreferenceCategory {
     protected void onBindView(View view) {
         super.onBindView(view);
         TextView titleView = (TextView) view.findViewById(android.R.id.title);
-        int mSecondaryColor;
+        int mPrimaryColor;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(c);
-        mSecondaryColor = preferences.getInt(c.getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-        titleView.setTextColor(mSecondaryColor);
+        mPrimaryColor = preferences.getInt(c.getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        titleView.setTextColor(mPrimaryColor);
     }
+
 
 }

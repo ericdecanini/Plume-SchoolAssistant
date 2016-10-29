@@ -3,6 +3,7 @@ package com.pdt.plume;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
@@ -15,7 +16,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +24,8 @@ import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -46,9 +48,12 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
@@ -226,10 +231,10 @@ public class NewScheduleActivity extends AppCompatActivity
                     if (!occurrence.equals("-1")){
                         occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
                                 this,
-                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.secondsToTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
                                 occurrence));
                         occurrenceList.add(occurrence);
@@ -333,8 +338,8 @@ public class NewScheduleActivity extends AppCompatActivity
         }
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
         fieldTitle.setBackgroundColor(mPrimaryColor);
-        fieldAddClassTime.setTextColor(mSecondaryColor);
-        fieldAddClassTimeIcon.setColorFilter(mSecondaryColor);
+        fieldAddClassTime.setTextColor(mPrimaryColor);
+        fieldAddClassTimeIcon.setColorFilter(mPrimaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
             fieldRoom.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
@@ -405,13 +410,6 @@ public class NewScheduleActivity extends AppCompatActivity
                     } catch (IndexOutOfBoundsException exception) {
                         Log.e(LOG_TAG, "occurrenceTimePeriodList size is larger than timeInList and timeOutList");
                     }
-
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                    Intent intent = new Intent(this, MuteAlarmReceiver.class);
-                    intent.putExtra("UNMUTE_TIME", timeOut);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
-                    Log.v(LOG_TAG, "Class notification for " + title + " set for " + timeIn);
 
                     // Database insert function performed as update
                     if (dbHelper.insertSchedule(title, teacher, room, occurrence,
@@ -489,6 +487,54 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // If data insertion functions were not executed, return false by default
         return false;
+    }
+
+    public void Remind(Date dateTime, String title, String message, int ID) {
+        scheduleNotification(dateTime, ID, title, message);
+    }
+
+    private void scheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
+
+        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        Bitmap largeIcon = null;
+        try {
+            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(scheduleIconUriString));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                .setBackground(largeIcon);
+
+        Intent contentIntent = new Intent(this, ScheduleDetailActivity.class);
+        contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                builder
+                        .setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(palette.getVibrantColor(mPrimaryColor))
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setWhen(System.currentTimeMillis())
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                Notification notification = builder.build();
+
+                Intent notificationIntent = new Intent(NewScheduleActivity.this, TaskNotificationPublisher.class);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewScheduleActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                alarmManager.setRepeating(AlarmManager.RTC, dateTime.getTime(), AlarmManager.INTERVAL_DAY, pendingIntent);
+            }
+        });
     }
 
     private void editClassTimeItem(int position){
@@ -754,7 +800,8 @@ public class NewScheduleActivity extends AppCompatActivity
         // Check the interface for the edit flag and choose
         // to either update or insert
         // If the interface contains an edit flag, update the array list items
-        if (FLAG_EDIT){
+        if (FLAG_EDIT) {
+            Toast.makeText(this, "Updating row " + rowId, Toast.LENGTH_SHORT).show();
             // Create temporary array lists to hold the list's data as it is cleared for bulk re-inserting
             ArrayList<String> previousStringObjects = new ArrayList<>();
             ArrayList<Integer> previousIntObjects = new ArrayList<>();
@@ -798,10 +845,10 @@ public class NewScheduleActivity extends AppCompatActivity
             occurrenceTimePeriodList.addAll(utility.updateOccurrenceTimePeriodArrayListItemAtPosition(
                     previousOccurrenceTimePeriodObjects, rowId, new OccurrenceTimePeriod(
                             this,
-                            utility.secondsToTime(timeInSeconds) + "",
-                            utility.secondsToTime(timeOutSeconds) + "",
-                            utility.secondsToTime(timeInAltSeconds) + "",
-                            utility.secondsToTime(timeOutAltSeconds) + "",
+                            utility.millisToHourTime(timeInSeconds) + "",
+                            utility.millisToHourTime(timeOutSeconds) + "",
+                            utility.millisToHourTime(timeInAltSeconds) + "",
+                            utility.millisToHourTime(timeOutAltSeconds) + "",
                             periods,
                             processOccurrenceString(basis, weekType, classDays))));
             previousOccurrenceTimePeriodObjects.clear();
@@ -810,6 +857,7 @@ public class NewScheduleActivity extends AppCompatActivity
         // If the interface does not contain an edit flag
         // Add values into Array Lists to be inserted into the database
         else{
+            Toast.makeText(this, "Inserting new row", Toast.LENGTH_SHORT).show();
             occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
             timeInList.add(timeInSeconds);
             timeOutList.add(timeOutSeconds);
@@ -820,10 +868,10 @@ public class NewScheduleActivity extends AppCompatActivity
             // Add an item into the visual list view
             occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
                     this,
-                    utility.secondsToTime(timeInSeconds) + "",
-                    utility.secondsToTime(timeOutSeconds) + "",
-                    utility.secondsToTime(timeInAltSeconds) + "",
-                    utility.secondsToTime(timeOutAltSeconds) + "",
+                    utility.millisToHourTime(timeInSeconds) + "",
+                    utility.millisToHourTime(timeOutSeconds) + "",
+                    utility.millisToHourTime(timeInAltSeconds) + "",
+                    utility.millisToHourTime(timeOutAltSeconds) + "",
                     periods,
                     processOccurrenceString(basis, weekType, classDays)));
         }

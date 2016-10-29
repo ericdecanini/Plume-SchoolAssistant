@@ -1,6 +1,9 @@
 package com.pdt.plume;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +14,11 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -44,6 +50,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.pdt.plume.services.ScheduleNotificationService;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -69,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     int mDarkColor;
     int mSecondaryColor;
 
+    FloatingActionButton fab;
+
     // Variables aiding schedule
     int weekNumber;
 
@@ -79,15 +90,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        // Request all permissions (for API 23+)
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW},
-                    10);
-        }
+        //Displaying token on logcat
+        String token = FirebaseInstanceId.getInstance().getToken();
+        Log.d(LOG_TAG, "Token: " + token);
 
         // Set the custom toolbar as the action bar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -122,15 +129,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         float sw = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels) / getResources().getDisplayMetrics().density;
         Log.v(LOG_TAG, "Smallest Width: " + sw);
+
+        // Start the class notification service
+        startService(new Intent(this, ScheduleNotificationService.class));
     }
 
     private void init() {
+        // The boolean is falsed in ScheduleFragment
         // Open the shared preference
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
-
-        // Set the first launch boolean to be false
-        editor.putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false);
 
         // Initialise the theme variables
         mPrimaryColor = getResources().getColor(R.color.colorPrimary);
@@ -294,6 +302,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
             mViewPager.setCurrentItem(1);
         }
+
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+//                fab.hide();
+//                Handler handler = new Handler();
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        fab.show();
+//                    }
+//                }, 150);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
     }
 
     public void initSpinner(){

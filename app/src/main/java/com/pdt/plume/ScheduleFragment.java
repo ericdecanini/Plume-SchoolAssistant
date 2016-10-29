@@ -3,6 +3,7 @@ package com.pdt.plume;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -74,7 +75,7 @@ public class ScheduleFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
@@ -105,62 +106,6 @@ public class ScheduleFragment extends Fragment {
             headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
         }
 
-        // Start the services for class notifications and muting
-        Cursor currentDayCursor = dbHelper.getCurrentDayScheduleData(getActivity());
-        if (currentDayCursor.moveToFirst()){
-            for (int i = 0; i < currentDayCursor.getCount(); i++){
-                SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-                int weekNumber = preferences.getInt("weekNumber", 0);
-                float timeIn;
-                float timeOut;
-
-                if (weekNumber == 0){
-                    timeIn = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-                    timeOut = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT));
-                } else {
-                    timeIn = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-                    timeOut = currentDayCursor.getFloat(currentDayCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT));
-                }
-
-                AlarmManager alarmManager = (AlarmManager)getContext().getSystemService(Context.ALARM_SERVICE);
-                Calendar calendar = Calendar.getInstance();
-
-                // Set the class notification service
-                int classNotificationAdvanceValue = preferences
-                        .getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), -1);
-                if (classNotificationAdvanceValue <= 0) {
-                    Intent notifyIntent = new Intent(getContext() , NotificationAlarmReceiver.class);
-                    notifyIntent.putExtra("ID", currentDayCursor.getInt(currentDayCursor.getColumnIndex(ScheduleEntry._ID)));
-                    notifyIntent.putExtra("iconUriString", currentDayCursor.getString(currentDayCursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)));
-                    PendingIntent notifyPendingIntent = PendingIntent.getBroadcast(getContext(), 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    int hour = utility.getHour(timeIn);
-                    int minute = utility.getMinute(timeIn);
-                    calendar.setTimeInMillis(System.currentTimeMillis());
-                    calendar.set(Calendar.HOUR_OF_DAY, hour);
-                    calendar.set(Calendar.MINUTE, minute - classNotificationAdvanceValue);
-                    Log.v(LOG_TAG, "Notification alarm set for " + calendar.getTimeInMillis());
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY , notifyPendingIntent);
-                }
-
-                // Set the mute services during classes
-                boolean muteIsChecked = preferences.getBoolean(getString(R.string.KEY_SETTINGS_CLASS_MUTE), false);
-                if (muteIsChecked){
-                    Intent muteIntent = new Intent(getContext(), MuteAlarmReceiver.class);
-                    muteIntent.putExtra("UNMUTE_TIME", timeOut);
-                    PendingIntent mutePendingIntent = PendingIntent.getBroadcast(getContext(), 1, muteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    int hour = utility.getHour(timeIn);
-                    int minute = utility.getMinute(timeIn);
-                    calendar.setTimeInMillis(System.currentTimeMillis());
-                    calendar.set(Calendar.HOUR_OF_DAY, hour);
-                    calendar.set(Calendar.MINUTE, minute);
-                    Log.v(LOG_TAG, "Mute alarm set for " + calendar.getTimeInMillis());
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, mutePendingIntent);
-                }
-
-                currentDayCursor.moveToNext();
-            }
-        }
-
         // Set the adapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
@@ -187,6 +132,15 @@ public class ScheduleFragment extends Fragment {
         return rootView;
     }
 
+    private void init() {
+        Toast.makeText(getContext(), "Init", Toast.LENGTH_SHORT).show();
+        Log.v(LOG_TAG, "Init");
+        headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
+    }
+
     public AdapterView.OnItemClickListener listener() {
         return new AdapterView.OnItemClickListener() {
             @Override
@@ -209,7 +163,12 @@ public class ScheduleFragment extends Fragment {
                     if (cursor.moveToPosition(position)) {
                         Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
                         intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
-                        startActivity(intent);
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                            // Shared element transition
+                            View icon = view.findViewById(R.id.schedule_icon);
+                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
+                            startActivity(intent, bundle);
+                        } else startActivity(intent);
                     } else {
                         Log.w(LOG_TAG, "Error getting title of selected item");
                     }
@@ -247,6 +206,11 @@ public class ScheduleFragment extends Fragment {
 
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
         fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+
+        // If it's the first time running the app, launch this method
+        boolean firstLaunch = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+        if (firstLaunch)
+            init();
     }
 
     // Subclass for the Contextual Action Mode

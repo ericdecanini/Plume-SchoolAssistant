@@ -150,7 +150,7 @@ public class SettingsThemeActivity extends PreferenceActivity
         final AlertDialog dialog;
 
         gridView.setAdapter(new ColorsAdapter(this));
-        gridView.setNumColumns(5);
+        gridView.setNumColumns(4);
         gridView.setPadding(8, 16, 8, 16);
         gridView.setGravity(Gravity.CENTER);
         // Set grid view to alertDialog

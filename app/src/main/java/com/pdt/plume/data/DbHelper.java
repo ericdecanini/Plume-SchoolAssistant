@@ -278,7 +278,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 // Week 1 / Same week items
                 if (weekNumber == 0 || occurrence.split(":")[1].equals("0")) {
                     // Get the variables to check from the database
-                    String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item
@@ -289,8 +289,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                 ""
                         ));
                     }
@@ -304,8 +304,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                     periodList.get(ii)));
                         }
                     }
@@ -314,7 +314,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 // Week 2: Use alternate data
                 else {
                     // Get the variables to check from the database
-                    String timeIn = utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item
@@ -326,8 +326,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 ""
                         ));
                     }
@@ -341,8 +341,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                    utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                     periodList.get(ii)));
                         }
                     }

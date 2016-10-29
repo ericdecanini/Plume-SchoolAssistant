@@ -1,18 +1,24 @@
 package com.pdt.plume;
 
 
+import android.animation.Animator;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -20,14 +26,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,12 +46,14 @@ import java.util.List;
 public class TasksFragment extends Fragment {
     // Constantly used variables
     String LOG_TAG = TasksFragment.class.getSimpleName();
+    DbHelper dbHelper;
 
     // UI Elements
     ListView listView;
     private Menu mActionMenu;
     private int mOptionsMenuCount;
     FloatingActionButton fab;
+    TextView headerTextView;
 
     int mPrimaryColor;
     int mDarkColor;
@@ -62,12 +73,13 @@ public class TasksFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
+        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Get a reference to the database
-        DbHelper dbHelper = new DbHelper(getActivity());
+        dbHelper = new DbHelper(getActivity());
 
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
@@ -75,7 +87,7 @@ public class TasksFragment extends Fragment {
         TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getUncompletedTaskArray());
 
         // Set the adapter and listeners of the listview
-        if (listView != null){
+        if (listView != null) {
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setAdapter(mAdapter);
             listView.setOnItemClickListener(listener());
@@ -88,7 +100,7 @@ public class TasksFragment extends Fragment {
         }
 
         if (mAdapter.getCount() == 0)
-            rootView.findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+            headerTextView.setVisibility(View.VISIBLE);
 
 
         // Get a reference to the FAB and set its OnClickListener
@@ -112,7 +124,7 @@ public class TasksFragment extends Fragment {
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -127,7 +139,7 @@ public class TasksFragment extends Fragment {
 
         return new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
                 // If the used device is a tablet, replace the
                 // right-hand side fragment with a TasksDetailFragment
                 // passing the data of the clicked row to the fragment
@@ -141,9 +153,15 @@ public class TasksFragment extends Fragment {
                 // If the used device is a phone, start a new TasksDetailActivity
                 // passing the data of the clicked row to the fragment
                 else {
-                    Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
-                        intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
-                        startActivity(intent);
+                    final Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
+                    intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        // Shared element transition
+                        View icon = view.findViewById(R.id.task_icon);
+                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
+                        startActivity(intent, bundle);
+                    } else startActivity(intent);
                 }
             }
         };
@@ -181,8 +199,8 @@ public class TasksFragment extends Fragment {
             if (checked)
                 CAMselectedItemsList.add(position);
 
-            // If the clicked item became deselected, get its item id
-            // and remove it from the array list
+                // If the clicked item became deselected, get its item id
+                // and remove it from the array list
             else {
                 int itemId = -1;
                 // Scan through the array list until the
@@ -307,7 +325,7 @@ public class TasksFragment extends Fragment {
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
                     db.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
@@ -322,6 +340,10 @@ public class TasksFragment extends Fragment {
             adapter.clear();
             adapter.addAll(db.getTaskDataArray());
             adapter.notifyDataSetChanged();
+            if (adapter.getCount() == 0)
+                headerTextView.setVisibility(View.VISIBLE);
+            else headerTextView.setVisibility(View.GONE);
+
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
@@ -330,9 +352,9 @@ public class TasksFragment extends Fragment {
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(int position){
+        private void editSelectedItem(int position) {
             // Ensure that only one item is selected
-            if (CAMselectedItemsList.size() == 1){
+            if (CAMselectedItemsList.size() == 1) {
                 // Initialise intent data variables
                 int id;
                 String title;
@@ -351,7 +373,7 @@ public class TasksFragment extends Fragment {
                 Cursor cursor = db.getUncompletedTaskData();
 
                 // Move the cursor to the position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
@@ -369,7 +391,7 @@ public class TasksFragment extends Fragment {
                     // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(getActivity(), NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE),title);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_SHARER), sharer);

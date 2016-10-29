@@ -4,6 +4,8 @@ import android.*;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
@@ -24,6 +26,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
@@ -31,6 +34,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Gravity;
@@ -65,7 +70,7 @@ import java.util.Date;
 import java.util.List;
 
 public class NewTaskActivity extends AppCompatActivity
-        implements TimePickerDialog.OnTimeSetListener,
+        implements
         IconDialogFragment.iconDialogListener {
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
@@ -107,6 +112,10 @@ public class NewTaskActivity extends AppCompatActivity
     long reminderDateMillis;
     float reminderTimeSeconds;
 
+    static int REQUEST_NOTIFICATION_ALARM = 40;
+    static int REQUEST_NOTIFICATION_INTENT = 41;
+    private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 42;
+
     String attachedFileUriString = "";
 
     private Integer[] mThumbIds = {
@@ -120,6 +129,7 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_cooking_64dp,
             R.drawable.art_creativestudies_64dp,
             R.drawable.art_drama_64dp,
+            R.drawable.art_engineering_64dp,
             R.drawable.art_english_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
@@ -135,7 +145,8 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_re_64dp,
             R.drawable.art_science_64dp,
             R.drawable.art_spanish_64dp,
-            R.drawable.art_task_64dp
+            R.drawable.art_task_64dp,
+            R.drawable.art_woodwork_64dp
     };
 
 
@@ -266,9 +277,13 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldDescription.setText(description);
 
                         // Set the current state of the dropdown text views
-                        fieldClassTextview.setText(classTitle);
+                        if (classTitle.equals(""))
+                            fieldClassTextview.setText(getString(R.string.none));
+                        else fieldClassTextview.setText(classTitle);
                         this.classTitle = classTitle;
-                        fieldTypeTextview.setText(classType);
+                        if (classType.equals(""))
+                            fieldTypeTextview.setText(getString(R.string.none));
+                        else fieldTypeTextview.setText(classType);
                         this.classType = classType;
 
                         // Set the file name of the attach file field
@@ -328,12 +343,24 @@ public class NewTaskActivity extends AppCompatActivity
                     float reminderDateYear = c.get(Calendar.YEAR);
                     float reminderDateMonth = c.get(Calendar.MONTH);
                     float reminderDateDay = c.get(Calendar.DAY_OF_MONTH);
-                    fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear), ((int) reminderDateMonth), ((int) reminderDateDay)));
+
+                    Calendar today = Calendar.getInstance();
+                    if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
+                            && today.get(Calendar.YEAR) == reminderDateYear)
+                        fieldSetReminderDateTextview.setText(getString(R.string.today));
+                    else {
+                        today.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) + 1);
+                        if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
+                                && today.get(Calendar.YEAR) == reminderDateYear)
+                            fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
+                        else fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
+                                ((int) reminderDateMonth), ((int) reminderDateDay)));
+                    }
                     this.reminderDateMillis = c.getTimeInMillis();
                 }
 
                 if (reminderTime != 0f) {
-                    fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTime));
+                    fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime * 1000));
                     this.reminderTimeSeconds = reminderTime;
                 }
             }
@@ -355,8 +382,8 @@ public class NewTaskActivity extends AppCompatActivity
                 fieldSetReminderDateTextview.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
                         c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
                 c = Calendar.getInstance();
-                reminderTimeSeconds = utility.timeToSeconds(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
-                fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));
+                reminderTimeSeconds = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
+                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds));
 
                 iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
                         "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
@@ -492,6 +519,25 @@ public class NewTaskActivity extends AppCompatActivity
                         startActivityForResult(attach_intent, REQUEST_FILE_GET);
                         break;
                     case R.id.field_new_task_photo:
+                        // Request all permissions (for API 23+)
+                        int permissionCheck = ContextCompat.checkSelfPermission(NewTaskActivity.this,
+                                android.Manifest.permission.READ_EXTERNAL_STORAGE);
+                        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(NewTaskActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                //Show permission explanation dialog...
+                                new AlertDialog.Builder(NewTaskActivity.this)
+                                        .setMessage(getString(R.string.dialog_permission_rationale_take_photo))
+                                        .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                ActivityCompat.requestPermissions(NewTaskActivity.this,
+                                                        new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW},
+                                                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+                                            }
+                                        }).show();
+                            }
+                            return;
+                        }
                         AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
                         builder.setTitle(getString(R.string.field_new_photo_dialog_title))
                                 .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
@@ -516,12 +562,52 @@ public class NewTaskActivity extends AppCompatActivity
                         showReminderDateDropdownMenu();
                         break;
                     case R.id.field_new_task_reminder_time:
-                        DialogFragment timePickerFragment = new TimePickerFragmentTask();
-                        timePickerFragment.show(getSupportFragmentManager(), "time picker");
+                        int hour = (int) reminderTimeSeconds / 3600;
+                        int minute = (int) (reminderTimeSeconds - (hour * 3600)) / 60;
+                        TimePickerDialog timePickerFragment = new TimePickerDialog(NewTaskActivity.this, onTimeSetListener(), hour, minute, true);
+                        timePickerFragment.show();
                         break;
                 }
             }
         };
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
+                    builder.setTitle(getString(R.string.field_new_photo_dialog_title))
+                            .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            try {
+                                                dispatchTakePictureIntent();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                            break;
+                                        case 1:
+                                            dispatchSelectPhotoIntent();
+                                            break;
+                                    }
+                                }
+                            }).show();
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
     }
 
     private boolean insertTaskData() {
@@ -530,6 +616,12 @@ public class NewTaskActivity extends AppCompatActivity
         String title = fieldTitle.getText().toString();
         String description = fieldDescription.getText().toString();
         String icon = attachedFileUriString;
+
+        if (classTitle.equals(getString(R.string.none)))
+            classTitle = "";
+        if (classType.equals(getString(R.string.none)))
+            classType = "";
+
         DbHelper dbHelper = new DbHelper(this);
 
         // If the activity was launched through an edit action
@@ -620,16 +712,54 @@ public class NewTaskActivity extends AppCompatActivity
     }
 
     public void Remind(Date dateTime, String title, String message, int ID, String iconUriString) {
-        Intent alarmIntent = new Intent(this, NotificationAlarmReceiver.class);
-        alarmIntent.putExtra("message", message);
-        alarmIntent.putExtra("title", title);
-        alarmIntent.putExtra("ID", ID);
-        alarmIntent.putExtra("iconUriString", iconUriString);
+        scheduleNotification(dateTime, ID, title, message);
+    }
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+    private void scheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
 
-        alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        Bitmap largeIcon = null;
+        try {
+            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(iconUriString));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                .setBackground(largeIcon);
+
+        Intent contentIntent = new Intent(this, TasksDetailActivity.class);
+        contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                builder
+                        .setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(palette.getVibrantColor(mPrimaryColor))
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setWhen(System.currentTimeMillis())
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                Notification notification = builder.build();
+
+                Intent notificationIntent = new Intent(NewTaskActivity.this, TaskNotificationPublisher.class);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewTaskActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+//                long futureInMillis = SystemClock.elapsedRealtime() + delay;
+                AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                Log.v(LOG_TAG, "DateTime: " + dateTime.getDay()+"/"+dateTime.getMonth()+"/"+dateTime.getYear()
+                +" "+dateTime.getHours()+":"+dateTime.getMinutes()+" "+dateTime.getSeconds());
+                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+            }
+        });
     }
 
     private void showClassDropdownMenu() {
@@ -866,7 +996,8 @@ public class NewTaskActivity extends AppCompatActivity
             mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
             try {
                 Bitmap thumbnail = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
-                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(thumbnail, 160, 160, false));
+                int scale = (int) getResources().getDisplayMetrics().density;
+                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(thumbnail, 64 * scale, 64 * scale, false));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -885,7 +1016,8 @@ public class NewTaskActivity extends AppCompatActivity
 
             mCurrentPhotoPath = dataUri;
             mCurrentPhotoPathString = mCurrentPhotoPath.toString();
-            fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 160, 160, false));
+            int scale = (int) getResources().getDisplayMetrics().density;
+            fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 64 * scale, 64 * scale, false));
         }
 
         // Custom Icon Upload
@@ -928,9 +1060,14 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        reminderTimeSeconds = utility.timeToSeconds(hourOfDay, minute);
-        fieldSetReminderTimeTextview.setText(utility.secondsToTime(reminderTimeSeconds));
+    public TimePickerDialog.OnTimeSetListener onTimeSetListener() {
+        return new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                reminderTimeSeconds = utility.timeToMillis(hourOfDay, minute) / 1000;
+                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds * 1000));
+            }
+        };
     }
 
     private View.OnClickListener showIconDialog() {

@@ -27,42 +27,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <!-- GCM SERVICES START -->
-
-
-        <!-- <receiver -->
-        <!-- android:name="com.google.android.gms.gcm.GcmReceiver" -->
-        <!-- android:exported="true" -->
-        <!-- android:permission="com.google.android.c2dm.permission.SEND" > -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="com.google.android.c2dm.intent.RECEIVE" /> -->
-        <!-- <action android:name="com.google.android.c2dm.intent.REGISTRATION" /> -->
-        <!-- <category android:name="com.example.gcm" /> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
-
-
-        <!-- <service -->
-        <!-- android:name="com.pdt.plume.services.PlumeGcmListenerService" -->
-        <!-- android:exported="false" > -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="com.google.android.c2dm.intent.RECEIVE" /> -->
-        <!-- </intent-filter> -->
-        <!-- </service> -->
-
-
-        <!-- <service -->
-        <!-- android:name=".services.PlumeGcmListenerService" -->
-        <!-- android:exported="false"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="com.google.android.gms.iid.InstanceID" /> -->
-        <!-- </intent-filter> -->
-        <!-- </service> -->
-
-
-        <!-- GCM SERVICES END -->
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.pdt.plume.fileprovider"
@@ -126,10 +90,12 @@
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".SettingsActivity" />
+
+        <activity android:name=".SettingsActivity"
+            android:label="@string/nav_settings"/>
+
         <activity android:name=".SettingsThemeActivity" />
 
-        <receiver android:name=".NotificationAlarmReceiver" />
         <receiver android:name=".MuteAlarmReceiver" />
         <receiver android:name=".UnmuteAlarmReceiver" />
 
@@ -142,16 +108,28 @@
             android:name=".CompletedTasksActivity"
             android:label="@string/activity_completedTasks_label"
             android:parentActivityName=".MainActivity" />
+
+        <service android:name=".services.RevisionTimerService" />
+        <service android:name=".services.FirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".services.FirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".TaskNotificationPublisher" />
+
+        <service android:name=".services.ScheduleNotificationService" />
+
         <activity
-            android:name=".FullscreenActivity"
+            android:name=".PictureActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_fullscreen"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/FullscreenTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.pdt.plume.MainActivity" />
-        </activity>
+            android:parentActivityName=".TasksDetailActivity"
+            android:theme="@style/FullscreenTheme" />
     </application>
 
 </manifest>

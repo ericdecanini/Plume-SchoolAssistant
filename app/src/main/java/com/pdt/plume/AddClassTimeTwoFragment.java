@@ -2,6 +2,8 @@ package com.pdt.plume;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -76,7 +78,7 @@ public class AddClassTimeTwoFragment extends DialogFragment {
         TextView basisTextview = (TextView) rootView.findViewById(R.id.basis_textview);
         basisTextview.setOnClickListener(listener());
         basisTextview.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
+                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
         String basis = args.getString("basis");
         if (basis.equals("0"))
             basisTextview.setText(getString(R.string.class_time_one_timebased));

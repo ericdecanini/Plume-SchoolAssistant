@@ -248,7 +248,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         // Set the hyperlink basis week classType text accordingly
         basisTextView.setText(getString(R.string.class_time_one_periodbased));
         basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent)));
+                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
         Bundle args = getArguments();
         if (args != null){
             if (!args.getString("weekType", "-1").equals("1")){
@@ -257,7 +257,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             }
             else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
-            weekTypeTextView.setTextColor(mSecondaryColor);
+            weekTypeTextView.setTextColor(mPrimaryColor);
 
             // Check if the fragment was started through the list view's OnItemClick
             // If it is, receive the corresponding data and auto-fill that item's UI

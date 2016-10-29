@@ -20,12 +20,14 @@ import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
+import android.transition.Fade;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -102,6 +104,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set enter transition
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        getWindow().setEnterTransition(new Fade());
+
         setContentView(R.layout.activity_schedule_detail);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ScheduleDetailActivity.this);
 
@@ -180,10 +187,10 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
                     if (!occurrence.equals("-1"))
                         periods.add(new OccurrenceTimePeriod(this,
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.secondsToTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_PERIODS)),
                                 cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE))));
                     cursor.moveToNext();
@@ -216,6 +223,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         mainColour = Color.parseColor("#A48A7B");
                     else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
                         mainColour = Color.parseColor("#7B6A58");
+                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                        mainColour = Color.parseColor("#9E9E9E");
                     else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
                         mainColour = Color.parseColor("#936037");
                     else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
@@ -226,6 +235,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         mainColour = Color.parseColor("#D35095");
                     else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
                         mainColour = Color.parseColor("#1D1D1B");
+                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                        mainColour = Color.parseColor("#424242");
                     else {
                         // Set the action bar colour according to the theme
                         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
