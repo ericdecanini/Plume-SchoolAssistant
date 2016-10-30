@@ -158,6 +158,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onStart();
         mSectionsPagerAdapter.notifyDataSetChanged();
 
+        Intent intent = getIntent();
+        if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
+            mViewPager.setCurrentItem(1);
+        }
+
         // Get the current date and toggle the week number
         // Get the current date
         Calendar c = Calendar.getInstance();

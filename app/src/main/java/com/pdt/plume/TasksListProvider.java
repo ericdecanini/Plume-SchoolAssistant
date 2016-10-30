@@ -20,7 +20,7 @@ import java.util.ArrayList;
  *
  */
 public class TasksListProvider implements RemoteViewsService.RemoteViewsFactory {
-    private ArrayList<Schedule> listItemList = new ArrayList<>();
+    private ArrayList<Task> listItemList = new ArrayList<>();
     private Context context = null;
     private int appWidgetId;
 
@@ -34,99 +34,90 @@ public class TasksListProvider implements RemoteViewsService.RemoteViewsFactory 
 
     private void populateListItem() throws IOException {
         DbHelper dbHelper = new DbHelper(context);
-        ArrayList<Schedule> schedules = dbHelper.getCurrentDayScheduleArray(context);
+        ArrayList<Task> tasks = dbHelper.getTaskDataArray();
 
-        for (int i = 0; i < schedules.size(); i++) {
-            Schedule schedule = schedules.get(i);
-            String title = schedule.scheduleLesson;
-            String teacher = schedule.scheduleTeacher;
-            String room = schedule.scheduleRoom;
-            String timeIn = schedule.scheduleTimeIn;
-            String timeOut = schedule.scheduleTimeOut;
-            String icon = schedule.scheduleIcon;
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            String title = task.taskTitle;
+            String description = task.taskDescription;
+            String icon = task.taskIcon;
 
             // Apply the data changes to the UI
-            Schedule listItem = new Schedule();
-            listItem.scheduleLesson = title;
-            listItem.scheduleTeacher = teacher;
-            listItem.scheduleRoom = room;
-            listItem.scheduleTimeIn = timeIn;
-            listItem.scheduleTimeOut = timeOut;
-            listItem.scheduleIcon = icon;
+            Task listItem = new Task();
+            listItem.taskTitle = title;
+            listItem.taskDescription = description;
+            listItem.taskIcon = icon;
             listItemList.add(listItem);
         }
 
-        if (schedules.size() == 0) {
-            Schedule plainText = new Schedule();
-            plainText.scheduleLesson = context.getString(R.string.schedule_fragment_splash_no_classes);
+        if (tasks.size() == 0) {
+            Task plainText = new Task();
+            plainText.taskTitle = context.getString(R.string.schedule_tasks_splash_no_tasks);
             listItemList.add(plainText);
         }
 
-        }
+    }
 
     /*
     *Similar to getView of Adapter where instead of View
     *we return RemoteViews
     *
     */
-@Override
-public RemoteViews getViewAt(int position) {
-final RemoteViews remoteView = new RemoteViews(
-        context.getPackageName(), R.layout.list_item_schedule);
-        Schedule listItem = listItemList.get(position);
-        remoteView.setTextViewText(R.id.schedule_lesson, listItem.scheduleLesson);
-        remoteView.setTextViewText(R.id.schedule_teacher, listItem.scheduleTeacher);
-        remoteView.setTextViewText(R.id.schedule_room, listItem.scheduleRoom);
-        remoteView.setTextViewText(R.id.schedule_time_in, listItem.scheduleTimeIn);
-        remoteView.setTextViewText(R.id.schedule_time_out, listItem.scheduleTimeOut);
+    @Override
+    public RemoteViews getViewAt(int position) {
+        final RemoteViews remoteView = new RemoteViews(context.getPackageName(), R.layout.list_item_task);
+
+        Task listItem = listItemList.get(position);
+        remoteView.setTextViewText(R.id.task_title, listItem.taskTitle);
+        remoteView.setTextViewText(R.id.task_description, listItem.taskDescription);
+
         try {
-        remoteView.setImageViewBitmap(R.id.schedule_icon,
-        MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(listItem.scheduleIcon)));
+            if (listItem.taskIcon != null)
+                remoteView.setImageViewBitmap(R.id.task_icon,
+                        MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(listItem.taskIcon)));
         } catch (IOException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
-        remoteView.setTextColor(R.id.schedule_teacher, Color.parseColor("#000000"));
-        remoteView.setTextColor(R.id.schedule_room, Color.parseColor("#000000"));
-        remoteView.setTextColor(R.id.schedule_time_in, Color.parseColor("#000000"));
-        remoteView.setTextColor(R.id.schedule_time_out, Color.parseColor("#000000"));
+
+        remoteView.setTextColor(R.id.task_description, Color.parseColor("#000000"));
 
         return remoteView;
-        }
+    }
 
-@Override
-public RemoteViews getLoadingView() {
+    @Override
+    public RemoteViews getLoadingView() {
         return null;
-        }
+    }
 
-@Override
-public int getViewTypeCount() {
+    @Override
+    public int getViewTypeCount() {
         return 1;
-        }
+    }
 
-@Override
-public boolean hasStableIds() {
+    @Override
+    public boolean hasStableIds() {
         return true;
-        }
+    }
 
-@Override
-public void onCreate() {
-        }
+    @Override
+    public void onCreate() {
+    }
 
-@Override
-public void onDataSetChanged() {
-        }
+    @Override
+    public void onDataSetChanged() {
+    }
 
-@Override
-public void onDestroy() {
-        }
+    @Override
+    public void onDestroy() {
+    }
 
-@Override
-public int getCount() {
+    @Override
+    public int getCount() {
         return listItemList.size();
-        }
+    }
 
-@Override
-public long getItemId(int position) {
+    @Override
+    public long getItemId(int position) {
         return position;
-        }
-        }
+    }
+}

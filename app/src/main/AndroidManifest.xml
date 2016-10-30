@@ -131,7 +131,8 @@
             android:parentActivityName=".TasksDetailActivity"
             android:theme="@style/FullscreenTheme" />
 
-        <receiver android:name=".ScheduleWidgetProvider" >
+        <receiver android:name=".ScheduleWidgetProvider"
+            android:label="@string/schedule">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -141,6 +142,19 @@
 
         <service
             android:name=".services.ScheduleWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver android:name=".TasksWidgetProvider"
+            android:label="@string/tasks">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/provider_widget_tasks" />
+        </receiver>
+
+        <service
+            android:name=".services.TasksWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
     </application>

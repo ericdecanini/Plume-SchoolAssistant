@@ -1,5 +1,6 @@
 package com.pdt.plume;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 import com.pdt.plume.services.ScheduleWidgetService;
+import com.pdt.plume.services.TasksWidgetService;
 
 
 public class TasksWidgetProvider extends AppWidgetProvider {
@@ -27,10 +29,13 @@ public class TasksWidgetProvider extends AppWidgetProvider {
  * your homescreen*/
         final int N = appWidgetIds.length;
         for (int i = 0; i < N; ++i) {
-            RemoteViews remoteViews = updateWidgetListView(context,
-                    appWidgetIds[i]);
-            appWidgetManager.updateAppWidget(appWidgetIds[i],
-                    remoteViews);
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.putExtra(context.getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), context.getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
+            RemoteViews remoteViews = updateWidgetListView(context, appWidgetIds[i]);
+            remoteViews.setOnClickPendingIntent(R.id.master_layout, pendingIntent);
+            appWidgetManager.updateAppWidget(appWidgetIds[i], remoteViews);
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
@@ -40,10 +45,10 @@ public class TasksWidgetProvider extends AppWidgetProvider {
 
         //which layout to show on widget
         RemoteViews remoteViews = new RemoteViews(
-                context.getPackageName(),R.layout.widget);
+                context.getPackageName(),R.layout.widget_tasks);
 
         //RemoteViews Service needed to provide adapter for ListView
-        Intent svcIntent = new Intent(context, ScheduleWidgetService.class);
+        Intent svcIntent = new Intent(context, TasksWidgetService.class);
         //passing app widget id to that RemoteViews Service
         svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         //setting a unique Uri to the intent
@@ -51,10 +56,10 @@ public class TasksWidgetProvider extends AppWidgetProvider {
         svcIntent.setData(Uri.parse(
                 svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
         //setting adapter to listview of the widget
-        remoteViews.setRemoteAdapter(appWidgetId, R.id.schedule_list,
+        remoteViews.setRemoteAdapter(appWidgetId, R.id.tasks_list,
                 svcIntent);
         //setting an empty view in case of no data
-        remoteViews.setEmptyView(R.id.schedule_list, R.id.schedule_list);
+        remoteViews.setEmptyView(R.id.tasks_list, R.id.tasks_list);
         return remoteViews;
     }
 

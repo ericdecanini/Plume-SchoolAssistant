@@ -629,9 +629,12 @@ public class NewScheduleActivity extends AppCompatActivity
                 // If there are none, start from AddClassTimeOneFragment (Basis Selection)
 
                 // Get the stored preference
-                SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewScheduleActivity.this);
                 basis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
                 weekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
+                Log.v(LOG_TAG, "Basis: " + basis);
+                Log.v(LOG_TAG, "Weektype: " + weekType);
+
 
                 // Check if preferences were not stored
                 if (basis.equals("-1") || weekType.equals("-1")){
@@ -886,7 +889,7 @@ public class NewScheduleActivity extends AppCompatActivity
         classTimeAdapter.notifyDataSetChanged();
 
         // Store the shared preferences for "basis" and "weekType"
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), basis)
                 .putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType)

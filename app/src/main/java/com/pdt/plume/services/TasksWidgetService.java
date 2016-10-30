@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.widget.RemoteViewsService;
 
 import com.pdt.plume.ScheduleListProvider;
+import com.pdt.plume.TasksListProvider;
 
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ public class TasksWidgetService extends RemoteViewsService {
                 AppWidgetManager.INVALID_APPWIDGET_ID);
 
         try {
-            return (new ScheduleListProvider(this.getApplicationContext(), intent));
+            return (new TasksListProvider(this.getApplicationContext(), intent));
         } catch (IOException e) {
             e.printStackTrace();
         }

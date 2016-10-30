@@ -203,7 +203,7 @@
 
     <!-- Keys used in saving to SharedPreferences -->
     <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
-    <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_WEEKTYPE_BASIS_KEY</string>
+    <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_BASIS_WEEKTYPE_KEY</string>
 
     <!--
     SCHEDULE STRINGS END
@@ -395,7 +395,7 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.5 Alpha</string>
+    <string name="Version">Version 0.1 Beta</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.co.uk</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -406,7 +406,7 @@
     <string name="Eric" translatable="false">Eric Decanini</string>
     <string name="Graphics">Graphics and design:</string>
     <string name="Reiss" translatable="false">Reiss Tozer</string>
-    <string name="Testers">App testers:</string>
+    <string name="Testers">Alpha testers:</string>
     <string name="Connor" translatable="false">Connor Hutchings</string>
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">icons8</a></string>
 

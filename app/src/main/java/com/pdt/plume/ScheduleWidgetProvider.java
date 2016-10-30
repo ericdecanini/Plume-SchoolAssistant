@@ -1,5 +1,6 @@
 package com.pdt.plume;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -19,19 +20,18 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager
-            appWidgetManager,int[] appWidgetIds) {
-
-/*int[] appWidgetIds holds ids of multiple instance
- * of your widget
- * meaning you are placing more than one widgets on
- * your homescreen*/
+            appWidgetManager, int[] appWidgetIds) {
         final int N = appWidgetIds.length;
+
         for (int i = 0; i < N; ++i) {
-            RemoteViews remoteViews = updateWidgetListView(context,
-                    appWidgetIds[i]);
-            appWidgetManager.updateAppWidget(appWidgetIds[i],
-                    remoteViews);
+            Intent intent = new Intent(context, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
+            RemoteViews remoteViews = updateWidgetListView(context, appWidgetIds[i]);
+            remoteViews.setOnClickPendingIntent(R.id.master_layout, pendingIntent);
+            appWidgetManager.updateAppWidget(appWidgetIds[i], remoteViews);
         }
+
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
@@ -40,7 +40,7 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
 
         //which layout to show on widget
         RemoteViews remoteViews = new RemoteViews(
-                context.getPackageName(),R.layout.widget);
+                context.getPackageName(), R.layout.widget_schedule);
 
         //RemoteViews Service needed to provide adapter for ListView
         Intent svcIntent = new Intent(context, ScheduleWidgetService.class);
