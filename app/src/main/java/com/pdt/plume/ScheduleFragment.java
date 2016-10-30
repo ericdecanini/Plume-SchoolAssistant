@@ -18,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -133,9 +134,8 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void init() {
-        Toast.makeText(getContext(), "Init", Toast.LENGTH_SHORT).show();
-        Log.v(LOG_TAG, "Init");
         headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
+        headerTextView.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
@@ -398,6 +398,10 @@ public class ScheduleFragment extends Fragment {
             adapter.clear();
             adapter.addAll(db.getCurrentDayScheduleArray(getContext()));
             adapter.notifyDataSetChanged();
+            if (adapter.getCount() == 0) {
+                headerTextView.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
+                headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+            }
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode

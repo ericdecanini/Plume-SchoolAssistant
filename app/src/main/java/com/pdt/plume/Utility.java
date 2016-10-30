@@ -190,12 +190,12 @@ public class Utility {
     }
 
     // Helper method to create an arrayList of set periods based on the periods string
-    public ArrayList<String> createSetPeriodsArrayList(String periods, int weekNumber) {
+    public ArrayList<String> createSetPeriodsArrayList(String periods, String weekNumber) {
         String[] splitPeriods = periods.split(":");
         ArrayList<String> periodList = new ArrayList<>();
 
         // Week 1: Get regular data
-        if (weekNumber == 0) {
+        if (weekNumber.equals("0")) {
             // This will be called if the row is period based
             if (splitPeriods.length == 12) {
                 if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
@@ -284,7 +284,7 @@ public class Utility {
     }
 
     // Helper method to check if occurrence matches current day
-    public boolean occurrenceMatchesCurrentDay(Context context, String occurrence, String periods, int weekNumber, int dayOfWeek) {
+    public boolean occurrenceMatchesCurrentDay(Context context, String occurrence, String periods, String weekNumber, int dayOfWeek) {
         // In this case, no class time would have been set
         if (occurrence.equals("-1"))
             return false;
@@ -348,7 +348,7 @@ public class Utility {
 
         // 2ND CHECK: Time/Period Based Day Check
         // Week A
-        else if (weekNumber == 0 || splitOccurrence[1].equals("0")) {
+        else if (weekNumber.equals("0") || splitOccurrence[1].equals("0")) {
             if (splitOccurrence[2].equals("1") || splitOccurrence[2].equals("3"))
                 if (dayOfWeek == 1)
                     return true;

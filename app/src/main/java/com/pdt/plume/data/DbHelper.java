@@ -79,85 +79,85 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Cursor oldScheduleTable = db.query(ScheduleEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-        Cursor oldTasksTable = db.query(TasksEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-
-        ContentValues scheduleValues = new ContentValues();
-        ContentValues tasksValues = new ContentValues();
-
-        // Retrieve the data from the schedule table
-        if (oldScheduleTable.getCount() != 0)
-            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
-                oldScheduleTable.moveToPosition(i);
-
-                String title = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-                String teacher = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-                String room = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                String occurrence = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                int timeIn = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-                int timeOut = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
-                int timeInAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-                int timeOutAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
-                String periods = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
-                String icon = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-
-                scheduleValues.put(ScheduleEntry.COLUMN_TITLE, title);
-                scheduleValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
-                scheduleValues.put(ScheduleEntry.COLUMN_ROOM, room);
-                scheduleValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
-                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN, timeIn);
-                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeOut);
-                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeInAlt);
-                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeOutAlt);
-                scheduleValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
-                scheduleValues.put(ScheduleEntry.COLUMN_ICON, icon);
-
-                db.insert(ScheduleEntry.TABLE_NAME, null, scheduleValues);
-            }
-
-        // Retrieve the data from the tasks table
-        if (oldTasksTable.getCount() != 0)
-            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
-                oldTasksTable.moveToPosition(i);
-
-                String title = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TITLE));
-                String classTitle = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_CLASS));
-                String classType = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TYPE));
-                String sharer = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_SHARER));
-                String description = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
-                String attachment = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
-                int duedate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
-                int reminderdate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
-                int remindertime = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
-                String icon = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ICON));
-
-                tasksValues.put(TasksEntry.COLUMN_TITLE, title);
-                tasksValues.put(TasksEntry.COLUMN_CLASS, classTitle);
-                tasksValues.put(TasksEntry.COLUMN_TYPE, classType);
-                tasksValues.put(TasksEntry.COLUMN_SHARER, sharer);
-                tasksValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
-                tasksValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
-                tasksValues.put(TasksEntry.COLUMN_DUEDATE, duedate);
-                tasksValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
-                tasksValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
-                tasksValues.put(TasksEntry.COLUMN_ICON, icon);
-                tasksValues.put(TasksEntry.COLUMN_PICTURE, "");
-                tasksValues.put(TasksEntry.COLUMN_COMPLETED, 0);
-
-                db.insert(TasksEntry.TABLE_NAME, null, tasksValues);
-            }
+//        Cursor oldScheduleTable = db.query(ScheduleEntry.TABLE_NAME,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null);
+//        Cursor oldTasksTable = db.query(TasksEntry.TABLE_NAME,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null);
+//
+//        ContentValues scheduleValues = new ContentValues();
+//        ContentValues tasksValues = new ContentValues();
+//
+//        // Retrieve the data from the schedule table
+//        if (oldScheduleTable.getCount() != 0)
+//            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
+//                oldScheduleTable.moveToPosition(i);
+//
+//                String title = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+//                String teacher = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+//                String room = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+//                String occurrence = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+//                int timeIn = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+//                int timeOut = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
+//                int timeInAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
+//                int timeOutAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
+//                String periods = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
+//                String icon = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+//
+//                scheduleValues.put(ScheduleEntry.COLUMN_TITLE, title);
+//                scheduleValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
+//                scheduleValues.put(ScheduleEntry.COLUMN_ROOM, room);
+//                scheduleValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
+//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN, timeIn);
+//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeOut);
+//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeInAlt);
+//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeOutAlt);
+//                scheduleValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
+//                scheduleValues.put(ScheduleEntry.COLUMN_ICON, icon);
+//
+//                db.insert(ScheduleEntry.TABLE_NAME, null, scheduleValues);
+//            }
+//
+//        // Retrieve the data from the tasks table
+//        if (oldTasksTable.getCount() != 0)
+//            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
+//                oldTasksTable.moveToPosition(i);
+//
+//                String title = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TITLE));
+//                String classTitle = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_CLASS));
+//                String classType = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TYPE));
+//                String sharer = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_SHARER));
+//                String description = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+//                String attachment = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+//                int duedate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+//                int reminderdate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+//                int remindertime = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+//                String icon = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ICON));
+//
+//                tasksValues.put(TasksEntry.COLUMN_TITLE, title);
+//                tasksValues.put(TasksEntry.COLUMN_CLASS, classTitle);
+//                tasksValues.put(TasksEntry.COLUMN_TYPE, classType);
+//                tasksValues.put(TasksEntry.COLUMN_SHARER, sharer);
+//                tasksValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
+//                tasksValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
+//                tasksValues.put(TasksEntry.COLUMN_DUEDATE, duedate);
+//                tasksValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
+//                tasksValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
+//                tasksValues.put(TasksEntry.COLUMN_ICON, icon);
+//                tasksValues.put(TasksEntry.COLUMN_PICTURE, "");
+//                tasksValues.put(TasksEntry.COLUMN_COMPLETED, 0);
+//
+//                db.insert(TasksEntry.TABLE_NAME, null, tasksValues);
+//            }
 
         // Drop the previous tables and create new ones
         db.execSQL("DROP TABLE IF EXISTS schedule");
@@ -191,9 +191,9 @@ public class DbHelper extends SQLiteOpenHelper {
     public Cursor getCurrentDayScheduleData(Context context) {
         SQLiteDatabase db = this.getReadableDatabase();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int weekNumber = preferences.getInt(context.getString(R.string.KEY_WEEK_NUMBER), 0);
+        String weekNumber = preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
         Cursor cursor;
-        if (weekNumber == 0)
+        if (weekNumber.equals("0"))
             cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
                     null,
                     null,
@@ -237,7 +237,7 @@ public class DbHelper extends SQLiteOpenHelper {
         String selection = builder.toString();
 
         Cursor currentDayCursor;
-        if (weekNumber == 0)
+        if (weekNumber.equals("0"))
             currentDayCursor = db.query(ScheduleEntry.TABLE_NAME,
                     null,
                     selection,
@@ -262,8 +262,8 @@ public class DbHelper extends SQLiteOpenHelper {
         Cursor cursor = getCurrentDayScheduleData(context);
         Calendar c = Calendar.getInstance();
         ArrayList<Schedule> arrayList = new ArrayList<>();
-        int weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_WEEK_NUMBER), 0);
+        String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
 
         // Run through the cursor's items
@@ -276,7 +276,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
 
                 // Week 1 / Same week items
-                if (weekNumber == 0 || occurrence.split(":")[1].equals("0")) {
+                if (weekNumber.equals("0") || occurrence.split(":")[1].equals("0")) {
                     // Get the variables to check from the database
                     String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
@@ -296,7 +296,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
                     // Add the period/block based list item
                     else if (!periods.equals("-1")) {
-                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 0);
+                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "0");
                         for (int ii = 0; ii < periodList.size(); ii++) {
                             arrayList.add(new Schedule(
                                     context,
@@ -333,7 +333,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
                     // Add the period/block based list item
                     else {
-                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, 1);
+                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "1");
                         for (int ii = 0; ii < periodList.size(); ii++) {
                             arrayList.add(new Schedule(
                                     context,

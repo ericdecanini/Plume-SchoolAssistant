@@ -72,8 +72,8 @@ public class ScheduleNotificationService extends Service {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     if (cursor.moveToPosition(i)) {
                         int timeIn;
-                        int weekType = preferences.getInt(getString(R.string.KEY_SETTINGS_WEEK_NUMBER), 0);
-                        if (weekType == 0)
+                        String weekType = preferences.getString(getString(R.string.KEY_SETTINGS_WEEK_NUMBER), "0");
+                        if (weekType.equals("0"))
                             timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
                         else
                             timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
@@ -157,8 +157,8 @@ public class ScheduleNotificationService extends Service {
                     if (cursor.moveToPosition(i)) {
                         int timeIn;
                         int timeOut;
-                        int weekType = preferences.getInt(getString(R.string.KEY_SETTINGS_WEEK_NUMBER), 0);
-                        if (weekType == 0) {
+                        String weekType = preferences.getString(getString(R.string.KEY_SETTINGS_WEEK_NUMBER), "0");
+                        if (weekType.equals("0")) {
                             timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
                             timeOut = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
                         }

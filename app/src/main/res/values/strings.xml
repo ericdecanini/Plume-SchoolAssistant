@@ -26,6 +26,9 @@
     <string name="restore">Restore</string>
     <string name="done">Done</string>
 
+    <string name="schedule">Schedule</string>
+    <string name="tasks">Tasks</string>
+
     <!--
     MAIN ACTIVITY
     -->
@@ -393,7 +396,7 @@
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
     <string name="Version">Version 0.5 Alpha</string>
-    <string name="Weblink" translatable="false">https://plumeacademylassistant.co.uk</string>
+    <string name="Weblink" translatable="false">https://plumeacademyassistant.co.uk</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
     <string name="Plume_Email">team@plumeacademyassistant.co.uk</string>

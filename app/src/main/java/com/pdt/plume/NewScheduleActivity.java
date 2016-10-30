@@ -6,6 +6,8 @@ import android.app.FragmentTransaction;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -306,6 +308,13 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
                 // If all fields are valid, perform database insertion
                 else if (insertScheduleDataIntoDatabase()) {
+                    // Update any widgets
+                    Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
+                    widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+                    int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
+                    widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+                    sendBroadcast(widgetUpdate);
+
                     if (!STARTED_BY_NEWTASKACTIVITY) {
                         Intent intent = new Intent(this, MainActivity.class);
                         Toast.makeText(NewScheduleActivity.this, scheduleTitle + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
@@ -478,7 +487,6 @@ public class NewScheduleActivity extends AppCompatActivity
                 if (dbHelper.insertSchedule(title, teacher, room, "-1",
                         -1, -1, -1, -1,
                         "-1", scheduleIconUriString, notes_id)) {
-                    Log.v(LOG_TAG, "Inserting single schedule returned true");
                     return true;
                 }
                 else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
@@ -801,7 +809,6 @@ public class NewScheduleActivity extends AppCompatActivity
         // to either update or insert
         // If the interface contains an edit flag, update the array list items
         if (FLAG_EDIT) {
-            Toast.makeText(this, "Updating row " + rowId, Toast.LENGTH_SHORT).show();
             // Create temporary array lists to hold the list's data as it is cleared for bulk re-inserting
             ArrayList<String> previousStringObjects = new ArrayList<>();
             ArrayList<Integer> previousIntObjects = new ArrayList<>();
@@ -857,7 +864,6 @@ public class NewScheduleActivity extends AppCompatActivity
         // If the interface does not contain an edit flag
         // Add values into Array Lists to be inserted into the database
         else{
-            Toast.makeText(this, "Inserting new row", Toast.LENGTH_SHORT).show();
             occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
             timeInList.add(timeInSeconds);
             timeOutList.add(timeOutSeconds);

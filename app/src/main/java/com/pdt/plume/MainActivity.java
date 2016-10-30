@@ -128,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigationView.setNavigationItemSelectedListener(this);
 
         float sw = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels) / getResources().getDisplayMetrics().density;
-        Log.v(LOG_TAG, "Smallest Width: " + sw);
 
         // Start the class notification service
         startService(new Intent(this, ScheduleNotificationService.class));
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Initialise the week number
         weekNumber = 0;
-        editor.putInt(getString(R.string.KEY_WEEK_NUMBER), 0);
+        editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");
 
         // Commit the preferences
         editor.apply();
@@ -187,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Set the action bar colour according to the theme
         mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
+                .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -203,10 +204,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Initialise the tab layout theme
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout!= null) {
-            mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
-                    .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
             tabLayout.setSelectedTabIndicatorColor(mSecondaryColor);
         }
+
+        // Initialise the fab
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
     }
 
     // Include back button action to close
@@ -233,9 +236,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(new Intent
                         (this, ClassesActivity.class));
                 break;
-            case R.id.nav_people:
-                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
-                break;
+//            case R.id.nav_people:
+//                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
+//                break;
             case R.id.nav_completedTasks:
                 startActivity(new Intent
                         (this, CompletedTasksActivity.class));
@@ -244,9 +247,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.nav_help:
-                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
-                break;
+//            case R.id.nav_help:
+//                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
+//                break;
         }
 
         // Close the navigation drawer upon item selection

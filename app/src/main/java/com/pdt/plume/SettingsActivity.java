@@ -115,7 +115,7 @@ public class SettingsActivity extends PreferenceActivity
 
                 // If 'Week number'
                 if (prefKey.equals(getString(R.string.KEY_SETTINGS_WEEK_NUMBER))){
-                    editor.putInt(getString(R.string.KEY_WEEK_NUMBER), prefIndex);
+                    editor.putString(getString(R.string.KEY_WEEK_NUMBER), ((String)listPreference.getEntryValues()[prefIndex]));
                     Log.v(LOG_TAG, "Setting week number to " + prefIndex);
                 }
 

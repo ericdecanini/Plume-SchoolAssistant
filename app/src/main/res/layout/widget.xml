@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#eeeeee">
+    
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="48dp"-->
+        <!--android:background="@color/colorPrimary"-->
+        <!--android:textColor="@color/white"-->
+        <!--android:text="@string/schedule"-->
+        <!--android:textSize="22sp"-->
+        <!--android:gravity="center_vertical" />-->
+        <!--android:paddingLeft="16dp"-->
+        <!--android:paddingStart="16dp"/>-->
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/colorPrimary" />
+
+    <ListView
+        android:id="@+id/schedule_list"
+        android:divider="@drawable/schedule_divider"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

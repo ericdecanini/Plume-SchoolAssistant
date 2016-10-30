@@ -130,6 +130,19 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".TasksDetailActivity"
             android:theme="@style/FullscreenTheme" />
+
+        <receiver android:name=".ScheduleWidgetProvider" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/provider_widget_schedule" />
+        </receiver>
+
+        <service
+            android:name=".services.ScheduleWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
 </manifest>
