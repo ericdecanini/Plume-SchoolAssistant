@@ -20,6 +20,8 @@ import android.widget.TextView;
 public class AddClassTimeTwoFragment extends DialogFragment {
 
     onBasisTextviewSelectedListener basisTextviewSelectedListener;
+    boolean FLAG_EDIT = false;
+    int rowID = 0;
 
     // Public Constructor
     public static AddClassTimeTwoFragment newInstance(int title) {
@@ -31,14 +33,14 @@ public class AddClassTimeTwoFragment extends DialogFragment {
     }
 
     public interface onWeekTypeSelectedListener {
-        public void onWeekTypeSelected(String weekType);
+        public void onWeekTypeSelected(String weekType, boolean FLAG_EDIT, int rowID);
     }
 
     onWeekTypeSelectedListener weekTypeSelectedListener;
 
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
-        public void onBasisTextviewSelected();
+        public void onBasisTextviewSelected(boolean FLAG_EDIT, int rowID);
     }
 
     @Override
@@ -85,6 +87,11 @@ public class AddClassTimeTwoFragment extends DialogFragment {
         else if (basis.equals("1"))
             basisTextview.setText(getString(R.string.class_time_one_periodbased));
 
+        if (args.containsKey("FLAG_EDIT")) {
+            FLAG_EDIT = args.getBoolean("FLAG_EDIT");
+            rowID = args.getInt("rowID");
+        }
+
         return rootView;
     }
 
@@ -96,13 +103,13 @@ public class AddClassTimeTwoFragment extends DialogFragment {
                     // Run the interface sending the week classType parameter
                     // based on the button selected
                     case R.id.class_two_weeksame:
-                        weekTypeSelectedListener.onWeekTypeSelected("0");
+                        weekTypeSelectedListener.onWeekTypeSelected("0", FLAG_EDIT, rowID);
                         break;
                     case R.id.class_two_weekalt:
-                        weekTypeSelectedListener.onWeekTypeSelected("1");
+                        weekTypeSelectedListener.onWeekTypeSelected("1", FLAG_EDIT, rowID);
                         break;
                     case R.id.basis_textview:
-                        basisTextviewSelectedListener.onBasisTextviewSelected();
+                        basisTextviewSelectedListener.onBasisTextviewSelected(FLAG_EDIT, rowID);
                         break;
 
                 }

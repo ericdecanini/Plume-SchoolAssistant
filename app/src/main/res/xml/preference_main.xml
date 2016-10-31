@@ -9,7 +9,8 @@
         <com.pdt.plume.NumberPickerPreference
             android:defaultValue="30"
             android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
-            android:title="@string/settings_class_notification_title" />
+            android:title="@string/settings_class_notification_title"
+            android:dialogTitle="@string/settings_class_notification_dialog_title"/>
 
         <CheckBoxPreference
             android:key="@string/KEY_SETTINGS_CLASS_MUTE"

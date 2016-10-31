@@ -12,8 +12,13 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import static com.google.android.gms.common.stats.zzb.zza.FL;
+
 
 public class AddClassTimeOneFragment extends DialogFragment {
+
+    boolean FLAG_EDIT = false;
+    int rowID = 0;
 
     // Public Constructor
     public static AddClassTimeOneFragment newInstance(int title) {
@@ -26,7 +31,7 @@ public class AddClassTimeOneFragment extends DialogFragment {
 
     public interface onBasisSelectedListener {
         //Pass all data through input params here
-        public void onBasisSelected(String basis);
+        public void onBasisSelected(String basis, boolean FLAG_EDIT, int rowID);
     }
 
     onBasisSelectedListener basisSelectedListener;
@@ -64,6 +69,11 @@ public class AddClassTimeOneFragment extends DialogFragment {
         periodBasedButton.setOnClickListener(listener());
         blockBasedButton.setOnClickListener(listener());
 
+        if (getArguments().containsKey("FLAG_EDIT")) {
+            FLAG_EDIT = getArguments().getBoolean("FLAG_EDIT");
+            rowID = getArguments().getInt("rowID");
+        }
+
         return rootView;
     }
 
@@ -75,13 +85,13 @@ public class AddClassTimeOneFragment extends DialogFragment {
                     // Run the interface sending the basis parameter
                     // based on the button selected
                     case R.id.class_one_timebased:
-                        basisSelectedListener.onBasisSelected("0");
+                        basisSelectedListener.onBasisSelected("0", FLAG_EDIT, rowID);
                         break;
                     case R.id.class_one_periodbased:
-                        basisSelectedListener.onBasisSelected("1");
+                        basisSelectedListener.onBasisSelected("1", FLAG_EDIT, rowID);
                         break;
                     case R.id.class_one_blockbased:
-                        basisSelectedListener.onBasisSelected("2");
+                        basisSelectedListener.onBasisSelected("2", FLAG_EDIT, rowID);
                         break;
                 }
             }

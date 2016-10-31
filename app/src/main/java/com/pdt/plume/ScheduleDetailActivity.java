@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,6 +44,8 @@ import com.pdt.plume.data.DbHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.pdt.plume.R.bool.isTablet;
 
 public class ScheduleDetailActivity extends AppCompatActivity {
 
@@ -239,7 +243,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         mainColour = Color.parseColor("#424242");
                     else {
                         // Set the action bar colour according to the theme
-                        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+                        mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                getResources().getColor(R.color.colorPrimary))) ;
                         mainColour = palette.getVibrantColor(mPrimaryColor);
                     }
 
@@ -416,6 +421,23 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
         // Set the title and colour of the contextual action bar
         mode.setTitle("Select Items");
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+
+        int colorFrom = mPrimaryColor;
+        int colorTo = getResources().getColor(R.color.gray_500);
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+        colorAnimation.setDuration(200); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                findViewById(R.id.collapsingToolbar).setBackgroundColor((int) animator.getAnimatedValue());
+            }
+
+        });
+        colorAnimation.start();
+
         return true;
     }
 
@@ -459,7 +481,21 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
         CAMselectedItemsList.clear();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+            getWindow().setStatusBarColor(mDarkColor);
+
+        int colorFrom = getResources().getColor(R.color.gray_500);
+        int colorTo = mPrimaryColor;
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+        colorAnimation.setDuration(800); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                findViewById(R.id.collapsingToolbar).setBackgroundColor((int) animator.getAnimatedValue());
+            }
+
+        });
+        colorAnimation.start();
     }
 
     private void deleteSelectedItems() {
@@ -628,6 +664,23 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
             // Set the title and colour of the contextual action bar
             mode.setTitle("Select Items");
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+
+            int colorFrom = mPrimaryColor;
+            int colorTo = getResources().getColor(R.color.gray_500);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(200); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    findViewById(R.id.collapsingToolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
+
             return true;
         }
 
@@ -672,6 +725,20 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getWindow().setStatusBarColor(mDarkColor);
+
+            int colorFrom = getResources().getColor(R.color.gray_500);
+            int colorTo = mPrimaryColor;
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.setDuration(800); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    findViewById(R.id.collapsingToolbar).setBackgroundColor((int) animator.getAnimatedValue());
+                }
+
+            });
+            colorAnimation.start();
         }
 
         private void deleteSelectedItems() {

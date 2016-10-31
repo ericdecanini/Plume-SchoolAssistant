@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +50,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
     // View IDs passed along activities
     int resourceId = -1;
+    int rowID = 0;
+    boolean FLAG_EDIT = false;
 
     // Interface variables
     onDaysSelectedListener daysSelectedListener;
@@ -78,11 +81,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
     }
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
-        public void onBasisTextviewSelected();
+        public void onBasisTextviewSelected(boolean FLAG_EDIT, int rowID);
     }
     public interface onWeektypeTextviewSelectedListener {
         //Pass all data through input params here
-        public void onWeektypeTextViewSelectedListener(String basis);
+        public void onWeektypeTextViewSelectedListener(String basis, boolean FLAG_EDIT, int rowID);
     }
 
     @Override
@@ -180,6 +183,16 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
         // Check if fragment was restarted via Time Set, restore previous state
         Bundle args = getArguments();
         if (args != null){
+            if (args.containsKey("FLAG_EDIT")) {
+                FLAG_EDIT = args.getBoolean("FLAG_EDIT");
+                rowID = args.getInt("rowID");
+                Log.v(LOG_TAG, "rowID: " + rowID);
+            }
+            if (args.containsKey("occurrence")) {
+                FLAG_EDIT = true;
+                rowID = args.getInt("rowId");
+            }
+            Log.v(LOG_TAG, "FLAG EDIT set true");
             // Hide the alternate layout if the week classType selected is 0 (Same time every week)
             // and set the hyperlink week classType text to the selected week classType text
             if (!args.getString("weekType", "-1").equals("1")){
@@ -196,6 +209,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
             // If the fragment contains the 'hourOfDay' string, it must contain other previous state data
             if (args.containsKey("hourOfDay")){
                 // Get previous state data
+                FLAG_EDIT = true;
+                Log.v(LOG_TAG, "FLAG EDIT set true");
                 String weekType = args.getString("weekType", "-1");
                 String classDays = args.getString("classDays", "-1");
                 String[] splitClassDays = classDays.split(":");
@@ -210,32 +225,32 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 // Auto-fill the days row and binary data
                 if (splitClassDays[0].equals("1") || splitClassDays[0].equals("3")){
                     isButtonChecked[0] = 1;
-                    sunday.setColorFilter(mSecondaryColor);
+                    sunday.setColorFilter(mPrimaryColor);
 
                 }
                 if (splitClassDays[1].equals("1") || splitClassDays[1].equals("3")){
                     isButtonChecked[1] = 1;
-                    monday.setColorFilter(mSecondaryColor);
+                    monday.setColorFilter(mPrimaryColor);
                 }
                 if (splitClassDays[2].equals("1") || splitClassDays[2].equals("3")){
                     isButtonChecked[2] = 1;
-                    tuesday.setColorFilter(mSecondaryColor);
+                    tuesday.setColorFilter(mPrimaryColor);
                 }
                 if (splitClassDays[3].equals("1") || splitClassDays[3].equals("3")){
                     isButtonChecked[3] = 1;
-                    wednesday.setColorFilter(mSecondaryColor);
+                    wednesday.setColorFilter(mPrimaryColor);
                 }
                 if (splitClassDays[4].equals("1") || splitClassDays[4].equals("3")){
                     isButtonChecked[4] = 1;
-                    thursday.setColorFilter(mSecondaryColor);
+                    thursday.setColorFilter(mPrimaryColor);
                 }
                 if (splitClassDays[5].equals("1") || splitClassDays[5].equals("3")){
                     isButtonChecked[5] = 1;
-                    friday.setColorFilter(mSecondaryColor);
+                    friday.setColorFilter(mPrimaryColor);
                 }
                 if (splitClassDays[6].equals("1") || splitClassDays[6].equals("3")){
                     isButtonChecked[6] = 1;
-                    saturday.setColorFilter(mSecondaryColor);
+                    saturday.setColorFilter(mPrimaryColor);
                 }
 
                 // Do so for alternate layout if it is available
@@ -244,43 +259,43 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         if (isButtonChecked[0] == 1)
                             isButtonChecked[0] = 3;
                         else isButtonChecked[0] = 2;
-                        sundayAlt.setColorFilter(mSecondaryColor);
+                        sundayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[1].equals("2") || splitClassDays[1].equals("3")){
                         if (isButtonChecked[1] == 1)
                             isButtonChecked[1] = 3;
                         else isButtonChecked[1] = 2;
-                        mondayAlt.setColorFilter(mSecondaryColor);
+                        mondayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[2].equals("2") || splitClassDays[2].equals("3")){
                         if (isButtonChecked[2] == 1)
                             isButtonChecked[2] = 3;
                         else isButtonChecked[2] = 2;
-                        tuesdayAlt.setColorFilter(mSecondaryColor);
+                        tuesdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[3].equals("2") || splitClassDays[3].equals("3")){
                         if (isButtonChecked[3] == 1)
                             isButtonChecked[3] = 3;
                         else isButtonChecked[3] = 2;
-                        wednesdayAlt.setColorFilter(mSecondaryColor);
+                        wednesdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[4].equals("2") || splitClassDays[4].equals("3")){
                         if (isButtonChecked[4] == 1)
                             isButtonChecked[4] = 3;
                         else isButtonChecked[4] = 2;
-                        thursdayAlt.setColorFilter(mSecondaryColor);
+                        thursdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[5].equals("2") || splitClassDays[5].equals("3")){
                         if (isButtonChecked[5] == 1)
                             isButtonChecked[5] = 3;
                         else isButtonChecked[5] = 2;
-                        fridayAlt.setColorFilter(mSecondaryColor);
+                        fridayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitClassDays[6].equals("2") || splitClassDays[6].equals("3")){
                         if (isButtonChecked[6] == 1)
                             isButtonChecked[6] = 3;
                         else isButtonChecked[6] = 2;
-                        saturdayAlt.setColorFilter(mSecondaryColor);
+                        saturdayAlt.setColorFilter(mPrimaryColor);
                     }
                 }
 
@@ -361,31 +376,31 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                 // and set it in the activity
                 if (splitOccurrence[2].equals("1") || splitOccurrence[2].equals("3")){
                     isButtonChecked[0] = 1;
-                    sunday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    sunday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[3].equals("1") || splitOccurrence[3].equals("3")){
                     isButtonChecked[1] = 1;
-                    monday.setImageResource(R.drawable.ui_monday_selected);
+                    monday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[4].equals("1") || splitOccurrence[4].equals("3")){
                     isButtonChecked[2] = 1;
-                    tuesday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    tuesday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[5].equals("1") || splitOccurrence[5].equals("3")){
                     isButtonChecked[3] = 1;
-                    wednesday.setImageResource(R.drawable.ui_wednesday_selected);
+                    wednesday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[6].equals("1") || splitOccurrence[6].equals("3")){
                     isButtonChecked[4] = 1;
-                    thursday.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                    thursday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[7].equals("1") || splitOccurrence[7].equals("3")){
                     isButtonChecked[5] = 1;
-                    friday.setImageResource(R.drawable.ui_friday_selected);
+                    friday.setColorFilter(mPrimaryColor);
                 }
                 if (splitOccurrence[8].equals("1") || splitOccurrence[8].equals("3")){
                     isButtonChecked[6] = 1;
-                    saturday.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                    saturday.setColorFilter(mPrimaryColor);
                 }
 
                 // Do so for alternate layout if it is available
@@ -394,43 +409,43 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         if (isButtonChecked[0] == 1)
                             isButtonChecked[0] = 3;
                         else isButtonChecked[0] = 2;
-                        sundayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        sundayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[3].equals("2") || splitOccurrence[3].equals("3")){
                         if (isButtonChecked[1] == 1)
                             isButtonChecked[1] = 3;
                         else isButtonChecked[1] = 2;
-                        mondayAlt.setImageResource(R.drawable.ui_monday_selected);
+                        mondayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[4].equals("2") || splitOccurrence[4].equals("3")){
                         if (isButtonChecked[2] == 1)
                             isButtonChecked[2] = 3;
                         else isButtonChecked[2] = 2;
-                        tuesdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        tuesdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[5].equals("2") || splitOccurrence[5].equals("3")){
                         if (isButtonChecked[3] == 1)
                             isButtonChecked[3] = 3;
                         else isButtonChecked[3] = 2;
-                        wednesdayAlt.setImageResource(R.drawable.ui_wednesday_selected);
+                        wednesdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[6].equals("2") || splitOccurrence[6].equals("3")){
                         if (isButtonChecked[4] == 1)
                             isButtonChecked[4] = 3;
                         else isButtonChecked[4] = 2;
-                        thursdayAlt.setImageResource(R.drawable.ui_tuesday_thursday_selected);
+                        thursdayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[7].equals("2") || splitOccurrence[7].equals("3")){
                         if (isButtonChecked[5] == 1)
                             isButtonChecked[5] = 3;
                         else isButtonChecked[5] = 2;
-                        fridayAlt.setImageResource(R.drawable.ui_friday_selected);
+                        fridayAlt.setColorFilter(mPrimaryColor);
                     }
                     if (splitOccurrence[8].equals("2") || splitOccurrence[8].equals("3")){
                         if (isButtonChecked[6] == 1)
                             isButtonChecked[6] = 3;
                         else isButtonChecked[6] = 2;
-                        saturdayAlt.setImageResource(R.drawable.ui_saturday_sunday_selected);
+                        saturdayAlt.setColorFilter(mPrimaryColor);
                     }
                 }
 
@@ -486,7 +501,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_sunday:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 0;
@@ -494,7 +509,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 2;
@@ -504,7 +519,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_monday:
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 0;
@@ -512,7 +527,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 2;
@@ -522,7 +537,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_tuesday:
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 0;
@@ -530,7 +545,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[2] == 2) {
                             isButtonChecked[2] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 2;
@@ -540,7 +555,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_wednesday:
                         if (isButtonChecked[3] == 0) {
                             isButtonChecked[3] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 0;
@@ -548,7 +563,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 2;
@@ -558,7 +573,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_thursday:
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 0;
@@ -566,7 +581,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 2;
@@ -576,7 +591,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_friday:
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 0;
@@ -584,7 +599,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 2;
@@ -594,7 +609,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_saturday:
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 1;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 0;
@@ -602,7 +617,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 2;
@@ -614,11 +629,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_sunday_alt:
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 0;
@@ -632,11 +647,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_monday_alt:
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 0;
@@ -650,11 +665,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_tuesday_alt:
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[2] == 2){
                             isButtonChecked[2] = 0;
@@ -668,11 +683,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_wednesday_alt:
                         if (isButtonChecked[3] == 0){
                             isButtonChecked[3] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 0;
@@ -686,11 +701,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_thursday_alt:
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 0;
@@ -704,11 +719,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_friday_alt:
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 0;
@@ -722,11 +737,11 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     case R.id.class_three_saturday_alt:
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 2;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 3;
-                            ((ImageView) v).setColorFilter(mSecondaryColor);
+                            ((ImageView) v).setColorFilter(mPrimaryColor);
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 0;
@@ -741,13 +756,13 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                     // In the case that it's one of the hyperlink text views to the
                     // previous stages of the add class time process
                     case R.id.class_time_one_value:
-                        basisTextviewSelectedListener.onBasisTextviewSelected();
+                        basisTextviewSelectedListener.onBasisTextviewSelected(FLAG_EDIT, rowID);
                         break;
 
                     // 0 is the fixed value passed as the basis because the activity itself
                     // (TimeBased) was launched as a result of the basis being 0
                     case R.id.class_time_two_value:
-                        weektypeTextviewSelectedListener.onWeektypeTextViewSelectedListener("0");
+                        weektypeTextviewSelectedListener.onWeektypeTextViewSelectedListener("0", FLAG_EDIT, rowID);
                         break;
 
                     // In the case that the 'Done' button was clicked.
@@ -766,10 +781,12 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         // If the fragment was started through the list view's OnItemClick
                         // Pass true as the Edit Flag to tell the activity to update instead
                         // the occurrence item instead of adding a new item
-                        boolean FLAG_EDIT = getArguments().containsKey("occurrence");
-                        int rowId = getArguments().getInt("rowId");
+                        if (getArguments().containsKey("occurrence")) {
+                            FLAG_EDIT = true;
+                            rowID = getArguments().getInt("rowId");
+                        }
                         daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds,
-                                timeInAltSeconds, timeOutAltSeconds, "-1", FLAG_EDIT, rowId);
+                                timeInAltSeconds, timeOutAltSeconds, "-1", FLAG_EDIT, rowID);
                         break;
                 }
             }

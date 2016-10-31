@@ -162,6 +162,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
     // Flags
     boolean isTablet;
+    boolean FLAG_EDIT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -718,7 +719,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
     // Interfaces and Override Methods
     @Override
-    public void onBasisSelected(String basis) {
+    public void onBasisSelected(String basis, boolean FLAG_EDIT, int rowID) {
         // Interface launched by AddClassTimeOneFragment when basis is selected
         // Selected basis is stored in this activity
         // If TimeBased or PeriodBased was selected, launch AddClassTimeTwoFragment (WeekType Selection)
@@ -736,7 +737,9 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Create the args
             Bundle args = new Bundle();
+            args.putBoolean("FLAG_EDIT", FLAG_EDIT);
             args.putString("basis", basis);
+            args.putInt("rowID", rowID);
 
             // Show the dialog
             DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
@@ -751,11 +754,14 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Show the dialog
             DialogFragment fragment = AddClassTimeThreeFragmentBlock.newInstance(0);
+            Bundle args = new Bundle();
+            args.putInt("rowId", rowID);
+            fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
     @Override
-    public void onWeekTypeSelected(String weekType) {
+    public void onWeekTypeSelected(String weekType, boolean FLAG_EDIT, int rowID) {
         // Interface launched by AddClassTimeTwoFragment when WeekType is selected
         // Store the selected WeekType in this activity
         // Launch the corresponding ClassTimeThreeFragment based on stored basis
@@ -765,6 +771,9 @@ public class NewScheduleActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putString("basis", basis);
         args.putString("weekType", weekType);
+        args.putBoolean("FLAG_EDIT", FLAG_EDIT);
+        args.putInt("rowID", rowID);
+        args.putInt("rowId", rowID);
 
         // If basis is TimeBased, launch AddClassTimeThreeFragmentTime
         // Else if basis is PeriodBased, launch AddClassTimeThreeFragmentPeriod
@@ -896,7 +905,8 @@ public class NewScheduleActivity extends AppCompatActivity
                 .apply();
     }
     @Override
-    public void onBasisTextviewSelected() {
+    public void onBasisTextviewSelected(boolean FLAG_EDIT, int rowID) {
+        this.FLAG_EDIT = FLAG_EDIT;
         // Interface launched from ClassTime[Two/Three]Fragment to restart the basis selection
         // Check if other dialogs are present and remove them if so
         android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
@@ -905,20 +915,28 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Show the dialog
         DialogFragment fragment = AddClassTimeOneFragment.newInstance(0);
+        Bundle args = new Bundle();
+        args.putBoolean("FLAG_EDIT", FLAG_EDIT);
+        args.putInt("rowID", rowID);
+        fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
     @Override
-    public void onWeektypeTextViewSelectedListener(String basis) {
+    public void onWeektypeTextViewSelectedListener(String basis, boolean FLAG_EDIT, int rowID) {
         // Interface launched from ClassTimeThreeFragment to restart the weekType selection
         // It takes in the string basis and sets the basis to the received value
         this.basis = basis;
+        this.FLAG_EDIT = FLAG_EDIT;
         android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
         transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
         transactionWeekType.addToBackStack(null).commit();
 
         // Create the args
         Bundle args = new Bundle();
+        args.putBoolean("FLAG_EDIT", FLAG_EDIT);
         args.putString("basis", basis);
+        args.putInt("rowId", rowID);
+        args.putInt("rowID", rowID);
 
         // Show the dialog
         DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);

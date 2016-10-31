@@ -360,7 +360,7 @@ public class NewTaskActivity extends AppCompatActivity
                 }
 
                 if (reminderTime != 0f) {
-                    fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime * 1000));
+                    fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
                     this.reminderTimeSeconds = reminderTime;
                 }
             }

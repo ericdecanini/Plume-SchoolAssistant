@@ -17,7 +17,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.pdt.plume.MainActivity;
 import com.pdt.plume.MuteAlarmReceiver;
 import com.pdt.plume.R;
 import com.pdt.plume.ScheduleDetailActivity;
@@ -27,6 +29,8 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.Calendar;
+
+import static android.R.id.message;
 
 
 public class ScheduleNotificationService extends Service {
@@ -56,7 +60,6 @@ public class ScheduleNotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.v(LOG_TAG, "onStartCommand executed");
         scheduleClassNotifications();
         scheduleMute();
         return super.onStartCommand(intent, flags, startId);
@@ -79,7 +82,17 @@ public class ScheduleNotificationService extends Service {
                             timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
 
                         String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-                        String message = getString(R.string.schedule_notification_message) + " " + notificationAdvance
+
+                        Calendar currentTime = Calendar.getInstance();
+                        Calendar timeInTime = Calendar.getInstance();
+                        timeInTime.setTimeInMillis(timeIn);
+                        int currentMinute = currentTime.get(Calendar.MINUTE);
+                        int timeInMinute = timeInTime.get(Calendar.MINUTE);
+                        if (timeInMinute < notificationAdvance)
+                            timeInMinute += currentMinute;
+                        int minutesBeforeClass = timeInMinute - currentMinute;
+
+                        String message = getString(R.string.schedule_notification_message) + " " + minutesBeforeClass
                                 + " " + getString(R.string.minutes);
                         if (timeIn != -1)
                             Remind(timeIn, notificationAdvance, title, message, i);
@@ -117,7 +130,7 @@ public class ScheduleNotificationService extends Service {
                 public void onGenerated(Palette palette) {
                     builder
                             .setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
+                            .setSmallIcon(R.drawable.ic_class_white)
                             .setColor(palette.getVibrantColor(mPrimaryColor))
                             .setContentTitle(title)
                             .setContentText(message)
@@ -136,11 +149,14 @@ public class ScheduleNotificationService extends Service {
 
 //                long futureInMillis = SystemClock.elapsedRealtime() + delay;
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    Log.v(LOG_TAG, "TimeIn: " + timeIn);
                     Calendar c = Calendar.getInstance();
                     c.setTimeInMillis(timeIn);
                     c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - advance);
-                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+
+
+                    if (isOnTime(c)) {
+                        alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                    }
                 }
             });
         }
@@ -168,15 +184,39 @@ public class ScheduleNotificationService extends Service {
                         }
 
                         Intent intent = new Intent(this, MuteAlarmReceiver.class);
-                        intent.putExtra("UNMUTE_TIME", timeOut);
                         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, REQUEST_MUTE_ALARM, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                        alarmManager.set(AlarmManager.RTC, timeIn, pendingIntent);
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis(timeIn);
+
+                        if (isOnTime(c)) {
+                            alarmManager.set(AlarmManager.RTC, timeIn, pendingIntent);
+                        }
                     }
                 }
             }
         }
     }
 
+    private boolean isOnTime(Calendar c) {
+        Calendar currentTime = Calendar.getInstance();
+        int currentMinute = currentTime.get(Calendar.MINUTE);
+        int currentHour = currentTime.get(Calendar.HOUR);
+        int cMinute = currentTime.get(Calendar.MINUTE);
+        int cHour = currentTime.get(Calendar.HOUR);
+
+        if (((currentMinute - cMinute) < 5 && currentMinute - cMinute > 0) && currentHour == cHour) {
+            return true;
+        } else if (currentHour == (cHour - 1) && (currentMinute > (cHour + 55) && currentMinute < 60)) {
+            return true;
+        }
+        else return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        MainActivity.notificationServiceIsRunning = false;
+        super.onDestroy();
+    }
 }

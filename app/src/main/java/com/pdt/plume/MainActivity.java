@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Intent Data
     static final int REQUEST_FILE_GET = -1;
+    public static boolean notificationServiceIsRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,7 +131,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         float sw = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels) / getResources().getDisplayMetrics().density;
 
         // Start the class notification service
-        startService(new Intent(this, ScheduleNotificationService.class));
+        if (!notificationServiceIsRunning) {
+            startService(new Intent(this, ScheduleNotificationService.class));
+            notificationServiceIsRunning = true;
+        }
     }
 
     private void init() {
@@ -156,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
+        Log.v(LOG_TAG, "onStart");
         mSectionsPagerAdapter.notifyDataSetChanged();
 
         Intent intent = getIntent();
@@ -213,8 +218,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         // Initialise the fab
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v(LOG_TAG, "onResume");
     }
 
     // Include back button action to close

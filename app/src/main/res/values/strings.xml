@@ -309,6 +309,7 @@
 
     <string name="settings_class_notification_title">Class notifications</string>
     <string name="settings_class_notification_subtitle">minutes before class</string>
+    <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
 
     <string name="settings_class_mute_title">Mute phone during classes</string>
