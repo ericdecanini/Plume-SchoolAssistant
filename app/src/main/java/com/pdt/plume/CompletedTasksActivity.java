@@ -2,9 +2,13 @@ package com.pdt.plume;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -41,11 +45,30 @@ public class CompletedTasksActivity extends AppCompatActivity {
     private int mOptionMenuCount;
     List<Integer> CAMselectedItemsList = new ArrayList<>();
 
+    // Theme Variables
+    int mPrimaryColor, mDarkColor, mSecondaryColor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_completed_tasks);
+
+        // Initialise the theme variables
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
 
         // Inflate the listview of task titles
         final DbHelper dbHelper = new DbHelper(this);
@@ -86,6 +109,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
         // Initialise the FAB
         FloatingActionButton FAB = (FloatingActionButton) findViewById(R.id.fab);
+        FAB.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

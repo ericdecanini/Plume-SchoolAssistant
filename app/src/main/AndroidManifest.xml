@@ -2,6 +2,36 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdt.plume">
 
+    <compatible-screens>
+
+        <!-- all small size screens -->
+        <screen
+            android:screenDensity="ldpi"
+            android:screenSize="small" />
+        <screen
+            android:screenDensity="mdpi"
+            android:screenSize="small" />
+        <screen
+            android:screenDensity="hdpi"
+            android:screenSize="small" />
+        <screen
+            android:screenDensity="xhdpi"
+            android:screenSize="small" />
+        <!-- all normal size screens -->
+        <screen
+            android:screenDensity="ldpi"
+            android:screenSize="normal" />
+        <screen
+            android:screenDensity="mdpi"
+            android:screenSize="normal" />
+        <screen
+            android:screenDensity="hdpi"
+            android:screenSize="normal" />
+        <screen
+            android:screenDensity="xhdpi"
+            android:screenSize="normal" />
+    </compatible-screens>
+
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -90,10 +120,9 @@
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
             android:parentActivityName=".MainActivity" />
-
-        <activity android:name=".SettingsActivity"
-            android:label="@string/nav_settings"/>
-
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/nav_settings" />
         <activity android:name=".SettingsThemeActivity" />
 
         <receiver android:name=".MuteAlarmReceiver" />
@@ -131,12 +160,15 @@
             android:parentActivityName=".TasksDetailActivity"
             android:theme="@style/FullscreenTheme" />
 
-        <receiver android:name=".ScheduleWidgetProvider"
+        <receiver
+            android:name=".ScheduleWidgetProvider"
             android:label="@string/schedule">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
+
+            <meta-data
+                android:name="android.appwidget.provider"
                 android:resource="@xml/provider_widget_schedule" />
         </receiver>
 
@@ -144,18 +176,29 @@
             android:name=".services.ScheduleWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <receiver android:name=".TasksWidgetProvider"
+        <receiver
+            android:name=".TasksWidgetProvider"
             android:label="@string/tasks">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
+
+            <meta-data
+                android:name="android.appwidget.provider"
                 android:resource="@xml/provider_widget_tasks" />
         </receiver>
 
         <service
             android:name=".services.TasksWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <activity
+            android:name=".PeopleActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity android:name=".PeersActivity"
+            android:parentActivityName=".PeopleActivity"/>
+        <activity android:name=".AddPeerActivity"
+            android:parentActivityName=".PeopleActivity" />
 
     </application>
 

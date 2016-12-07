@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_done"
         android:orderInCategory="300"
-        android:title="@string/save"
+        android:title="@string/SAVE"
         app:showAsAction="ifRoom" />
 
 </menu>

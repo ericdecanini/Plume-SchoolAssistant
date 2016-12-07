@@ -70,8 +70,7 @@ import java.util.Date;
 import java.util.List;
 
 public class NewTaskActivity extends AppCompatActivity
-        implements
-        IconDialogFragment.iconDialogListener {
+        implements IconDialogFragment.iconDialogListener {
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -534,9 +533,15 @@ public class NewTaskActivity extends AppCompatActivity
                                                         new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW},
                                                         REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
                                             }
-                                        }).show();
+                                        })
+                                        .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                return;
+                                            }
+                                        })
+                                        .show();
                             }
-                            return;
                         }
                         AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
                         builder.setTitle(getString(R.string.field_new_photo_dialog_title))
@@ -562,8 +567,8 @@ public class NewTaskActivity extends AppCompatActivity
                         showReminderDateDropdownMenu();
                         break;
                     case R.id.field_new_task_reminder_time:
-                        int hour = (int) reminderTimeSeconds / 3600;
-                        int minute = (int) (reminderTimeSeconds - (hour * 3600)) / 60;
+                        int hour = (int) (reminderTimeSeconds / 3600) / 1000;
+                        int minute = (int) (((reminderTimeSeconds / 1000) - (hour * 3600)) / 60);
                         TimePickerDialog timePickerFragment = new TimePickerDialog(NewTaskActivity.this, onTimeSetListener(), hour, minute, true);
                         timePickerFragment.show();
                         break;
@@ -641,7 +646,7 @@ public class NewTaskActivity extends AppCompatActivity
         if (FLAG_EDIT) {
             // Delete previous picture if it exists
             if (!previousPhotoPath.toString().equals("")) {
-                File file = new File(previousPhotoPath);
+                File file = new File(previousPhotoPath.getPath());
                 file.delete();
             }
 

@@ -6,10 +6,10 @@
             android:id="@+id/nav_classes"
             android:icon="@drawable/nav_classes"
             android:title="@string/nav_classes" />
-        <!--<item-->
-            <!--android:id="@+id/nav_people"-->
-            <!--android:icon="@drawable/ic_group_black_24dp"-->
-            <!--android:title="@string/nav_people" />-->
+        <item
+            android:id="@+id/nav_people"
+            android:icon="@drawable/ic_group_black_24dp"
+            android:title="@string/nav_people" />
         <item
             android:id="@+id/nav_completedTasks"
             android:icon="@drawable/ic_assignment_turned_in_black_24dp"

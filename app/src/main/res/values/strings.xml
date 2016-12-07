@@ -18,7 +18,8 @@
 
     <!-- Menu Actions -->
     <string name="delete">Delete</string>
-    <string name="save">SAVE</string>
+    <string name="SAVE">SAVE</string>
+    <string name="save">Save</string>
     <string name="share">Share</string>
     <string name="edit">Edit</string>
     <string name="ok">OK</string>
@@ -391,7 +392,7 @@
     <string name="color_dialog_title">Select color</string>
 
     <!--
-    ABOUT STRINGS
+    ABOUT ACTIVITY STRINGS
     -->
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
@@ -409,7 +410,24 @@
     <string name="Reiss" translatable="false">Reiss Tozer</string>
     <string name="Testers">Alpha testers:</string>
     <string name="Connor" translatable="false">Connor Hutchings</string>
+    <string name="Ryan" translatable="false">Ryan Hutchings</string>
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">icons8</a></string>
+
+    <!--
+    PEOPLE ACTIVITY STRINGS
+    -->
+    <string name="KEY_PREFERENCES_SELF_NAME" translatable="false">KEY_PREFERENCES_SELF_NAME</string>
+    <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>
+
+    <string name="yourNameHere">Your Name Here</string>
+    <string name="addPeers">Add Peers</string>
+    <string name="viewPeers">View Peers</string>
+    <string name="editName">Edit Name</string>
+    <string name="editNameMessage">How do you want your peers to see you?</string>
+    <string name="editNameHint">Your Name</string>
+
+    <string name="added">added</string>
+    <string name="qrScanPrompt">Scan a peer\'s QR code</string>
 
     <!--
     ARRAY STRINGS

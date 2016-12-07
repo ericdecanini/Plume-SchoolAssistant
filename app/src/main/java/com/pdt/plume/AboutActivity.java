@@ -34,8 +34,4 @@ public class AboutActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 }

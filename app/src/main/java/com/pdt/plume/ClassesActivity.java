@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -94,11 +95,13 @@ public class ClassesActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
     }
 
     public AdapterView.OnItemClickListener listener() {

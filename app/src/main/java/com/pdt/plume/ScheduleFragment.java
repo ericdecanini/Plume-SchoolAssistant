@@ -135,7 +135,7 @@ public class ScheduleFragment extends Fragment {
 
     private void init() {
         headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
-        headerTextView.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
+        headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();

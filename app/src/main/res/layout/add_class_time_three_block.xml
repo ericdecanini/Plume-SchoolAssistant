@@ -187,7 +187,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:background="@android:color/transparent"
-        android:text="@string/save"
+        android:text="@string/SAVE"
         android:textColor="@color/colorAccent" />
 
 

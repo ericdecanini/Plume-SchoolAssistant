@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.pdt.plume.Peer;
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
 import com.pdt.plume.Task;
@@ -16,6 +17,7 @@ import com.pdt.plume.Utility;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.data.DbContract.NotesEntry;
+import com.pdt.plume.data.DbContract.PeersEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,9 +74,18 @@ public class DbHelper extends SQLiteOpenHelper {
                 + NotesEntry.COLUMN_SCHEDULE_TITLE + " TEXT NOT NULL "
                 + " );";
 
+        final String SQL_CREATE_PEERS_TABLE = "CREATE TABLE " + PeersEntry.TABLE_NAME + " ("
+                + PeersEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + PeersEntry.COLUMN_ID + " TEXT NOT NULL"
+                + PeersEntry.COLUMN_NAME + " TEXT NOT NULL"
+                + PeersEntry.COLUMN_ICON + " TEXT NOT NULL"
+                + PeersEntry.COLUMN_CLASSES + " TEXT NOT NULL"
+                + " );";
+
         db.execSQL(SQL_CREATE_SCHEDULE_TABLE);
         db.execSQL(SQL_CREATE_TASKS_TABLE);
         db.execSQL(SQL_CREATE_NOTES_TABLE);
+        db.execSQL(SQL_CREATE_PEERS_TABLE);
     }
 
     @Override
@@ -789,6 +800,45 @@ public class DbHelper extends SQLiteOpenHelper {
     public Integer deleteNoteItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(NotesEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
+    }
+
+    /**
+     * Peers Database Functions
+     */
+
+    public Cursor getPeersData() {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.query(
+                PeersEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    public ArrayList<Peer> getPeersDataArray() {
+        Cursor cursor = getPeersData();
+        ArrayList<Peer> arrayList = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
+                arrayList.add(new Peer
+                        (cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_ICON)),
+                        cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
+            }
+        }
+        return arrayList;
+    }
+
+    public int insertPeer(String id, String icon, String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PeersEntry.COLUMN_ID, id);
+        contentValues.put(PeersEntry.COLUMN_ICON, icon);
+        contentValues.put(PeersEntry.COLUMN_NAME, name);
+        return (int) db.insert(PeersEntry.TABLE_NAME, null, contentValues);
     }
 
 }
