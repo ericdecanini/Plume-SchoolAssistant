@@ -39,4 +39,17 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
+    <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+    <!-- Background for the search query section (e.g. EditText) -->
+    <item name="queryBackground">@drawable/art_arts_64dp</item>
+    <!-- Background for the actions section (e.g. voice, submit) -->
+    <item name="submitBackground">@drawable/art_science_64dp</item>
+    <!-- Close button icon -->
+    <item name="closeIcon">@drawable/art_biology_64dp</item>
+    <!-- Search button icon -->
+    <item name="searchIcon">@drawable/art_childdevelopment_64dp</item>
+    <!-- Go/commit button icon -->
+    <item name="goIcon">@drawable/art_spanish_64dp</item>
+</style>
+
 </resources>

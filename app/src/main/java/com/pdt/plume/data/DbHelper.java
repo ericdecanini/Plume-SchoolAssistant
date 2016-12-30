@@ -6,9 +6,17 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.Peer;
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
@@ -39,6 +47,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_SCHEDULE_TABLE = "CREATE TABLE " + ScheduleEntry.TABLE_NAME + " ("
                 + ScheduleEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + ScheduleEntry.COLUMN_USER + " TEXT, "
+                + ScheduleEntry.COLUMN_PEERS + " TEXT, "
                 + ScheduleEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_TEACHER + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_ROOM + " TEXT NOT NULL, "
@@ -53,6 +63,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_TASKS_TABLE = "CREATE TABLE " + TasksEntry.TABLE_NAME + " ("
                 + TasksEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + TasksEntry.COLUMN_USER + " TEXT, "
                 + TasksEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_CLASS + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_TYPE + " TEXT NOT NULL, "
@@ -69,6 +80,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_NOTES_TABLE = "CREATE TABLE " + NotesEntry.TABLE_NAME + " ("
                 + NotesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + NotesEntry.COLUMN_USER + " TEXT, "
                 + NotesEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + NotesEntry.COLUMN_NOTE + " TEXT NOT NULL, "
                 + NotesEntry.COLUMN_SCHEDULE_TITLE + " TEXT NOT NULL "
@@ -76,10 +88,11 @@ public class DbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_PEERS_TABLE = "CREATE TABLE " + PeersEntry.TABLE_NAME + " ("
                 + PeersEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + PeersEntry.COLUMN_ID + " TEXT NOT NULL"
-                + PeersEntry.COLUMN_NAME + " TEXT NOT NULL"
-                + PeersEntry.COLUMN_ICON + " TEXT NOT NULL"
-                + PeersEntry.COLUMN_CLASSES + " TEXT NOT NULL"
+                + PeersEntry.COLUMN_USER + " TEXT, "
+                + PeersEntry.COLUMN_NAME + " TEXT NOT NULL, "
+                + PeersEntry.COLUMN_ICON + " TEXT NOT NULL, "
+                + PeersEntry.COLUMN_FLAVOUR + " TEXT NOT NULL, "
+                + PeersEntry.COLUMN_REQUEST_STATUS + " NUMBER NOT NULL"
                 + " );";
 
         db.execSQL(SQL_CREATE_SCHEDULE_TABLE);
@@ -90,89 +103,10 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-//        Cursor oldScheduleTable = db.query(ScheduleEntry.TABLE_NAME,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null);
-//        Cursor oldTasksTable = db.query(TasksEntry.TABLE_NAME,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null);
-//
-//        ContentValues scheduleValues = new ContentValues();
-//        ContentValues tasksValues = new ContentValues();
-//
-//        // Retrieve the data from the schedule table
-//        if (oldScheduleTable.getCount() != 0)
-//            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
-//                oldScheduleTable.moveToPosition(i);
-//
-//                String title = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-//                String teacher = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-//                String room = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-//                String occurrence = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-//                int timeIn = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-//                int timeOut = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
-//                int timeInAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-//                int timeOutAlt = oldScheduleTable.getInt(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
-//                String periods = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
-//                String icon = oldScheduleTable.getString(oldScheduleTable.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-//
-//                scheduleValues.put(ScheduleEntry.COLUMN_TITLE, title);
-//                scheduleValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
-//                scheduleValues.put(ScheduleEntry.COLUMN_ROOM, room);
-//                scheduleValues.put(ScheduleEntry.COLUMN_OCCURRENCE, occurrence);
-//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN, timeIn);
-//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT, timeOut);
-//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEIN_ALT, timeInAlt);
-//                scheduleValues.put(ScheduleEntry.COLUMN_TIMEOUT_ALT, timeOutAlt);
-//                scheduleValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
-//                scheduleValues.put(ScheduleEntry.COLUMN_ICON, icon);
-//
-//                db.insert(ScheduleEntry.TABLE_NAME, null, scheduleValues);
-//            }
-//
-//        // Retrieve the data from the tasks table
-//        if (oldTasksTable.getCount() != 0)
-//            for (int i = 0; i < oldScheduleTable.getCount(); i++) {
-//                oldTasksTable.moveToPosition(i);
-//
-//                String title = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TITLE));
-//                String classTitle = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_CLASS));
-//                String classType = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_TYPE));
-//                String sharer = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_SHARER));
-//                String description = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
-//                String attachment = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
-//                int duedate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
-//                int reminderdate = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
-//                int remindertime = oldTasksTable.getInt(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
-//                String icon = oldTasksTable.getString(oldTasksTable.getColumnIndex(TasksEntry.COLUMN_ICON));
-//
-//                tasksValues.put(TasksEntry.COLUMN_TITLE, title);
-//                tasksValues.put(TasksEntry.COLUMN_CLASS, classTitle);
-//                tasksValues.put(TasksEntry.COLUMN_TYPE, classType);
-//                tasksValues.put(TasksEntry.COLUMN_SHARER, sharer);
-//                tasksValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
-//                tasksValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
-//                tasksValues.put(TasksEntry.COLUMN_DUEDATE, duedate);
-//                tasksValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
-//                tasksValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
-//                tasksValues.put(TasksEntry.COLUMN_ICON, icon);
-//                tasksValues.put(TasksEntry.COLUMN_PICTURE, "");
-//                tasksValues.put(TasksEntry.COLUMN_COMPLETED, 0);
-//
-//                db.insert(TasksEntry.TABLE_NAME, null, tasksValues);
-//            }
-
-        // Drop the previous tables and create new ones
         db.execSQL("DROP TABLE IF EXISTS schedule");
         db.execSQL("DROP TABLE IF EXISTS tasks");
+        db.execSQL("DROP TABLE IF EXISTS notes");
+        db.execSQL("DROP TABLE IF EXISTS peers");
         onCreate(db);
     }
 
@@ -480,11 +414,48 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertSchedule(String title, String teacher, String room, String occurrence,
+    public ArrayList<Bundle> getAllClassesBundleArray() {
+        Cursor cursor = getAllScheduleData();
+        ArrayList<Bundle> arrayList = new ArrayList<>();
+        ArrayList<String> usedTitles = new ArrayList<>();
+        for (int i = 0; i < cursor.getCount(); i++) {
+            if (cursor.moveToPosition(i)) {
+                String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                if (!usedTitles.contains(title)) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("title", title);
+                    bundle.putString("teacher", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)));
+                    bundle.putString("room", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)));
+                    bundle.putString("occurrence", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
+                    bundle.putInt("timein", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    bundle.putInt("timeout", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
+                    bundle.putInt("timeinalt", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    bundle.putInt("timeoutalt", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+                    bundle.putString("periods", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)));
+                    bundle.putString("icon", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)));
+
+
+                    arrayList.add(bundle);
+
+                    usedTitles.add(title);
+                }
+            }
+        }
+        return arrayList;
+    }
+
+    public boolean insertSchedule(String peers, String title, String teacher, String room, String occurrence,
                                   int timein, int timeout, int timeinalt, int timeoutalt,
-                                  String periods, String icon, int notes_id) {
+                                  String periods, String icon) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        if (firebaseUser != null)
+            contentValues.put(ScheduleEntry.COLUMN_USER, firebaseUser.toString());
+        else contentValues.put(ScheduleEntry.COLUMN_USER, ((String) null));
+        contentValues.put(ScheduleEntry.COLUMN_PEERS, peers);
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
@@ -496,14 +467,38 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.insert(ScheduleEntry.TABLE_NAME, null, contentValues);
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("classes").child(title);
+            classRef.child("teacher").setValue(teacher);
+            classRef.child("room").setValue(room);
+            classRef.child("occurrence").setValue(occurrence);
+            classRef.child("timein").setValue(timein);
+            classRef.child("timeout").setValue(timeout);
+            classRef.child("timeinalt").setValue(timeinalt);
+            classRef.child("timeoutalt").setValue(timeoutalt);
+            classRef.child("periods").setValue(periods);
+            classRef.child("icon").setValue(icon);
+        }
+
         return true;
     }
 
-    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence,
+    public boolean updateScheduleItem(Integer id, String peers, String title, String teacher, String room, String occurrence,
                                       int timein, int timeout, int timeinalt, int timeoutalt,
                                       String periods, String icon, int notes_id) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        if (firebaseUser != null)
+            contentValues.put(ScheduleEntry.COLUMN_USER, firebaseUser.toString());
+        else contentValues.put(ScheduleEntry.COLUMN_USER, ((String) null));
+        contentValues.put(ScheduleEntry.COLUMN_PEERS, peers);
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
@@ -515,45 +510,63 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.update(ScheduleEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("classes").child(title);
+            classRef.setValue(title);
+            classRef.child("teacher").setValue(teacher);
+            classRef.child("room").setValue(room);
+            classRef.child("occurrence").setValue(occurrence);
+            classRef.child("timein").setValue(timein);
+            classRef.child("timeout").setValue(timeout);
+            classRef.child("timeinalt").setValue(timeinalt);
+            classRef.child("timeoutalt").setValue(timeoutalt);
+            classRef.child("periods").setValue(periods);
+            classRef.child("icon").setValue(icon);
+        }
         return true;
-    }
-
-    public boolean updateScheduleItemWithNoteId(Integer id, int note_key) {
-        // Get a cursor containing the given class id
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
-                null,
-                ScheduleEntry._ID + "=?",
-                new String[]{Integer.toString(id)},
-                null,
-                null,
-                null);
-
-        // Get the data of that item
-        cursor.moveToFirst();
-        String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-        String teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-        String room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-        int timeIn = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-        int timeOut = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
-        int timeInAlt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-        int timeOutAlt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
-        String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
-        String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-
-        // Update the row
-        return updateScheduleItem(id, title, teacher, room, occurrence,
-                timeIn, timeOut, timeInAlt, timeOutAlt,
-                periods, icon, note_key);
     }
 
     public Integer deleteScheduleItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
+                null,
+                ScheduleEntry._ID + "=?",
+                new String[]{id.toString()},
+                null,
+                null,
+                null);
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+
+        // First, delete the cloud database data
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("users").child(uID).child("classes").child(title).removeValue();
+        }
+
+
         return db.delete(ScheduleEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
     public Integer deleteScheduleItemByTitle(String title) {
+        // First, delete the cloud database data
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("users").child(uID).child("classes").child(title).removeValue();
+        }
+
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(ScheduleEntry.TABLE_NAME, ScheduleEntry.COLUMN_TITLE + " = ?", new String[]{title});
     }
@@ -683,8 +696,14 @@ public class DbHelper extends SQLiteOpenHelper {
                               String description, String attachment,
                               float dueDate, float reminderdate, float remindertime,
                               String icon, String picture, boolean completed) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        if (firebaseUser != null)
+            contentValues.put(TasksEntry.COLUMN_USER, firebaseUser.toString());
+        else contentValues.put(TasksEntry.COLUMN_USER, ((String) null));
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
         contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
         contentValues.put(TasksEntry.COLUMN_TYPE, type);
@@ -698,6 +717,25 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
         contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
         db.insert(TasksEntry.TABLE_NAME, null, contentValues);
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("tasks").child(title);
+            classRef.child("class").setValue(classTitle);
+            classRef.child("type").setValue(type);
+            classRef.child("sharer").setValue(sharer);
+            classRef.child("description").setValue(description);
+            classRef.child("attachment").setValue(attachment);
+            classRef.child("duedate").setValue(dueDate);
+            classRef.child("reminderdate").setValue(reminderdate);
+            classRef.child("remindertime").setValue(remindertime);
+            classRef.child("icon").setValue(icon);
+            classRef.child("picture").setValue(picture);
+            classRef.child("completed").setValue(completed);
+        }
+
         return true;
     }
 
@@ -705,8 +743,14 @@ public class DbHelper extends SQLiteOpenHelper {
                                   String description, String attachment,
                                   float dueDate, float reminderdate, float remindertime,
                                   String icon, String picture, boolean completed) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        if (firebaseUser != null)
+            contentValues.put(TasksEntry.COLUMN_USER, firebaseUser.toString());
+        else contentValues.put(TasksEntry.COLUMN_USER, ((String) null));
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
         contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
         contentValues.put(TasksEntry.COLUMN_TYPE, type);
@@ -720,8 +764,59 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
         contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
         db.update(TasksEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("tasks").child(title);
+            classRef.child("class").setValue(classTitle);
+            classRef.child("type").setValue(type);
+            classRef.child("sharer").setValue(sharer);
+            classRef.child("description").setValue(description);
+            classRef.child("attachment").setValue(attachment);
+            classRef.child("duedate").setValue(dueDate);
+            classRef.child("reminderdate").setValue(reminderdate);
+            classRef.child("remindertime").setValue(remindertime);
+            classRef.child("icon").setValue(icon);
+            classRef.child("picture").setValue(picture);
+            classRef.child("completed").setValue(completed);
+        }
+
         return true;
     }
+
+    public Integer deleteTaskItem(Integer id) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TasksEntry.TABLE_NAME,
+                null,
+                TasksEntry._ID + "=?",
+                new String[]{id.toString()},
+                null,
+                null,
+                null);
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE));
+
+        // First, delete the cloud database data
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("users").child(uID).child("tasks").child(title).removeValue();
+        }
+
+        return db.delete(TasksEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
+    }
+
+
+    /**
+     *
+     * NOTES TABLE FUNCTIONS
+     *
+     */
 
     public Cursor getNoteByScheduleTitle(String schedule_title) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -775,8 +870,23 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public int insertNoteItem(String title, String note, String schedule_title) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("notes").child(title);
+            classRef.child("message").setValue(note);
+            classRef.child("scheduletitle").setValue(schedule_title);
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        if (firebaseUser != null)
+            contentValues.put(NotesEntry.COLUMN_USER, firebaseUser.toString());
+        else contentValues.put(NotesEntry.COLUMN_USER, ((String) null));
         contentValues.put(NotesEntry.COLUMN_TITLE, title);
         contentValues.put(NotesEntry.COLUMN_NOTE, note);
         contentValues.put(NotesEntry.COLUMN_SCHEDULE_TITLE, schedule_title);
@@ -784,21 +894,48 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public int updateNoteItem(int _ID, String title, String note, String schedule_title) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("notes").child(title);
+            classRef.child("message").setValue(note);
+            classRef.child("scheduletitle").setValue(schedule_title);
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(NotesEntry.COLUMN_TITLE, title);
         contentValues.put(NotesEntry.COLUMN_NOTE, note);
         contentValues.put(NotesEntry.COLUMN_SCHEDULE_TITLE, schedule_title);
-        return (int) db.update(NotesEntry.TABLE_NAME, contentValues, NotesEntry._ID + "=?", new String[]{Integer.toString(_ID)});
-    }
-
-    public Integer deleteTaskItem(Integer id) {
-        SQLiteDatabase db = getWritableDatabase();
-        return db.delete(TasksEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
+        return db.update(NotesEntry.TABLE_NAME, contentValues, NotesEntry._ID + "=?", new String[]{Integer.toString(_ID)});
     }
 
     public Integer deleteNoteItem(Integer id) {
         SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(NotesEntry.TABLE_NAME,
+                null,
+                NotesEntry._ID + "=?",
+                new String[]{id.toString()},
+                null,
+                null,
+                null);
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(NotesEntry.COLUMN_TITLE));
+
+        // First, delete the cloud database data
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("users").child(uID).child("notes").child(title).removeValue();
+        }
+
         return db.delete(NotesEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
     }
 
@@ -806,38 +943,155 @@ public class DbHelper extends SQLiteOpenHelper {
      * Peers Database Functions
      */
 
-    public Cursor getPeersData() {
+    public Cursor getPeersData(Context context) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        String userId = firebaseUser.getUid();
         SQLiteDatabase db = getWritableDatabase();
         return db.query(
                 PeersEntry.TABLE_NAME,
                 null,
-                null,
-                null,
+                PeersEntry.COLUMN_REQUEST_STATUS + "=? AND "
+                + PeersEntry.COLUMN_USER + "=?",
+                new String[]{"1", userId},
                 null,
                 null,
                 null
         );
     }
 
-    public ArrayList<Peer> getPeersDataArray() {
-        Cursor cursor = getPeersData();
+    public ArrayList<Peer> getPeersDataArray(Context context) {
+        Cursor cursor = getPeersData(context);
         ArrayList<Peer> arrayList = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
                 arrayList.add(new Peer
                         (cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_ICON)),
-                        cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
+                                cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
             }
         }
         return arrayList;
     }
 
+    ArrayList<String> userIdList = new ArrayList<>();
+    ArrayList<String> userNameList = new ArrayList<>();
+    ArrayList<String> userIconList = new ArrayList<>();
+
+    public void updateRequestsInDb() {
+        // Cleanup previous uses of the method
+        userIdList.clear();
+        userNameList.clear();
+        userIconList.clear();
+
+        // Initialise Firebase
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        // Get a reference to the requests database and create the array lists for the name and icon
+        if (firebaseUser != null) {
+            final DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(firebaseUser.getUid()).child("requests").getRef();
+
+            // Add the values to the array lists
+            requestsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                        final String userIDItem = userSnapshot.getKey();
+                        userIdList.add(userIDItem);
+                        final int snapshotChildrenCount = (int) dataSnapshot.getChildrenCount();
+                        userSnapshot.getRef().child("nickname").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                userNameList.add(dataSnapshot.getValue(String.class));
+                                if (userNameList.size() == snapshotChildrenCount
+                                        && userIconList.size() == snapshotChildrenCount)
+                                    insertRequestsDataToDb();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        userSnapshot.getRef().child("icon").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                userIconList.add(dataSnapshot.getValue(String.class));
+                                if (userNameList.size() == snapshotChildrenCount
+                                        && userIconList.size() == snapshotChildrenCount)
+                                    insertRequestsDataToDb();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    private long insertRequestsDataToDb() {
+        // This method is fired by the previous method after all the data is collected
+        // Start by deleting all the previous data
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(PeersEntry.TABLE_NAME, PeersEntry.COLUMN_REQUEST_STATUS + "=?", new String[]{"1"});
+
+        // Run an insert for each row to be inserted
+        for (int i = 0; i < userIdList.size(); i++) {
+            // Create the ContentValues for the data to be inserted
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(PeersEntry.COLUMN_USER, userIdList.get(i));
+            contentValues.put(PeersEntry.COLUMN_NAME, userNameList.get(i));
+            contentValues.put(PeersEntry.COLUMN_ICON, userIconList.get(i));
+            contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, "1");
+
+            // Insert the data into the database
+            return db.insert(PeersEntry.TABLE_NAME, null, contentValues);
+        }
+        // If no data was inserted, return -1
+        return -1;
+    }
+
+//    public ArrayList<Peer> getRequestsDataArray() {
+//        Cursor cursor = updateRequestsInDb();
+//        ArrayList<Peer> arrayList = new ArrayList<>();
+//        for (int i = 0; i < cursor.getCount(); i++) {
+//            if (cursor.moveToPosition(i)) {
+//                arrayList.add(new Peer
+//                        (cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_ICON)),
+//                                cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
+//            }
+//        }
+//        return arrayList;
+//    }
+
+
     public int insertPeer(String id, String icon, String name) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+        // Insert to the Cloud
+        if (firebaseUser != null) {
+            String uID = firebaseUser.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference classRef = ref.child("users").child(uID).child("peers").child(id);
+            classRef.child("name").setValue(name);
+            classRef.child("icon").setValue(icon);
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(PeersEntry.COLUMN_ID, id);
-        contentValues.put(PeersEntry.COLUMN_ICON, icon);
         contentValues.put(PeersEntry.COLUMN_NAME, name);
+        contentValues.put(PeersEntry.COLUMN_ICON, icon);
+        contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, 0);
         return (int) db.insert(PeersEntry.TABLE_NAME, null, contentValues);
     }
 

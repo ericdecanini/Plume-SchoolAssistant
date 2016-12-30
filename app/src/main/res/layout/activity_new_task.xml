@@ -40,7 +40,7 @@
                     android:id="@+id/field_new_task_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/new_schedule_hint"
+                    android:hint="@string/new_task_hint"
                     android:textCursorDrawable="@null" />
 
                 <LinearLayout

@@ -59,7 +59,7 @@ import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
-        IconDialogFragment.iconDialogListener,
+        IconPromptDialog.iconDialogListener,
         AddClassTimeOneFragment.onBasisSelectedListener,
         AddClassTimeTwoFragment.onBasisTextviewSelectedListener,
         AddClassTimeTwoFragment.onWeekTypeSelectedListener,
@@ -110,6 +110,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int mDarkColor;
     int mSecondaryColor;
 
+    // Built-in Icons
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -192,8 +193,8 @@ public class NewScheduleActivity extends AppCompatActivity
         periodsList = new ArrayList<>();
 
         // Set the OnClickListener for the UI elements
-        fieldIcon.setOnClickListener(showIconDialog());
-        fieldAddClassTime.setOnClickListener(addClassTime());
+        fieldIcon.setOnClickListener(showIconDialogListener());
+        fieldAddClassTime.setOnClickListener(addPeriodListener());
 
         // Set the adapter for the title auto-complete text view
         String[] subjects = getResources().getStringArray(R.array.subjects);
@@ -231,7 +232,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Get database values to put in activity Array Lists
                 for (int i = 0; i < cursor.getCount(); i++) {
                     String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                    if (!occurrence.equals("-1")){
+                    if (!occurrence.equals("-1")) {
                         occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
                                 this,
                                 utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
@@ -270,63 +271,17 @@ public class NewScheduleActivity extends AppCompatActivity
             Resources resources = getResources();
             int resId = R.drawable.art_class_64dp;
             Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                    + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
+                    + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
             scheduleIconUriString = drawableUri.toString();
         }
 
-        // Initialise the adapter and listener for the addClassTime UI. If the activity was launched through edit, occurrenceTimePeriodList
+        // Initialise the adapter and ItemClickListener for the addPeriodListener UI. If the activity was launched through edit, occurrenceTimePeriodList
         // will have been previously populated and therefore the list view will contain the class time list items
         classTimeAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, occurrenceTimePeriodList);
         classTimeList.setAdapter(classTimeAdapter);
-        classTimeList.setOnItemClickListener(OccurrenceTimePeriodListener());
+        classTimeList.setOnItemClickListener(OccurrenceListener());
         classTimeList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         classTimeList.setMultiChoiceModeListener(new ModeCallback());
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // Without this, the up button will not do anything and return the error 'Cancelling event due to no window focus'
-            case android.R.id.home:
-                finish();
-                break;
-
-            // Validate input fields then
-            // Insert inputted data into the database and terminate the activity
-            case R.id.action_done:
-                // Check if the title field is empty, disallow insertion of it is
-                if ((fieldTitle.getText().toString().equals(""))){
-                    Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_title_not_found),
-                            Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-                // If all fields are valid, perform database insertion
-                else if (insertScheduleDataIntoDatabase()) {
-                    // Update any widgets
-                    Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
-                    widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-                    int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
-                    widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
-                    sendBroadcast(widgetUpdate);
-
-                    if (!STARTED_BY_NEWTASKACTIVITY) {
-                        Intent intent = new Intent(this, MainActivity.class);
-                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
-                        startActivity(intent);
-                    }
-                    finish();
-                }
-                else finish();
-                break;
-        }
-        return true;
     }
 
     @Override
@@ -335,7 +290,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -357,6 +312,51 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_new_detail, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Without this, the up button will not do anything and return the error 'Cancelling event due to no window focus'
+            case android.R.id.home:
+                finish();
+                break;
+
+            // Validate input fields then
+            // Insert inputted data into the database and terminate the activity
+            case R.id.action_done:
+                // Check if the title field is empty, disallow insertion of it is
+                if ((fieldTitle.getText().toString().equals(""))) {
+                    Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_title_not_found),
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                // If all fields are valid, perform database insertion
+                else if (insertScheduleDataIntoDatabase()) {
+                    // Update any widgets
+                    Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
+                    widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+                    int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
+                    widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                    sendBroadcast(widgetUpdate);
+
+                    if (!STARTED_BY_NEWTASKACTIVITY) {
+                        Intent intent = new Intent(this, MainActivity.class);
+                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
+                        startActivity(intent);
+                    }
+                    finish();
+                } else finish();
+                break;
+        }
+        return true;
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
@@ -374,6 +374,11 @@ public class NewScheduleActivity extends AppCompatActivity
         }
     }
 
+    // Helper method to create the computer-readable occurrence string
+    private String processOccurrenceString(String basis, String weekType, String classDays) {
+        return basis + ":" + weekType + ":" + classDays;
+    }
+
     private boolean insertScheduleDataIntoDatabase() {
         // Store data from UI input fields to variables to prepare them for insertion into the database
         String title = fieldTitle.getText().toString();
@@ -388,11 +393,13 @@ public class NewScheduleActivity extends AppCompatActivity
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
         if (INTENT_FLAG_EDIT) {
+            String rowPeers = "";
             // Delete the previous all instances of the schedule (based on the title)
             Cursor cursor = dbHelper.getScheduleDataByTitle(scheduleTitle);
             for (int i = 0; i < cursor.getCount(); i++) {
                 if (cursor.moveToPosition(i)) {
                     int rowId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
+                    rowPeers = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PEERS));
                     dbHelper.deleteScheduleItem(rowId);
                 }
             }
@@ -422,23 +429,23 @@ public class NewScheduleActivity extends AppCompatActivity
                     }
 
                     // Database insert function performed as update
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
+                    if (dbHelper.insertSchedule(rowPeers, title, teacher, room, occurrence,
                             timeIn, timeOut, timeInAlt, timeOutAlt,
-                            periods, scheduleIconUriString, notes_id)) {
+                            periods, scheduleIconUriString)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
-                    }
-                    else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
                 }
-            // Single row edit, no occurrence
+                // Single row edit, no occurrence
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule(title, teacher, room, "-1",
+                if (dbHelper.insertSchedule(rowPeers, title, teacher, room, "-1",
                         -1, -1, -1, -1,
-                        "-1", scheduleIconUriString, notes_id)) {
+                        "-1", scheduleIconUriString)) {
                     return true;
-                }
-                else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -475,9 +482,9 @@ public class NewScheduleActivity extends AppCompatActivity
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
 
                     // Database insert function
-                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
+                    if (dbHelper.insertSchedule("", title, teacher, room, occurrence,
                             timeIn, timeOut, timeInAlt, timeOutAlt,
-                            periods, scheduleIconUriString, notes_id)) {
+                            periods, scheduleIconUriString)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     } else
@@ -485,21 +492,17 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule(title, teacher, room, "-1",
+                if (dbHelper.insertSchedule("", title, teacher, room, "-1",
                         -1, -1, -1, -1,
-                        "-1", scheduleIconUriString, notes_id)) {
+                        "-1", scheduleIconUriString)) {
                     return true;
-                }
-                else Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
             }
         }
 
         // If data insertion functions were not executed, return false by default
         return false;
-    }
-
-    public void Remind(Date dateTime, String title, String message, int ID) {
-        scheduleNotification(dateTime, ID, title, message);
     }
 
     private void scheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
@@ -540,13 +543,13 @@ public class NewScheduleActivity extends AppCompatActivity
                 notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
                 final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewScheduleActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 alarmManager.setRepeating(AlarmManager.RTC, dateTime.getTime(), AlarmManager.INTERVAL_DAY, pendingIntent);
             }
         });
     }
 
-    private void editClassTimeItem(int position){
+    private void actionEditPeriodItem(int position) {
         // Get the data of the selected row through the Array Lists
         // and put it in a bundle
         Bundle args = new Bundle();
@@ -564,14 +567,14 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Check if the activity is in Contextual Action Mode
         // and emulate a back press to destroy it if it is
-        if (CAMselectedItemsList != null && CAMselectedItemsList.size() > 0){
+        if (CAMselectedItemsList != null && CAMselectedItemsList.size() > 0) {
             CAMselectedItemsList.clear();
             NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             NewScheduleActivity.this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
         // Create a new fragment based on the basis and launch it
-        switch (occurrence.split(":")[0]){
+        switch (occurrence.split(":")[0]) {
             case "0":
                 // Check if other dialogs are present and remove them if so
                 FragmentTransaction ftTime = getFragmentManager().beginTransaction();
@@ -621,7 +624,7 @@ public class NewScheduleActivity extends AppCompatActivity
         }
     }
 
-    private View.OnClickListener addClassTime() {
+    private View.OnClickListener addPeriodListener() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -638,7 +641,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
 
                 // Check if preferences were not stored
-                if (basis.equals("-1") || weekType.equals("-1")){
+                if (basis.equals("-1") || weekType.equals("-1")) {
                     // Check if other dialogs are present and remove them if so
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                     Fragment prev = getFragmentManager().findFragmentByTag("dialog");
@@ -659,7 +662,7 @@ public class NewScheduleActivity extends AppCompatActivity
                     args.putString("weekType", weekType);
 
                     // Start necessary ClassTimeThreeFragment based on basis
-                    switch (basis){
+                    switch (basis) {
                         case "0":
                             // Check if other dialogs are present and remove them if so
                             FragmentTransaction ftTime = getFragmentManager().beginTransaction();
@@ -705,19 +708,67 @@ public class NewScheduleActivity extends AppCompatActivity
                             fragmentBlock.show(getSupportFragmentManager(), "dialog");
                             break;
                     }
-                }}
+                }
+            }
         };
     }
 
-    private AdapterView.OnItemClickListener OccurrenceTimePeriodListener(){
+    private AdapterView.OnItemClickListener OccurrenceListener() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                editClassTimeItem(position);    }
+                actionEditPeriodItem(position);
+            }
         };
     }
 
+    private View.OnClickListener showIconDialogListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new IconPromptDialog();
+                dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    private void showBuiltInIconsDialog() {
+        // Prepare grid view
+        GridView gridView = new GridView(this);
+        final AlertDialog dialog;
+
+        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
+        List<Integer> mList = new ArrayList<>();
+        for (int i = 1; i < builtinIcons.length; i++) {
+            mList.add(builtinIcons[i]);
+        }
+
+        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setNumColumns(4);
+        gridView.setPadding(0, 16, 0, 16);
+        gridView.setGravity(Gravity.CENTER);
+        // Set grid view to alertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(gridView);
+        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
+        dialog = builder.show();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int resId = mThumbIds[position];
+                fieldIcon.setImageResource(resId);
+                Resources resources = getResources();
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
+                scheduleIconUriString = drawableUri.toString();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
     // Interfaces and Override Methods
+    // AddPeriodFragmentOne
     @Override
     public void onBasisSelected(String basis, boolean FLAG_EDIT, int rowID) {
         // Interface launched by AddClassTimeOneFragment when basis is selected
@@ -745,8 +796,7 @@ public class NewScheduleActivity extends AppCompatActivity
             DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
             fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
-        }
-        else{
+        } else {
             // Check if other dialogs are present and remove them if so
             android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
             transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
@@ -760,6 +810,8 @@ public class NewScheduleActivity extends AppCompatActivity
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
+
+    // AddPeriodFragmentTwo
     @Override
     public void onWeekTypeSelected(String weekType, boolean FLAG_EDIT, int rowID) {
         // Interface launched by AddClassTimeTwoFragment when WeekType is selected
@@ -786,8 +838,7 @@ public class NewScheduleActivity extends AppCompatActivity
             DialogFragment fragment = AddClassTimeThreeFragmentTime.newInstance(0);
             fragment.setArguments(args);
             fragment.show(getSupportFragmentManager(), "dialog");
-        }
-        else if (basis.equals("1")) {
+        } else if (basis.equals("1")) {
             // Check if other dialogs are present and remove them if so
             android.support.v4.app.FragmentTransaction transactionWeekType = getSupportFragmentManager().beginTransaction();
             transactionWeekType.remove(getSupportFragmentManager().findFragmentByTag("dialog"));
@@ -799,6 +850,8 @@ public class NewScheduleActivity extends AppCompatActivity
             fragment.show(getSupportFragmentManager(), "dialog");
         }
     }
+
+    // AddPeriodFragmentThree (All)
     @Override
     public void onDaysSelected(String classDays, int timeInSeconds, int timeOutSeconds,
                                int timeInAltSeconds, int timeOutAltSeconds, String periods,
@@ -875,7 +928,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // If the interface does not contain an edit flag
         // Add values into Array Lists to be inserted into the database
-        else{
+        else {
             occurrenceList.add(processOccurrenceString(basis, weekType, classDays));
             timeInList.add(timeInSeconds);
             timeOutList.add(timeOutSeconds);
@@ -904,6 +957,8 @@ public class NewScheduleActivity extends AppCompatActivity
                 .putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType)
                 .apply();
     }
+
+    // Recoil to AddPeriodFragmentOne
     @Override
     public void onBasisTextviewSelected(boolean FLAG_EDIT, int rowID) {
         this.FLAG_EDIT = FLAG_EDIT;
@@ -921,6 +976,8 @@ public class NewScheduleActivity extends AppCompatActivity
         fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
+
+    // Recoil to AddPeriodFragmentTwo
     @Override
     public void onWeektypeTextViewSelectedListener(String basis, boolean FLAG_EDIT, int rowID) {
         // Interface launched from ClassTimeThreeFragment to restart the weekType selection
@@ -942,9 +999,9 @@ public class NewScheduleActivity extends AppCompatActivity
         DialogFragment fragment = AddClassTimeTwoFragment.newInstance(0);
         fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
-        // Check if other dialogs are present and remove them if so
-
     }
+
+    // Used in AddPeriodFragmentThreeTime to close the time dialog and set the data
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         // Interface launched by TimePickerDialog to restart AddClassTimeThreeFragmentTime with data from the dialog
@@ -975,11 +1032,13 @@ public class NewScheduleActivity extends AppCompatActivity
         fragment.setArguments(args);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
+
+    // Used in AddPeriodFragmentThreeTime to open the time dialog
     @Override
     public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
                                int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
         // Interface from AddClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
-        // This creates the illusion that the fragment was never restarted and creates a smooth user experience
+        // This creates the illusion that the fragment was never restarted
         timeSelectedResourceId = resourceId;
         this.classDays = classDays;
         this.previousTimeInSeconds = previousTimeInSeconds;
@@ -989,14 +1048,9 @@ public class NewScheduleActivity extends AppCompatActivity
         previousButtonsChecked = buttonsChecked;
     }
 
-    private String processOccurrenceString(String basis, String weekType, String classDays) {
-        // Helper method to create the computer-readable occurrence string
-        return basis + ":" + weekType + ":" + classDays;
-    }
-
     @Override
     public void OnIconListItemSelected(int item) {
-        switch (item){
+        switch (item) {
             case 0:
                 showBuiltInIconsDialog();
                 break;
@@ -1007,51 +1061,6 @@ public class NewScheduleActivity extends AppCompatActivity
                     startActivityForResult(intent, REQUEST_IMAGE_GET);
                 break;
         }
-    }
-
-    private View.OnClickListener showIconDialog() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment dialog = new IconDialogFragment();
-                dialog.show(getSupportFragmentManager(), "dialog");
-            }
-        };
-    }
-
-    private void showBuiltInIconsDialog() {
-        // Prepare grid view
-        GridView gridView = new GridView(this);
-        final AlertDialog dialog;
-
-        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
-        List<Integer>  mList = new ArrayList<>();
-        for (int i = 1; i < builtinIcons.length; i++) {
-            mList.add(builtinIcons[i]);
-        }
-
-        gridView.setAdapter(new BuiltInIconsAdapter(this));
-        gridView.setNumColumns(4);
-        gridView.setPadding(0, 16, 0, 16);
-        gridView.setGravity(Gravity.CENTER);
-        // Set grid view to alertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(gridView);
-        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
-        dialog = builder.show();
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int resId = mThumbIds[position];
-                fieldIcon.setImageResource(resId);
-                Resources resources = getResources();
-                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId) );
-                scheduleIconUriString = drawableUri.toString();
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
     }
 
     // Subclass for the Contextual Action Mode
@@ -1105,6 +1114,7 @@ public class NewScheduleActivity extends AppCompatActivity
             // the number of items selected
             mode.invalidate();
         }
+
         @Override
         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
             // Inflate the action menu and set the global menu variable
@@ -1117,7 +1127,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Set the colour of the contextual action bar
             ColorDrawable colorDrawable;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 colorDrawable = new ColorDrawable(getColor(R.color.gray_500));
                 NewScheduleActivity.this.getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
                 findViewById(R.id.field_new_schedule_title).setBackgroundColor(getColor(R.color.gray_500));
@@ -1129,6 +1139,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
             return true;
         }
+
         @Override
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
             // Checks the count of items selected.
@@ -1141,6 +1152,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 menuItem.setVisible(false);
             return true;
         }
+
         @Override
         public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
@@ -1150,12 +1162,13 @@ public class NewScheduleActivity extends AppCompatActivity
 
                 case R.id.action_edit:
                     if (CAMselectedItemsList.size() == 1)
-                        editClassTimeItem(CAMselectedItemsList.get(0));
+                        actionEditPeriodItem(CAMselectedItemsList.get(0));
                     else Log.w(LOG_TAG, "Cancelled edit action due to more than one item selected");
                     break;
             }
             return true;
         }
+
         @Override
         public void onDestroyActionMode(android.view.ActionMode mode) {
             // Clear the array list of selected items and revert the window colour back to normal
@@ -1163,7 +1176,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
             // Set back the colour of the action bar to normal
             ColorDrawable colorDrawable;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 colorDrawable = new ColorDrawable(getColor(R.color.colorPrimary));
                 NewScheduleActivity.this.getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
                 findViewById(R.id.field_new_schedule_title).setBackgroundColor(getColor(R.color.colorPrimary));
@@ -1177,14 +1190,14 @@ public class NewScheduleActivity extends AppCompatActivity
         private void deleteSelectedItems() {
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                occurrenceList.remove((int)CAMselectedItemsList.get(i));
-                periodsList.remove((int)CAMselectedItemsList.get(i));
-                timeInList.remove((int)CAMselectedItemsList.get(i));
-                timeOutList.remove((int)CAMselectedItemsList.get(i));
-                timeInAltList.remove((int)CAMselectedItemsList.get(i));
-                timeOutAltList.remove((int)CAMselectedItemsList.get(i));
-                occurrenceTimePeriodList.remove((int)CAMselectedItemsList.get(i));
+            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                occurrenceList.remove((int) CAMselectedItemsList.get(i));
+                periodsList.remove((int) CAMselectedItemsList.get(i));
+                timeInList.remove((int) CAMselectedItemsList.get(i));
+                timeOutList.remove((int) CAMselectedItemsList.get(i));
+                timeInAltList.remove((int) CAMselectedItemsList.get(i));
+                timeOutAltList.remove((int) CAMselectedItemsList.get(i));
+                occurrenceTimePeriodList.remove((int) CAMselectedItemsList.get(i));
             }
 
             // Notify the adapter of the changes

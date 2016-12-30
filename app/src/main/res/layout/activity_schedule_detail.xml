@@ -11,19 +11,29 @@
         android:layout_width="match_parent"
         android:transitionName="@string/transition_schedule"
         android:layout_height="192dp"
+        android:fitsSystemWindows="true"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsingToolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="@color/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_frog"
+                android:fitsSystemWindows="true"
+                android:scaleType="centerCrop"
+                app:layout_collapseMode="parallax"/>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
                 app:layout_collapseMode="pin" />
 
         </android.support.design.widget.CollapsingToolbarLayout>
@@ -41,122 +51,57 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
+           <TextView
+               android:id="@+id/room"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="Room 204"
+               android:textSize="20sp"
+               android:textColor="@color/black_0.60"
+               android:layout_marginLeft="@dimen/activity_horizontal_margin"
+               android:layout_marginTop="@dimen/activity_vertical_margin" />
+
+            <TextView
+                android:id="@+id/teacher"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:paddingBottom="16dp"
-                android:paddingTop="16dp">
-
-                <ImageView
-                    android:id="@+id/task_detail_class_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:src="@drawable/ic_person_black"
-                    android:tint="@color/gray_700" />
-
-                <TextView
-                    android:id="@+id/task_detail_class"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_class_icon"
-                    android:layout_toRightOf="@id/task_detail_class_icon"
-                    android:text="Mr Ali"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/schedule_detail_teacher_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/task_detail_class"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_class_icon"
-                    android:layout_toRightOf="@id/task_detail_class_icon"
-                    android:text="@string/schedule_detail_teacher_subtitle"
-                    android:textColor="@color/gray_700" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingBottom="16dp"
-                android:paddingTop="16dp">
-
-                <ImageView
-                    android:id="@+id/task_detail_type_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:src="@drawable/ic_location_black"
-                    android:tint="@color/gray_700" />
-
-                <TextView
-                    android:id="@+id/task_detail_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_type_icon"
-                    android:layout_toRightOf="@id/task_detail_type_icon"
-                    android:text="103"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/schedule_detail_room_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/task_detail_type"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_type_icon"
-                    android:layout_toRightOf="@id/task_detail_type_icon"
-                    android:text="@string/schedule_detail_room_subtitle"
-                    android:textColor="@color/gray_700" />
-            </RelativeLayout>
+                android:text="Mr Smith"
+                android:textSize="18sp"
+                android:textColor="@color/black_0.60"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="16dp"/>
 
             <!-- TASKS -->
 
-            <LinearLayout
-                android:id="@+id/schedule_detail_tasks_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <View
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginLeft="72dp"
-                    android:layout_marginStart="72dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@color/dividerColor" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/schedule_detail_tasks_title"
-                    android:textColor="@color/black_0.54" />
+                    android:layout_height="72dp"
+                    android:background="@color/backgroundColor"
+                    android:elevation="2dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_gravity="center_vertical"
+                        android:textSize="20sp"
+                        android:text="@string/schedule_detail_tasks_title"
+                        android:textColor="@color/black_0.60" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorPrimary"
+                        android:text="Add a task to class"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginRight="16dp"/>
+                </FrameLayout>
 
                 <com.pdt.plume.NonScrollListView
                     android:id="@+id/schedule_detail_tasks_list"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp" />
-            </LinearLayout>
+                    android:layout_height="wrap_content" />
 
             <!-- NOTES -->
 
@@ -165,25 +110,33 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <View
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginLeft="72dp"
-                    android:layout_marginStart="72dp"
-                    android:layout_marginTop="24dp"
-                    android:background="@color/dividerColor" />
+                    android:layout_height="72dp"
+                    android:elevation="2dp"
+                    android:background="@color/backgroundColor">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_gravity="center_vertical"
+                        android:textSize="20sp"
+                        android:text="@string/schedule_detail_notes_title"
+                        android:textColor="@color/black_0.60" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorPrimary"
+                        android:text="Add a note to class"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginRight="16dp"/>
+                </FrameLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/schedule_detail_notes_title"
-                    android:textColor="@color/black_0.54" />
-
-                <!-- Add note -->
+                 <!--Add note -->
                 <LinearLayout
+                    android:visibility="gone"
                     android:id="@+id/schedule_detail_notes_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -218,6 +171,7 @@
             <!-- PERIODS-->
 
             <LinearLayout
+                android:visibility="gone"
                 android:id="@+id/schedule_detail_periods_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

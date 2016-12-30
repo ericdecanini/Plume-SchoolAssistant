@@ -13,7 +13,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,8 +28,6 @@ import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.R.attr.id;
 
 public class CompletedTasksActivity extends AppCompatActivity {
 
@@ -54,23 +51,12 @@ public class CompletedTasksActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_completed_tasks);
 
-        // Initialise the theme variables
-        // Initialise the theme variables
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
-        float[] hsv = new float[3];
-        int tempColor = mPrimaryColor;
-        Color.colorToHSV(tempColor, hsv);
-        hsv[2] *= 0.8f; // value component
-        mDarkColor = Color.HSVToColor(hsv);
-        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+        // Get references to the views
+        listView = (ListView) findViewById(R.id.completed_tasks_list);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(mDarkColor);
-        }
-
-        // Inflate the listview of task titles
+        // Retrieve the data from the database
+        // If no items were found, show the header
         final DbHelper dbHelper = new DbHelper(this);
         final Cursor cursor = dbHelper.getCompletedTaskData();
         taskTitles = new ArrayList<>();
@@ -84,7 +70,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
         cursor.close();
 
-        listView = (ListView) findViewById(R.id.completed_tasks_list);
+        // Use the previously made array list to inflate the listview adapter
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, taskTitles);
         listView.setAdapter(adapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -108,9 +94,8 @@ public class CompletedTasksActivity extends AppCompatActivity {
         });
 
         // Initialise the FAB
-        FloatingActionButton FAB = (FloatingActionButton) findViewById(R.id.fab);
-        FAB.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-        FAB.setOnClickListener(new View.OnClickListener() {
+        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Cursor completedTasksCursor = dbHelper.getCompletedTaskData();
@@ -133,9 +118,25 @@ public class CompletedTasksActivity extends AppCompatActivity {
             }
         });
 
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
+
     }
 
-    private void refreshListview() {
+    // Update the listview with its adapter
+    private void RefreshListviewAdapter() {
         // Inflate the listview of task titles
         final DbHelper dbHelper = new DbHelper(this);
         final Cursor cursor = dbHelper.getCompletedTaskData();
@@ -155,7 +156,8 @@ public class CompletedTasksActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    private void restoreTaskItem(int position) {
+    // Set a task item to incomplete state so it shows in TasksFragment again
+    private void UncompleteTaskItem(int position) {
         // Update the task
         DbHelper dbHelper = new DbHelper(this);
         Cursor cursor = dbHelper.getCompletedTaskData();
@@ -179,7 +181,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             cursor.close();
 
             // Refresh the adapter so the restored task is no longer displayed
-            refreshListview();
+            RefreshListviewAdapter();
         }
 
 
@@ -271,7 +273,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
                 case R.id.action_restore:
                     for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                            restoreTaskItem(CAMselectedItemsList.get(i));
+                            UncompleteTaskItem(CAMselectedItemsList.get(i));
                     }
 
                     // Then clear the selected items array list and emulate
@@ -314,7 +316,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             }
 
             // Notify the adapter of the changes
-            refreshListview();
+            RefreshListviewAdapter();
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode

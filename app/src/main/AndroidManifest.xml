@@ -195,11 +195,27 @@
         <activity
             android:name=".PeopleActivity"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".PeersActivity"
-            android:parentActivityName=".PeopleActivity"/>
-        <activity android:name=".AddPeerActivity"
+        <activity
+            android:name=".PeersActivity"
             android:parentActivityName=".PeopleActivity" />
-
+        <activity
+            android:name=".LoginActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".SignUpActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".RequestsActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".UserSearchActivity"
+            android:parentActivityName=".PeopleActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".AddPeerActivity" />
+        <activity
+            android:name=".AcceptPeerActivity"
+            android:parentActivityName=".RequestsActivity" />
+        <activity android:name=".PeerProfileActivity"></activity>
     </application>
 
 </manifest>

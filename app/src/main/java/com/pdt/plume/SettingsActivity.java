@@ -77,15 +77,15 @@ public class SettingsActivity extends PreferenceActivity
     }
 
     /**
-     * Attaches a listener so the summary is always updated with the preference value.
-     * Also fires the listener once, to initialize the summary (so it shows up before the value
+     * Attaches a ItemClickListener so the summary is always updated with the preference value.
+     * Also fires the ItemClickListener once, to initialize the summary (so it shows up before the value
      * is changed.)
      */
     private void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
+        // Set the ItemClickListener to watch for value changes.
         preference.setOnPreferenceChangeListener(this);
 
-        // Trigger the listener immediately with the preference's
+        // Trigger the ItemClickListener immediately with the preference's
         // current value.
         if (preference instanceof NumberPickerPreference)
         onPreferenceChange(preference,

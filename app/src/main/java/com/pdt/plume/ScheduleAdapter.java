@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -76,11 +78,25 @@ public class ScheduleAdapter extends ArrayAdapter {
             e.printStackTrace();
         }
         holder.icon.setImageBitmap(setImageBitmap);
-        holder.lesson.setText(schedule.scheduleLesson);
-        holder.teacher.setText(schedule.scheduleTeacher);
-        holder.room.setText(schedule.scheduleRoom);
-        holder.timeIn.setText(schedule.scheduleTimeIn);
-        holder.timeOut.setText(schedule.scheduleTimeOut);
+        if (schedule.scheduleLesson.contains("%0513%")) {
+            if (schedule.scheduleLesson.split("%0513%")[1].equals("cross")) {
+                holder.lesson.setText(schedule.scheduleLesson.split("%0513%")[0]);
+                holder.lesson.setTextColor(context.getResources().getColor(R.color.gray_500));
+                row.setAlpha(0.5f);
+                row.findViewById(R.id.checkbox).setClickable(true);
+                row.findViewById(R.id.checkbox).setEnabled(false);
+                row.setEnabled(false);
+                row.setClickable(true);
+            }}
+        else holder.lesson.setText(schedule.scheduleLesson);
+
+        // If the teacher view returns null, an alternate layout is being used
+        if (holder.teacher != null) {
+            holder.teacher.setText(schedule.scheduleTeacher);
+            holder.room.setText(schedule.scheduleRoom);
+            holder.timeIn.setText(schedule.scheduleTimeIn);
+            holder.timeOut.setText(schedule.scheduleTimeOut);
+        }
 
         // Set the activated state of the list item if it's selected
         if(mItemSelected==position){
@@ -90,10 +106,6 @@ public class ScheduleAdapter extends ArrayAdapter {
         }
 
         return row;
-    }
-
-    public void setItemSelected(int position){
-        mItemSelected=position;
     }
 
     static class ViewHolder {

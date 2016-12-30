@@ -1,65 +1,85 @@
 package com.pdt.plume;
 
+import android.Manifest;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.R.attr.editable;
-
 public class PeopleActivity extends AppCompatActivity
-        implements IconDialogFragment.iconDialogListener,
-        NameDialogFragment.onNameSelectedListener {
+        implements IconPromptDialog.iconDialogListener,
+        NameDialogFragment.onNameSelectedListener,
+        FlavourDialogFragment.onFlavourSelectedListener {
 
     String LOG_TAG = PeopleActivity.class.getSimpleName();
     String dummyToken = "dV8vdMhYU34:APA91bHPGoRMky6-LWnWaXJvqBK5aHF1js27mS3-MxKyacvoDnzIbo7URusepOWO1KE6oJl3ejCh3tWZ2zAVxv97JMM0XQuY36KG5wePdbNbQ9ZuzIoq91WSeOiQ7xHiOIEJmstKw7NZ";
 
+    // TODO: Make custom icon upload ask for permission
+
     // UI Variables
     ImageView selfIconView;
-    TextView selfNameView;
+    TextView selfNameView, flavourView;
 
     // UI Data
-    String selfIconUri, selfName;
+    String selfIconUri, selfName, flavour;
+    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/ic_person_white";
 
     // Theme Variables
     int mPrimaryColor, mDarkColor;
 
-    private static int REQUEST_IMAGE_GET_ICON = 0;
+    // Intent Data
+    private static final int REQUEST_IMAGE_GET_ICON = 0;
+    private static final int REQUEST_PERMISSION_MANAGE_DOCUMENTS = 1;
+
+    // Firebase Variables
+    private DatabaseReference mDatabase;
+    private String mUserId;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
+    // Dialog item arrays
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -91,14 +111,175 @@ public class PeopleActivity extends AppCompatActivity
             R.drawable.art_woodwork_64dp
     };
 
+    private CharSequence[] addPeerMethodsArray = {"", ""};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_people);
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Initialise AddPeerMethodsArray and mUserId
+        addPeerMethodsArray[0] = getString(R.string.AddByUsername);
+        addPeerMethodsArray[1] = getString(R.string.ScanQRCode);
+
+        // Get references to the views
+        selfIconView = (ImageView) findViewById(R.id.icon);
+        selfNameView = (TextView) findViewById(R.id.name);
+        flavourView = (TextView) findViewById(R.id.flavour);
+        ImageView QRCodeView = (ImageView) findViewById(R.id.qr);
+        LinearLayout addPeersButton = (LinearLayout) findViewById(R.id.addPeersLayout);
+        LinearLayout viewPeersButton = (LinearLayout) findViewById(R.id.viewPeersLayout);
+
+        // Set the click listeners of the views
+        // PROFILE VIEWS
+        selfIconView.setOnClickListener(showIconDialog());
+        selfNameView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NameDialogFragment fragment = NameDialogFragment.newInstance(selfName);
+                Bundle args = new Bundle();
+                Log.v(LOG_TAG, "SelfName: " + selfName);
+                args.putString("name", selfName);
+                fragment.setArguments(args);
+                fragment.show(getSupportFragmentManager(), "dialog");
+            }
+        });
+        flavourView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FlavourDialogFragment fragment = FlavourDialogFragment.newInstance(flavour);
+                Bundle args = new Bundle();
+                args.putString("flavour", flavour);
+                fragment.setArguments(args);
+                fragment.show(getSupportFragmentManager(), "dialog");
+            }
+        });
+
+        // ACTION BUTTONS
+        addPeersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(PeopleActivity.this).
+                        setItems(addPeerMethodsArray, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // Popup menu click listener
+                                switch (i) {
+                                    case 0:
+                                        // Add by Username
+                                        Intent intent = new Intent(PeopleActivity.this, UserSearchActivity.class);
+                                        startActivity(intent);
+                                        return;
+                                    case 1:
+                                        startActivity(new Intent(PeopleActivity.this, AddPeerActivity.class));
+                                        return;
+                                }
+                            }
+                        }).show();
+            }
+        });
+        viewPeersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(PeopleActivity.this, PeersActivity.class));
+            }
+        });
+
+        // Initialise Firebase
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        // Direct the user to the sign in page if he isn't logged in
+        if (mFirebaseUser == null) {
+            loadLogInView();
+            return;
+        }
+        else mUserId = mFirebaseUser.getUid();
+
+        // If there is previously set data in shared preferences, set it accordingly
+        // If new data is found in the cloud database, this data will be replaced once loaded
+        String savedName = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_NAME), getString(R.string.yourNameHere));
+        flavour = preferences.getString(getString(R.string.KEY_PREFERENCES_FLAVOUR), getString(R.string.onYourMind));
+        String savedIconUri = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_ICON), null);
+        selfNameView.setText(savedName);
+        selfName = savedName;
+        flavourView.setText(flavour);
+        if (savedIconUri != null)
+            try {
+                // Check the permission for MANAGE DOCUMENTS and revert to the default icon
+                // if the icon is custom uploaded and the permission is denied
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_DOCUMENTS) == PackageManager.PERMISSION_GRANTED
+                        || savedIconUri.contains("android.resource://com.pdt.plume/drawable/")) {
+                    Log.v(LOG_TAG, "MANAGE DOCUMENTS = " + Manifest.permission.MANAGE_DOCUMENTS + " PERMISSION GRANTED: " + PackageManager.PERMISSION_GRANTED);
+                    selfIconView.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(savedIconUri)));
+                    selfIconUri = savedIconUri;
+                }
+                else {
+                    selfIconUri = defaultIconUri;
+                    PreferenceManager.getDefaultSharedPreferences(this).edit()
+                            .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), defaultIconUri)
+                            .apply();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        // Retrieve the data from the cloud database
+        // and set the listener for changes in the cloud
+        if (mFirebaseUser != null) {
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+            mDatabase.child("users").child(mUserId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // After setting the self data to the saved key values in the phone
+                    // The program will check for updated data in the cloud
+                    // TODO: Perform check on if the snapshot is a URI or basic String and perform corresponding action
+                    // TODO: This is for setting the selfIcon
+                    Log.v(LOG_TAG, "Snapshot Value: " + dataSnapshot.getValue());
+                    String iconData = dataSnapshot.child("icon").getValue(String.class);
+                    String nicknameData = dataSnapshot.child("nickname").getValue(String.class);
+                    Log.v(LOG_TAG, "mUserId: " + mUserId);
+                    Log.v(LOG_TAG, "Icon Value: " + iconData);
+                    Log.v(LOG_TAG, "Nickname Value: " + nicknameData);
+                        // Data snapshot is the icon
+                    if (iconData != null) {
+                        selfIconView.setImageURI(Uri.parse(iconData));
+                        selfIconUri = iconData;
+                        // Save the data to shared preferences
+                        preferences.edit()
+                                .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), iconData)
+                                .apply();
+                    }
+
+                        // Data snapshot is the name
+                    if (nicknameData != null) {
+                        selfNameView.setText(nicknameData);
+                        selfName = nicknameData;
+                        // Save the data to shared preferences
+                        preferences.edit()
+                                .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), nicknameData)
+                                .apply();
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+
+        // Generate the QR code and set the ImageView to such
+        Bitmap QRCodeBitmap = generateQRCode(dummyToken);
+        QRCodeView.setImageBitmap(QRCodeBitmap);
 
         // Initialise the theme variables
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -109,59 +290,78 @@ public class PeopleActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+    }
 
-        // Initialise the UI
-        selfIconView = (ImageView) findViewById(R.id.icon);
-        selfNameView = (TextView) findViewById(R.id.name);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_MANAGE_DOCUMENTS:
+                // If request is cancelled, the result arrays are empty
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Execute upload intent
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    if (intent.resolveActivity(getPackageManager()) != null)
+                        startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+                }
+                break;
+        }
+    }
 
-        // If there is previously set data in shared preferences, set it accordingly
-        String savedName = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_NAME), getString(R.string.yourNameHere));
-        String savedIconUri = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_ICON), null);
-        selfNameView.setText(savedName);
-        if (savedIconUri != null)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Custom Icon Upload
+        if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
+            Uri dataUri = data.getData();
+            Bitmap setImageBitmap = null;
+            Log.v(LOG_TAG, "dataUri: " + dataUri.toString());
+
             try {
-                selfIconView.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(savedIconUri)));
+                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-        selfIconView.setOnClickListener(showIconDialog());
-        selfNameView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                NameDialogFragment fragment = NameDialogFragment.newInstance(selfName);
-                fragment.show(getSupportFragmentManager(), "dialog");
-            }
-        });
+            selfIconView.setImageBitmap(setImageBitmap);
 
-        LinearLayout addPeersButton = (LinearLayout) findViewById(R.id.addPeersLayout);
-        LinearLayout viewPeersButton = (LinearLayout) findViewById(R.id.viewPeersLayout);
-        addPeersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(PeopleActivity.this, AddPeerActivity.class));
-            }
-        });
-        viewPeersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(PeopleActivity.this, PeersActivity.class));
-            }
-        });
+            // Save the icon uri
+            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), dataUri.toString())
+                    .apply();
 
-        ImageView QRCodeView = (ImageView) findViewById(R.id.qr);
-        Bitmap QRCodeBitmap = generateQRCode(dummyToken);
-        QRCodeView.setImageBitmap(QRCodeBitmap);
+        }
     }
 
-    private View.OnClickListener showIconDialog() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment dialog = new IconDialogFragment();
-                dialog.show(getSupportFragmentManager(), "dialog");
-            }
-        };
+    @Override
+    public void onNameSelected(String name) {
+        // Set the text on the TextView
+        selfName = name;
+        selfNameView.setText(name);
+
+        // Save the name to SharedPreferences
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), name)
+                .apply();
+
+        // Save the name to the cloud database
+        mDatabase.child("users").child(mUserId).child("nickname").setValue(name);
+    }
+
+    @Override
+    public void onFlavourSelected(String flavour) {
+        // Set the flavour on the TextView
+        this.flavour = flavour;
+        flavourView.setText(flavour);
+
+        // Save the name to SharedPreferences
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(getString(R.string.KEY_PREFERENCES_FLAVOUR), flavour)
+                .apply();
+
+        // Save the name to the cloud database
+        mDatabase.child("users").child(mUserId).child("flavour").setValue(flavour);
     }
 
     @Override
@@ -171,11 +371,42 @@ public class PeopleActivity extends AppCompatActivity
                 showBuiltInIconsDialog();
                 break;
             case 1:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+                sendCustomIconIntent();
                 break;
+        }
+    }
+
+    private void loadLogInView() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    private View.OnClickListener showIconDialog() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new IconPromptDialog();
+                dialog.show(getSupportFragmentManager(), "dialog");
+            }
+        };
+    }
+
+    // Custom Icon Upload Intent
+    private void sendCustomIconIntent() {
+        // Conduct permission check
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_DOCUMENTS);
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            // Execute intent
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            if (intent.resolveActivity(getPackageManager()) != null)
+                startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+        } else {
+            // Prompt user for permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.MANAGE_DOCUMENTS},
+                    REQUEST_PERMISSION_MANAGE_DOCUMENTS);
         }
     }
 
@@ -202,53 +433,26 @@ public class PeopleActivity extends AppCompatActivity
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Set the image resource and save the URI as a global variable
                 int resId = mThumbIds[position];
                 selfIconView.setImageResource(resId);
                 Resources resources = getResources();
                 Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                         + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
                 selfIconUri = drawableUri.toString();
+
+                // Save the selected icon in SharedPreferences
                 PreferenceManager.getDefaultSharedPreferences(PeopleActivity.this).edit()
                         .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), selfIconUri)
                         .apply();
+
+                // Save the selected icon in the Cloud Database
+                mDatabase.child("users").child(mUserId).child("icon").setValue(selfIconUri);
+
                 dialog.dismiss();
             }
         });
         dialog.show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Custom Icon Upload
-        if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
-            Uri dataUri = data.getData();
-            Bitmap setImageBitmap = null;
-
-            try {
-                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            selfIconView.setImageBitmap(setImageBitmap);
-
-            // Save the icon uri
-            PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), dataUri.toString())
-                    .apply();
-
-        }
-    }
-
-    @Override
-    public void onNameSelected(String name) {
-        selfName = name;
-        selfNameView.setText(name);
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), name)
-                .apply();
     }
 
     private Bitmap generateQRCode(String token) {
@@ -260,7 +464,7 @@ public class PeopleActivity extends AppCompatActivity
         int width = point.x;
         int height = point.y;
         int smallerDimension = width < height ? width : height;
-        smallerDimension = smallerDimension * 3/4;
+        smallerDimension = smallerDimension * 3 / 4;
 
         //Encode with a QR Code image
         QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(token,
@@ -278,4 +482,5 @@ public class PeopleActivity extends AppCompatActivity
 
         return null;
     }
+
 }

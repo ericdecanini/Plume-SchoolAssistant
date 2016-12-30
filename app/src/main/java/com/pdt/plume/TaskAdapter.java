@@ -38,7 +38,7 @@ public class TaskAdapter extends ArrayAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         // Initialise variables for the Row and View Holder
         View row = convertView;
-        ViewHolder holder = null;
+        ViewHolder holder;
 
         // If the row hasn't been used by the adapter before
         // create a new row

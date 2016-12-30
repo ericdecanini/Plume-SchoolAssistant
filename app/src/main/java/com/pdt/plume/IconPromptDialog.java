@@ -9,10 +9,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
-public class IconDialogFragment extends DialogFragment {
+public class IconPromptDialog extends DialogFragment {
 
     public interface iconDialogListener{
-        public void OnIconListItemSelected(int item);
+        void OnIconListItemSelected(int item);
     }
 
     iconDialogListener dialogListener;
@@ -27,7 +27,7 @@ public class IconDialogFragment extends DialogFragment {
         }
     }
 
-    public IconDialogFragment() {
+    public IconPromptDialog() {
         // Required empty public constructor
     }
 

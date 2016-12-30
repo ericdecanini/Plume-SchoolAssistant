@@ -1,7 +1,6 @@
 package com.pdt.plume;
 
 
-import android.animation.Animator;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.ActivityOptions;
@@ -9,16 +8,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -26,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -36,7 +30,6 @@ import android.widget.Toast;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +66,11 @@ public class TasksFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
+
+        // Get references to the views
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+        listView = (ListView) rootView.findViewById(R.id.tasks_list);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
@@ -83,14 +80,17 @@ public class TasksFragment extends Fragment {
 
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
-        listView = (ListView) rootView.findViewById(R.id.tasks_list);
         TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getUncompletedTaskArray());
+
+        // The header text view will only be visible if there is no items in the task adapter
+        if (mAdapter.getCount() == 0)
+            headerTextView.setVisibility(View.VISIBLE);
 
         // Set the adapter and listeners of the listview
         if (listView != null) {
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setAdapter(mAdapter);
-            listView.setOnItemClickListener(listener());
+            listView.setOnItemClickListener(ItemClickListener());
             listView.setMultiChoiceModeListener(new ModeCallback());
             if (getResources().getBoolean(R.bool.isTablet))
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
@@ -99,13 +99,7 @@ public class TasksFragment extends Fragment {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
-        if (mAdapter.getCount() == 0)
-            headerTextView.setVisibility(View.VISIBLE);
-
-
-        // Get a reference to the FAB and set its OnClickListener
-        // which is an intent to add a new schedule
-        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        // Set the action of the FAB
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,7 +129,7 @@ public class TasksFragment extends Fragment {
         fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
-    public AdapterView.OnItemClickListener listener() {
+    public AdapterView.OnItemClickListener ItemClickListener() {
 
         return new AdapterView.OnItemClickListener() {
             @Override

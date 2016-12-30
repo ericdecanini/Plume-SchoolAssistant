@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pdt.plume.R.bool.isTablet;
-
 public class ScheduleDetailActivity extends AppCompatActivity {
 
     // Constantly used variables
@@ -60,7 +58,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     String teacher;
     String room;
     ListView listView;
-    LinearLayout addNoteView;
+//    LinearLayout addNoteView;
     ListView notesList;
     Uri iconUri;
 
@@ -102,7 +100,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             }
 
         // Set the onClickListener for the add note button
-        addNoteView.setOnClickListener(addNoteListener());
+//        addNoteView.setOnClickListener(addNoteListener());
     }
 
     @Override
@@ -117,9 +115,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ScheduleDetailActivity.this);
 
         // Get references to the UI elements
-        TextView teacherTextview = (TextView) findViewById(R.id.task_detail_class);
-        TextView roomTextview = (TextView) findViewById(R.id.task_detail_type);
-        addNoteView = (LinearLayout) findViewById(R.id.schedule_detail_notes_layout);
+        TextView teacherTextview = (TextView) findViewById(R.id.teacher);
+        TextView roomTextview = (TextView) findViewById(R.id.room);
+//        addNoteView = (LinearLayout) findViewById(R.id.schedule_detail_notes_layout);
 
         // Set the attributes of the window
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -182,7 +180,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         });
                     }
                 } else {
-                    findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.GONE);
+//                    findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.GONE);
                 }
 
                 // Inflate the listview of periods
@@ -260,13 +258,14 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     notesTextview.setTextColor(mainColour);
 
                     mDarkColor = Color.HSVToColor(hsv);
-                    actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                    } else collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        getWindow().setStatusBarColor(mDarkColor);
-                    }
+//                    actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+//                    }
+//                    else collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                        getWindow().setStatusBarColor(mDarkColor);
+//                    }
                 }
             });
         }

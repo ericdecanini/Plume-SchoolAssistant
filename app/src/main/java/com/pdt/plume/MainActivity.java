@@ -50,6 +50,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.pdt.plume.services.ScheduleNotificationService;
 
@@ -60,13 +64,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
-
-    // GCM Variables
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
-    private ProgressBar mRegistrationProgressBar;
-    private TextView mInformationTextView;
-    private boolean isReceiverRegistered;
 
     // UI Elements
     Toolbar mToolbar;
@@ -84,8 +81,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     int weekNumber;
 
     // Intent Data
-    static final int REQUEST_FILE_GET = -1;
     public static boolean notificationServiceIsRunning = false;
+
+    // Firebase variables
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    boolean loggedIn = false;
+    MenuItem logInOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             toggle.syncState();
         }
 
-        // Initialise the Navigation View and set its listener
+        // Initialise the Navigation View and set its ItemClickListener
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null)
             navigationView.setNavigationItemSelectedListener(this);
@@ -135,26 +137,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             startService(new Intent(this, ScheduleNotificationService.class));
             notificationServiceIsRunning = true;
         }
-    }
 
-    private void init() {
-        // The boolean is falsed in ScheduleFragment
-        // Open the shared preference
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = preferences.edit();
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-        // Initialise the theme variables
-        mPrimaryColor = getResources().getColor(R.color.colorPrimary);
-        mSecondaryColor = getResources().getColor(R.color.colorAccent);
-        editor.putInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
-        editor.putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), mSecondaryColor);
-
-        // Initialise the week number
-        weekNumber = 0;
-        editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");
-
-        // Commit the preferences
-        editor.apply();
+        if (mFirebaseUser == null) {
+            loggedIn = false;
+        }
+        else {
+            loggedIn = true;
+            Toast.makeText(this, "Logged in", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -226,6 +220,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        logInOut = menu.findItem(R.id.action_logout);
+        if (loggedIn)
+            logInOut.setTitle(getString(R.string.action_logout));
+        else logInOut.setTitle(getString(R.string.action_login));
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_logout) {
+            if (loggedIn)
+                logOut();
+            else loadLogInView();
+            return true;
+        }
+
+        return false;
+    }
+
     // Include back button action to close
     // navigation drawer if open
     @Override
@@ -244,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        Log.v(LOG_TAG, "ItemTitle: " + item.getTitle());
         // Handle navigation view item clicks here.
         switch (item.getItemId()){
             case R.id.nav_classes:
@@ -254,6 +280,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(new Intent
                         (this, PeopleActivity.class));
                 break;
+            case R.id.nav_requests:
+                startActivity(new Intent(
+                        this, RequestsActivity.class
+                ));
+                break;
             case R.id.nav_completedTasks:
                 startActivity(new Intent
                         (this, CompletedTasksActivity.class));
@@ -262,9 +293,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
-//            case R.id.nav_help:
-//                Toast.makeText(MainActivity.this, getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
-//                break;
         }
 
         // Close the navigation drawer upon item selection
@@ -275,24 +303,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    private void init() {
+        // The boolean is falsed in ScheduleFragment
+        // Open the shared preference
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
+        // Initialise the theme variables
+        mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+        mSecondaryColor = getResources().getColor(R.color.colorAccent);
+        editor.putInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
+        editor.putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), mSecondaryColor);
 
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        }
+        // Initialise the week number
+        weekNumber = 0;
+        editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");
 
-        return false;
+        // Commit the preferences
+        editor.apply();
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference();
     }
 
     public void initTabs(){
@@ -321,30 +352,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mViewPager.setCurrentItem(1);
         }
 
-        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-//                fab.hide();
-//                Handler handler = new Handler();
-//                handler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        fab.show();
-//                    }
-//                }, 150);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-
     }
 
     public void initSpinner(){
@@ -353,9 +360,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
             actionBar.setDisplayShowTitleEnabled(false);
-        
+
         // Get a reference to the spinner UI element
-        // and set its adapter and listener
+        // and set its adapter and ItemClickListener
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         if (spinner != null) {
             // Set the adapter of the spinner
@@ -441,6 +448,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private static class mSpinnerAdapter extends ArrayAdapter<String> implements ThemedSpinnerAdapter {
+
         private final ThemedSpinnerAdapter.Helper mDropDownHelper;
 
         // Constructor method where helper is initialised
@@ -483,6 +491,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void setDropDownViewTheme(Resources.Theme theme) {
             mDropDownHelper.setDropDownViewTheme(theme);
         }
+    }
+
+    private void loadLogInView() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    private void logOut() {
+        mFirebaseAuth.signOut();
+        loggedIn = false;
+        logInOut.setTitle(getString(R.string.action_login));
+        Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
     }
 
 }

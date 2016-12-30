@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 
 
 public class PeerAdapter extends ArrayAdapter {
+
+    String LOG_TAG = PeerAdapter.class.getSimpleName();
 
     Context context;
     int layoutResourceId;
@@ -34,7 +37,7 @@ public class PeerAdapter extends ArrayAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
-        ViewHolder holder = null;
+        ViewHolder holder;
 
         if (row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
@@ -53,12 +56,7 @@ public class PeerAdapter extends ArrayAdapter {
 
         Peer peer = data.get(position);
 
-//        try {
-//            Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(peer.peerIcon));
-//            holder.icon.setImageBitmap(bitmap);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        holder.icon.setImageURI(Uri.parse(peer.peerIcon));
         holder.name.setText(peer.peerName);
 
         return row;

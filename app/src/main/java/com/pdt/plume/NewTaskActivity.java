@@ -1,10 +1,8 @@
 package com.pdt.plume;
 
-import android.*;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -70,7 +68,8 @@ import java.util.Date;
 import java.util.List;
 
 public class NewTaskActivity extends AppCompatActivity
-        implements IconDialogFragment.iconDialogListener {
+        implements IconPromptDialog.iconDialogListener {
+
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
     Utility utility = new Utility();
@@ -111,12 +110,14 @@ public class NewTaskActivity extends AppCompatActivity
     long reminderDateMillis;
     float reminderTimeSeconds;
 
+    // Intent Data
     static int REQUEST_NOTIFICATION_ALARM = 40;
     static int REQUEST_NOTIFICATION_INTENT = 41;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 42;
 
     String attachedFileUriString = "";
 
+    // Built-in Icons
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -189,7 +190,7 @@ public class NewTaskActivity extends AppCompatActivity
         classType = getString(R.string.none);
 
         // Set the listeners of the UI
-        fieldIcon.setOnClickListener(showIconDialog());
+        fieldIcon.setOnClickListener(showIconPrompt());
         fieldClassDropdown.setOnClickListener(listener());
         fieldTypeDropdown.setOnClickListener(listener());
         fieldTakePhoto.setOnClickListener(listener());
@@ -243,7 +244,7 @@ public class NewTaskActivity extends AppCompatActivity
                 float reminderDate = 0f;
                 float reminderTime = 0f;
 
-                if (cursor.moveToFirst()){
+                if (cursor.moveToFirst()) {
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                     classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
                     classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
@@ -352,8 +353,9 @@ public class NewTaskActivity extends AppCompatActivity
                         if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
                                 && today.get(Calendar.YEAR) == reminderDateYear)
                             fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
-                        else fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
-                                ((int) reminderDateMonth), ((int) reminderDateDay)));
+                        else
+                            fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
+                                    ((int) reminderDateMonth), ((int) reminderDateDay)));
                     }
                     this.reminderDateMillis = c.getTimeInMillis();
                 }
@@ -400,7 +402,7 @@ public class NewTaskActivity extends AppCompatActivity
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -414,7 +416,7 @@ public class NewTaskActivity extends AppCompatActivity
             fieldTitle.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
         }
 
-        if (LAUNCHED_NEW_CLASS){
+        if (LAUNCHED_NEW_CLASS) {
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor = dbHelper.getAllScheduleData();
             if (cursor.moveToLast()) {
@@ -477,7 +479,7 @@ public class NewTaskActivity extends AppCompatActivity
                 }
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
-                if (insertTaskData())
+                if (insertTaskDataIntoDatabase())
                     startActivity(intent);
                 else {
                     Log.w(LOG_TAG, "Error creating new task");
@@ -487,6 +489,265 @@ public class NewTaskActivity extends AppCompatActivity
         }
 
         return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
+                    builder.setTitle(getString(R.string.field_new_photo_dialog_title))
+                            .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            try {
+                                                dispatchTakePictureIntent();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                            break;
+                                        case 1:
+                                            dispatchSelectPhotoIntent();
+                                            break;
+                                    }
+                                }
+                            }).show();
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
+    }
+
+    // This method is called when a file is selected after the ACTION_GET
+    // intent was called from the attach file action
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Attachment Upload
+        if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK) {
+            // Get the Uri and UriString from the intent and save its global variable
+            Uri filePathUri = data.getData();
+            attachedFileUriString = data.getDataString();
+
+            // Get the filename of the file and set the field's text to that
+            Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
+            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            returnCursor.moveToFirst();
+            String fileName = returnCursor.getString(nameIndex);
+            returnCursor.close();
+            fieldAttachFile.setText(fileName);
+        }
+
+        // Take Photo
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // Set the thumbnail and set the member variable for the Uri
+            mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
+            try {
+                Bitmap thumbnail = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
+                int scale = (int) getResources().getDisplayMetrics().density;
+                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(thumbnail, 64 * scale, 64 * scale, false));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Photo Upload
+        if (requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
+            Uri dataUri = data.getData();
+            Bitmap bitmap = null;
+
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mCurrentPhotoPath = dataUri;
+            mCurrentPhotoPathString = mCurrentPhotoPath.toString();
+            int scale = (int) getResources().getDisplayMetrics().density;
+            fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 64 * scale, 64 * scale, false));
+        }
+
+        // Custom Icon Upload
+        if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
+            Uri dataUri = data.getData();
+            Bitmap setImageBitmap = null;
+
+            try {
+                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            fieldIcon.setImageBitmap(setImageBitmap);
+        }
+    }
+
+    private void showClassDropdownMenu() {
+        // Set up the dropdown menu on both views
+        // Set up the class dropdown menu
+        PopupMenu popupMenu = new PopupMenu(this, fieldClassDropdown);
+
+        // Add the titles to the menu as well as the item to add a new class
+        popupMenu.getMenu().add(getString(R.string.none));
+        for (int i = 0; i < classTitleArray.size(); i++)
+            popupMenu.getMenu().add(classTitleArray.get(i));
+        popupMenu.getMenu().add(getString(R.string.add_new_class));
+
+        // Set the ItemClickListener for the menu items
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                // Set the data to be later saved into the database
+                NewTaskActivity.this.classTitle = item.getTitle().toString();
+
+                // If Add New Class was selected, start NewScheduleActivity
+                if (NewTaskActivity.this.classTitle.equals(getString(R.string.add_new_class))) {
+                    LAUNCHED_NEW_CLASS = true;
+                    Intent intent = new Intent(NewTaskActivity.this, NewScheduleActivity.class);
+                    intent.putExtra("STARTED_BY_NEWTASKACTIVITY", true);
+                    startActivity(intent);
+                    return true;
+                }
+
+                // Auto-fill the title editText if there isn't any user-inputted title yet
+                String titleText = fieldTitle.getText().toString();
+                if (titleText.equals(""))
+                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                        fieldTitle.setText("");
+                    else fieldTitle.setText(NewTaskActivity.this.classTitle);
+                if (titleText.equals(classType) && NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                    fieldTitle.setText(classType);
+                    // Check if another class was set before
+                else if (classTitleArray.contains(titleText))
+                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                        fieldTitle.setText("");
+                    else fieldTitle.setText(NewTaskActivity.this.classTitle);
+                    // Check if the classType was set before the class
+                else if (classTypeArray.contains(titleText))
+                    fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
+                    // Check if the title editText contains text as a result
+                    // of previously using the dropdown lists
+                else {
+                    String[] splitFieldTitle = titleText.split(" ");
+                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
+                        if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
+                            fieldTitle.setText(splitFieldTitle[1]);
+                        else
+                            fieldTitle.setText(NewTaskActivity.this.classTitle + " " + splitFieldTitle[1]);
+                    }
+                }
+                // Set the dropdown list text to the selected item
+                fieldClassTextview.setText(NewTaskActivity.this.classTitle);
+
+                return true;
+            }
+        });
+
+        popupMenu.show();
+    }
+
+    private void showTypeDropdownMenu() {
+        // Initialise and inflate the menu
+        PopupMenu popupMenu = new PopupMenu(NewTaskActivity.this, fieldTypeDropdown);
+        popupMenu.getMenuInflater().inflate(R.menu.menu_popup_type, popupMenu.getMenu());
+
+        // Set the menu's ItemClickListener
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                // Set the data to be later saved into the database
+                NewTaskActivity.this.classType = item.getTitle().toString();
+
+                // Auto-fill the title editText if there isn't any user-inputted title yet
+                String titleText = fieldTitle.getText().toString();
+                if (titleText.equals("") && !NewTaskActivity.this.classType.equals(getString(R.string.none)))
+                    fieldTitle.setText(NewTaskActivity.this.classType);
+                if (titleText.contains(classTitle) && NewTaskActivity.this.classType.equals(getString(R.string.none)))
+                    fieldTitle.setText(classTitle);
+                    // Check if another classType was set before
+                else if (classTypeArray.contains(titleText))
+                    if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
+                        fieldTitle.setText("");
+                    else fieldTitle.setText(NewTaskActivity.this.classType);
+                    // Check if the classType was set before the class
+                else if (classTitleArray.contains(titleText)) {
+                    fieldTitle.setText(titleText + " " + NewTaskActivity.this.classType);
+                }
+                // Check if the title editText contains text as a result
+                // of previously using the dropdown lists
+                else {
+                    String[] splitFieldTitle = titleText.split(" ");
+                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
+                        if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
+                            fieldTitle.setText(splitFieldTitle[0]);
+                        else
+                            fieldTitle.setText(splitFieldTitle[0] + " " + NewTaskActivity.this.classType);
+                    }
+                }
+
+                // Set the dropdown list text to the selected item
+                fieldTypeTextview.setText(NewTaskActivity.this.classType);
+
+                return true;
+            }
+        });
+
+        popupMenu.show();
+    }
+
+    private void showReminderDateDropdownMenu() {
+        PopupMenu popupMenu = new PopupMenu(this, fieldSetReminderDate);
+        popupMenu.getMenuInflater().inflate(R.menu.popup_reminder_date, popupMenu.getMenu());
+        final Calendar c = Calendar.getInstance();
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.dropdown_reminder_date_none:
+                        fieldSetReminderDateTextview.setText(getString(R.string.none));
+                        reminderDateMillis = 0;
+                        fieldSetReminderTime.setEnabled(false);
+                        break;
+                    case R.id.dropdown_reminder_date_today:
+                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                        fieldSetReminderDateTextview.setText(getString(R.string.today));
+                        reminderDateMillis = c.getTimeInMillis();
+                        fieldSetReminderTime.setEnabled(true);
+                        break;
+                    case R.id.dropdown_reminder_date_tomorrow:
+                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1);
+                        fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
+                        reminderDateMillis = c.getTimeInMillis();
+                        fieldSetReminderTime.setEnabled(true);
+                        break;
+                    case R.id.dropdown_reminder_date_setdate:
+                        fieldSetReminderTime.setEnabled(true);
+                        int year = c.get(Calendar.YEAR);
+                        int month = c.get(Calendar.MONTH);
+                        int day = c.get(Calendar.DAY_OF_MONTH) + 1;
+                        DatePickerDialog datePickerDialog =
+                                new DatePickerDialog(NewTaskActivity.this, reminderDateSetListener(),
+                                        year, month, day);
+                        datePickerDialog.show();
+                        break;
+                }
+                return true;
+            }
+        });
+        popupMenu.show();
     }
 
     private View.OnClickListener listener() {
@@ -577,352 +838,7 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_PERMISSION_READ_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
-                    builder.setTitle(getString(R.string.field_new_photo_dialog_title))
-                            .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case 0:
-                                            try {
-                                                dispatchTakePictureIntent();
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                            break;
-                                        case 1:
-                                            dispatchSelectPhotoIntent();
-                                            break;
-                                    }
-                                }
-                            }).show();
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-        }
-    }
-
-    private boolean insertTaskData() {
-        // Get the inputted text from the title and description fields
-        // as well as the iconResource and database
-        String title = fieldTitle.getText().toString();
-        String description = fieldDescription.getText().toString();
-        String icon = attachedFileUriString;
-
-        if (classTitle.equals(getString(R.string.none)))
-            classTitle = "";
-        if (classType.equals(getString(R.string.none)))
-            classType = "";
-
-        DbHelper dbHelper = new DbHelper(this);
-
-        // If the activity was launched through an edit action
-        // Update the database row
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(reminderDateMillis);
-
-        // Set the alarm for the notification
-        Calendar cc = Calendar.getInstance();
-        cc.setTimeInMillis(reminderDateMillis);
-        int hour = (int) reminderTimeSeconds / 3600;
-        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
-        cc.set(Calendar.HOUR_OF_DAY, hour);
-        cc.set(Calendar.MINUTE, minute);
-        long notificationMillis = (cc.getTimeInMillis());
-
-        if (FLAG_EDIT) {
-            // Delete previous picture if it exists
-            if (!previousPhotoPath.toString().equals("")) {
-                File file = new File(previousPhotoPath.getPath());
-                file.delete();
-            }
-
-            Log.d(LOG_TAG, "Inserting photo path " + mCurrentPhotoPath.toString());
-            Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), editId, iconUriString);
-
-            if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
-                return true;
-            }
-
-            else
-                Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
-        }
-        // Else, insert a new database row
-        else {
-            // First save the taken picture into the storage
-            if (mCurrentPhotoPath != null)
-                saveFile(mCurrentPhotoPath);
-            else mCurrentPhotoPath = Uri.parse("");
-
-            if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
-                Cursor cursor = dbHelper.getUncompletedTaskData();
-
-                if (cursor.moveToLast()) {
-                    int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    Remind(new Date(notificationMillis), title, getString(R.string.notification_message_reminder), ID, iconUriString);
-                }
-
-                return true;
-            }
-
-            else
-                Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
-            Log.w(LOG_TAG, "Error creating new task");
-        }
-
-        return false;
-    }
-
-    void saveFile(Uri sourceuri)
-    {
-        String sourceFilename= sourceuri.getPath();
-        String destinationFilename = android.os.Environment.getExternalStorageDirectory().getPath()+File.separatorChar+"abc.mp3";
-
-        BufferedInputStream bis = null;
-        BufferedOutputStream bos = null;
-
-        try {
-            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
-            bos = new BufferedOutputStream(new FileOutputStream(destinationFilename, false));
-            byte[] buf = new byte[1024];
-            bis.read(buf);
-            do {
-                bos.write(buf);
-            } while(bis.read(buf) != -1);
-        } catch (IOException e) {
-
-        } finally {
-            try {
-                if (bis != null) bis.close();
-                if (bos != null) bos.close();
-            } catch (IOException e) {
-
-            }
-        }
-    }
-
-    public void Remind(Date dateTime, String title, String message, int ID, String iconUriString) {
-        scheduleNotification(dateTime, ID, title, message);
-    }
-
-    private void scheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
-
-        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        Bitmap largeIcon = null;
-        try {
-            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(iconUriString));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                .setBackground(largeIcon);
-
-        Intent contentIntent = new Intent(this, TasksDetailActivity.class);
-        contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                builder
-                        .setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(palette.getVibrantColor(mPrimaryColor))
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setWhen(System.currentTimeMillis())
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .extend(wearableExtender)
-                        .setDefaults(Notification.DEFAULT_ALL);
-
-                Notification notification = builder.build();
-
-                Intent notificationIntent = new Intent(NewTaskActivity.this, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewTaskActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-//                long futureInMillis = SystemClock.elapsedRealtime() + delay;
-                AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-                Log.v(LOG_TAG, "DateTime: " + dateTime.getDay()+"/"+dateTime.getMonth()+"/"+dateTime.getYear()
-                +" "+dateTime.getHours()+":"+dateTime.getMinutes()+" "+dateTime.getSeconds());
-                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
-            }
-        });
-    }
-
-    private void showClassDropdownMenu() {
-        // Set up the dropdown menu on both views
-        // Set up the class dropdown menu
-        PopupMenu popupMenu = new PopupMenu(this, fieldClassDropdown);
-
-        // Add the titles to the menu as well as the item to add a new class
-        popupMenu.getMenu().add(getString(R.string.none));
-        for (int i = 0; i < classTitleArray.size(); i++)
-            popupMenu.getMenu().add(classTitleArray.get(i));
-        popupMenu.getMenu().add(getString(R.string.field_dropdown_class_menu_item_new_class));
-
-        // Set the listener for the menu items
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // Set the data to be later saved into the database
-                NewTaskActivity.this.classTitle = item.getTitle().toString();
-
-                // If Add New Class was selected, start NewScheduleActivity
-                if (NewTaskActivity.this.classTitle.equals(getString(R.string.field_dropdown_class_menu_item_new_class))){
-                    LAUNCHED_NEW_CLASS = true;
-                    Intent intent = new Intent(NewTaskActivity.this, NewScheduleActivity.class);
-                    intent.putExtra("STARTED_BY_NEWTASKACTIVITY", true);
-                    startActivity(intent);
-                    return true;
-                }
-
-                // Auto-fill the title editText if there isn't any user-inputted title yet
-                String titleText = fieldTitle.getText().toString();
-                if (titleText.equals(""))
-                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
-                        fieldTitle.setText("");
-                    else fieldTitle.setText(NewTaskActivity.this.classTitle);
-                if (titleText.equals(classType) && NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
-                    fieldTitle.setText(classType);
-                    // Check if another class was set before
-                else if (classTitleArray.contains(titleText))
-                    if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
-                        fieldTitle.setText("");
-                    else fieldTitle.setText(NewTaskActivity.this.classTitle);
-                    // Check if the classType was set before the class
-                else if (classTypeArray.contains(titleText))
-                    fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
-                    // Check if the title editText contains text as a result
-                    // of previously using the dropdown lists
-                else {
-                    String[] splitFieldTitle = titleText.split(" ");
-                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
-                        if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
-                            fieldTitle.setText(splitFieldTitle[1]);
-                        else
-                            fieldTitle.setText(NewTaskActivity.this.classTitle + " " + splitFieldTitle[1]);
-                    }
-                }
-                // Set the dropdown list text to the selected item
-                fieldClassTextview.setText(NewTaskActivity.this.classTitle);
-
-                return true;
-            }
-        });
-
-        popupMenu.show();
-    }
-
-    private void showTypeDropdownMenu() {
-        // Initialise and inflate the menu
-        PopupMenu popupMenu = new PopupMenu(NewTaskActivity.this, fieldTypeDropdown);
-        popupMenu.getMenuInflater().inflate(R.menu.menu_popup_type, popupMenu.getMenu());
-
-        // Set the menu's listener
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // Set the data to be later saved into the database
-                NewTaskActivity.this.classType = item.getTitle().toString();
-
-                // Auto-fill the title editText if there isn't any user-inputted title yet
-                String titleText = fieldTitle.getText().toString();
-                if (titleText.equals("") && !NewTaskActivity.this.classType.equals(getString(R.string.none)))
-                    fieldTitle.setText(NewTaskActivity.this.classType);
-                if (titleText.contains(classTitle) && NewTaskActivity.this.classType.equals(getString(R.string.none)))
-                    fieldTitle.setText(classTitle);
-                    // Check if another classType was set before
-                else if (classTypeArray.contains(titleText))
-                    if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
-                        fieldTitle.setText("");
-                    else fieldTitle.setText(NewTaskActivity.this.classType);
-                    // Check if the classType was set before the class
-                else if (classTitleArray.contains(titleText)) {
-                    fieldTitle.setText(titleText + " " + NewTaskActivity.this.classType);
-                }
-                // Check if the title editText contains text as a result
-                // of previously using the dropdown lists
-                else {
-                    String[] splitFieldTitle = titleText.split(" ");
-                    if (splitFieldTitle.length == 2 && classTitleArray.contains(splitFieldTitle[0]) && classTypeArray.contains(splitFieldTitle[1])) {
-                        if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
-                            fieldTitle.setText(splitFieldTitle[0]);
-                        else
-                            fieldTitle.setText(splitFieldTitle[0] + " " + NewTaskActivity.this.classType);
-                    }
-                }
-
-                // Set the dropdown list text to the selected item
-                fieldTypeTextview.setText(NewTaskActivity.this.classType);
-
-                return true;
-            }
-        });
-
-        popupMenu.show();
-    }
-
-    private void showReminderDateDropdownMenu() {
-        PopupMenu popupMenu = new PopupMenu(this, fieldSetReminderDate);
-        popupMenu.getMenuInflater().inflate(R.menu.popup_reminder_date, popupMenu.getMenu());
-        final Calendar c = Calendar.getInstance();
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.dropdown_reminder_date_none:
-                        fieldSetReminderDateTextview.setText(getString(R.string.none));
-                        reminderDateMillis = 0;
-                        fieldSetReminderTime.setEnabled(false);
-                        break;
-                    case R.id.dropdown_reminder_date_today:
-                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-                        fieldSetReminderDateTextview.setText(getString(R.string.today));
-                        reminderDateMillis = c.getTimeInMillis();
-                        fieldSetReminderTime.setEnabled(true);
-                        break;
-                    case R.id.dropdown_reminder_date_tomorrow:
-                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1);
-                        fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
-                        reminderDateMillis = c.getTimeInMillis();
-                        fieldSetReminderTime.setEnabled(true);
-                        break;
-                    case R.id.dropdown_reminder_date_setdate:
-                        fieldSetReminderTime.setEnabled(true);
-                        int year = c.get(Calendar.YEAR);
-                        int month = c.get(Calendar.MONTH);
-                        int day = c.get(Calendar.DAY_OF_MONTH) + 1;
-                        DatePickerDialog datePickerDialog =
-                                new DatePickerDialog(NewTaskActivity.this, reminderDateSetListener(),
-                                        year, month, day);
-                        datePickerDialog.show();
-                        break;
-                }
-                return true;
-            }
-        });
-        popupMenu.show();
-    }
-
-    // This method is called when a date for the due date is set
+    // Special ItemClickListener for when dueDate is set from dialog
     private DatePickerDialog.OnDateSetListener dueDateSetListener() {
         return new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -933,111 +849,6 @@ public class NewTaskActivity extends AppCompatActivity
                 fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, year, monthOfYear, dayOfMonth));
             }
         };
-    }
-
-    private void dispatchTakePictureIntent() throws IOException {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = createImageFile();
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.pdt.plume.fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                mCurrentPhotoPathString = photoURI.toString();
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
-        }
-    }
-
-    private void dispatchSelectPhotoIntent() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        if (intent.resolveActivity(getPackageManager()) != null)
-            startActivityForResult(intent, REQUEST_IMAGE_GET_PHOTO);
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        return image;
-    }
-
-    // This method is called when a file is selected after the ACTION_GET
-    // intent was called from the attach file action
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Attachment Upload
-        if (requestCode == REQUEST_FILE_GET && resultCode == RESULT_OK) {
-            // Get the Uri and UriString from the intent and save its global variable
-            Uri filePathUri = data.getData();
-            attachedFileUriString = data.getDataString();
-
-            // Get the filename of the file and set the field's text to that
-            Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
-            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            returnCursor.moveToFirst();
-            String fileName = returnCursor.getString(nameIndex);
-            returnCursor.close();
-            fieldAttachFile.setText(fileName);
-        }
-
-        // Take Photo
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            // Set the thumbnail and set the member variable for the Uri
-            mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
-            try {
-                Bitmap thumbnail = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
-                int scale = (int) getResources().getDisplayMetrics().density;
-                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(thumbnail, 64 * scale, 64 * scale, false));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Photo Upload
-        if (requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
-            Uri dataUri = data.getData();
-            Bitmap bitmap = null;
-
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            mCurrentPhotoPath = dataUri;
-            mCurrentPhotoPathString = mCurrentPhotoPath.toString();
-            int scale = (int) getResources().getDisplayMetrics().density;
-            fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 64 * scale, 64 * scale, false));
-        }
-
-        // Custom Icon Upload
-        if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
-            Uri dataUri = data.getData();
-            Bitmap setImageBitmap = null;
-
-            try {
-                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            fieldIcon.setImageBitmap(setImageBitmap);
-        }
     }
 
     // This method is called when a date for the reminding notification is set
@@ -1065,6 +876,7 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
+    // Special ItemClickListener used for reminder time
     public TimePickerDialog.OnTimeSetListener onTimeSetListener() {
         return new TimePickerDialog.OnTimeSetListener() {
             @Override
@@ -1075,16 +887,18 @@ public class NewTaskActivity extends AppCompatActivity
         };
     }
 
-    private View.OnClickListener showIconDialog() {
+    // Action called when the Icon ImageView is clicked
+    private View.OnClickListener showIconPrompt() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DialogFragment dialog = new IconDialogFragment();
+                DialogFragment dialog = new IconPromptDialog();
                 dialog.show(getSupportFragmentManager(), "dialog");
             }
         };
     }
 
+    // Action called when previewed photo is clicked
     private View.OnClickListener photoListener() {
         return new View.OnClickListener() {
             @Override
@@ -1152,6 +966,189 @@ public class NewTaskActivity extends AppCompatActivity
         dialog.show();
     }
 
+    private boolean insertTaskDataIntoDatabase() {
+        // Get the inputted text from the title and description fields
+        // as well as the iconResource and database
+        String title = fieldTitle.getText().toString();
+        String description = fieldDescription.getText().toString();
+        String icon = attachedFileUriString;
+
+        if (classTitle.equals(getString(R.string.none)))
+            classTitle = "";
+        if (classType.equals(getString(R.string.none)))
+            classType = "";
+
+        DbHelper dbHelper = new DbHelper(this);
+
+        // If the activity was launched through an edit action
+        // Update the database row
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(reminderDateMillis);
+
+        // Set the alarm for the notification
+        Calendar cc = Calendar.getInstance();
+        cc.setTimeInMillis(reminderDateMillis);
+        int hour = (int) reminderTimeSeconds / 3600;
+        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+        cc.set(Calendar.HOUR_OF_DAY, hour);
+        cc.set(Calendar.MINUTE, minute);
+        long notificationMillis = (cc.getTimeInMillis());
+
+        if (FLAG_EDIT) {
+            // Delete previous picture if it exists
+            if (!previousPhotoPath.toString().equals("")) {
+                File file = new File(previousPhotoPath.getPath());
+                file.delete();
+            }
+
+            Log.d(LOG_TAG, "Inserting photo path " + mCurrentPhotoPath.toString());
+            ScheduleNotification(new Date(notificationMillis), editId, getString(R.string.notification_message_reminder), title);
+
+            if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
+                return true;
+            } else
+                Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
+        }
+        // Else, insert a new database row
+        else {
+            // First save the taken picture into the storage
+            if (mCurrentPhotoPath != null)
+                saveFile(mCurrentPhotoPath);
+            else mCurrentPhotoPath = Uri.parse("");
+
+            if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
+                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
+                Cursor cursor = dbHelper.getUncompletedTaskData();
+
+                if (cursor.moveToLast()) {
+                    int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                    ScheduleNotification(new Date(notificationMillis), ID, getString(R.string.notification_message_reminder), title);
+                }
+
+                return true;
+            } else
+                Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
+            Log.w(LOG_TAG, "Error creating new task");
+        }
+
+        return false;
+    }
+
+    // Used for Attach File
+    void saveFile(Uri sourceuri) {
+        String sourceFilename = sourceuri.getPath();
+        String destinationFilename = android.os.Environment.getExternalStorageDirectory().getPath() + File.separatorChar + "abc.mp3";
+
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+
+        try {
+            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
+            bos = new BufferedOutputStream(new FileOutputStream(destinationFilename, false));
+            byte[] buf = new byte[1024];
+            bis.read(buf);
+            do {
+                bos.write(buf);
+            } while (bis.read(buf) != -1);
+        } catch (IOException e) {
+
+        } finally {
+            try {
+                if (bis != null) bis.close();
+                if (bos != null) bos.close();
+            } catch (IOException e) {
+
+            }
+        }
+    }
+
+    private void ScheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
+
+        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        Bitmap largeIcon = null;
+        try {
+            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(iconUriString));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                .setBackground(largeIcon);
+
+        Intent contentIntent = new Intent(this, TasksDetailActivity.class);
+        contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                builder
+                        .setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(palette.getVibrantColor(mPrimaryColor))
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setWhen(System.currentTimeMillis())
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                Notification notification = builder.build();
+
+                Intent notificationIntent = new Intent(NewTaskActivity.this, TaskNotificationPublisher.class);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewTaskActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                Log.v(LOG_TAG, "DateTime: " + dateTime.getDay() + "/" + dateTime.getMonth() + "/" + dateTime.getYear()
+                        + " " + dateTime.getHours() + ":" + dateTime.getMinutes() + " " + dateTime.getSeconds());
+                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+            }
+        });
+    }
+
+    private void dispatchTakePictureIntent() throws IOException {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = createImageFile();
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.pdt.plume.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                mCurrentPhotoPathString = photoURI.toString();
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private void dispatchSelectPhotoIntent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        if (intent.resolveActivity(getPackageManager()) != null)
+            startActivityForResult(intent, REQUEST_IMAGE_GET_PHOTO);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
+    }
+
+    // Interface method when icon is selected from built-in icons
     @Override
     public void OnIconListItemSelected(int item) {
         switch (item) {

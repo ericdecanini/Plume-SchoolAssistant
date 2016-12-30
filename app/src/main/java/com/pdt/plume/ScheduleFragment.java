@@ -4,9 +4,6 @@ package com.pdt.plume;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.ActivityOptions;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -31,14 +28,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 
 public class ScheduleFragment extends Fragment {
@@ -78,7 +73,14 @@ public class ScheduleFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
 
+        // Get references to the views
+        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+        listView = (ListView) rootView.findViewById(R.id.schedule_list);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+
         // Check if the used device is a tablet
+        // Currently this does nothing, but will later on be used
+        // to transfer the code to a tablet layout when possible
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Get a reference to the database
@@ -86,14 +88,14 @@ public class ScheduleFragment extends Fragment {
 
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
-        listView = (ListView) rootView.findViewById(R.id.schedule_list);
         try {
             mScheduleAdapter = new ScheduleAdapter(getContext(),
                     R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+
+        // Determine whether to show the header text view for a block format
         if (showBlockHeaderA){
             String blockString = utility.formatBlockString(getContext(), 0);
             headerTextView.setText(blockString);
@@ -110,7 +112,7 @@ public class ScheduleFragment extends Fragment {
         // Set the adapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
-            listView.setOnItemClickListener(listener());
+            listView.setOnItemClickListener(ItemClickListener());
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setMultiChoiceModeListener(new ModeCallback());
 
@@ -118,9 +120,7 @@ public class ScheduleFragment extends Fragment {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
-        // Get a reference to the FAB and set its OnClickListener
-        // which is an intent to add a new schedule
-        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        // Set the action for the FAB
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,50 +131,6 @@ public class ScheduleFragment extends Fragment {
 
         // Inflate the layout for this fragment
         return rootView;
-    }
-
-    private void init() {
-        headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
-        headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
-    }
-
-    public AdapterView.OnItemClickListener listener() {
-        return new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // If the used device is a tablet, replace the
-                // right-hand side fragment with a ScheduleDetailFragment
-                // passing the data of the clicked row to the fragment
-                if (isTablet) {
-                    ScheduleDetailFragment fragment = new ScheduleDetailFragment();
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.detail_container, fragment)
-                            .commit();
-                }
-
-                // If the used device is a phone, start a new ScheduleDetailActivity
-                // passing the data of the clicked row to the fragment
-                else {
-                    DbHelper dbHelper = new DbHelper(getActivity());
-                    Cursor cursor = dbHelper.getCurrentDayScheduleData(getActivity());
-                    if (cursor.moveToPosition(position)) {
-                        Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
-                        intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                            // Shared element transition
-                            View icon = view.findViewById(R.id.schedule_icon);
-                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
-                            startActivity(intent, bundle);
-                        } else startActivity(intent);
-                    } else {
-                        Log.w(LOG_TAG, "Error getting title of selected item");
-                    }
-                }
-            }
-        };
     }
 
     @Override
@@ -211,6 +167,56 @@ public class ScheduleFragment extends Fragment {
         boolean firstLaunch = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
         if (firstLaunch)
             init();
+    }
+
+    public AdapterView.OnItemClickListener ItemClickListener() {
+        return new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // If the used device is a tablet, replace the
+                // right-hand side fragment with a ScheduleDetailFragment
+                // passing the data of the clicked row to the fragment
+                if (isTablet) {
+                    ScheduleDetailFragment fragment = new ScheduleDetailFragment();
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.detail_container, fragment)
+                            .commit();
+                }
+
+                // If the used device is a phone, start a new ScheduleDetailActivity
+                // passing the data of the clicked row to the fragment
+                else {
+                    DbHelper dbHelper = new DbHelper(getActivity());
+                    Cursor cursor = dbHelper.getCurrentDayScheduleData(getActivity());
+                    if (cursor.moveToPosition(position)) {
+                        Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                        intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
+
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                            // Shared element transition
+                            View icon = view.findViewById(R.id.schedule_icon);
+                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
+                            startActivity(intent, bundle);
+                        } else startActivity(intent);
+
+                    } else {
+                        Log.w(LOG_TAG, "Error getting title of selected item");
+                    }
+
+                }
+
+            }
+        };
+    }
+
+    // This method is called when the app has been launched for the first time
+    private void init() {
+        headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
+        headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
     }
 
     // Subclass for the Contextual Action Mode

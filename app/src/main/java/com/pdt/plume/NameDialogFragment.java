@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,9 +56,16 @@ public class NameDialogFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.dialog_name, container, false);
-
         nameField = (EditText) rootView.findViewById(R.id.editText);
 
+        // Automatically inflate the EditText with the name
+        Bundle args = getArguments();
+        if (args != null) {
+            nameField.setText(args.getString("name"));
+            nameField.setSelection(nameField.length());
+        }
+
+        // Set the ItemClickListener on the buttons
         rootView.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,6 +80,7 @@ public class NameDialogFragment extends DialogFragment {
                 dismiss();
             }
         });
+
         return rootView;
     }
 

@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
@@ -49,6 +48,10 @@ public class ClassesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_classes);
 
+        // Get references to the views
+        listView = (ListView) findViewById(R.id.schedule_list);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
@@ -57,14 +60,17 @@ public class ClassesActivity extends AppCompatActivity {
 
         // Get a reference to the list view and create its adapter
         // using the current day schedule data
-        listView = (ListView) findViewById(R.id.schedule_list);
         final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(this,
                 R.layout.list_item_schedule, dbHelper.getAllClassesArray(this));
+
+        // Only show the header if there are no items in the class adapter
+        if (mScheduleAdapter.getCount() == 0)
+            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
 
         // Set the adapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
-            listView.setOnItemClickListener(listener());
+            listView.setOnItemClickListener(ItemClickListener());
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setMultiChoiceModeListener(new ModeCallback());
 
@@ -72,12 +78,7 @@ public class ClassesActivity extends AppCompatActivity {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
-        if (mScheduleAdapter.getCount() == 0)
-            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-
-        // Get a reference to the FAB and set its OnClickListener
-        // which is an intent to add a new schedule
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // Set the action of the FAB
         if (fab != null)
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -104,7 +105,7 @@ public class ClassesActivity extends AppCompatActivity {
         fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
     }
 
-    public AdapterView.OnItemClickListener listener() {
+    public AdapterView.OnItemClickListener ItemClickListener() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

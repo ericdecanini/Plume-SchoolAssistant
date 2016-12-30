@@ -10,6 +10,9 @@
             android:id="@+id/nav_people"
             android:icon="@drawable/ic_group_black_24dp"
             android:title="@string/nav_people" />
+        <item android:id="@+id/nav_requests"
+            android:icon="@drawable/ic_attachment_black_24dp"
+            android:title="Requests" />
         <item
             android:id="@+id/nav_completedTasks"
             android:icon="@drawable/ic_assignment_turned_in_black_24dp"

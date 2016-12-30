@@ -17,9 +17,10 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="96dp"
             android:src="@drawable/sample"
             android:id="@+id/qr" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,11 +39,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/yourNameHere"
-                android:paddingBottom="16dp"
                 android:layout_marginTop="4dp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:background="@drawable/bg_clickable"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:id="@+id/flavour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/onYourMind"
+                android:paddingBottom="16dp"
+                android:textColor="@color/gray_700"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:background="@drawable/bg_clickable"
                 android:layout_gravity="center_horizontal"/>
         </LinearLayout>
