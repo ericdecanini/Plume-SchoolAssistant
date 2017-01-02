@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -89,6 +90,7 @@ public class DbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_PEERS_TABLE = "CREATE TABLE " + PeersEntry.TABLE_NAME + " ("
                 + PeersEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + PeersEntry.COLUMN_USER + " TEXT, "
+                + PeersEntry.COLUMN_UID + " TEXT NOT NULL, "
                 + PeersEntry.COLUMN_NAME + " TEXT NOT NULL, "
                 + PeersEntry.COLUMN_ICON + " TEXT NOT NULL, "
                 + PeersEntry.COLUMN_FLAVOUR + " TEXT NOT NULL, "
@@ -948,39 +950,40 @@ public class DbHelper extends SQLiteOpenHelper {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         String userId = firebaseUser.getUid();
         SQLiteDatabase db = getWritableDatabase();
+
         return db.query(
                 PeersEntry.TABLE_NAME,
                 null,
                 PeersEntry.COLUMN_REQUEST_STATUS + "=? AND "
                 + PeersEntry.COLUMN_USER + "=?",
-                new String[]{"1", userId},
+                new String[]{"0", userId},
                 null,
                 null,
                 null
         );
     }
 
-    public ArrayList<Peer> getPeersDataArray(Context context) {
-        Cursor cursor = getPeersData(context);
-        ArrayList<Peer> arrayList = new ArrayList<>();
-        for (int i = 0; i < cursor.getCount(); i++) {
-            if (cursor.moveToPosition(i)) {
-                arrayList.add(new Peer
-                        (cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_ICON)),
-                                cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
-            }
-        }
-        return arrayList;
+    public Cursor getPeerByUid(String uid) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.query(PeersEntry.TABLE_NAME,
+                null,
+                PeersEntry.COLUMN_UID + "=?",
+                new String[]{uid},
+                null,
+                null,
+                null);
     }
 
     ArrayList<String> userIdList = new ArrayList<>();
     ArrayList<String> userNameList = new ArrayList<>();
+    ArrayList<String> userFlavourList = new ArrayList<>();
     ArrayList<String> userIconList = new ArrayList<>();
 
     public void updateRequestsInDb() {
         // Cleanup previous uses of the method
         userIdList.clear();
         userNameList.clear();
+        userFlavourList.clear();
         userIconList.clear();
 
         // Initialise Firebase
@@ -1004,7 +1007,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 userNameList.add(dataSnapshot.getValue(String.class));
                                 if (userNameList.size() == snapshotChildrenCount
-                                        && userIconList.size() == snapshotChildrenCount)
+                                        && userIconList.size() == snapshotChildrenCount
+                                        && userFlavourList.size() == snapshotChildrenCount)
                                     insertRequestsDataToDb();
                             }
 
@@ -1018,7 +1022,23 @@ public class DbHelper extends SQLiteOpenHelper {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 userIconList.add(dataSnapshot.getValue(String.class));
                                 if (userNameList.size() == snapshotChildrenCount
-                                        && userIconList.size() == snapshotChildrenCount)
+                                        && userIconList.size() == snapshotChildrenCount
+                                        && userFlavourList.size() == snapshotChildrenCount)
+                                    insertRequestsDataToDb();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        userSnapshot.getRef().child("flavour").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                userFlavourList.add(dataSnapshot.getValue(String.class));
+                                if (userNameList.size() == snapshotChildrenCount
+                                        && userIconList.size() == snapshotChildrenCount
+                                        && userFlavourList.size() == snapshotChildrenCount)
                                     insertRequestsDataToDb();
                             }
 
@@ -1040,6 +1060,9 @@ public class DbHelper extends SQLiteOpenHelper {
     private long insertRequestsDataToDb() {
         // This method is fired by the previous method after all the data is collected
         // Start by deleting all the previous data
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        String userId = firebaseUser.getUid();
         SQLiteDatabase db = getWritableDatabase();
         db.delete(PeersEntry.TABLE_NAME, PeersEntry.COLUMN_REQUEST_STATUS + "=?", new String[]{"1"});
 
@@ -1047,8 +1070,10 @@ public class DbHelper extends SQLiteOpenHelper {
         for (int i = 0; i < userIdList.size(); i++) {
             // Create the ContentValues for the data to be inserted
             ContentValues contentValues = new ContentValues();
-            contentValues.put(PeersEntry.COLUMN_USER, userIdList.get(i));
+            contentValues.put(PeersEntry.COLUMN_USER, userId);
+            contentValues.put(PeersEntry.COLUMN_UID, userIdList.get(i));
             contentValues.put(PeersEntry.COLUMN_NAME, userNameList.get(i));
+            contentValues.put(PeersEntry.COLUMN_FLAVOUR, userFlavourList.get(i));
             contentValues.put(PeersEntry.COLUMN_ICON, userIconList.get(i));
             contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, "1");
 
@@ -1073,7 +1098,7 @@ public class DbHelper extends SQLiteOpenHelper {
 //    }
 
 
-    public int insertPeer(String id, String icon, String name) {
+    public int insertPeer(String id, String icon, String name, String flavour) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
@@ -1088,11 +1113,31 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(PeersEntry.COLUMN_ID, id);
+        contentValues.put(PeersEntry.COLUMN_UID, id);
         contentValues.put(PeersEntry.COLUMN_NAME, name);
         contentValues.put(PeersEntry.COLUMN_ICON, icon);
+        contentValues.put(PeersEntry.COLUMN_FLAVOUR, flavour);
         contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, 0);
         return (int) db.insert(PeersEntry.TABLE_NAME, null, contentValues);
     }
+
+    public int updatePeer(String uid, String name, String flavour, String icon) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PeersEntry.COLUMN_NAME, name);
+        contentValues.put(PeersEntry.COLUMN_FLAVOUR, flavour);
+        contentValues.put(PeersEntry.COLUMN_ICON, icon);
+        return db.update(PeersEntry.TABLE_NAME, contentValues,
+                PeersEntry.COLUMN_UID + "=?", new String[]{uid});
+    }
+
+    public int deletePeer(String uid) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(PeersEntry.TABLE_NAME, PeersEntry.COLUMN_UID + "=?", new String[]{uid});
+    }
+
+
+
+
 
 }

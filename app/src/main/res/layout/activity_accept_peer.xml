@@ -85,15 +85,6 @@
             android:orientation="horizontal">
 
         <Button
-            android:id="@+id/accept"
-            android:layout_weight="1"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Accept"/>
-
-        <Button
             android:id="@+id/ignore"
             android:layout_weight="1"
             android:layout_marginTop="16dp"
@@ -101,6 +92,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Ignore"/>
+
+            <Button
+                android:id="@+id/accept"
+                android:layout_weight="1"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Accept"/>
 
         </LinearLayout>
 

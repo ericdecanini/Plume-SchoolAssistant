@@ -38,7 +38,7 @@ public class TaskAdapter extends ArrayAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         // Initialise variables for the Row and View Holder
         View row = convertView;
-        ViewHolder holder;
+        ViewHolder holder = null;
 
         // If the row hasn't been used by the adapter before
         // create a new row
@@ -87,7 +87,7 @@ public class TaskAdapter extends ArrayAdapter {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(((long)task.taskDueDate));
         holder.date.setText(context.getString(R.string.due_date) + " "
-               + utility.formatDateString(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+                + utility.formatDateString(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
 
         return row;
     }

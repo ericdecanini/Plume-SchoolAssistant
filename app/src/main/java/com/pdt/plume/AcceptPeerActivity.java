@@ -40,6 +40,10 @@ public class AcceptPeerActivity extends AppCompatActivity
     FirebaseUser mFirebaseUser;
     String mUserId;
 
+    // Self Profile Varialbes
+    String selfName;
+    String selfIcon;
+
     // Target User Profile Variables
     String requestingUserId;
     String iconUri;
@@ -69,6 +73,29 @@ public class AcceptPeerActivity extends AppCompatActivity
         if (mFirebaseUser == null)
             loadLogInView();
         mUserId = mFirebaseUser.getUid();
+        DatabaseReference selfRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId);
+        selfRef.child("nickname").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                selfName = dataSnapshot.getValue(String.class);
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        selfRef.child("icon").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                selfIcon = dataSnapshot.getValue(String.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         // Get references to the views
         ImageView iconView = (ImageView) findViewById(R.id.icon);
@@ -249,14 +276,17 @@ public class AcceptPeerActivity extends AppCompatActivity
                 String title = bundle.getString("title");
 
                 // Insert into firebase
-                mUserPeersRef.child(requestingUserId).setValue("");
-                requestingUserPeersRef.child(mUserId).setValue("");
+                mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
+                mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
+                requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
+                Log.v(LOG_TAG, "Name: " + selfName);
+                requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
                 mUserClassesRef.child(title).child("peers").child(requestingUserId).setValue("");
                 requestingUserClassesRef.child(title).child("peers").child(mUserId).setValue("");
 
                 // Add the peer into the peers table of the SQLite database
                 DbHelper dbHelper = new DbHelper(this);
-                dbHelper.insertPeer(requestingUserId, iconUri, name);
+                dbHelper.insertPeer(requestingUserId, iconUri, name, flavour);
 
                 // Update SQLite classes to contain the peer into SQLite
                 Cursor cursor = dbHelper.getScheduleDataByTitle(title);

@@ -30,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -62,9 +63,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     ListView notesList;
     Uri iconUri;
 
-    int mPrimaryColor;
-    int mDarkColor;
-    int mSecondaryColor;
+//    int mPrimaryColor;
+//    int mDarkColor;
+//    int mSecondaryColor;
 
     ArrayList<Integer> taskIDs = new ArrayList<>();
     ArrayList<Integer> notesIDs = new ArrayList<>();
@@ -107,7 +108,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set enter transition
+        // Set enter transition and window features
+        setStatusBarTranslucent(true);
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setEnterTransition(new Fade());
 
@@ -241,23 +243,23 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         mainColour = Color.parseColor("#424242");
                     else {
                         // Set the action bar colour according to the theme
-                        mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                getResources().getColor(R.color.colorPrimary))) ;
-                        mainColour = palette.getVibrantColor(mPrimaryColor);
+//                        mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+//                                getResources().getColor(R.color.colorPrimary))) ;
+//                        mainColour = palette.getVibrantColor(mPrimaryColor);
                     }
 
-                    float[] hsv = new float[3];
-                    int color = mainColour;
-                    Color.colorToHSV(color, hsv);
-                    hsv[2] *= 0.8f; // value component
+//                    float[] hsv = new float[3];
+//                    int color = mainColour;
+//                    Color.colorToHSV(color, hsv);
+//                    hsv[2] *= 0.8f; // value component
 
-                    mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+//                    mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
                     ImageView notesIcon = (ImageView) findViewById(R.id.schedule_detail_notes_icon);
                     TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
-                    notesIcon.getBackground().setColorFilter(mainColour, PorterDuff.Mode.SRC_ATOP);
-                    notesTextview.setTextColor(mainColour);
+//                    notesIcon.getBackground().setColorFilter(mainColour, PorterDuff.Mode.SRC_ATOP);
+//                    notesTextview.setTextColor(mainColour);
 
-                    mDarkColor = Color.HSVToColor(hsv);
+//                    mDarkColor = Color.HSVToColor(hsv);
 //                    actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 //                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
@@ -354,6 +356,14 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         };
     }
 
+    protected void setStatusBarTranslucent(boolean makeTranslucent) {
+        if (makeTranslucent) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        }
+    }
+
 private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener {
 
     List<Integer> CAMselectedItemsList = new ArrayList<>();
@@ -420,10 +430,10 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
         // Set the title and colour of the contextual action bar
         mode.setTitle("Select Items");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//            getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
 
-        int colorFrom = mPrimaryColor;
+        int colorFrom = getResources().getColor(R.color.colorPrimary);
         int colorTo = getResources().getColor(R.color.gray_500);
         ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
         colorAnimation.setDuration(200); // milliseconds
@@ -479,11 +489,11 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
         // Clear the array list of selected items and revert the window colour back to normal
         CAMselectedItemsList.clear();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(mDarkColor);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//            getWindow().setStatusBarColor(mDarkColor);
 
         int colorFrom = getResources().getColor(R.color.gray_500);
-        int colorTo = mPrimaryColor;
+        int colorTo = getResources().getColor(R.color.colorPrimary);
         ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
         colorAnimation.setDuration(800); // milliseconds
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -663,10 +673,10 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
             // Set the title and colour of the contextual action bar
             mode.setTitle("Select Items");
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//                getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
 
-            int colorFrom = mPrimaryColor;
+            int colorFrom = getResources().getColor(R.color.colorPrimary);
             int colorTo = getResources().getColor(R.color.gray_500);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(200); // milliseconds
@@ -722,11 +732,11 @@ private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener
             // Clear the array list of selected items and revert the window colour back to normal
             CAMselectedItemsList.clear();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getWindow().setStatusBarColor(mDarkColor);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//                getWindow().setStatusBarColor(mDarkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
-            int colorTo = mPrimaryColor;
+            int colorTo = getResources().getColor(R.color.colorPrimary);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
             colorAnimation.setDuration(800); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {

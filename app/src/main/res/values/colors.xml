@@ -7,16 +7,20 @@
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="gray_50">#FAFAFA</color>
     <color name="gray_100">#F5F5F5</color>
     <color name="gray_200">#E0E0E0</color>
     <color name="gray_400">#BDBDBD</color>
     <color name="gray_500">#9E9E9E</color>
     <color name="gray_700">#616161</color>
     <color name="gray_900">#212121</color>
-    <color name="black_0.60">#96000000</color>
 
+    <color name="black_0.60">#96000000</color>
     <color name="black_0.54">#8C000000</color>
+    <color name="black_0.10">#1A000000</color>
     <color name="dividerColor">#CCCCCC</color>
+
+    <color name="mainTextColor">#95989A</color>
 
     <color name="grey">#cccccc</color>
     <color name="sunshine_light_blue">#ff64c2f4</color>

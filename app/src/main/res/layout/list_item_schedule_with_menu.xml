@@ -28,12 +28,11 @@
                 android:textSize="15sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <ImageView
-                android:id="@+id/menu_icon"
-                android:src="@drawable/ic_more_vert_grey_24dp"
+            <CheckBox
+                android:id="@+id/checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical" />
+                android:layout_gravity="end" />
         </FrameLayout>
 
 </LinearLayout>

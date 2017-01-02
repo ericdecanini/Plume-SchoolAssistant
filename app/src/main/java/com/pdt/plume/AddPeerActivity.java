@@ -88,6 +88,8 @@ public class AddPeerActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 sendPeerRequest();
+                Intent intent = new Intent(AddPeerActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -202,6 +204,8 @@ public class AddPeerActivity extends AppCompatActivity {
             classTitleRef.child("timeoutalt").setValue(classTimeOutAlts.get(i));
             classTitleRef.child("period").setValue(classPeriods.get(i));
         }
+
+        Toast.makeText(this, getString(R.string.requestSent, name), Toast.LENGTH_SHORT).show();
 
     }
 

@@ -1,81 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:padding="8dp"
     android:paddingRight="16dp"
     android:paddingEnd="16dp"
     android:background="@drawable/touch_selector"
-    android:minHeight="94dp"
     android:layout_height="wrap_content">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/task_description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:fontFamily="serif"
-            android:textStyle="bold"
-            android:text="Create a plot of troll face on Cartesian plane"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"/>
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Math"
-        android:textColor="@color/black_0.60"
-        android:textSize="20sp"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Project"
-        android:textColor="@color/black_0.60"
-        android:textSize="14sp"
-        android:layout_gravity="end"
-        android:layout_marginTop="36dp" />
 
     <ImageView
         android:id="@+id/task_icon"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:transitionName="@string/transition_task"
+        android:layout_width="64dp"
+        android:layout_height="64dp" />
 
-    <TextView
-        android:id="@+id/task_title"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:id="@+id/task_linear_layout"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/task_icon"
+        android:orientation="vertical"
+        android:layout_toEndOf="@id/task_icon" >
 
-    <TextView
-        android:id="@+id/task_shared"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/task_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-    <TextView
-        android:id="@+id/task_attachment"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/task_shared"
+            android:layout_width="wrap_content"
+            android:visibility="gone"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/task_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
+
+        <TextView
+            android:id="@+id/task_attachment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/task_date"
-        android:visibility="gone"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/task_linear_layout"/>
 
-</FrameLayout>
+</RelativeLayout>

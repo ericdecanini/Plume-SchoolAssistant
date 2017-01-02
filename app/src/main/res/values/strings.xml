@@ -490,6 +490,7 @@
     -->
     <string name="AddByUsername">Add by Username</string>
     <string name="ScanQRCode">Scan QR Code</string>
+    <string name="requestSent">Request sent to %1$s</string>
 
     <!--
     ARRAY STRINGS
