@@ -23,19 +23,33 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.pdt.plume.R.id.fab;
+import static com.pdt.plume.R.id.listView;
+
 public class CompletedTasksActivity extends AppCompatActivity {
 
     String LOG_TAG = CompletedTasksActivity.class.getSimpleName();
+    DbHelper dbHelper = new DbHelper(this);
+
+    // Listview Variables
     ArrayList<String> taskTitles;
     ArrayList<Integer> taskIDs;
+    ArrayList<String> taskFirebaseIDs;
     ListView listView;
-    ArrayAdapter<String> adapter;
+    ArrayAdapter<String> mScheduleAdapter;
 
     // CAM Variables
     private Menu mActionMenu;
@@ -45,47 +59,44 @@ public class CompletedTasksActivity extends AppCompatActivity {
     // Theme Variables
     int mPrimaryColor, mDarkColor, mSecondaryColor;
 
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_completed_tasks);
 
+        // Initialise Firebase and SQLite
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
+
         // Get references to the views
         listView = (ListView) findViewById(R.id.completed_tasks_list);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        // Retrieve the data from the database
+        // Initialise the adapter of completed tasks
         // If no items were found, show the header
-        final DbHelper dbHelper = new DbHelper(this);
-        final Cursor cursor = dbHelper.getCompletedTaskData();
         taskTitles = new ArrayList<>();
         taskIDs = new ArrayList<>();
-        if (cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
-                taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
-            }
-        } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-        cursor.close();
+        taskFirebaseIDs = new ArrayList<>();
+        mScheduleAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, taskTitles);
+        getCompletedTasksData();
 
-        // Use the previously made array list to inflate the listview adapter
-        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, taskTitles);
-        listView.setAdapter(adapter);
+        // Inflate the listview with the adapter
+        listView.setAdapter(mScheduleAdapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(new ModeCallback());
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Get the ID of the clicked item
-                Cursor singleTaskItem = dbHelper.getTaskById(taskIDs.get(position));
-                int ID = 0;
-                if (singleTaskItem.moveToFirst())
-                    ID = singleTaskItem.getInt(singleTaskItem.getColumnIndex(DbContract.TasksEntry._ID));
-
                 // Create an intent to the TaskDetailActivity passing on the ID
+                int ID = taskIDs.get(position);
                 Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
                 intent.putExtra("_ID", ID);
                 intent.putExtra(getString(R.string.FLAG_TASK_COMPLETED), true);
@@ -98,23 +109,17 @@ public class CompletedTasksActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Cursor completedTasksCursor = dbHelper.getCompletedTaskData();
                 new AlertDialog.Builder(CompletedTasksActivity.this)
                         .setTitle(getString(R.string.activity_completedTasks_dialog_title))
                         .setNegativeButton(getString(R.string.cancel), null)
                         .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                if (completedTasksCursor.moveToFirst()) {
-                                    for (int i = 0; i < cursor.getCount(); i++) {
-                                        completedTasksCursor.moveToPosition(i);
-                                        int id = completedTasksCursor.getInt(completedTasksCursor.getColumnIndex(DbContract.TasksEntry._ID));
+                                    for (int i = 0; i < taskIDs.size(); i++) {
+                                        int id = taskIDs.get(i);
                                         dbHelper.deleteTaskItem(id);
                                     }
-                                }
-                                completedTasksCursor.close();
-                            }
-                        }).show();
+                                }}).show();
             }
         });
 
@@ -135,53 +140,73 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
     }
 
-    // Update the listview with its adapter
-    private void RefreshListviewAdapter() {
-        // Inflate the listview of task titles
-        final DbHelper dbHelper = new DbHelper(this);
-        final Cursor cursor = dbHelper.getCompletedTaskData();
+    // Update the listview with its mScheduleAdapter
+    private void getCompletedTasksData() {
         taskTitles.clear();
         taskIDs.clear();
+        taskFirebaseIDs.clear();
 
-        if (cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                findViewById(R.id.header_textview).setVisibility(View.GONE);
-                cursor.moveToPosition(i);
-                taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
-                taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
-            }
-        } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-        cursor.close();
+        if (mFirebaseUser != null) {
+            // Get the data from Firebase
+            DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("tasks");
+            tasksRef.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    boolean isTaskCompleted = dataSnapshot.child("completed").getValue(boolean.class);
+                    if (isTaskCompleted)
+                        taskTitles.add(dataSnapshot.child("title").getValue(String.class));}
+                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onCancelled(DatabaseError databaseError) {}});
+        } else {
+            // Get the data from SQLite
+            final Cursor cursor = dbHelper.getCompletedTaskData();
+            if (cursor.moveToFirst()) {
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    cursor.moveToPosition(i);
+                    taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
+                    taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+                }
+            } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+            cursor.close();
+        }
 
-        adapter.notifyDataSetChanged();
+        mScheduleAdapter.notifyDataSetChanged();
     }
 
     // Set a task item to incomplete state so it shows in TasksFragment again
     private void UncompleteTaskItem(int position) {
-        // Update the task
-        DbHelper dbHelper = new DbHelper(this);
-        Cursor cursor = dbHelper.getCompletedTaskData();
-        if (cursor.moveToPosition(position)) {
-            int _ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-            String title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-            String classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
-            String classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-            String sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
-            String description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-            String attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-            int duedate = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
-            int reminderdate = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
-            int remindertime = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
-            String icon = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
-            String picture = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
-            dbHelper.updateTaskItem(_ID, title, classTitle, classType,
-                    sharer, description, attachment,
-                    duedate, reminderdate, remindertime,
-                    icon, picture, false);
-            cursor.close();
-
-            // Refresh the adapter so the restored task is no longer displayed
-            RefreshListviewAdapter();
+        if (mFirebaseUser != null) {
+            // Perform function in Firebase
+            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("tasks").child(taskFirebaseIDs.get(position));
+            taskRef.child("completed").setValue(false);
+        } else {
+            // Perform function in SQLite
+            DbHelper dbHelper = new DbHelper(this);
+            Cursor cursor = dbHelper.getCompletedTaskData();
+            if (cursor.moveToPosition(position)) {
+                int _ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                String title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                String classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
+                String classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
+                String description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
+                String attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                int duedate = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
+                int reminderdate = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+                int remindertime = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+                String icon = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                String picture = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
+                dbHelper.updateTaskItem(_ID, title, classTitle, classType,
+                        description, attachment,
+                        duedate, reminderdate, remindertime,
+                        icon, picture, false);
+                cursor.close();
+        }
+            // Refresh the mScheduleAdapter so the restored task is no longer displayed
+            getCompletedTasksData();
         }
 
 
@@ -305,18 +330,30 @@ public class CompletedTasksActivity extends AppCompatActivity {
         private void deleteSelectedItems() {
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                int position = CAMselectedItemsList.get(i);
-                DbHelper dbHelper = new DbHelper(CompletedTasksActivity.this);
-                Cursor cursor = dbHelper.getCompletedTaskData();
-                if (cursor.moveToPosition(position))
-                    dbHelper.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
-                cursor.close();
 
+            if (mFirebaseUser != null) {
+                // Delete from Firebase
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    int position = CAMselectedItemsList.get(i);
+                    DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("tasks");
+                    tasksRef.child(taskFirebaseIDs.get(position)).removeValue();
+                }
+            } else {
+                // Delete from SQLite
+                for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    int position = CAMselectedItemsList.get(i);
+                    DbHelper dbHelper = new DbHelper(CompletedTasksActivity.this);
+                    Cursor cursor = dbHelper.getCompletedTaskData();
+                    if (cursor.moveToPosition(position))
+                        dbHelper.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+                    cursor.close();
+                }
             }
 
-            // Notify the adapter of the changes
-            RefreshListviewAdapter();
+
+            // Notify the mScheduleAdapter of the changes
+            getCompletedTasksData();
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode

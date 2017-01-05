@@ -27,11 +27,22 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
+import static com.pdt.plume.R.string.re;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +50,7 @@ import java.util.List;
 public class TasksFragment extends Fragment {
     // Constantly used variables
     String LOG_TAG = TasksFragment.class.getSimpleName();
+    Utility utility = new Utility();
     DbHelper dbHelper;
 
     // UI Elements
@@ -55,6 +67,16 @@ public class TasksFragment extends Fragment {
     // Flags
     boolean isTablet;
 
+    // List Variables
+    ArrayList<Task> tasksArray = new ArrayList<>();
+    TaskAdapter mTasksAdapter;
+
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
+    ArrayList<String> FirebaseIdList = new ArrayList<>();
+
     // Required empty public constructor
     public TasksFragment() {
         // Required empty public constructor
@@ -67,6 +89,14 @@ public class TasksFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
 
+        // Initialise Firebase and SQLite
+        dbHelper = new DbHelper(getActivity());
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
+
+
         // Get references to the views
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
@@ -75,21 +105,44 @@ public class TasksFragment extends Fragment {
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
-        // Get a reference to the database
-        dbHelper = new DbHelper(getActivity());
-
-        // Get a reference to the list view and create its adapter
+        // Get a reference to the list view and create its mScheduleAdapter
         // using the current day schedule data
-        TaskAdapter mAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, dbHelper.getUncompletedTaskArray());
+        if (mFirebaseUser != null) {
+            // Get the data from Firebase
+            DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("tasks");
+            tasksRef.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    String icon = dataSnapshot.child("icon").getValue(String.class);
+                    String title = dataSnapshot.child("title").getValue(String.class);
+                    String sharer = dataSnapshot.child("sharer").getValue(String.class);
+                    String description = dataSnapshot.child("description").getValue(String.class);
+                    float duedate = dataSnapshot.child("duedate").getValue(float.class);
+                    float reminderdate = dataSnapshot.child("reminderdate").getValue(float.class);
+                    tasksArray.add(new Task(icon, title, sharer, description, "", duedate, reminderdate));
+                }
+                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+        else {
+            // Get the data from SQLite
+            tasksArray = dbHelper.getUncompletedTaskArray();
+        }
 
-        // The header text view will only be visible if there is no items in the task adapter
-        if (mAdapter.getCount() == 0)
+        mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, tasksArray);
+
+        // The header text view will only be visible if there is no items in the task mScheduleAdapter
+        if (mTasksAdapter.getCount() == 0)
             headerTextView.setVisibility(View.VISIBLE);
 
-        // Set the adapter and listeners of the listview
+        // Set the mScheduleAdapter and listeners of the listview
         if (listView != null) {
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            listView.setAdapter(mAdapter);
+            listView.setAdapter(mTasksAdapter);
             listView.setOnItemClickListener(ItemClickListener());
             listView.setMultiChoiceModeListener(new ModeCallback());
             if (getResources().getBoolean(R.bool.isTablet))
@@ -160,7 +213,6 @@ public class TasksFragment extends Fragment {
             }
         };
     }
-
 
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
@@ -310,34 +362,46 @@ public class TasksFragment extends Fragment {
         }
 
         private void deleteSelectedItems() {
-            // Get a reference to the database
-            DbHelper db = new DbHelper(getActivity());
 
-            // Get a cursor by getting the TaskData
-            // Which should match the list view of the TasksFragment
-            Cursor cursor = db.getUncompletedTaskData();
-
-            // Delete all the selected items based on the itemIDs
-            // Stored in the array list
-            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
-                if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
-                    db.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+            if (mFirebaseUser != null) {
+                // Delete data from Firebase
+                DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserId).child("tasks");
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    tasksRef.child(FirebaseIdList.get(CAMselectedItemsList.get(i))).removeValue();
+                    FirebaseIdList.remove(CAMselectedItemsList.get(i));
+                    tasksArray.remove(CAMselectedItemsList.get(i));
                 }
+
+                // Refresh the list mScheduleAdapter
+                mTasksAdapter.notifyDataSetChanged();
+                if (mTasksAdapter.getCount() == 0)
+                    headerTextView.setVisibility(View.VISIBLE);
+                else headerTextView.setVisibility(View.GONE);
+            } else {
+                // Delete data from SQLite
+                DbHelper db = new DbHelper(getActivity());
+                Cursor cursor = db.getUncompletedTaskData();
+
+                // Delete all the selected items based on the itemIDs
+                // Stored in the array list
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
+                        db.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
+                    }
+                }
+                cursor.close();
+
+                // Query all the tasks data again from SQLite
+                mTasksAdapter.clear();
+                mTasksAdapter.addAll(db.getTaskDataArray());
+
+                // Refresh the mScheduleAdapter
+                mTasksAdapter.notifyDataSetChanged();
+                if (mTasksAdapter.getCount() == 0)
+                    headerTextView.setVisibility(View.VISIBLE);
+                else headerTextView.setVisibility(View.GONE);
             }
-
-            cursor.close();
-
-            // Get the list view's current adapter, clear it,
-            // and query the database again for the current day
-            // data, then notify the adapter for the changes
-            TaskAdapter adapter = (TaskAdapter) listView.getAdapter();
-            adapter.clear();
-            adapter.addAll(db.getTaskDataArray());
-            adapter.notifyDataSetChanged();
-            if (adapter.getCount() == 0)
-                headerTextView.setVisibility(View.VISIBLE);
-            else headerTextView.setVisibility(View.GONE);
-
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
@@ -346,62 +410,118 @@ public class TasksFragment extends Fragment {
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(int position) {
+        private void editSelectedItem(final int position) {
             // Ensure that only one item is selected
             if (CAMselectedItemsList.size() == 1) {
                 // Initialise intent data variables
                 int id;
-                String title;
-                String classTitle;
-                String classType;
-                String sharer;
-                String description;
-                String attachment;
-                float dueDate;
-                float reminderDate;
-                float reminderTime;
+                final String[] icon = new String[1];
+                final String[] title = new String[1];
+                final String[] classTitle = new String[1];
+                final String[] classType = new String[1];
+                final String[] description = new String[1];
+                final String[] photo = new String[1];
+                final String[] attachment = new String[1];
+                final float[] dueDate = new float[1];
+                final float[] reminderDate = new float[1];
+                final float[] reminderTime = new float[1];
+                final Intent intent = new Intent(getActivity(), NewTaskActivity.class);
 
-                // Get a reference to the database and
-                // Get a cursor of the Task Data
-                DbHelper db = new DbHelper(getActivity());
-                Cursor cursor = db.getUncompletedTaskData();
+                if (mFirebaseUser != null) {
+                    // Get the data from Firebase
+                    DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("tasks").child(FirebaseIdList.get(CAMselectedItemsList.get(0)));
+                    taskRef.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            String id = dataSnapshot.getKey();
+                            icon[0] = dataSnapshot.child("icon").getValue(String.class);
+                            title[0] = dataSnapshot.child("title").getValue(String.class);
+                            classTitle[0] = dataSnapshot.child("class").getValue(String.class);
+                            classType[0] = dataSnapshot.child("type").getValue(String.class);
+                            description[0] = dataSnapshot.child("description").getValue(String.class);
+                            photo[0] = dataSnapshot.child("photo").getValue(String.class);
+                            attachment[0] = dataSnapshot.child("attachment").getValue(String.class);
+                            dueDate[0] = dataSnapshot.child("duedate").getValue(float.class);
+                            reminderDate[0] = dataSnapshot.child("reminderdate").getValue(float.class);
+                            reminderTime[0] = dataSnapshot.child("remindertime").getValue(float.class);
 
-                // Move the cursor to the position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
-                    // Get its Data
-                    id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-                    classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
-                    classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-                    sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
-                    description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-                    attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-                    dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
-                    reminderDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
-                    reminderTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
-                    cursor.close();
+                            intent.putExtra("id", id);
+                            intent.putExtra("icon", icon[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title[0]);
+                            intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
+                            intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
+                            intent.putExtra("photo", photo[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime[0]);
 
-                    // Create an intent to NewScheduleActivity and include the selected
-                    // item's id, title, and an edit flag as extras
-                    Intent intent = new Intent(getActivity(), NewTaskActivity.class);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_SHARER), sharer);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime);
-                    intent.putExtra("position", position);
-                    intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                            // Create an intent to NewScheduleActivity and include the selected
+                            // item's id, title, and an edit flag as extras
+                            intent.putExtra("position", position);
+                            intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
 
-                    // Clear the selected items list, exit the CAM and launch the activity
-                    CAMselectedItemsList.clear();
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-                    startActivity(intent);
+                            // Clear the selected items list, exit the CAM and launch the activity
+                            CAMselectedItemsList.clear();
+                            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                            startActivity(intent);
+                        }
+                        @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                    while (title.equals("")) {
+                        // Sleep until intent is sent by the value added listener
+                    }
+                }
+                else {
+                    // Get the data from SQLite
+                    // Get a reference to the database and
+                    // Get a cursor of the Task Data
+                    DbHelper db = new DbHelper(getActivity());
+                    Cursor cursor = db.getUncompletedTaskData();
+
+                    // Move the cursor to the position of the selected item
+                    if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
+                        // Get its Data
+                        id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                        icon[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                        title[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                        classTitle[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
+                        classType[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
+                        description[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
+                        photo[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
+                        attachment[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+                        dueDate[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
+                        reminderDate[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+                        reminderTime[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+                        cursor.close();
+
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
+                        intent.putExtra("icon", icon[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title[0]);
+                        intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
+                        intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
+                        intent.putExtra("photo", photo[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);
+                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime[0]);
+
+                        // Create an intent to NewScheduleActivity and include the selected
+                        // item's id, title, and an edit flag as extras
+                        intent.putExtra("position", position);
+                        intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+
+                        // Clear the selected items list, exit the CAM and launch the activity
+                        CAMselectedItemsList.clear();
+                        getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                        getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                        startActivity(intent);
+                    }
+
                 }
             }
 

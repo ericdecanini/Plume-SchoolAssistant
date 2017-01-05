@@ -51,6 +51,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
@@ -96,10 +104,6 @@ public class NewTaskActivity extends AppCompatActivity
     TextView fieldSetReminderTimeTextview;
 
     // UI Data
-    int mPrimaryColor;
-    int mDarkColor;
-    int mSecondaryColor;
-
     String iconUriString;
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
@@ -110,12 +114,23 @@ public class NewTaskActivity extends AppCompatActivity
     long reminderDateMillis;
     float reminderTimeSeconds;
 
+    // Theme Variables
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
+
     // Intent Data
     static int REQUEST_NOTIFICATION_ALARM = 40;
     static int REQUEST_NOTIFICATION_INTENT = 41;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 42;
 
     String attachedFileUriString = "";
+
+    // Firebase Variables
+    String name;
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
 
     // Built-in Icons
     private Integer[] mThumbIds = {
@@ -153,6 +168,7 @@ public class NewTaskActivity extends AppCompatActivity
     // Intent Data
     boolean FLAG_EDIT = false;
     int editId = -1;
+    String firebaseEditId = "";
     static final int REQUEST_FILE_GET = 1;
     static final int REQUEST_IMAGE_GET_ICON = 2;
     static final int REQUEST_IMAGE_CAPTURE = 3;
@@ -167,11 +183,32 @@ public class NewTaskActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_task);
 
+        // Initialise Firebase and SQLite
+        DbHelper dbHelper = new DbHelper(this);
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null) {
+            mUserId = mFirebaseUser.getUid();
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("nickname").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    name = dataSnapshot.getValue(String.class);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } else name = "";
+
         // Get references to the UI elements
         fieldTitle = (EditText) findViewById(R.id.field_new_task_title);
         fieldIcon = (ImageView) findViewById(R.id.field_new_task_icon);
         fieldClassDropdown = (LinearLayout) findViewById(R.id.field_class_dropdown);
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
+        fieldShared = (CheckBox) findViewById(R.id.field_shared);
         fieldTypeDropdown = (LinearLayout) findViewById(R.id.field_type_dropdown);
         fieldTypeTextview = (TextView) findViewById(R.id.field_type_textview);
         fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
@@ -184,6 +221,9 @@ public class NewTaskActivity extends AppCompatActivity
         fieldSetReminderDateTextview = (TextView) findViewById(R.id.field_new_task_reminder_date_textview);
         fieldSetReminderTime = (LinearLayout) findViewById(R.id.field_new_task_reminder_time);
         fieldSetReminderTimeTextview = (TextView) findViewById(R.id.field_new_task_reminder_time_textview);
+
+        if (mFirebaseUser == null)
+            fieldShared.setVisibility(View.GONE);
 
         // Initialise the dropdown box default data
         classTitle = getString(R.string.none);
@@ -202,18 +242,32 @@ public class NewTaskActivity extends AppCompatActivity
 
 
         // Initialise the class dropdown data
-        DbHelper dbHelper = new DbHelper(this);
-        Cursor scheduleCursor = dbHelper.getAllScheduleData();
+        if (mFirebaseUser != null) {
+            // Get schedule data from Firebase
+            DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("classes");
+            classesRef.addChildEventListener(new ChildEventListener() {
+                @Override public void onChildAdded(DataSnapshot dataSnapshot, String s) {classTitleArray.add(dataSnapshot.getKey());}
+                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onCancelled(DatabaseError databaseError) {}});
+        } else {
+            // Get schedule data from SQLite
+            Cursor scheduleCursor = dbHelper.getAllScheduleData();
 
-        // Scan through the cursor and add in each class title into the array list
-        if (scheduleCursor.moveToFirst()) {
-            for (int i = 0; i < scheduleCursor.getCount(); i++) {
-                String classTitle = scheduleCursor.getString(scheduleCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-                if (!classTitleArray.contains(classTitle))
-                    classTitleArray.add(classTitle);
-                scheduleCursor.moveToNext();
+            // Scan through the cursor and add in each class title into the array list
+            if (scheduleCursor.moveToFirst()) {
+                for (int i = 0; i < scheduleCursor.getCount(); i++) {
+                    String classTitle = scheduleCursor.getString(scheduleCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+                    if (!classTitleArray.contains(classTitle))
+                        classTitleArray.add(classTitle);
+                    scheduleCursor.moveToNext();
+                }
             }
+            scheduleCursor.close();
         }
+
 
 
         // Initialise the classType dropdown data
@@ -232,169 +286,140 @@ public class NewTaskActivity extends AppCompatActivity
             Bundle extras = intent.getExtras();
             if (extras != null) {
                 // Get the task data sent through the intent
-                editId = extras.getInt(getString(R.string.TASKS_EXTRA_ID));
-                Cursor cursor = dbHelper.getTaskById(editId);
-                String title = "";
-                String classTitle = "";
-                String classType = "";
-                String sharer = "";
-                String description = "";
+                String icon = extras.getString("icon");
+                String title = extras.getString(getString(R.string.TASKS_EXTRA_TITLE));
+                String classTitle = extras.getString(getString(R.string.TASKS_EXTRA_CLASS));
+                String classType = extras.getString(getString(R.string.TASKS_EXTRA_TYPE));
+                String description = extras.getString(getString(R.string.TASKS_EXTRA_DESCRIPTION));
+                String photo = extras.getString("photo");
                 String attachment = "";
-                float dueDate = 0f;
-                float reminderDate = 0f;
-                float reminderTime = 0f;
-
-                if (cursor.moveToFirst()) {
-                    title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-                    classTitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
-                    classType = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-                    sharer = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_SHARER));
-                    description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-                    attachment = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-                    dueDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
-                    reminderDate = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
-                    reminderTime = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
-                    mCurrentPhotoPath = Uri.parse(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE)));
-                    previousPhotoPath = URI.create(mCurrentPhotoPath.toString());
-                }
+                float dueDate = extras.getFloat(getString(R.string.TASKS_EXTRA_DUEDATE));
+                float reminderDate = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERDATE));
+                float reminderTime = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERTIME));
 
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
 
                 if (FLAG_EDIT) {
-                    Cursor cursorEdit = dbHelper.getUncompletedTaskData();
-                    if (cursorEdit.moveToPosition(position)) {
-                        iconUriString = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
-                        try {
-                            Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUriString));
-                            fieldIcon.setImageBitmap(setImageBitmap);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    // Get the id depending on where the data came from
+                    if (mFirebaseUser != null)
+                        firebaseEditId = intent.getStringExtra("id");
+                    else editId = intent.getIntExtra(getString(R.string.TASKS_EXTRA_ID), -1);
 
-                        // Auto-fill the text fields with the intent data
-                        fieldTitle.setText(title);
-                        fieldDescription.setText(description);
+                    fieldIcon.setImageURI(Uri.parse(icon));
+                    fieldTitle.setText(title);
+                    fieldTitle.setSelection(fieldTitle.getText().length());
+                    fieldDescription.setText(description);
 
-                        // Set the current state of the dropdown text views
-                        if (classTitle.equals(""))
-                            fieldClassTextview.setText(getString(R.string.none));
-                        else fieldClassTextview.setText(classTitle);
-                        this.classTitle = classTitle;
-                        if (classType.equals(""))
-                            fieldTypeTextview.setText(getString(R.string.none));
-                        else fieldTypeTextview.setText(classType);
-                        this.classType = classType;
-
-                        // Set the file name of the attach file field
-                        attachment = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-                        Uri filePathUri = Uri.parse(attachment);
-                        if (!attachment.equals("")) {
-                            Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
-                            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                            if (returnCursor.moveToFirst()) {
-                                String fileName = returnCursor.getString(nameIndex);
-                                returnCursor.close();
-                                fieldAttachFile.setText(fileName);
-                                this.attachedFileUriString = filePathUri.toString();
-                            }
-                        }
-
-                        // Set the saved image bitmap
-                        Log.v(LOG_TAG, "Photo path: " + mCurrentPhotoPath.toString());
-                        if (!mCurrentPhotoPath.toString().equals("")) {
-                            try {
-                                Bitmap setPhotoBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
-                                fieldPhotoSlot.setImageBitmap(Bitmap.createScaledBitmap(setPhotoBitmap, 160, 160, false));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
+                    // Set the saved photo's bitmap
+                    if (!photo.equals("")) {
+                        fieldPhotoSlot.setImageURI(Uri.parse(photo));
+                        mCurrentPhotoPathString = photo;
+                        mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
                     }
 
-                    cursorEdit.close();
-                    fieldTitle.setSelection(fieldTitle.getText().length());
 
-                } else {
-                    // Set any default data
-                    Resources resources = getResources();
-                    int resId = R.drawable.art_class_64dp;
-                    Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                            + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
-                    iconUriString = drawableUri.toString();
-                }
+                    // Set the current state of the dropdown text views
+                    if (classTitle.equals(""))
+                        fieldClassTextview.setText(getString(R.string.none));
+                    else fieldClassTextview.setText(classTitle);
+                    this.classTitle = classTitle;
+                    if (classType.equals(""))
+                        fieldTypeTextview.setText(getString(R.string.none));
+                    else fieldTypeTextview.setText(classType);
+                    this.classType = classType;
 
-                // Set the current state of the due date
-                if (dueDate != 0f) {
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis((long) dueDate);
-                    float dueDateYear = c.get(Calendar.YEAR);
-                    float dueDateMonth = c.get(Calendar.MONTH);
-                    float dueDateDay = c.get(Calendar.DAY_OF_MONTH);
-                    fieldDueDateTextView.setText(utility.formatDateString(this, ((int) dueDateYear), ((int) dueDateMonth), ((int) dueDateDay)));
-                    this.dueDateMillis = c.getTimeInMillis();
-                }
+                    // Set the current state of the due date
+                    if (dueDate != 0f) {
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis((long) dueDate);
+                        float dueDateYear = c.get(Calendar.YEAR);
+                        float dueDateMonth = c.get(Calendar.MONTH);
+                        float dueDateDay = c.get(Calendar.DAY_OF_MONTH);
+                        fieldDueDateTextView.setText(utility.formatDateString(this, ((int) dueDateYear), ((int) dueDateMonth), ((int) dueDateDay)));
+                        this.dueDateMillis = c.getTimeInMillis();
+                    }
 
-                // Set the current state of the reminder date and time
-                if (reminderDate != 0f) {
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis((long) reminderDate);
-                    float reminderDateYear = c.get(Calendar.YEAR);
-                    float reminderDateMonth = c.get(Calendar.MONTH);
-                    float reminderDateDay = c.get(Calendar.DAY_OF_MONTH);
+                    // Set the current state of the reminder date and time
+                    if (reminderDate != 0f) {
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis((long) reminderDate);
+                        float reminderDateYear = c.get(Calendar.YEAR);
+                        float reminderDateMonth = c.get(Calendar.MONTH);
+                        float reminderDateDay = c.get(Calendar.DAY_OF_MONTH);
 
-                    Calendar today = Calendar.getInstance();
-                    if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
-                            && today.get(Calendar.YEAR) == reminderDateYear)
-                        fieldSetReminderDateTextview.setText(getString(R.string.today));
-                    else {
-                        today.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) + 1);
+                        Calendar today = Calendar.getInstance();
                         if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
                                 && today.get(Calendar.YEAR) == reminderDateYear)
-                            fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
-                        else
-                            fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
-                                    ((int) reminderDateMonth), ((int) reminderDateDay)));
+                            fieldSetReminderDateTextview.setText(getString(R.string.today));
+                        else {
+                            today.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) + 1);
+                            if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
+                                    && today.get(Calendar.YEAR) == reminderDateYear)
+                                fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
+                            else
+                                fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
+                                        ((int) reminderDateMonth), ((int) reminderDateDay)));
+                        }
+                        this.reminderDateMillis = c.getTimeInMillis();
                     }
-                    this.reminderDateMillis = c.getTimeInMillis();
+
+                    if (reminderTime != 0f) {
+                        fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
+                        this.reminderTimeSeconds = reminderTime;
+                    }
+
+                    // ATTACHMENT WILL NOT BE INCLUDED IN BETA
+//                    attachment = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+//                    Uri filePathUri = Uri.parse(attachment);
+//                    if (!attachment.equals("")) {
+//                        Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
+//                        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+//                        if (returnCursor.moveToFirst()) {
+//                            String fileName = returnCursor.getString(nameIndex);
+//                            returnCursor.close();
+//                            fieldAttachFile.setText(fileName);
+//                            this.attachedFileUriString = filePathUri.toString();
+//                        }
+//                    }
                 }
-
-                if (reminderTime != 0f) {
-                    fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
-                    this.reminderTimeSeconds = reminderTime;
-                }
+            } else {
+                // Set any default data
+                Resources resources = getResources();
+                int resId = R.drawable.art_class_64dp;
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
+                iconUriString = drawableUri.toString();
             }
-
-
-            // Set the default state of each field if the activity
-            // was not started by an edit action
-            else {
-                // Initialise the due date to be set for the next day
-                Calendar c = Calendar.getInstance();
-                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1, 0, 0);
-                dueDateMillis = c.getTimeInMillis();
-                fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
-                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-
-                // Initialise the reminder date and time
-                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
-                reminderDateMillis = c.getTimeInMillis();
-                fieldSetReminderDateTextview.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
-                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-                c = Calendar.getInstance();
-                reminderTimeSeconds = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
-                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds));
-
-                iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
-                        + '/' + getResources().getResourceTypeName(R.drawable.art_task_64dp) + '/' + getResources().getResourceEntryName(R.drawable.art_task_64dp);
-            }
-
         }
 
-        scheduleCursor.close();
+
+        // Set the default state of each field if the activity
+        // was not started by an edit action
+        else {
+            // Initialise the due date to be set for the next day
+            Calendar c = Calendar.getInstance();
+            c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1, 0, 0);
+            dueDateMillis = c.getTimeInMillis();
+            fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+
+            // Initialise the reminder date and time
+            c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
+            reminderDateMillis = c.getTimeInMillis();
+            fieldSetReminderDateTextview.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            c = Calendar.getInstance();
+            reminderTimeSeconds = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
+            fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds));
+
+            iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
+                    + '/' + getResources().getResourceTypeName(R.drawable.art_task_64dp) + '/' + getResources().getResourceEntryName(R.drawable.art_task_64dp);
+        }
+
     }
+
 
     @Override
     protected void onStart() {
@@ -967,73 +992,117 @@ public class NewTaskActivity extends AppCompatActivity
     }
 
     private boolean insertTaskDataIntoDatabase() {
-        // Get the inputted text from the title and description fields
-        // as well as the iconResource and database
-        String title = fieldTitle.getText().toString();
-        String description = fieldDescription.getText().toString();
-        String icon = attachedFileUriString;
+        // Get the data
+        final String title = fieldTitle.getText().toString();
+        final String description = fieldDescription.getText().toString();
+        final String icon = attachedFileUriString;
 
         if (classTitle.equals(getString(R.string.none)))
             classTitle = "";
         if (classType.equals(getString(R.string.none)))
             classType = "";
 
-        DbHelper dbHelper = new DbHelper(this);
-
-        // If the activity was launched through an edit action
-        // Update the database row
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(reminderDateMillis);
+        // Delete previous picture if it exists
+        // PHOTOS DISABLED FOR THE BETA
+//        if (FLAG_EDIT) {
+//            if (!previousPhotoPath.toString().equals("")) {
+//                File file = new File(previousPhotoPath.getPath());
+//                file.delete();
+//            }
+//        }
 
         // Set the alarm for the notification
-        Calendar cc = Calendar.getInstance();
-        cc.setTimeInMillis(reminderDateMillis);
-        int hour = (int) reminderTimeSeconds / 3600;
-        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
-        cc.set(Calendar.HOUR_OF_DAY, hour);
-        cc.set(Calendar.MINUTE, minute);
-        long notificationMillis = (cc.getTimeInMillis());
+        // NOTIFICATIONS DISABLED FOR BETA RELEASE
+//        Calendar c = Calendar.getInstance();
+//        c.setTimeInMillis(reminderDateMillis);
+//        int hour = (int) reminderTimeSeconds / 3600;
+//        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+//        c.set(Calendar.HOUR_OF_DAY, hour);
+//        c.set(Calendar.MINUTE, minute);
+//        long notificationMillis = (c.getTimeInMillis());
+//        ScheduleNotification(new Date(notificationMillis), editId, getString(R.string.notification_message_reminder), title);
 
-        if (FLAG_EDIT) {
-            // Delete previous picture if it exists
-            if (!previousPhotoPath.toString().equals("")) {
-                File file = new File(previousPhotoPath.getPath());
-                file.delete();
+        // Insert the data based on the user
+        if (mFirebaseUser != null) {
+            // Insert into Firebase
+            DatabaseReference taskRef;
+            if (FLAG_EDIT)
+                taskRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserId).child("tasks").child(firebaseEditId);
+            else taskRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("tasks").push();
+            taskRef.child("title").setValue(title);
+            taskRef.child("class").setValue(classTitle);
+            taskRef.child("type").setValue(classType);
+            taskRef.child("description").setValue(description);
+            taskRef.child("duedate").setValue(dueDateMillis);
+            taskRef.child("icon").setValue(iconUriString);
+            taskRef.child("completed").setValue(false);
+
+            // Share the task to peers if checked shared
+            if (fieldShared.isChecked()) {
+                final ArrayList<String> peerUIDs = new ArrayList<>();
+                DatabaseReference classPeersRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserId).child("classes").child("peers");
+                classPeersRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        long snapshotCount = dataSnapshot.getChildrenCount();
+                        for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
+                            peerUIDs.add(classSnapshot.getKey());
+                            if (peerUIDs.size() >= snapshotCount) {
+                                for (int i = 0; i < peerUIDs.size(); i++) {
+                                    // All the values are set here per peer
+                                    String peerUid = peerUIDs.get(i);
+                                    DatabaseReference peerTask = FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(peerUid).child("tasks").push();
+                                    peerTask.child("title").setValue(title);
+                                    peerTask.child("class").setValue(classTitle);
+                                    peerTask.child("type").setValue(classType);
+                                    peerTask.child("sharer").setValue(name);
+                                    peerTask.child("description").setValue(description);
+                                    peerTask.child("duedate").setValue(dueDateMillis);
+                                    peerTask.child("icon").setValue(icon);
+                                    peerTask.child("completed").setValue(false);
+                                }}}}
+                    @Override public void onCancelled(DatabaseError databaseError) {}});
             }
 
-            Log.d(LOG_TAG, "Inserting photo path " + mCurrentPhotoPath.toString());
-            ScheduleNotification(new Date(notificationMillis), editId, getString(R.string.notification_message_reminder), title);
+            return true;
+        } else {
+            // Insert into SQLite
+            DbHelper dbHelper = new DbHelper(this);
 
-            if (dbHelper.updateTaskItem(editId, title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
-                return true;
-            } else
-                Toast.makeText(NewTaskActivity.this, "Error editing task", Toast.LENGTH_SHORT).show();
-        }
-        // Else, insert a new database row
-        else {
-            // First save the taken picture into the storage
-            if (mCurrentPhotoPath != null)
-                saveFile(mCurrentPhotoPath);
-            else mCurrentPhotoPath = Uri.parse("");
+            if (FLAG_EDIT)
+                // Update database row
+                if (dbHelper.updateTaskItem(editId, title, classTitle, classType, description, attachedFileUriString,
+                        dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false))
+                    return true;
 
-            if (dbHelper.insertTask(title, classTitle, classType, "", description, attachedFileUriString,
-                    dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false)) {
-                Cursor cursor = dbHelper.getUncompletedTaskData();
+                else {
+                    // Insert a new database row
+                    if (dbHelper.insertTask(title, classTitle, classType, description, attachedFileUriString,
+                            dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPath.toString(), false))
+                        return true;
 
-                if (cursor.moveToLast()) {
-                    int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    ScheduleNotification(new Date(notificationMillis), ID, getString(R.string.notification_message_reminder), title);
+                    // First save the taken picture into the storage
+//                if (mCurrentPhotoPath != null)
+//                    saveFile(mCurrentPhotoPath);
+//                else mCurrentPhotoPath = Uri.parse("");
+
+                    // NOTIFICATIONS DISABLED FOR THE BETA
+//                    Cursor cursor = dbHelper.getUncompletedTaskData();
+                    // Schedule a notification for the set notification time
+//                    if (cursor.moveToLast()) {
+//                        int ID = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+//                        ScheduleNotification(new Date(notificationMillis), ID, getString(R.string.notification_message_reminder), title);
+//                    }
                 }
 
-                return true;
-            } else
-                Toast.makeText(NewTaskActivity.this, "Error creating new task", Toast.LENGTH_SHORT).show();
-            Log.w(LOG_TAG, "Error creating new task");
+            return false;
         }
-
-        return false;
     }
+
 
     // Used for Attach File
     void saveFile(Uri sourceuri) {

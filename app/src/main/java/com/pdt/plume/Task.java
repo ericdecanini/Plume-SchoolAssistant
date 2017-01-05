@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import static android.R.attr.description;
+
 public class Task {
     public String taskIcon;
     public String taskTitle;
@@ -12,13 +14,13 @@ public class Task {
         super();
     }
 
-    // The global variables are accessed by the adapter
+    // The global variables are accessed by the mScheduleAdapter
     // Set them using the input parameters
-    public Task(String icon, String title, String shared, String description, String attachment, float dueDate, float alarmTime) {
+    public Task(String icon, String title, String sharer, String description, String attachment, float dueDate, float alarmTime) {
         super();
         this.taskIcon = icon;
         this.taskTitle = title;
-        this.taskShared = shared;
+        this.taskShared = sharer;
         this.taskDescription = description;
         this.taskAttachment = attachment;
         this.taskDueDate = dueDate;

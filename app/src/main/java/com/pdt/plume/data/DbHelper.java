@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -18,7 +17,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.pdt.plume.Peer;
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
 import com.pdt.plume.Task;
@@ -48,8 +46,6 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_SCHEDULE_TABLE = "CREATE TABLE " + ScheduleEntry.TABLE_NAME + " ("
                 + ScheduleEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + ScheduleEntry.COLUMN_USER + " TEXT, "
-                + ScheduleEntry.COLUMN_PEERS + " TEXT, "
                 + ScheduleEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_TEACHER + " TEXT NOT NULL, "
                 + ScheduleEntry.COLUMN_ROOM + " TEXT NOT NULL, "
@@ -64,11 +60,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_TASKS_TABLE = "CREATE TABLE " + TasksEntry.TABLE_NAME + " ("
                 + TasksEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + TasksEntry.COLUMN_USER + " TEXT, "
                 + TasksEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_CLASS + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_TYPE + " TEXT NOT NULL, "
-                + TasksEntry.COLUMN_SHARER + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_ATTACHMENT + " TEXT NOT NULL, "
                 + TasksEntry.COLUMN_DUEDATE + " REAL NOT NULL, "
@@ -81,26 +75,14 @@ public class DbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_NOTES_TABLE = "CREATE TABLE " + NotesEntry.TABLE_NAME + " ("
                 + NotesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + NotesEntry.COLUMN_USER + " TEXT, "
                 + NotesEntry.COLUMN_TITLE + " TEXT NOT NULL, "
                 + NotesEntry.COLUMN_NOTE + " TEXT NOT NULL, "
                 + NotesEntry.COLUMN_SCHEDULE_TITLE + " TEXT NOT NULL "
                 + " );";
 
-        final String SQL_CREATE_PEERS_TABLE = "CREATE TABLE " + PeersEntry.TABLE_NAME + " ("
-                + PeersEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + PeersEntry.COLUMN_USER + " TEXT, "
-                + PeersEntry.COLUMN_UID + " TEXT NOT NULL, "
-                + PeersEntry.COLUMN_NAME + " TEXT NOT NULL, "
-                + PeersEntry.COLUMN_ICON + " TEXT NOT NULL, "
-                + PeersEntry.COLUMN_FLAVOUR + " TEXT NOT NULL, "
-                + PeersEntry.COLUMN_REQUEST_STATUS + " NUMBER NOT NULL"
-                + " );";
-
         db.execSQL(SQL_CREATE_SCHEDULE_TABLE);
         db.execSQL(SQL_CREATE_TASKS_TABLE);
         db.execSQL(SQL_CREATE_NOTES_TABLE);
-        db.execSQL(SQL_CREATE_PEERS_TABLE);
     }
 
     @Override
@@ -108,7 +90,6 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS schedule");
         db.execSQL("DROP TABLE IF EXISTS tasks");
         db.execSQL("DROP TABLE IF EXISTS notes");
-        db.execSQL("DROP TABLE IF EXISTS peers");
         onCreate(db);
     }
 
@@ -135,7 +116,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 ScheduleEntry.COLUMN_TITLE + " ASC");
     }
 
-    public Cursor getCurrentDayScheduleData(Context context) {
+    public Cursor getCurrentDayScheduleDataFromSQLite(Context context) {
         SQLiteDatabase db = this.getReadableDatabase();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String weekNumber = preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -204,14 +185,16 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Schedule> getCurrentDayScheduleArray(Context context) throws IOException {
-        // Query the cursor, calendar, initialise the Array List
-        // and get the preference for the week number
-        Cursor cursor = getCurrentDayScheduleData(context);
+        // Get the calendar data for the week number
         Calendar c = Calendar.getInstance();
-        ArrayList<Schedule> arrayList = new ArrayList<>();
         String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
-        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+        // Get data from SQLite
+        // Query the cursor, calendar, initialise the Array List
+        // and get the preference for the week number
+        Cursor cursor = getCurrentDayScheduleDataFromSQLite(context);
+        ArrayList<Schedule> arrayList = new ArrayList<>();
 
         // Run through the cursor's items
         // 1ST CHECK = WEEK NUMBER
@@ -316,40 +299,6 @@ public class DbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-    public Cursor getScheduleDataByTitleWithNotes(String title) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String rawQuery = "SELECT * FROM " + ScheduleEntry.TABLE_NAME + " NATURAL JOIN " + NotesEntry.TABLE_NAME
-                + " WHERE " + ScheduleEntry.COLUMN_TITLE + " =?";
-        Cursor cursor = db.rawQuery(rawQuery, new String[]{title});
-        cursor.moveToFirst();
-        String[] columnNames = cursor.getColumnNames();
-        for (int i = 0; i < columnNames.length; i++)
-            Log.v(LOG_TAG, "Column " + columnNames[i]);
-//        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
-//                null,
-//                ScheduleEntry.COLUMN_TITLE + "=?",
-//                new String[]{title},
-//                null,
-//                null,
-//                null);
-        return cursor;
-    }
-
-    public String getScheduleTitleById(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String idString = Integer.toString(id);
-        Cursor cursor = db.query(ScheduleEntry.TABLE_NAME,
-                null,
-                ScheduleEntry._ID + "=?",
-                new String[]{idString},
-                null,
-                null,
-                null);
-        if (cursor.moveToFirst()) {
-            return cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-        } else return "";
-    }
-
     public Cursor getAllClassesData() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = getAllScheduleData();
@@ -446,7 +395,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertSchedule(String peers, String title, String teacher, String room, String occurrence,
+    public boolean insertSchedule(String title, String teacher, String room, String occurrence,
                                   int timein, int timeout, int timeinalt, int timeoutalt,
                                   String periods, String icon) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -454,10 +403,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        if (firebaseUser != null)
-            contentValues.put(ScheduleEntry.COLUMN_USER, firebaseUser.toString());
-        else contentValues.put(ScheduleEntry.COLUMN_USER, ((String) null));
-        contentValues.put(ScheduleEntry.COLUMN_PEERS, peers);
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
@@ -489,7 +434,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateScheduleItem(Integer id, String peers, String title, String teacher, String room, String occurrence,
+    public boolean updateScheduleItem(Integer id, String title, String teacher, String room, String occurrence,
                                       int timein, int timeout, int timeinalt, int timeoutalt,
                                       String periods, String icon, int notes_id) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -497,10 +442,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        if (firebaseUser != null)
-            contentValues.put(ScheduleEntry.COLUMN_USER, firebaseUser.toString());
-        else contentValues.put(ScheduleEntry.COLUMN_USER, ((String) null));
-        contentValues.put(ScheduleEntry.COLUMN_PEERS, peers);
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);
         contentValues.put(ScheduleEntry.COLUMN_TEACHER, teacher);
         contentValues.put(ScheduleEntry.COLUMN_ROOM, room);
@@ -623,13 +564,49 @@ public class DbHelper extends SQLiteOpenHelper {
                 arrayList.add(i, new Task(
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        "",
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
                 ));
             }
+        }
+        return arrayList;
+    }
+
+    public ArrayList<Task> getTaskDataArrayFromFirebase() {
+        final ArrayList<Task> arrayList = new ArrayList<>();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        String userId = firebaseUser.getUid();
+
+        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(userId).child("tasks");
+        final long[] snapshotCount = new long[1];
+        final int[] taskCount = {0};
+        tasksRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                 snapshotCount[0] = dataSnapshot.getChildrenCount();
+                for (DataSnapshot taskSnapshot: dataSnapshot.getChildren()) {
+                    String iconUri = taskSnapshot.child("icon").getValue(String.class);
+                    String title = taskSnapshot.child("title").getValue(String.class);
+                    String description = taskSnapshot.child("description").getValue(String.class);
+                    String sharer = taskSnapshot.child("sharer").getValue(String.class);
+                    float duedate = taskSnapshot.child("duedate").getValue(float.class);
+                    arrayList.add(new Task(iconUri, title, sharer, description, "", duedate, -1));
+                    taskCount[0]++;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        while (taskCount[0] < snapshotCount[0]) {
+            // Do nothing
         }
         return arrayList;
     }
@@ -653,7 +630,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 arrayList.add(i, new Task(
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        "",
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
@@ -683,7 +660,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 arrayList.add(i, new Task(
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_SHARER)),
+                        "",
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
@@ -694,7 +671,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type, String sharer,
+    public boolean insertTask(String title, String classTitle, String type,
                               String description, String attachment,
                               float dueDate, float reminderdate, float remindertime,
                               String icon, String picture, boolean completed) {
@@ -703,13 +680,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        if (firebaseUser != null)
-            contentValues.put(TasksEntry.COLUMN_USER, firebaseUser.toString());
-        else contentValues.put(TasksEntry.COLUMN_USER, ((String) null));
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
         contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
         contentValues.put(TasksEntry.COLUMN_TYPE, type);
-        contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
         contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
@@ -727,7 +700,6 @@ public class DbHelper extends SQLiteOpenHelper {
             DatabaseReference classRef = ref.child("users").child(uID).child("tasks").child(title);
             classRef.child("class").setValue(classTitle);
             classRef.child("type").setValue(type);
-            classRef.child("sharer").setValue(sharer);
             classRef.child("description").setValue(description);
             classRef.child("attachment").setValue(attachment);
             classRef.child("duedate").setValue(dueDate);
@@ -741,7 +713,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type, String sharer,
+    public boolean updateTaskItem(Integer id, String title, String classTitle, String type,
                                   String description, String attachment,
                                   float dueDate, float reminderdate, float remindertime,
                                   String icon, String picture, boolean completed) {
@@ -750,13 +722,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        if (firebaseUser != null)
-            contentValues.put(TasksEntry.COLUMN_USER, firebaseUser.toString());
-        else contentValues.put(TasksEntry.COLUMN_USER, ((String) null));
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
         contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
         contentValues.put(TasksEntry.COLUMN_TYPE, type);
-        contentValues.put(TasksEntry.COLUMN_SHARER, sharer);
         contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
         contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
         contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
@@ -774,7 +742,6 @@ public class DbHelper extends SQLiteOpenHelper {
             DatabaseReference classRef = ref.child("users").child(uID).child("tasks").child(title);
             classRef.child("class").setValue(classTitle);
             classRef.child("type").setValue(type);
-            classRef.child("sharer").setValue(sharer);
             classRef.child("description").setValue(description);
             classRef.child("attachment").setValue(attachment);
             classRef.child("duedate").setValue(dueDate);
@@ -886,9 +853,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        if (firebaseUser != null)
-            contentValues.put(NotesEntry.COLUMN_USER, firebaseUser.toString());
-        else contentValues.put(NotesEntry.COLUMN_USER, ((String) null));
         contentValues.put(NotesEntry.COLUMN_TITLE, title);
         contentValues.put(NotesEntry.COLUMN_NOTE, note);
         contentValues.put(NotesEntry.COLUMN_SCHEDULE_TITLE, schedule_title);
@@ -954,8 +918,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return db.query(
                 PeersEntry.TABLE_NAME,
                 null,
-                PeersEntry.COLUMN_REQUEST_STATUS + "=? AND "
-                + PeersEntry.COLUMN_USER + "=?",
+                PeersEntry.COLUMN_REQUEST_STATUS + "=?",
                 new String[]{"0", userId},
                 null,
                 null,
@@ -1070,7 +1033,6 @@ public class DbHelper extends SQLiteOpenHelper {
         for (int i = 0; i < userIdList.size(); i++) {
             // Create the ContentValues for the data to be inserted
             ContentValues contentValues = new ContentValues();
-            contentValues.put(PeersEntry.COLUMN_USER, userId);
             contentValues.put(PeersEntry.COLUMN_UID, userIdList.get(i));
             contentValues.put(PeersEntry.COLUMN_NAME, userNameList.get(i));
             contentValues.put(PeersEntry.COLUMN_FLAVOUR, userFlavourList.get(i));
@@ -1083,20 +1045,6 @@ public class DbHelper extends SQLiteOpenHelper {
         // If no data was inserted, return -1
         return -1;
     }
-
-//    public ArrayList<Peer> getRequestsDataArray() {
-//        Cursor cursor = updateRequestsInDb();
-//        ArrayList<Peer> arrayList = new ArrayList<>();
-//        for (int i = 0; i < cursor.getCount(); i++) {
-//            if (cursor.moveToPosition(i)) {
-//                arrayList.add(new Peer
-//                        (cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_ICON)),
-//                                cursor.getString(cursor.getColumnIndex(PeersEntry.COLUMN_NAME))));
-//            }
-//        }
-//        return arrayList;
-//    }
-
 
     public int insertPeer(String id, String icon, String name, String flavour) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -1120,24 +1068,5 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, 0);
         return (int) db.insert(PeersEntry.TABLE_NAME, null, contentValues);
     }
-
-    public int updatePeer(String uid, String name, String flavour, String icon) {
-        SQLiteDatabase db = getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(PeersEntry.COLUMN_NAME, name);
-        contentValues.put(PeersEntry.COLUMN_FLAVOUR, flavour);
-        contentValues.put(PeersEntry.COLUMN_ICON, icon);
-        return db.update(PeersEntry.TABLE_NAME, contentValues,
-                PeersEntry.COLUMN_UID + "=?", new String[]{uid});
-    }
-
-    public int deletePeer(String uid) {
-        SQLiteDatabase db = getWritableDatabase();
-        return db.delete(PeersEntry.TABLE_NAME, PeersEntry.COLUMN_UID + "=?", new String[]{uid});
-    }
-
-
-
-
 
 }

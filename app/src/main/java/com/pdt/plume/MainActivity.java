@@ -328,11 +328,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void initTabs(){
-        // Create the adapter that will return a fragment for each of the two
+        // Create the mScheduleAdapter that will return a fragment for each of the two
         // primary sections of the activity.
         mSectionsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
+        // Set up the ViewPager with the sections mScheduleAdapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         if (mViewPager != null)
             mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -363,10 +363,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             actionBar.setDisplayShowTitleEnabled(false);
 
         // Get a reference to the spinner UI element
-        // and set its adapter and ItemClickListener
+        // and set its mScheduleAdapter and ItemClickListener
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         if (spinner != null) {
-            // Set the adapter of the spinner
+            // Set the mScheduleAdapter of the spinner
             spinner.setAdapter(new mSpinnerAdapter(
                     mToolbar.getContext(),
                     new String[]{
@@ -504,6 +504,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         loggedIn = false;
         logInOut.setTitle(getString(R.string.action_login));
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
 }

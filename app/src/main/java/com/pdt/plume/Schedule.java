@@ -12,11 +12,14 @@ public class Schedule {
     public String scheduleRoom;
     public String scheduleTimeIn;
     public String scheduleTimeOut;
+
+    public Object extra;
+
     public Schedule(){
         super();
     }
 
-    // The global variables are accessed by the adapter
+    // The global variables are accessed by the mScheduleAdapter
     // Set them using the input parameters
     public Schedule(Context context, String icon, String lesson, String teacher, String room, String timeIn, String timeOut, String period) {
         super();
@@ -39,4 +42,9 @@ public class Schedule {
         }
 
     }
+
+    public void addExtra(Object extra) {
+        this.extra = extra;
+    }
+
 }

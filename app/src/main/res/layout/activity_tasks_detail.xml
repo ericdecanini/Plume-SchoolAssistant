@@ -122,6 +122,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:visibility="gone"
                 android:id="@+id/task_detail_photo_layout">
 
                 <View
@@ -199,6 +200,7 @@
             <RelativeLayout
                 android:id="@+id/task_attachment_layout"
                 android:layout_width="match_parent"
+                android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:paddingBottom="16dp">
 

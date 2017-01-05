@@ -1,6 +1,5 @@
 package com.pdt.plume;
 
-import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,7 +17,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -41,11 +39,17 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
@@ -65,6 +69,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     Utility utility = new Utility();
     ShareActionProvider mShareActionProvider;
 
+    // Theme Variables
     int mPrimaryColor;
     int mDarkColor;
     int mSecondaryColor;
@@ -72,6 +77,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     boolean FLAG_TASK_COMPLETD;
 
     int id;
+    String firebaseID;
     String title;
     String subtitle;
     String description;
@@ -80,6 +86,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     String photoPath;
     Uri photoUri;
     String attachmentPath;
+    String iconUri;
 
     boolean isFabOpen = false;
     FloatingActionButton fab, fab1;
@@ -90,22 +97,25 @@ public class TasksDetailActivity extends AppCompatActivity {
     TextView fieldTimer;
     Intent serviceIntent;
 
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set enter transition
+        // Set window properties
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setEnterTransition(new AutoTransition());
-
         setContentView(R.layout.activity_tasks_detail);
 
-
-        // Get references to the UI elements
-        final TextView collapsingToolbarSubtitle = (TextView) findViewById(R.id.collapsingToolbarSubtitle);
-        TextView duedateTextview = (TextView) findViewById(R.id.task_detail_duedate);
-        TextView descriptionTextview = (TextView) findViewById(R.id.task_detail_description);
-        TextView attachmentTextview = (TextView) findViewById(R.id.task_detail_attachment);
+        // Initialise Firebase
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
 
         // Set the attributes of the window
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -115,167 +125,219 @@ public class TasksDetailActivity extends AppCompatActivity {
         collapsingToolbar.setTitle("");
 
         // Get the class's data based on the id and fill in the fields
+        // An ID is passed by the intent so we query using that
         Intent intent = getIntent();
         if (intent != null) {
             FLAG_TASK_COMPLETD = intent.getBooleanExtra(getString(R.string.FLAG_TASK_COMPLETED), false);
             int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
-            DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor = null;
-            if (intent.hasExtra("_ID")) {
-                cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
-            } else if (FLAG_TASK_COMPLETD) cursor = dbHelper.getTaskData();
-            else cursor = dbHelper.getUncompletedTaskData();
 
-
-            // Set the values of the main UI elements
-            // First get the data from the cursor
-            if (cursor.moveToPosition(id)) {
-                this.id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-                subtitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS))
-                        + " " + cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-                description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-                photoPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
-
-                // Process the data for the duedate to a string
-                Calendar c = Calendar.getInstance();
-                c.setTimeInMillis((long) cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)));
-                duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-
-                // Set the attachment field data
-                attachmentPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-                String fileName = "";
-                if (!attachmentPath.equals("")) {
-                    Uri attachmentUri = Uri.parse(attachmentPath);
-                    Cursor returnCursor = getContentResolver().query(attachmentUri, null, null, null, null);
-                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    returnCursor.moveToFirst();
-                    fileName = returnCursor.getString(nameIndex);
-                    attachmentTextview.setText(fileName);
-                } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
-
-                // Set the photo field data
-                if (!photoPath.equals("")) {
-                    photoUri = Uri.parse(photoPath);
-                    try {
-                        float scale = getResources().getDisplayMetrics().density;
-                        final Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
-
-                        // TODO: Create new activity to load bitmap to handle open image
-                        final ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
-                        photo.setMaxWidth(((int) (getWindowManager().getDefaultDisplay().getWidth() - (140 * scale))));
-                        photo.setImageBitmap(Bitmap.createScaledBitmap(photoBitmap, ((int) (photoBitmap.getWidth() / 2.5)), ((int) (photoBitmap.getHeight() / 2.5)), false));
-                        photo.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Intent photoIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
-                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
-                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoPath);
-                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(TasksDetailActivity.this,
-                                        photo, photo.getTransitionName()).toBundle();
-                                startActivity(photoIntent, bundle);
-                            }
-                        });
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else findViewById(R.id.task_detail_photo_layout).setVisibility(View.GONE);
-
-
-                collapsingToolbar.setTitle(title);
-                collapsingToolbarSubtitle.setText(subtitle);
-                duedateTextview.setText(duedate);
-                descriptionTextview.setText(description);
-
-                String iconUriString = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-                final Uri iconUri = Uri.parse(iconUriString);
-                Bitmap iconBitmap = null;
-                try {
-                    iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                // Initialise the theme variables
-                final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
-                float[] hsv = new float[3];
-                int tempColor = mPrimaryColor;
-                Color.colorToHSV(tempColor, hsv);
-                hsv[2] *= 0.8f; // value component
-                mDarkColor = Color.HSVToColor(hsv);
-                mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-
-
-                Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
+            if (mFirebaseUser != null) {
+                // Get the data from Firebase
+                firebaseID = intent.getStringExtra("id");
+                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserId).child("tasks").child(firebaseID);
+                taskRef.addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onGenerated(Palette palette) {
-                        int mainColour;
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        title = dataSnapshot.child("title").getValue(String.class);
+                        subtitle = dataSnapshot.child("class").getValue(String.class)
+                                + dataSnapshot.child("type").getValue(String.class);
+                        description = dataSnapshot.child("description").getValue(String.class);
+                        iconUri = dataSnapshot.child("icon").getValue(String.class);
+                        long duedatemillis = dataSnapshot.child("duedate").getValue(long.class);
 
-                        if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
-                            mainColour = Color.parseColor("#29235C");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
-                            mainColour = Color.parseColor("#575756");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
-                            mainColour = Color.parseColor("#006838");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
-                            mainColour = Color.parseColor("#A48A7B");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
-                            mainColour = Color.parseColor("#7B6A58");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
-                            mainColour = Color.parseColor("#9E9E9E");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
-                            mainColour = Color.parseColor("#936037");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
-                            mainColour = Color.parseColor("#F39200");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
-                            mainColour = Color.parseColor("#432918");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
-                            mainColour = Color.parseColor("#D35095");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
-                            mainColour = Color.parseColor("#1D1D1B");
-                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
-                            mainColour = Color.parseColor("#424242");
-                        else {
-                            // Set the action bar colour according to the theme
-                            mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
-                            mainColour = palette.getVibrantColor(mPrimaryColor);
-                        }
+                        // Format a string for the duedate
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis(duedatemillis);
+                        duedate = utility.formatDateString(TasksDetailActivity.this, c.get(Calendar.YEAR),
+                                c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
+                        applyDataToUI();
+                    }
 
-                        float[] hsv = new float[3];
-                        int color = mainColour;
-                        Color.colorToHSV(color, hsv);
-                        hsv[2] *= 0.8f; // value component
-                        mDarkColor = Color.HSVToColor(hsv);
-                        actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                            collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                        } else
-                            collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            getWindow().setStatusBarColor(mDarkColor);
-                        }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
                     }
                 });
 
-                // Initialise the FAB
-                fab = (FloatingActionButton) findViewById(R.id.fab);
-                fab1 = (FloatingActionButton) findViewById(R.id.fab1);
-                fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-                fab1.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-                fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
-                fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
-                rotate_forward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward);
-                rotate_backward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backward);
-                fab.setOnClickListener(fabListener());
-                fab1.setOnClickListener(fabListener());
-                if (fab != null)
-                    fab.setOnClickListener(fabListener());
-                fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
+            } else {
+                // Get the data from SQLite
+                DbHelper dbHelper = new DbHelper(this);
+                Cursor cursor;
+                if (intent.hasExtra("_ID")) {
+                    cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
+                } else if (FLAG_TASK_COMPLETD) cursor = dbHelper.getTaskData();
+                else cursor = dbHelper.getUncompletedTaskData();
+
+
+                // Get the data from the cursor
+                if (cursor.moveToPosition(id)) {
+                    this.id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
+                    title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                    subtitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS))
+                            + " " + cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
+                    description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
+                    photoPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
+                    iconUri = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+
+                    // Process the data for the duedate to a string
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeInMillis((long) cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)));
+                    duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+
+                    applyDataToUI();
+
+
+
+                    // Set the attachment field data
+                    // ATTACHMENTS DISABLED FOR THE BETA
+//                attachmentPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
+//                String fileName;
+//                if (!attachmentPath.equals("")) {
+//                    Uri attachmentUri = Uri.parse(attachmentPath);
+//                    Cursor returnCursor = getContentResolver().query(attachmentUri, null, null, null, null);
+//                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+//                    returnCursor.moveToFirst();
+//                    fileName = returnCursor.getString(nameIndex);
+//                    attachmentTextview.setText(fileName);
+//                } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
+
+                    // Set the photo field data
+                    // PHOTOS DISABLED FOR THE BETA
+//                if (!photoPath.equals("")) {
+//                    photoUri = Uri.parse(photoPath);
+//                    try {
+//                        float scale = getResources().getDisplayMetrics().density;
+//                        final Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
+
+//                        final ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
+//                        photo.setMaxWidth(((int) (getWindowManager().getDefaultDisplay().getWidth() - (140 * scale))));
+//                        photo.setImageBitmap(Bitmap.createScaledBitmap(photoBitmap, ((int) (photoBitmap.getWidth() / 2.5)), ((int) (photoBitmap.getHeight() / 2.5)), false));
+//                        photo.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                Intent photoIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
+//                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
+//                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoPath);
+//                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(TasksDetailActivity.this,
+//                                        photo, photo.getTransitionName()).toBundle();
+//                                startActivity(photoIntent, bundle);
+//                            }
+//                        });
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else findViewById(R.id.task_detail_photo_layout).setVisibility(View.GONE);
+
+
+            }
+
             }
         }
+    }
+
+    private void applyDataToUI() {
+        // Get references to the UI elements
+        final ActionBar actionBar = getSupportActionBar();
+        final CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbar);
+        TextView collapsingToolbarSubtitle = (TextView) findViewById(R.id.collapsingToolbarSubtitle);
+        TextView duedateTextview = (TextView) findViewById(R.id.task_detail_duedate);
+        TextView descriptionTextview = (TextView) findViewById(R.id.task_detail_description);
+        TextView attachmentTextview = (TextView) findViewById(R.id.task_detail_attachment);
+
+        // Apply the data to the UI
+        collapsingToolbar.setTitle(title);
+        collapsingToolbarSubtitle.setText(subtitle);
+        duedateTextview.setText(duedate);
+        descriptionTextview.setText(description);
+
+        final Uri ParsedIconUri = Uri.parse(iconUri);
+        Bitmap iconBitmap = null;
+        try {
+            iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), ParsedIconUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Initialise the theme variables
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+
+
+        Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                int mainColour;
+
+                if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                    mainColour = Color.parseColor("#29235C");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                    mainColour = Color.parseColor("#575756");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                    mainColour = Color.parseColor("#006838");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                    mainColour = Color.parseColor("#A48A7B");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                    mainColour = Color.parseColor("#7B6A58");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                    mainColour = Color.parseColor("#9E9E9E");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                    mainColour = Color.parseColor("#936037");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                    mainColour = Color.parseColor("#F39200");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                    mainColour = Color.parseColor("#432918");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                    mainColour = Color.parseColor("#D35095");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                    mainColour = Color.parseColor("#1D1D1B");
+                else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                    mainColour = Color.parseColor("#424242");
+                else {
+                    // Set the action bar colour according to the theme
+                    mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+                    mainColour = palette.getVibrantColor(mPrimaryColor);
+                }
+
+
+                float[] hsv = new float[3];
+                int color = mainColour;
+                Color.colorToHSV(color, hsv);
+                hsv[2] *= 0.8f; // value component
+                mDarkColor = Color.HSVToColor(hsv);
+                actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                } else
+                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setStatusBarColor(mDarkColor);
+                }
+            }
+        });
+
+        // Initialise the FAB
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab1 = (FloatingActionButton) findViewById(R.id.fab1);
+        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        fab1.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
+        fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
+        rotate_forward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward);
+        rotate_backward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backward);
+        fab.setOnClickListener(fabListener());
+        fab1.setOnClickListener(fabListener());
+        if (fab != null)
+            fab.setOnClickListener(fabListener());
+        fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
     }
 
     private Uri getFileAbsolutePath(Uri filePath) throws IOException {
@@ -314,7 +376,6 @@ public class TasksDetailActivity extends AppCompatActivity {
 
     private void promptCompleteTask() {
         if (FLAG_TASK_COMPLETD) {
-            Log.v(LOG_TAG, "FLAG_TASK_COMPLETED");
             fab.setImageResource(R.drawable.ic_refresh_white_24dp);
             // ACTION RESTORE TASK
             new AlertDialog.Builder(TasksDetailActivity.this)
@@ -324,28 +385,38 @@ public class TasksDetailActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // Set the task status to completed
-                            DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
-                            Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
+                            if (mFirebaseUser != null) {
+                                // Set the data in Firebase
+                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                                        .child("users").child(mUserId).child("tasks").child(firebaseID);
+                                taskRef.child("completed").setValue(true);
 
-                            if (cursorTasks.moveToFirst()) {
-                                String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
-                                String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
-                                String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
-                                String sharer = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_SHARER));
-                                String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
-                                String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
-                                int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
-                                int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
-                                int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
-                                String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
-                                String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
-                                dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType,
-                                        sharer, description, attachment,
-                                        duedate, reminderdate, remindertime,
-                                        icon, picture, false);
+                            } else {
+                                // Set the data in SQLite
+                                DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
+                                Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
+
+                                if (cursorTasks.moveToFirst()) {
+                                    String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                                    String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                                    String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                                    String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                                    String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+                                    int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                                    int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+                                    int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+                                    String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
+                                    String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
+                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
+                                            duedate, reminderdate, remindertime,
+                                            icon, picture, false);
+                                }
+
+                                cursorTasks.close();
                             }
 
-                            cursorTasks.close();
+
+
                             Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                             startActivity(intent);
@@ -359,28 +430,36 @@ public class TasksDetailActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // Set the task status to completed
-                            DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
-                            Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
+                            if (mFirebaseUser != null) {
+                                // Set the data in Firebase
+                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                                        .child("users").child(mUserId).child("tasks").child(firebaseID);
+                                taskRef.child("completed").setValue(true);
+                            } else {
+                                // Set the data in SQLite
+                                DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
+                                Cursor cursorTasks = dbHelper.getTaskById(TasksDetailActivity.this.id);
 
-                            if (cursorTasks.moveToFirst()) {
-                                String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
-                                String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
-                                String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
-                                String sharer = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_SHARER));
-                                String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
-                                String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
-                                int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
-                                int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
-                                int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
-                                String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
-                                String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
-                                dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType,
-                                        sharer, description, attachment,
-                                        duedate, reminderdate, remindertime,
-                                        icon, picture, true);
+                                if (cursorTasks.moveToFirst()) {
+                                    String title = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                                    String classTitle = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                                    String classType = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                                    String description = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                                    String attachment = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT));
+                                    int duedate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                                    int reminderdate = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE));
+                                    int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
+                                    String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
+                                    String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
+                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
+                                            duedate, reminderdate, remindertime,
+                                            icon, picture, true);
+                                }
+
+                                cursorTasks.close();
                             }
 
-                            cursorTasks.close();
+
                             Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                             intent.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));

@@ -101,12 +101,26 @@
 
         </LinearLayout>
 
+        <CheckBox
+            android:id="@+id/field_shared"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/share_task"
+            android:textSize="16sp"
+            android:textColor="@color/gray_700"
+            android:paddingLeft="8dp"
+            android:layout_marginBottom="8dp"/>
+
         <View
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/dividerColor" />
 
         <LinearLayout
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="16dp"
@@ -128,7 +142,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
                 android:text="@string/field_new_photo_dialog_title"
-                android:textSize="18sp" />
+                android:textSize="16sp" />
 
             <View
                 android:layout_width="0dp"
@@ -172,6 +186,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="1dp"
+                android:textSize="16sp"
                 android:background="@null"
                 android:gravity="start"
                 android:hint="@string/field_hint_description"

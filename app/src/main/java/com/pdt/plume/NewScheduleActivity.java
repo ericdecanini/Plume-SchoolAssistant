@@ -46,6 +46,13 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
@@ -92,10 +99,10 @@ public class NewScheduleActivity extends AppCompatActivity
     ImageView fieldAddClassTimeIcon;
 
     // UI Data
-    String scheduleIconUriString;
-    String scheduleTitle;
-    String scheduleTeacher;
-    String scheduleRoom;
+    String iconUri;
+    String title;
+    String teacher;
+    String room;
     ArrayList<OccurrenceTimePeriod> occurrenceTimePeriodList;
     ArrayList<String> occurrenceList;
     ArrayList<Integer> timeInList;
@@ -109,6 +116,11 @@ public class NewScheduleActivity extends AppCompatActivity
     int mPrimaryColor;
     int mDarkColor;
     int mSecondaryColor;
+
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
 
     // Built-in Icons
     private Integer[] mThumbIds = {
@@ -174,6 +186,12 @@ public class NewScheduleActivity extends AppCompatActivity
             getSupportActionBar().setElevation(0f);
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
+        // Initialise Firebase
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
+
         // Get references to the UI elements
         fieldTitle = (AutoCompleteTextView) findViewById(R.id.field_new_schedule_title);
         fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
@@ -196,7 +214,7 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldIcon.setOnClickListener(showIconDialogListener());
         fieldAddClassTime.setOnClickListener(addPeriodListener());
 
-        // Set the adapter for the title auto-complete text view
+        // Set the mScheduleAdapter for the title auto-complete text view
         String[] subjects = getResources().getStringArray(R.array.subjects);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, subjects);
         fieldTitle.setAdapter(autoCompleteAdapter);
@@ -208,7 +226,7 @@ public class NewScheduleActivity extends AppCompatActivity
             Bundle extras = intent.getExtras();
             // Get the title and edit flag sent through the intent
             if (extras != null) {
-                scheduleTitle = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
+                title = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
                 INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
                 STARTED_BY_NEWTASKACTIVITY = extras.getBoolean("STARTED_BY_NEWTASKACTIVITY", false);
             }
@@ -221,62 +239,120 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Get schedule data in database based on the schedule title to auto-fill the fields in the UI element
         if (isEdited) {
-            // The cursor should only contain schedule data of the item's title, so multiple rows would only include different instances of occurrence
-            DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor;
-            cursor = dbHelper.getScheduleDataByTitle(scheduleTitle);
-            if (cursor.moveToFirst()) {
-                scheduleTeacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-                scheduleRoom = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                scheduleIconUriString = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-                // Get database values to put in activity Array Lists
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                    if (!occurrence.equals("-1")) {
-                        occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
-                                this,
-                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
-                                cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
-                                occurrence));
-                        occurrenceList.add(occurrence);
-                        periodsList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)));
-                        timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
-                        timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
-                        timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
-                        timeOutAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+
+            if (mFirebaseUser != null) {
+                // Get the data from Firebase
+                DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
+                        .child("classes").child(mUserId).child("classes").child(title);
+                classRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // Get key values
+                        teacher = dataSnapshot.child("teacher").getValue(String.class);
+                        room = dataSnapshot.child("room").getValue(String.class);
+
+                        // Get listed values
+                        DataSnapshot occurrences = dataSnapshot.child("occurrence");
+                        for (DataSnapshot occurrenceSnapshot: occurrences.getChildren()) {
+                            occurrenceList.add(occurrenceSnapshot.getKey());
+                        }
+                        DataSnapshot timeins = dataSnapshot.child("timein");
+                        for (DataSnapshot timeinSnapshot: timeins.getChildren()) {
+                            timeInList.add(timeinSnapshot.getValue(Integer.class));
+                        }
+                        DataSnapshot timeouts = dataSnapshot.child("timeout");
+                        for (DataSnapshot timeoutSnapshot: timeouts.getChildren()) {
+                            timeOutList.add(timeoutSnapshot.getValue(Integer.class));
+                        }
+                        DataSnapshot timeinsalt = dataSnapshot.child("timeinalt");
+                        for (DataSnapshot timeinaltSnapshot: timeinsalt.getChildren()) {
+                            timeInAltList.add(timeinaltSnapshot.getValue(Integer.class));
+                        }
+                        DataSnapshot timeoutsalt = dataSnapshot.child("timeoutalt");
+                        for (DataSnapshot timeoutaltSnapshot: timeoutsalt.getChildren()) {
+                            timeOutAltList.add(timeoutaltSnapshot.getValue(Integer.class));
+                        }
+
+                        // These arrays should all be of equal size
+                        // Add them to a user viewable list
+                        for (int i = 0; i < occurrenceList.size(); i++) {
+                            String occurrence = occurrenceList.get(i);
+                            if (!occurrence.equals("-1")) {
+                                occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                                        NewScheduleActivity.this,
+                                        utility.millisToHourTime(timeInList.get(i)),
+                                        utility.millisToHourTime(timeOutList.get(i)),
+                                        utility.millisToHourTime(timeInAltList.get(i)),
+                                        utility.millisToHourTime(timeOutList.get(i)),
+                                        periodsList.get(i), occurrence
+                                ));
+                            }
+                        }
                     }
 
-                    if (!cursor.moveToNext())
-                        cursor.moveToFirst();
-                }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                // Auto-fill the fields with the previously inserted data
-                fieldTitle.setText(scheduleTitle);
-                fieldTeacher.setText(scheduleTeacher);
-                fieldRoom.setText(scheduleRoom);
-                Bitmap setImageBitmap = null;
-                try {
-                    setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(scheduleIconUriString));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                fieldIcon.setImageBitmap(setImageBitmap);
+                    }
+                });
             }
-            cursor.close();
+            else {
+                // Get the data from SQLite
+                DbHelper dbHelper = new DbHelper(this);
+                Cursor cursor;
+                cursor = dbHelper.getScheduleDataByTitle(title);
+                if (cursor.moveToFirst()) {
+                    teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+                    room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+                    iconUri = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+                    // Get database values to put in activity Array Lists
+                    for (int i = 0; i < cursor.getCount(); i++) {
+                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                        if (!occurrence.equals("-1")) {
+                            occurrenceTimePeriodList.add(new OccurrenceTimePeriod(
+                                    this,
+                                    utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                    utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                    utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                    utility.millisToHourTime(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
+                                    occurrence));
+                            occurrenceList.add(occurrence);
+                            periodsList.add(cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)));
+                            timeInList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                            timeOutList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
+                            timeInAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                            timeOutAltList.add(cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+                        }
+
+                        if (!cursor.moveToNext())
+                            cursor.moveToFirst();
+                    }
+                }
+                cursor.close();
+            }
+
+            // Apply the data to the views
+            fieldTitle.setText(title);
+            fieldTeacher.setText(teacher);
+            fieldRoom.setText(room);
+            try {
+                Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUri));
+                fieldIcon.setImageBitmap(setImageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         } else {
-            // Set any default data
+            // No edit, a new schedule is being added. Set the iconUri to be the default
             Resources resources = getResources();
             int resId = R.drawable.art_class_64dp;
             Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                     + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
-            scheduleIconUriString = drawableUri.toString();
+            iconUri = drawableUri.toString();
         }
 
-        // Initialise the adapter and ItemClickListener for the addPeriodListener UI. If the activity was launched through edit, occurrenceTimePeriodList
-        // will have been previously populated and therefore the list view will contain the class time list items
+        // Initialise the periods list
         classTimeAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, occurrenceTimePeriodList);
         classTimeList.setAdapter(classTimeAdapter);
         classTimeList.setOnItemClickListener(OccurrenceListener());
@@ -335,22 +411,24 @@ public class NewScheduleActivity extends AppCompatActivity
                             Toast.LENGTH_SHORT).show();
                     return false;
                 }
-                // If all fields are valid, perform database insertion
-                else if (insertScheduleDataIntoDatabase()) {
-                    // Update any widgets
-                    Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
-                    widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-                    int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
-                    widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                    sendBroadcast(widgetUpdate);
+                // Perform Database/Firebase Insertion
+                if (mFirebaseUser != null)
+                    insertScheduleDataIntoFirebase();
+                else insertScheduleDataIntoDatabase();
 
-                    if (!STARTED_BY_NEWTASKACTIVITY) {
-                        Intent intent = new Intent(this, MainActivity.class);
-                        Toast.makeText(NewScheduleActivity.this, scheduleTitle + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
-                        startActivity(intent);
-                    }
-                    finish();
-                } else finish();
+                // Update any widgets
+                Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
+                widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+                int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
+                widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                sendBroadcast(widgetUpdate);
+
+                if (!STARTED_BY_NEWTASKACTIVITY) {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    Toast.makeText(NewScheduleActivity.this, title + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                }
+                finish();
                 break;
         }
         return true;
@@ -379,27 +457,61 @@ public class NewScheduleActivity extends AppCompatActivity
         return basis + ":" + weekType + ":" + classDays;
     }
 
+    private boolean insertScheduleDataIntoFirebase() {
+        // Get the input from the fields
+        String title = fieldTitle.getText().toString();
+        String teacher = fieldTeacher.getText().toString();
+        String room = fieldRoom.getText().toString();
+
+        // Set the key values of the class
+        DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId).child("classes").child(title);
+        classRef.child("teacher").setValue(teacher);
+        classRef.child("room").setValue(room);
+
+        // Set the listed values of the class
+        if (occurrenceTimePeriodList.size() != 0) {
+            for (int i = 0; i < occurrenceTimePeriodList.size(); i++) {
+                // Gather the data to set the values on the cloud
+                String occurrence = occurrenceList.get(i);
+                int timeIn = timeInList.get(i);
+                int timeOut = timeOutList.get(i);
+                int timeInAlt = timeInAltList.get(i);
+                int timeOutAlt = timeOutAltList.get(i);
+
+                classRef.child("occurrence").child(occurrence).setValue("");
+                classRef.child("timein").child(String.valueOf(i)).setValue(timeIn);
+                classRef.child("timeout").child(String.valueOf(i)).setValue(timeOut);
+                classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeInAlt);
+                classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOutAlt);
+            }
+        } else {
+            // Set a class with no listed values, removing any old ones
+            classRef.child("occurrence").removeValue();
+            classRef.child("timein").removeValue();
+            classRef.child("timeout").removeValue();
+            classRef.child("timeinalt").removeValue();
+            classRef.child("timeoutalt").removeValue();
+        }
+
+        return true;
+    }
+
     private boolean insertScheduleDataIntoDatabase() {
         // Store data from UI input fields to variables to prepare them for insertion into the database
         String title = fieldTitle.getText().toString();
-        scheduleTitle = title;
+        this.title = title;
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
-        // Prepare a default icon to insert if no other icon was set
-        if (scheduleIconResourceId == -1)
-            scheduleIconResourceId = R.drawable.art_class_64dp;
-        int notes_id = -1;
 
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
         if (INTENT_FLAG_EDIT) {
-            String rowPeers = "";
             // Delete the previous all instances of the schedule (based on the title)
-            Cursor cursor = dbHelper.getScheduleDataByTitle(scheduleTitle);
+            Cursor cursor = dbHelper.getScheduleDataByTitle(this.title);
             for (int i = 0; i < cursor.getCount(); i++) {
                 if (cursor.moveToPosition(i)) {
                     int rowId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
-                    rowPeers = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PEERS));
                     dbHelper.deleteScheduleItem(rowId);
                 }
             }
@@ -429,9 +541,9 @@ public class NewScheduleActivity extends AppCompatActivity
                     }
 
                     // Database insert function performed as update
-                    if (dbHelper.insertSchedule(rowPeers, title, teacher, room, occurrence,
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
                             timeIn, timeOut, timeInAlt, timeOutAlt,
-                            periods, scheduleIconUriString)) {
+                            periods, iconUri)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     } else
@@ -440,9 +552,9 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Single row edit, no occurrence
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule(rowPeers, title, teacher, room, "-1",
+                if (dbHelper.insertSchedule(title, teacher, room, "-1",
                         -1, -1, -1, -1,
-                        "-1", scheduleIconUriString)) {
+                        "-1", iconUri)) {
                     return true;
                 } else
                     Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
@@ -482,9 +594,9 @@ public class NewScheduleActivity extends AppCompatActivity
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
 
                     // Database insert function
-                    if (dbHelper.insertSchedule("", title, teacher, room, occurrence,
+                    if (dbHelper.insertSchedule(title, teacher, room, occurrence,
                             timeIn, timeOut, timeInAlt, timeOutAlt,
-                            periods, scheduleIconUriString)) {
+                            periods, iconUri)) {
                         if (i == occurrenceTimePeriodList.size() - 1)
                             return true;
                     } else
@@ -492,9 +604,9 @@ public class NewScheduleActivity extends AppCompatActivity
                 }
             else {
                 // Database insert function without any occurrences
-                if (dbHelper.insertSchedule("", title, teacher, room, "-1",
+                if (dbHelper.insertSchedule(title, teacher, room, "-1",
                         -1, -1, -1, -1,
-                        "-1", scheduleIconUriString)) {
+                        "-1", iconUri)) {
                     return true;
                 } else
                     Toast.makeText(NewScheduleActivity.this, "Error editing schedule", Toast.LENGTH_SHORT).show();
@@ -510,7 +622,7 @@ public class NewScheduleActivity extends AppCompatActivity
         final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
-            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(scheduleIconUriString));
+            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(iconUri));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -760,7 +872,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 Resources resources = getResources();
                 Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                         + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
-                scheduleIconUriString = drawableUri.toString();
+                iconUri = drawableUri.toString();
                 dialog.dismiss();
             }
         });
@@ -1200,7 +1312,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 occurrenceTimePeriodList.remove((int) CAMselectedItemsList.get(i));
             }
 
-            // Notify the adapter of the changes
+            // Notify the mScheduleAdapter of the changes
             classTimeAdapter.notifyDataSetChanged();
 
             // Then clear the selected items array list and emulate

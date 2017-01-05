@@ -72,7 +72,6 @@ public class MismatchListAdapter extends ArrayAdapter {
                     if (menuItem.getTitle().equals(context.getString(R.string.add_new_class))) {
                         // Get the data of the class and add it as a new class
                         dbHelper.insertSchedule(
-                                bundle.getString("peers"),
                                 bundle.getString("title"),
                                 bundle.getString("teacher"),
                                 bundle.getString("room"),

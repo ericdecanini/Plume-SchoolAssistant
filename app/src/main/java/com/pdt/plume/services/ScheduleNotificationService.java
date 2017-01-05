@@ -17,7 +17,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.pdt.plume.MainActivity;
 import com.pdt.plume.MuteAlarmReceiver;
@@ -29,8 +28,6 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.Calendar;
-
-import static android.R.id.message;
 
 
 public class ScheduleNotificationService extends Service {
@@ -70,7 +67,7 @@ public class ScheduleNotificationService extends Service {
         int notificationAdvance = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
         if (notificationAdvance != 0) {
             DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor = dbHelper.getCurrentDayScheduleData(this);
+            Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
             if (cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     if (cursor.moveToPosition(i)) {
@@ -108,7 +105,7 @@ public class ScheduleNotificationService extends Service {
 
     private void scheduleNotification(final int timeIn, final int advance, final int position, final String title, final String message) {
         DbHelper dbHelper = new DbHelper(this);
-        Cursor cursor = dbHelper.getCurrentDayScheduleData(this);
+        Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
         if (cursor.moveToPosition(position)) {
             String iconUriString = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
             final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -167,7 +164,7 @@ public class ScheduleNotificationService extends Service {
         boolean muteIsChecked = preferences.getBoolean(getString(R.string.KEY_SETTINGS_CLASS_MUTE), false);
         if (muteIsChecked) {
             DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor = dbHelper.getCurrentDayScheduleData(this);
+            Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
             if (cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     if (cursor.moveToPosition(i)) {

@@ -20,11 +20,20 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.R.attr.id;
 
 public class ClassesActivity extends AppCompatActivity {
     // Constantly used variables
@@ -43,10 +52,25 @@ public class ClassesActivity extends AppCompatActivity {
     // Flags
     boolean isTablet;
 
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
+
+    // List Varialbes
+    ScheduleAdapter mScheduleAdapter;
+    ArrayList<Schedule> mScheduleList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_classes);
+
+        // Initialise Firebase
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
 
         // Get references to the views
         listView = (ListView) findViewById(R.id.schedule_list);
@@ -55,19 +79,7 @@ public class ClassesActivity extends AppCompatActivity {
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
-        // Get a reference to the database
-        DbHelper dbHelper = new DbHelper(this);
-
-        // Get a reference to the list view and create its adapter
-        // using the current day schedule data
-        final ScheduleAdapter mScheduleAdapter = new ScheduleAdapter(this,
-                R.layout.list_item_schedule, dbHelper.getAllClassesArray(this));
-
-        // Only show the header if there are no items in the class adapter
-        if (mScheduleAdapter.getCount() == 0)
-            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-
-        // Set the adapter and listeners of the list view
+        // Set the mScheduleAdapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -118,9 +130,67 @@ public class ClassesActivity extends AppCompatActivity {
                 } else {
                     Log.w(LOG_TAG, "Error getting title of selected item");
                 }
-                }
+            }
 
         };
+    }
+
+    private void refreshClassesList() {
+        if (mScheduleAdapter != null)
+            mScheduleAdapter.clear();
+
+        mScheduleAdapter.clear();
+        // Inflate the listview
+        if (mFirebaseUser != null) {
+            // Get data from Firebase
+            if (mScheduleAdapter.getCount() == 0)
+                findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+            DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("classes");
+            classesRef.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    String title = dataSnapshot.getKey();
+                    String icon = dataSnapshot.child("icon").getValue(String.class);
+                    String teacher = dataSnapshot.child("teacher").getValue(String.class);
+                    String room = dataSnapshot.child("room").getValue(String.class);
+                    mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
+                            teacher, room, "", "", ""));
+                    if (mScheduleAdapter.getCount() == 0)
+                        findViewById(R.id.header_textview).setVisibility(View.GONE);
+                    mScheduleAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } else {
+            // Get data from SQLite
+            DbHelper dbHelper = new DbHelper(this);
+            mScheduleList = dbHelper.getAllClassesArray(this);
+            // Only show the header if there are no items in the class mScheduleAdapter
+            if (mScheduleAdapter.getCount() == 0)
+                findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+        }
+        mScheduleAdapter = new ScheduleAdapter(this,
+                R.layout.list_item_schedule, mScheduleList);
     }
 
     // Subclass for the Contextual Action Mode
@@ -152,8 +222,8 @@ public class ClassesActivity extends AppCompatActivity {
             if (checked)
                 CAMselectedItemsList.add(position);
 
-            // If the clicked item became deselected, get its item id
-            // and remove it from the array list
+                // If the clicked item became deselected, get its item id
+                // and remove it from the array list
             else {
                 int itemId = -1;
                 // Scan through the array list until the
@@ -227,30 +297,29 @@ public class ClassesActivity extends AppCompatActivity {
         }
 
         private void deleteSelectedItems() {
-            // Get a reference to the database
-            DbHelper db = new DbHelper(ClassesActivity.this);
-
-            // Get a cursor by getting the currentDayScheduleData
-            // Which should match the list view of the ScheduleFragment
-            Cursor cursor = db.getAllClassesData();
-
-            // Delete all the selected items based on the itemIDs
-            // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
-                    db.deleteScheduleItemByTitle(cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
+            if (mFirebaseUser != null) {
+                // Delete from Firebase
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    int position = CAMselectedItemsList.get(i);
+                    Schedule schedule = mScheduleList.get(position);
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("classes")
+                            .child(schedule.scheduleLesson).removeValue();
+                }
+            } else {
+                // Delete from SQLite
+                // Delete all the selected items based on the itemIDs
+                // Stored in the array list
+                DbHelper db = new DbHelper(ClassesActivity.this);
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    int position = CAMselectedItemsList.get(i);
+                    Schedule schedule = mScheduleList.get(position);
+                    db.deleteScheduleItemByTitle(schedule.scheduleLesson);
                 }
             }
 
-            cursor.close();
-
-            // Get the list view's current adapter, clear it,
-            // and query the database again for the current day
-            // data, then notify the adapter for the changes
-            ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
-            adapter.clear();
-            adapter.addAll(db.getAllClassesArray(ClassesActivity.this));
-            adapter.notifyDataSetChanged();
+            // Refresh the class list mScheduleAdapter
+            refreshClassesList();
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
@@ -260,39 +329,24 @@ public class ClassesActivity extends AppCompatActivity {
         }
 
         private void editSelectedItem(){
+            Intent intent = new Intent(ClassesActivity.this, NewScheduleActivity.class);
+            int position = CAMselectedItemsList.get(0);
+
             // Ensure that only one item is selected
             if (CAMselectedItemsList.size() == 1){
-                // Initialise Id and Title variables
-                int id;
-                String title;
+                String title =  mScheduleList.get(position).scheduleLesson;
 
-                // Get a reference to the database and
-                // Get a cursor of the current day schedule data
-                DbHelper db = new DbHelper(ClassesActivity.this);
-                Cursor cursor = db.getAllClassesData();
+                // Add the data to the intent for NewScheduleActivity to identify the class by.
+//                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
+                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
+                intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                intent.putExtra(getResources().getString(R.string.STARTED_FROM_CLASSES_ACTIVITY), true);
 
-                // Move the cursor to the first position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
-                    // Get its Id and Title
-                    id = cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry._ID));
-                    title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-                    cursor.close();
-
-                    // Create an intent to NewScheduleActivity and include the selected
-                    // item's id, title, and an edit flag as extras
-                    Intent intent = new Intent(ClassesActivity.this, NewScheduleActivity.class);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
-                    intent.putExtra(getResources().getString(R.string.STARTED_FROM_CLASSES_ACTIVITY), true);
-
-
-                    // Clear the selected items list, exit the CAM and launch the activity
-                    CAMselectedItemsList.clear();
-                    dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-                    startActivity(intent);
-                }
+                // Clear the selected items list, exit the CAM and launch the activity
+                CAMselectedItemsList.clear();
+                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                startActivity(intent);
             }
 
             // If more than one item was selected, throw a warning log

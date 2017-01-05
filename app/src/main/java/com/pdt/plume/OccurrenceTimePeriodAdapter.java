@@ -19,12 +19,12 @@ import java.util.List;
 public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
     String LOG_TAG = OccurrenceTimePeriodAdapter.class.getSimpleName();
 
-    // Staple adapter variables
+    // Staple mScheduleAdapter variables
     Context context;
     int layoutResourceId;
     ArrayList<OccurrenceTimePeriod> objects = null;
 
-    // Default adapter constructor
+    // Default mScheduleAdapter constructor
     public OccurrenceTimePeriodAdapter(Context context, int resource, ArrayList<OccurrenceTimePeriod> occurrences) {
         super(context, resource, occurrences);
         this.context = context;
@@ -38,7 +38,7 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder;
 
-        // If the row hasn't been used by the adapter before
+        // If the row hasn't been used by the mScheduleAdapter before
         // create a new row
         if (row == null){
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
@@ -72,7 +72,7 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
         // Get the tag of the recycled row
         else holder = (ViewHolder) row.getTag();
 
-        // Create a new list item using the data passed into the adapter
+        // Create a new list item using the data passed into the mScheduleAdapter
         OccurrenceTimePeriod occurrenceTimePeriod = objects.get(position);
 
         // Set the text of the main header

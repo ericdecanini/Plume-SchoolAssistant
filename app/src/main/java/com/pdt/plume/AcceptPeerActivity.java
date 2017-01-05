@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,6 +74,7 @@ public class AcceptPeerActivity extends AppCompatActivity
         if (mFirebaseUser == null)
             loadLogInView();
         mUserId = mFirebaseUser.getUid();
+
         DatabaseReference selfRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mUserId);
         selfRef.child("nickname").addValueEventListener(new ValueEventListener() {
@@ -80,22 +82,14 @@ public class AcceptPeerActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfName = dataSnapshot.getValue(String.class);
             }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+            @Override public void onCancelled(DatabaseError databaseError) {}});
 
-            }
-        });
         selfRef.child("icon").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfIcon = dataSnapshot.getValue(String.class);
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+            @Override public void onCancelled(DatabaseError databaseError) {}});
 
         // Get references to the views
         ImageView iconView = (ImageView) findViewById(R.id.icon);
@@ -149,12 +143,12 @@ public class AcceptPeerActivity extends AppCompatActivity
         final ArrayList<String> classTitles = new ArrayList<>();
         final ArrayList<String> classTeachers = new ArrayList<>();
         final ArrayList<String> classRooms = new ArrayList<>();
-        final ArrayList<String> classOccurrences = new ArrayList<>();
-        final ArrayList<Integer> classTimeIns = new ArrayList<>();
-        final ArrayList<Integer> classTimeOuts = new ArrayList<>();
-        final ArrayList<Integer> classTimeInAlts = new ArrayList<>();
-        final ArrayList<Integer> classTimeOutAlts = new ArrayList<>();
-        final ArrayList<String> classPeriods = new ArrayList<>();
+        final ArrayList<ArrayList<String>> classOccurrences = new ArrayList<>();
+        final ArrayList<ArrayList<Integer>> classTimeIns = new ArrayList<>();
+        final ArrayList<ArrayList<Integer>> classTimeOuts = new ArrayList<>();
+        final ArrayList<ArrayList<Integer>> classTimeInAlts = new ArrayList<>();
+        final ArrayList<ArrayList<Integer>> classTimeOutAlts = new ArrayList<>();
+        final ArrayList<ArrayList<String>> classPeriods = new ArrayList<>();
         final ArrayList<String> classIcons = new ArrayList<>();
 
 
@@ -164,17 +158,47 @@ public class AcceptPeerActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    // Get the request data and store the classes in a bundle
+                    // First get the key values data
                     classTitles.add(userSnapshot.getKey());
                     classPeers.add(userSnapshot.child("peers").getValue(String.class));
                     classTeachers.add(userSnapshot.child("teacher").getValue(String.class));
                     classRooms.add(userSnapshot.child("room").getValue(String.class));
-                    classOccurrences.add(userSnapshot.child("occurrence").getValue(String.class));
-                    classTimeIns.add(userSnapshot.child("timein").getValue(Integer.class));
-                    classTimeOuts.add(userSnapshot.child("timeout").getValue(Integer.class));
-                    classTimeInAlts.add(userSnapshot.child("timeinalt").getValue(Integer.class));
-                    classTimeOutAlts.add(userSnapshot.child("timeoutalt").getValue(Integer.class));
-                    classPeriods.add(userSnapshot.child("periods").getValue(String.class));
                     classIcons.add(userSnapshot.child("icon").getValue(String.class));
+
+                    // Next get the listed data
+                    ArrayList<String> occurrenceList = new ArrayList<>();
+                    for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren()) {
+                        occurrenceList.add(occurrenceSnapshot.getKey());
+                    }
+                    ArrayList<Integer> timeInList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timein").getChildren()) {
+                        timeInList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeOutList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeout").getChildren()) {
+                        timeOutList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeInAltList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeinalt").getChildren()) {
+                        timeInAltList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeOutAltList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeoutalt").getChildren()) {
+                        timeOutAltList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<String> periodsList = new ArrayList<>();
+                    for (DataSnapshot periodSnapshot: dataSnapshot.child("periods").getChildren()) {
+                        periodsList.add(periodSnapshot.getKey());
+                    }
+
+
+                    classOccurrences.add(occurrenceList);
+                    classTimeIns.add(timeInList);
+                    classTimeOuts.add(timeOutList);
+                    classTimeInAlts.add(timeInAltList);
+                    classTimeOutAlts.add(timeOutAltList);
+                    classPeriods.add(periodsList);
                 }
                 for (int i = 0; i < classTitles.size(); i++) {
                     Bundle bundle = new Bundle();
@@ -182,45 +206,15 @@ public class AcceptPeerActivity extends AppCompatActivity
                     bundle.putString("title", classTitles.get(i));
                     bundle.putString("teacher", classTeachers.get(i));
                     bundle.putString("room", classRooms.get(i));
-                    bundle.putString("occurrence", classOccurrences.get(i));
-                    bundle.putInt("timein", classTimeIns.get(i));
-                    bundle.putInt("timeout", classTimeOuts.get(i));
-                    bundle.putInt("timeinalt", classTimeInAlts.get(i));
-                    bundle.putInt("timeoutalts", classTimeOutAlts.get(i));
-                    bundle.putString("periods", classPeriods.get(i));
+                    bundle.putStringArrayList("occurrence", classOccurrences.get(i));
+                    bundle.putIntegerArrayList("timein", classTimeIns.get(i));
+                    bundle.putIntegerArrayList("timeout", classTimeOuts.get(i));
+                    bundle.putIntegerArrayList("timeinalt", classTimeInAlts.get(i));
+                    bundle.putIntegerArrayList("timeoutalts", classTimeOutAlts.get(i));
+                    bundle.putStringArrayList("periods", classPeriods.get(i));
                     bundle.putString("icon", classIcons.get(i));
 
                     requestClassesList.add(bundle);
-                }
-
-                // Compare each class with the current user's classes
-                // Match each requested class to a class of the same name
-                // If there are mismatched classes, show a dialog to match the classes
-                usersClassesList = dbHelper.getAllClassesBundleArray();
-                matchedClassesList.clear();
-                mismatchedClassesList = new ArrayList<>();
-                for (int i = 0; i < requestClassesList.size(); i++) {
-                    boolean matched = false;
-                    for (int ii = 0; ii < usersClassesList.size(); ii++) {
-                        String userClassTitle = usersClassesList.get(ii).getString("title");
-                        String requestClassTitle = requestClassesList.get(i).getString("title");
-                        if (userClassTitle.equals(requestClassTitle)) {
-                            matchedClassesList.add(usersClassesList.get(ii));
-                            matched = true;
-                        }
-                    }
-                    if (!matched)
-                        mismatchedClassesList.add(requestClassesList.get(i));
-                }
-
-                if (mismatchedClassesList.size() > 0) {
-                    // TODO: Show the matching dialog
-                    // TODO: Find which method invokes accessiblity error
-                    MismatchDialog dialog = MismatchDialog.newInstance();
-                    Bundle args = new Bundle();
-                    args.putSerializable("mismatchedClassesList", mismatchedClassesList);
-                    dialog.setArguments(args);
-                    dialog.show(getSupportFragmentManager(), "dialog");
                 }
 
                 // Inflate the listview
@@ -274,51 +268,105 @@ public class AcceptPeerActivity extends AppCompatActivity
                 positions.add(i);
                 Bundle bundle = matchedClassesList.get(i);
                 String title = bundle.getString("title");
+                String classIcon = bundle.getString("icon");
 
                 // Insert into firebase
+                // User's peers ref
                 mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
                 mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
+                mUserPeersRef.child(requestingUserId).child("classes").child(title).setValue(classIcon);
+                // Requesting user's peers ref
                 requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
-                Log.v(LOG_TAG, "Name: " + selfName);
                 requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
+                requestingUserPeersRef.child(mUserId).child("classes").child(title).setValue(classIcon);
+                // Both user's classes refs
                 mUserClassesRef.child(title).child("peers").child(requestingUserId).setValue("");
                 requestingUserClassesRef.child(title).child("peers").child(mUserId).setValue("");
-
-                // Add the peer into the peers table of the SQLite database
-                DbHelper dbHelper = new DbHelper(this);
-                dbHelper.insertPeer(requestingUserId, iconUri, name, flavour);
-
-                // Update SQLite classes to contain the peer into SQLite
-                Cursor cursor = dbHelper.getScheduleDataByTitle(title);
-                    for (int ii = 0; ii < cursor.getCount(); ii++) {
-                        cursor.moveToPosition(ii);
-                        Log.v(LOG_TAG, "Column count: " + cursor.getColumnCount());
-                        String rowItemUser = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_USER));
-                        Log.v(LOG_TAG, "mUserId: " + mUserId);
-
-                        // Add the peer on that user's account
-//                        if (rowItemUser.equals(mUserId)) {
-                            int rowId = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
-                            String currentPeers = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PEERS));
-                            if (currentPeers != null && !currentPeers.equals(""))
-                                currentPeers += ":";
-
-                            String teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-                            String room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                            String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                            int timein = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-                            int timeout = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT));
-                            int timeinalt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-                            int timeoutalt = cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT));
-                            String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
-                            String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-
-                            currentPeers += requestingUserId;
-                            dbHelper.updateScheduleItem(rowId, currentPeers, title, teacher, room, occurrence,
-                                    timein, timeout, timeinalt, timeoutalt, periods, icon, -1);
-//                        }
-                    }
             }
+    }
+
+    private void matchUserClasses() {
+        // Compare each class with the current user's classes
+        // Match each requested class to a class of the same name
+        // If there are mismatched classes, show a dialog to match the classes
+        DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId).child("classes");
+        classesRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                    // Get all the class data from the snapshot
+                    Bundle bundle = new Bundle();
+                    bundle.putString("title", classSnapshot.getKey());
+                    bundle.putString("icon", classSnapshot.child("icon").getValue(String.class));
+                    bundle.putString("teacher", classSnapshot.child("teacher").getValue(String.class));
+                    bundle.putString("room", classSnapshot.child("room").getValue(String.class));
+
+                    ArrayList<String> occurrenceList = new ArrayList<>();
+                    for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren()) {
+                        occurrenceList.add(occurrenceSnapshot.getKey());
+                    }
+                    ArrayList<Integer> timeInList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timein").getChildren()) {
+                        timeInList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeOutList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeout").getChildren()) {
+                        timeOutList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeInAltList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeinalt").getChildren()) {
+                        timeInAltList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<Integer> timeOutAltList = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeoutalt").getChildren()) {
+                        timeOutAltList.add(timeinSnapshot.getValue(int.class));
+                    }
+                    ArrayList<String> periodsList = new ArrayList<>();
+                    for (DataSnapshot periodSnapshot: dataSnapshot.child("periods").getChildren()) {
+                        periodsList.add(periodSnapshot.getKey());
+                    }
+
+                    bundle.putStringArrayList("occurrences", occurrenceList);
+                    bundle.putIntegerArrayList("timeins", timeInList);
+                    bundle.putIntegerArrayList("timeouts", timeOutList);
+                    bundle.putIntegerArrayList("timeinalts", timeInAltList);
+                    bundle.putIntegerArrayList("timeoutalts", timeOutAltList);
+                    bundle.putStringArrayList("periods", periodsList);
+
+                    usersClassesList.add(bundle);
+
+                    matchedClassesList.clear();
+                    mismatchedClassesList = new ArrayList<>();
+                    for (int i = 0; i < requestClassesList.size(); i++) {
+                        boolean matched = false;
+                        for (int ii = 0; ii < usersClassesList.size(); ii++) {
+                            String userClassTitle = usersClassesList.get(ii).getString("title");
+                            String requestClassTitle = requestClassesList.get(i).getString("title");
+                            if (userClassTitle.equals(requestClassTitle)) {
+                                matchedClassesList.add(usersClassesList.get(ii));
+                                matched = true;
+                            }
+                        }
+                        if (!matched)
+                            mismatchedClassesList.add(requestClassesList.get(i));
+                    }
+
+                    if (mismatchedClassesList.size() > 0) {
+                        MismatchDialog dialog = MismatchDialog.newInstance();
+                        Bundle args = new Bundle();
+                        args.putSerializable("mismatchedClassesList", mismatchedClassesList);
+                        dialog.setArguments(args);
+                        dialog.show(getSupportFragmentManager(), "dialog");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void deletePeerRequest() {

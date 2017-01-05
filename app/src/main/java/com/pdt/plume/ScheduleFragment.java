@@ -28,13 +28,26 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.api.model.StringList;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
+
+import static android.media.CamcorderProfile.get;
+import static com.pdt.plume.R.bool.isTablet;
 
 public class ScheduleFragment extends Fragment {
     // Constantly used variables
@@ -56,11 +69,17 @@ public class ScheduleFragment extends Fragment {
 
     // UI Data
     ScheduleAdapter mScheduleAdapter;
+    ArrayList<Schedule> mScheduleList = new ArrayList<>();
 
     // Flags
     boolean isTablet;
     public static boolean showBlockHeaderA = false;
     public static boolean showBlockHeaderB = false;
+
+    // Firebase Variables
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
+    String mUserId;
 
     // Required empty public constructor
     public ScheduleFragment() {
@@ -83,23 +102,33 @@ public class ScheduleFragment extends Fragment {
         // to transfer the code to a tablet layout when possible
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
-        // Get a reference to the database
-        DbHelper dbHelper = new DbHelper(getContext());
+        // Inflate the listview
+        // First check if the user is logged into an account
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-        // Get a reference to the list view and create its adapter
-        // using the current day schedule data
-        try {
-            mScheduleAdapter = new ScheduleAdapter(getContext(),
-                    R.layout.list_item_schedule, dbHelper.getCurrentDayScheduleArray(getContext()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (mFirebaseUser != null) {
+            // Get the schedule data from Firebase
+            getCurrentDayScheduleFromFirebase();
+        } else {
+            // Get the schedule data from SQLite
+            DbHelper dbHelper = new DbHelper(getContext());
+            try {
+                mScheduleList = dbHelper.getCurrentDayScheduleArray(getContext());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
+        // Apply the list data to the listview mScheduleAdapter
+        mScheduleAdapter = new ScheduleAdapter(getContext(),
+                R.layout.list_item_schedule, mScheduleList);
+
         // Determine whether to show the header text view for a block format
-        if (showBlockHeaderA){
+        if (showBlockHeaderA) {
             String blockString = utility.formatBlockString(getContext(), 0);
             headerTextView.setText(blockString);
-        } else if (showBlockHeaderB){
+        } else if (showBlockHeaderB) {
             String blockString = utility.formatBlockString(getContext(), 1);
             headerTextView.setText(blockString);
         } else if (mScheduleAdapter.getCount() != 0) {
@@ -109,7 +138,7 @@ public class ScheduleFragment extends Fragment {
             headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
         }
 
-        // Set the adapter and listeners of the list view
+        // Set the mScheduleAdapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -136,10 +165,10 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (showBlockHeaderA){
+        if (showBlockHeaderA) {
             String blockString = utility.formatBlockString(getContext(), 0);
             headerTextView.setText(blockString);
-        } else if (showBlockHeaderB){
+        } else if (showBlockHeaderB) {
             String blockString = utility.formatBlockString(getContext(), 1);
             headerTextView.setText(blockString);
         } else if (mScheduleAdapter.getCount() != 0) {
@@ -153,7 +182,7 @@ public class ScheduleFragment extends Fragment {
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -174,6 +203,9 @@ public class ScheduleFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the data to pass on
+                String title = mScheduleList.get(position).scheduleLesson;
+
                 // If the used device is a tablet, replace the
                 // right-hand side fragment with a ScheduleDetailFragment
                 // passing the data of the clicked row to the fragment
@@ -187,25 +219,17 @@ public class ScheduleFragment extends Fragment {
                 // If the used device is a phone, start a new ScheduleDetailActivity
                 // passing the data of the clicked row to the fragment
                 else {
-                    DbHelper dbHelper = new DbHelper(getActivity());
-                    Cursor cursor = dbHelper.getCurrentDayScheduleData(getActivity());
-                    if (cursor.moveToPosition(position)) {
-                        Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
-                        intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)));
+                    Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
+                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
 
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                            // Shared element transition
-                            View icon = view.findViewById(R.id.schedule_icon);
-                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
-                            startActivity(intent, bundle);
-                        } else startActivity(intent);
-
-                    } else {
-                        Log.w(LOG_TAG, "Error getting title of selected item");
-                    }
-
+                    // Add a transition if the device is Lollipop or above
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        // Shared element transition
+                        View icon = view.findViewById(R.id.schedule_icon);
+                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
+                        startActivity(intent, bundle);
+                    } else startActivity(intent);
                 }
-
             }
         };
     }
@@ -217,6 +241,80 @@ public class ScheduleFragment extends Fragment {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
+    }
+
+    private void getCurrentDayScheduleFromFirebase() {
+        // Get the calendar data for the week number
+        Calendar c = Calendar.getInstance();
+        final String weekNumber = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getString(getString(R.string.KEY_WEEK_NUMBER), "0");
+        final int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            // Get data from Firebase
+            String userId = firebaseUser.getUid();
+            DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(userId).child("classes");
+            classesRef.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    String title = dataSnapshot.getKey();
+                    String teacher = dataSnapshot.child("teacher").getValue(String.class);
+                    String room = dataSnapshot.child("room").getValue(String.class);
+                    String occurrence = dataSnapshot.child("occurrence").getValue(String.class);
+                    String timein = utility.secondsToMinuteTime(dataSnapshot.child("timein").getValue(int.class));
+                    String timeout = utility.secondsToMinuteTime(dataSnapshot.child("timeout").getValue(int.class));
+                    String timeinalt = utility.secondsToMinuteTime(dataSnapshot.child("timeinalt").getValue(int.class));
+                    String timeoutalt = utility.secondsToMinuteTime(dataSnapshot.child("timeoutalt").getValue(int.class));
+                    String periods = dataSnapshot.child("periods").getValue(String.class);
+                    String iconUri = dataSnapshot.child("icon").getValue(String.class);
+
+                    if (utility.occurrenceMatchesCurrentDay(getContext(), occurrence, periods, weekNumber, dayOfWeek)) {
+                        // Check if occurrence matches, then proceed if true
+                        if (weekNumber.equals("0")) {
+                            if (!periods.equals("-1")) {
+                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, weekNumber);
+                                for (int i = 0; i < periodList.size(); i++)
+                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                            room, timein, timeout, periodList.get(i)));
+                            }
+                        } else {
+                            // Alternate week data
+                            if (!periods.equals("-1")) {
+                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, weekNumber);
+                                for (int i = 0; i < periodList.size(); i++)
+                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                            room, timeinalt, timeoutalt, periodList.get(i)));
+                            }
+                        }
+                    }
+                    Collections.sort(mScheduleList, new ScheduleComparator());
+                    mScheduleAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     // Subclass for the Contextual Action Mode
@@ -365,10 +463,10 @@ public class ScheduleFragment extends Fragment {
             });
             colorAnimation.start();
 
-            if (showBlockHeaderA){
+            if (showBlockHeaderA) {
                 String blockString = utility.formatBlockString(getContext(), 0);
                 headerTextView.setText(blockString);
-            } else if (showBlockHeaderB){
+            } else if (showBlockHeaderB) {
                 String blockString = utility.formatBlockString(getContext(), 1);
                 headerTextView.setText(blockString);
             } else if (mScheduleAdapter.getCount() != 0) {
@@ -380,31 +478,38 @@ public class ScheduleFragment extends Fragment {
         }
 
         private void deleteSelectedItems() throws IOException {
-            // Get a reference to the database
-            DbHelper db = new DbHelper(getActivity());
+            mScheduleAdapter.clear();
 
-            // Get a cursor by getting the currentDayScheduleData
-            // Which should match the list view of the ScheduleFragment
-            Cursor cursor = db.getCurrentDayScheduleData(getActivity());
-
-            // Delete all the selected items based on the itemIDs
-            // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
-                if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
-                    db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+            if (mFirebaseUser != null) {
+                // Delete the data from Firebase
+                DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserId).child("classes");
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    mScheduleList.remove(CAMselectedItemsList.get(i));
                 }
+                mScheduleAdapter.notifyDataSetChanged();
+            } else {
+                // Delete the data from SQLite
+                DbHelper db = new DbHelper(getActivity());
+                Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity());
+
+                // Delete all the selected items based on the itemIDs
+                // Stored in the array list
+                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
+                        db.deleteScheduleItem(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                    }
+                }
+
+                cursor.close();
+
+                // Requery the current day schedule
+                mScheduleAdapter.addAll(db.getCurrentDayScheduleArray(getContext()));
+                mScheduleAdapter.notifyDataSetChanged();
             }
 
-            cursor.close();
 
-            // Get the list view's current adapter, clear it,
-            // and query the database again for the current day
-            // data, then notify the adapter for the changes
-            ScheduleAdapter adapter = (ScheduleAdapter) listView.getAdapter();
-            adapter.clear();
-            adapter.addAll(db.getCurrentDayScheduleArray(getContext()));
-            adapter.notifyDataSetChanged();
-            if (adapter.getCount() == 0) {
+            if (mScheduleAdapter.getCount() == 0) {
                 headerTextView.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
                 headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
             }
@@ -416,39 +521,42 @@ public class ScheduleFragment extends Fragment {
             getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(){
+        private void editSelectedItem() {
             // Ensure that only one item is selected
-            if (CAMselectedItemsList.size() == 1){
+            if (CAMselectedItemsList.size() == 1) {
                 // Initialise Id and Title variables
-                int id;
-                String title;
+                String title = "";
 
-                // Get a reference to the database and
-                // Get a cursor of the current day schedule data
-                DbHelper db = new DbHelper(getActivity());
-                Cursor cursor = db.getCurrentDayScheduleData(getActivity());
-                Log.v(LOG_TAG, "Editing position " + CAMselectedItemsList.get(0));
+                Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
 
-                // Move the cursor to the position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
-                    // Get its Id and Title
-                    id = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
-                    title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
-                    cursor.close();
+                if (mFirebaseUser != null) {
+                    // Get the data from Firebase
+                    title = mScheduleList.get(CAMselectedItemsList.get(0)).scheduleLesson;
+                } else {
+                    // Get the data from SQLite
+                    // Get a cursor of the current day schedule data
+                    DbHelper db = new DbHelper(getActivity());
+                    Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity());
 
-                    // Create an intent to NewScheduleActivity and include the selected
-                    // item's id, title, and an edit flag as extras
-                    Intent intent = new Intent(getActivity(), NewScheduleActivity.class);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
-                    intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
-
-                    // Clear the selected items list, exit the CAM and launch the activity
-                    CAMselectedItemsList.clear();
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-                    startActivity(intent);
+                    // Move the cursor to the position of the selected item
+                    if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
+                        // Get its Id and Title
+                        title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
+                        cursor.close();
+                    }
                 }
+
+
+                // Create an intent to NewScheduleActivity and include the selected
+                // item's id, title, and an edit flag as extras
+                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE), title);
+                intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+
+                // Clear the selected items list, exit the CAM and launch the activity
+                CAMselectedItemsList.clear();
+                getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                startActivity(intent);
             }
 
             // If more than one item was selected, throw a warning log
@@ -457,5 +565,6 @@ public class ScheduleFragment extends Fragment {
             }
         }
     }
-
 }
+
+

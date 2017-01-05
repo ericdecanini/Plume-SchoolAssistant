@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * If you are familiar with Adapter of ListView,this is the same as adapter
+ * If you are familiar with Adapter of ListView,this is the same as mScheduleAdapter
  * with few changes
  *
  */

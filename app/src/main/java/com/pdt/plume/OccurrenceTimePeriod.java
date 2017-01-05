@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class OccurrenceTimePeriod {
     String LOG_TAG = OccurrenceTimePeriod.class.getSimpleName();
 
-    // Basis and Week Type. The adapter will determine
+    // Basis and Week Type. The mScheduleAdapter will determine
     // the layout based on these variables
     public String basis;
     public String weekType;
@@ -36,7 +36,7 @@ public class OccurrenceTimePeriod {
     public String saturday_alt = "0";
 
     // Constructor where global variables are set
-    // These global variables are then accessed by the adapter
+    // These global variables are then accessed by the mScheduleAdapter
     public OccurrenceTimePeriod(Context context, String timeIn, String timeOut, String timeInAlt,
                                 String timeOutAlt, String periods, String occurrence) {
         super();

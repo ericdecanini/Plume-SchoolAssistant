@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
-            android:id="@+id/profile_pic"
+            android:id="@+id/icon"
             android:layout_width="86dp"
             android:layout_height="86dp"
             android:src="@drawable/art_biology_64dp"/>
@@ -20,7 +20,7 @@
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/profile_pic"
+            android:layout_toRightOf="@id/icon"
             android:layout_marginTop="8dp"
             android:textColor="@color/gray_900"
             android:layout_marginLeft="4dp"
@@ -30,7 +30,7 @@
             android:id="@+id/flavour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/profile_pic"
+            android:layout_toRightOf="@id/icon"
             android:layout_marginLeft="4dp"
             android:layout_below="@id/name"
             android:layout_marginTop="4dp"

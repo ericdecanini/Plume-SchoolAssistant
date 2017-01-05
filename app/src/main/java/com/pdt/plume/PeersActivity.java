@@ -19,8 +19,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import static com.pdt.plume.R.id.flavour;
 import static com.pdt.plume.R.id.listView;
 
 public class PeersActivity extends AppCompatActivity {
@@ -30,13 +32,18 @@ public class PeersActivity extends AppCompatActivity {
     PeerAdapter adapter = null;
     ListView listView = null;
 
+    // Item variables
+    ArrayList<String> uidList = new ArrayList<>();
+    ArrayList<String> nameList = new ArrayList<>();
+    ArrayList<String> flavourList = new ArrayList<>();
+    ArrayList<String> iconList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_peers);
 
         // Inflate the listview
-        final DbHelper helper = new DbHelper(this);
         listView = (ListView) findViewById(R.id.listView);
         adapter = new PeerAdapter(this, R.layout.list_item_peer, arrayList);
         listView.setAdapter(adapter);
@@ -46,22 +53,17 @@ public class PeersActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Cursor cursor = helper.getPeersData(PeersActivity.this);
-                for (int n = 0; n < cursor.getCount(); n++) {
-                    cursor.moveToPosition(n);
-                    String uid = cursor.getString(cursor.getColumnIndex(DbContract.PeersEntry.COLUMN_UID));
-                    String name = cursor.getString(cursor.getColumnIndex(DbContract.PeersEntry.COLUMN_NAME));
-                    String iconUri = cursor.getString(cursor.getColumnIndex(DbContract.PeersEntry.COLUMN_ICON));
-                    String flavour = cursor.getString(cursor.getColumnIndex(DbContract.PeersEntry.COLUMN_FLAVOUR));
-
-                    // Make the intent to the profile activity
-                    Intent intent = new Intent(PeersActivity.this, PeerProfileActivity.class);
-                    intent.putExtra("uid", uid)
-                            .putExtra("name", name)
-                            .putExtra("icon", iconUri)
-                            .putExtra("flavour", flavour);
-                    startActivity(intent);
-                }
+                String uid = uidList.get(i);
+                String name = nameList.get(i);
+                String flavour = flavourList.get(i);
+                String iconUri = iconList.get(i);
+                // Make the intent to the profile activity
+                Intent intent = new Intent(PeersActivity.this, PeerProfileActivity.class);
+                intent.putExtra("uid", uid)
+                        .putExtra("name", name)
+                        .putExtra("icon", iconUri)
+                        .putExtra("flavour", flavour);
+                startActivity(intent);
             }
         });
     }
@@ -80,8 +82,11 @@ public class PeersActivity extends AppCompatActivity {
                 Log.v(LOG_TAG, "onChildAdded");
                 String iconUri = dataSnapshot.child("icon").getValue(String.class);
                 String name = dataSnapshot.child("nickname").getValue(String.class);
-                Log.v(LOG_TAG, "IconUri: " + iconUri);
-                Log.v(LOG_TAG, "Name: " + name);
+                String flavour = dataSnapshot.child("flavour").getValue(String.class);
+                uidList.add(dataSnapshot.getKey());
+                nameList.add(name);
+                flavourList.add(flavour);
+                iconList.add(iconUri);
                 arrayList.add(new Peer(iconUri, name));
                 PeerAdapter adapter = new PeerAdapter(PeersActivity.this, R.layout.list_item_peer, arrayList);
                 listView.setAdapter(adapter);

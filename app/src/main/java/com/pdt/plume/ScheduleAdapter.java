@@ -1,27 +1,39 @@
 package com.pdt.plume;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static com.pdt.plume.R.string.re;
+
 public class ScheduleAdapter extends ArrayAdapter {
     String LOG_TAG = ScheduleAdapter.class.getSimpleName();
 
-    // Staple adapter variables
+    // Staple mScheduleAdapter variables
     Context context;
     int layoutResourceId;
     ArrayList<Schedule> data = null;
@@ -41,7 +53,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder = null;
 
-        // If the row hasn't been used by the adapter before
+        // If the row hasn't been used by the mScheduleAdapter before
         // create a new row
         if(row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
@@ -66,8 +78,8 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
-        // Create a new list item using the data passed into the adapter
-        Schedule schedule = data.get(position);
+        // Create a new list item using the data passed into the mScheduleAdapter
+        final Schedule schedule = data.get(position);
 
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
@@ -105,6 +117,51 @@ public class ScheduleAdapter extends ArrayAdapter {
             row.setActivated(false);
         }
 
+        // If a layout with a menu is used, add a popup menu to that view
+        holder.menuIcon = (ImageView) row.findViewById(R.id.menu);
+        if (holder.menuIcon != null) {
+            final PopupMenu menu = new PopupMenu(context, holder.menuIcon);
+            menu.inflate(R.menu.menu_schedule_item);
+            menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    switch (menuItem.getItemId()) {
+                        case R.id.action_remove:
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setMessage(context.getString(R.string.dialog_remove_class, "Chardo", schedule.scheduleLesson) )
+                                    .setNegativeButton(context.getString(R.string.cancel), null)
+                                    .setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            // Remove the class from Firebase on both users' peer
+                                            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+                                            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                                            String userId = firebaseUser.getUid();
+                                            String profileUserId = ((String) schedule.extra);
+
+                                            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference()
+                                                    .child("users");
+                                            usersRef.child(userId).child("peers").child(profileUserId)
+                                                    .child(schedule.scheduleLesson).removeValue();
+                                            usersRef.child(profileUserId).child("peers").child(userId)
+                                                    .child(schedule.scheduleLesson).removeValue();
+                                            notifyDataSetChanged();
+                                        }
+                                    }).show();
+                            return true;
+                    }
+                    return false;
+                }
+            });
+
+            holder.menuIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    menu.show();
+                }
+            });
+        }
+
         return row;
     }
 
@@ -115,6 +172,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         TextView room;
         TextView timeIn;
         TextView timeOut;
+        ImageView menuIcon;
     }
 
 }
