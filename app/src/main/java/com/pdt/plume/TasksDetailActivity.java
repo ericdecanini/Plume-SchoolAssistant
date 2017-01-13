@@ -7,19 +7,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -34,10 +30,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -88,12 +81,6 @@ public class TasksDetailActivity extends AppCompatActivity {
     String attachmentPath;
     String iconUri;
 
-    boolean isFabOpen = false;
-    FloatingActionButton fab, fab1;
-    TextView fabLabel, fabLabel1;
-    private Animation fab_open, fab_close, rotate_forward, rotate_backward;
-    View whiteDim, whiteDimStatus;
-
     TextView fieldTimer;
     Intent serviceIntent;
 
@@ -124,6 +111,15 @@ public class TasksDetailActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         collapsingToolbar.setTitle("");
 
+        // Set the mark as done button
+        TextView markAsDoneView = (TextView) findViewById(R.id.mark_as_done);
+        markAsDoneView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                promptCompleteTask();
+            }
+        });
+
         // Get the class's data based on the id and fill in the fields
         // An ID is passed by the intent so we query using that
         Intent intent = getIntent();
@@ -134,25 +130,28 @@ public class TasksDetailActivity extends AppCompatActivity {
             if (mFirebaseUser != null) {
                 // Get the data from Firebase
                 firebaseID = intent.getStringExtra("id");
-                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                Log.v(LOG_TAG, "FirebaseID: " + firebaseID);
+                final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks").child(firebaseID);
                 taskRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         title = dataSnapshot.child("title").getValue(String.class);
-                        subtitle = dataSnapshot.child("class").getValue(String.class)
-                                + dataSnapshot.child("type").getValue(String.class);
+                        subtitle = getString(R.string.format_subtitle,
+                                dataSnapshot.child("class").getValue(String.class),
+                                dataSnapshot.child("type").getValue(String.class));
                         description = dataSnapshot.child("description").getValue(String.class);
                         iconUri = dataSnapshot.child("icon").getValue(String.class);
-                        long duedatemillis = dataSnapshot.child("duedate").getValue(long.class);
+                        Object duedatemillis = dataSnapshot.child("duedate").getValue();
 
                         // Format a string for the duedate
                         Calendar c = Calendar.getInstance();
-                        c.setTimeInMillis(duedatemillis);
+//                        c.setTimeInMillis((long)duedatemillis);
                         duedate = utility.formatDateString(TasksDetailActivity.this, c.get(Calendar.YEAR),
                                 c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                         applyDataToUI();
+                        taskRef.removeEventListener(this);
                     }
 
                     @Override
@@ -187,7 +186,6 @@ public class TasksDetailActivity extends AppCompatActivity {
                     duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                     applyDataToUI();
-
 
 
                     // Set the attachment field data
@@ -232,7 +230,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 //                } else findViewById(R.id.task_detail_photo_layout).setVisibility(View.GONE);
 
 
-            }
+                }
 
             }
         }
@@ -250,7 +248,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         // Apply the data to the UI
         collapsingToolbar.setTitle(title);
         collapsingToolbarSubtitle.setText(subtitle);
-        duedateTextview.setText(duedate);
+        duedateTextview.setText(getString(R.string.due, duedate));
         descriptionTextview.setText(description);
 
         final Uri ParsedIconUri = Uri.parse(iconUri);
@@ -263,7 +261,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
         // Initialise the theme variables
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -324,19 +322,6 @@ public class TasksDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Initialise the FAB
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab1 = (FloatingActionButton) findViewById(R.id.fab1);
-        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-        fab1.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-        fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
-        fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
-        rotate_forward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward);
-        rotate_backward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backward);
-        fab.setOnClickListener(fabListener());
-        fab1.setOnClickListener(fabListener());
-        if (fab != null)
-            fab.setOnClickListener(fabListener());
         fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
     }
 
@@ -352,31 +337,8 @@ public class TasksDetailActivity extends AppCompatActivity {
         return Uri.parse(targetFile.getAbsolutePath());
     }
 
-    private View.OnClickListener fabListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v(LOG_TAG, "Fab Open = " + isFabOpen);
-                switch (v.getId()) {
-                    case R.id.fab:
-                        if (isFabOpen)
-                            promptCompleteTask();
-                        else
-                            animateFAB();
-
-                        break;
-                    case R.id.fab1:
-                        startTimer();
-                        animateFAB();
-                        break;
-                }
-            }
-        };
-    }
-
     private void promptCompleteTask() {
         if (FLAG_TASK_COMPLETD) {
-            fab.setImageResource(R.drawable.ic_refresh_white_24dp);
             // ACTION RESTORE TASK
             new AlertDialog.Builder(TasksDetailActivity.this)
                     .setTitle(getString(R.string.activity_tasksDetail_restore_dialog_title))
@@ -414,7 +376,6 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                                 cursorTasks.close();
                             }
-
 
 
                             Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
@@ -473,7 +434,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
+        getMenuInflater().inflate(R.menu.menu_task_detail, menu);
 //        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
         return super.onCreateOptionsMenu(menu);
     }
@@ -481,14 +442,26 @@ public class TasksDetailActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+
+
             case R.id.action_delete:
                 new AlertDialog.Builder(this)
                         .setMessage(getString(R.string.task_detail_dialog_delete_confirm))
                         .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
-                                dbHelper.deleteTaskItem(TasksDetailActivity.this.id);
+                                if (mFirebaseUser != null) {
+                                    // Delete from Firebase
+                                    FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(mUserId).child("tasks")
+                                            .child(firebaseID).removeValue();
+                                } else {
+                                    // Delete from SQLite
+                                    DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
+                                    dbHelper.deleteTaskItem(TasksDetailActivity.this.id);
+                                }
+
+
                                 Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                                 startActivity(intent);
@@ -498,25 +471,57 @@ public class TasksDetailActivity extends AppCompatActivity {
                         .show();
                 break;
 
-//            case R.id.action_share:
-//                String shareString = title
-//                    + "\n\n" + description
-//                    + "\n\n" + getString(R.string.due) + " " + duedate;
-//                Intent shareIntent = new Intent();
-//                shareIntent.setAction(Intent.ACTION_SEND);
-//                shareIntent.putExtra(Intent.EXTRA_TEXT, shareString);
-//                shareIntent.setType("text/plain");
-//                if (mShareActionProvider != null) {
-//                    mShareActionProvider.setShareIntent(shareIntent);
-//                }
-//                startActivity(shareIntent);
-//                break;
-
             case R.id.action_edit:
-                Intent intent = new Intent(this, NewTaskActivity.class);
-                intent.putExtra(getString(R.string.TASKS_EXTRA_ID), id);
-                intent.putExtra(getString(R.string.TASKS_FLAG_EDIT), true);
-                startActivity(intent);
+                final Intent intent = new Intent(this, NewTaskActivity.class);
+                if (mFirebaseUser != null) {
+                    // Get the data from Firebase
+                    final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("tasks").child(firebaseID);
+                    taskRef.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            String id = dataSnapshot.getKey();
+                            String icon = dataSnapshot.child("icon").getValue(String.class);
+                            String title = dataSnapshot.child("title").getValue(String.class);
+                            String classTitle = dataSnapshot.child("class").getValue(String.class);
+                            String classType = dataSnapshot.child("type").getValue(String.class);
+                            String description = dataSnapshot.child("description").getValue(String.class);
+                            String photo = dataSnapshot.child("photo").getValue(String.class);
+                            String attachment = dataSnapshot.child("attachment").getValue(String.class);
+                            Float dueDate = dataSnapshot.child("duedate").getValue(Float.class);
+
+                            intent.putExtra("id", id);
+                            intent.putExtra("icon", icon);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
+                            intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
+                            intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
+                            intent.putExtra("photo", photo);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
+                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
+
+                            // Create an intent to NewScheduleActivity and include the selected
+                            // item's id, title, and an edit flag as extras
+                            intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                            taskRef.removeEventListener(this);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                } else {
+                    // Pass on data that will be read from SQLite
+                    intent.putExtra(getString(R.string.TASKS_EXTRA_ID), id);
+                    intent.putExtra(getString(R.string.TASKS_FLAG_EDIT), true);
+                    startActivity(intent);
+                }
+                return true;
+
+            case R.id.action_time:
+                startTimer();
                 return true;
 
             case android.R.id.home:
@@ -526,104 +531,6 @@ public class TasksDetailActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void animateFAB() {
-        final int animDuration = 150;
-        if (isFabOpen) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    CoordinatorLayout masterLayout = (CoordinatorLayout) findViewById(R.id.master_layout);
-                    masterLayout.removeView(whiteDim);
-                    masterLayout.removeView(fabLabel);
-                    masterLayout.removeView(fabLabel1);
-                }
-            }, animDuration);
-            whiteDim.animate()
-                    .alpha(0f)
-                    .setDuration(animDuration)
-                    .start();
-            fabLabel.animate()
-                    .alpha(0f)
-                    .setDuration(animDuration)
-                    .start();
-            fabLabel1.animate()
-                    .alpha(0f)
-                    .setDuration(animDuration)
-                    .start();
-            whiteDim.setOnClickListener(null);
-            fab.startAnimation(rotate_backward);
-            fab1.startAnimation(fab_close);
-            fab1.setClickable(false);
-            isFabOpen = false;
-        } else {
-            whiteDim = new View(this);
-            whiteDim.setBackgroundColor(getResources().getColor(R.color.white));
-            whiteDim.setAlpha(0f);
-            whiteDim.animate()
-                    .alpha(0.5f)
-                    .setDuration(animDuration)
-                    .start();
-
-            final float scale = getResources().getDisplayMetrics().density;
-
-            fabLabel = new TextView(this);
-            fabLabel.setLayoutParams(new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            fabLabel.setBackgroundDrawable(getResources().getDrawable(R.drawable.fab_label_background));
-            fabLabel.setText(getString(R.string.completed_task));
-            fabLabel.setTextColor(getResources().getColor(R.color.white));
-            fabLabel.setX(fab.getX() - (140.0f * scale));
-            fabLabel.setY(fab.getY() + (14.0f * scale));
-            fabLabel.setAlpha(0f);
-            fabLabel.animate()
-                    .alpha(1f)
-                    .setDuration(animDuration)
-                    .start();
-
-            CoordinatorLayout.LayoutParams coordinatorParams = null;
-            coordinatorParams = new CoordinatorLayout.LayoutParams(
-                    CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT);
-
-            CoordinatorLayout masterLayout = (CoordinatorLayout) findViewById(R.id.master_layout);
-            masterLayout.addView(whiteDim, coordinatorParams);
-            masterLayout.addView(fabLabel);
-
-            whiteDim.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    animateFAB();
-                }
-            });
-
-            fab1.setY(fab.getY() - (scale * 90));
-
-            fabLabel1 = new TextView(this);
-            fabLabel1.setLayoutParams(new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            fabLabel1.setBackgroundDrawable(getResources().getDrawable(R.drawable.fab_label_background));
-            fabLabel1.setText(getString(R.string.set_timer));
-            fabLabel1.setTextColor(getResources().getColor(R.color.white));
-            fabLabel1.setX(fab1.getX() - (100.0f * scale));
-            fabLabel1.setY(fab1.getY() + (28.0f * scale));
-            fabLabel1.setAlpha(0f);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    fabLabel1.animate()
-                            .alpha(1f)
-                            .setDuration(animDuration)
-                            .start();
-                }
-            }, 100);
-            masterLayout.addView(fabLabel1);
-
-            fab.startAnimation(rotate_forward);
-            fab1.startAnimation(fab_open);
-            fab1.setClickable(true);
-            isFabOpen = true;
-        }
     }
 
     private void startTimer() {
@@ -692,14 +599,4 @@ public class TasksDetailActivity extends AppCompatActivity {
                 mMessageReceiver);
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (isFabOpen) {
-                animateFAB();
-                return true;
-            } else return super.onKeyDown(keyCode, event);
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 }

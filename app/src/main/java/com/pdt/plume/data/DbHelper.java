@@ -565,48 +565,14 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
                 ));
             }
-        }
-        return arrayList;
-    }
-
-    public ArrayList<Task> getTaskDataArrayFromFirebase() {
-        final ArrayList<Task> arrayList = new ArrayList<>();
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        String userId = firebaseUser.getUid();
-
-        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(userId).child("tasks");
-        final long[] snapshotCount = new long[1];
-        final int[] taskCount = {0};
-        tasksRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                 snapshotCount[0] = dataSnapshot.getChildrenCount();
-                for (DataSnapshot taskSnapshot: dataSnapshot.getChildren()) {
-                    String iconUri = taskSnapshot.child("icon").getValue(String.class);
-                    String title = taskSnapshot.child("title").getValue(String.class);
-                    String description = taskSnapshot.child("description").getValue(String.class);
-                    String sharer = taskSnapshot.child("sharer").getValue(String.class);
-                    float duedate = taskSnapshot.child("duedate").getValue(float.class);
-                    arrayList.add(new Task(iconUri, title, sharer, description, "", duedate, -1));
-                    taskCount[0]++;
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        while (taskCount[0] < snapshotCount[0]) {
-            // Do nothing
         }
         return arrayList;
     }
@@ -631,6 +597,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
@@ -661,6 +629,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS)),
+                        cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
@@ -903,170 +873,6 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         return db.delete(NotesEntry.TABLE_NAME, "_ID = ?", new String[]{Integer.toString(id)});
-    }
-
-    /**
-     * Peers Database Functions
-     */
-
-    public Cursor getPeersData(Context context) {
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        String userId = firebaseUser.getUid();
-        SQLiteDatabase db = getWritableDatabase();
-
-        return db.query(
-                PeersEntry.TABLE_NAME,
-                null,
-                PeersEntry.COLUMN_REQUEST_STATUS + "=?",
-                new String[]{"0", userId},
-                null,
-                null,
-                null
-        );
-    }
-
-    public Cursor getPeerByUid(String uid) {
-        SQLiteDatabase db = getReadableDatabase();
-        return db.query(PeersEntry.TABLE_NAME,
-                null,
-                PeersEntry.COLUMN_UID + "=?",
-                new String[]{uid},
-                null,
-                null,
-                null);
-    }
-
-    ArrayList<String> userIdList = new ArrayList<>();
-    ArrayList<String> userNameList = new ArrayList<>();
-    ArrayList<String> userFlavourList = new ArrayList<>();
-    ArrayList<String> userIconList = new ArrayList<>();
-
-    public void updateRequestsInDb() {
-        // Cleanup previous uses of the method
-        userIdList.clear();
-        userNameList.clear();
-        userFlavourList.clear();
-        userIconList.clear();
-
-        // Initialise Firebase
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        // Get a reference to the requests database and create the array lists for the name and icon
-        if (firebaseUser != null) {
-            final DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(firebaseUser.getUid()).child("requests").getRef();
-
-            // Add the values to the array lists
-            requestsRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                        final String userIDItem = userSnapshot.getKey();
-                        userIdList.add(userIDItem);
-                        final int snapshotChildrenCount = (int) dataSnapshot.getChildrenCount();
-                        userSnapshot.getRef().child("nickname").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                userNameList.add(dataSnapshot.getValue(String.class));
-                                if (userNameList.size() == snapshotChildrenCount
-                                        && userIconList.size() == snapshotChildrenCount
-                                        && userFlavourList.size() == snapshotChildrenCount)
-                                    insertRequestsDataToDb();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                        userSnapshot.getRef().child("icon").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                userIconList.add(dataSnapshot.getValue(String.class));
-                                if (userNameList.size() == snapshotChildrenCount
-                                        && userIconList.size() == snapshotChildrenCount
-                                        && userFlavourList.size() == snapshotChildrenCount)
-                                    insertRequestsDataToDb();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                        userSnapshot.getRef().child("flavour").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                userFlavourList.add(dataSnapshot.getValue(String.class));
-                                if (userNameList.size() == snapshotChildrenCount
-                                        && userIconList.size() == snapshotChildrenCount
-                                        && userFlavourList.size() == snapshotChildrenCount)
-                                    insertRequestsDataToDb();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
-    }
-
-    private long insertRequestsDataToDb() {
-        // This method is fired by the previous method after all the data is collected
-        // Start by deleting all the previous data
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        String userId = firebaseUser.getUid();
-        SQLiteDatabase db = getWritableDatabase();
-        db.delete(PeersEntry.TABLE_NAME, PeersEntry.COLUMN_REQUEST_STATUS + "=?", new String[]{"1"});
-
-        // Run an insert for each row to be inserted
-        for (int i = 0; i < userIdList.size(); i++) {
-            // Create the ContentValues for the data to be inserted
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(PeersEntry.COLUMN_UID, userIdList.get(i));
-            contentValues.put(PeersEntry.COLUMN_NAME, userNameList.get(i));
-            contentValues.put(PeersEntry.COLUMN_FLAVOUR, userFlavourList.get(i));
-            contentValues.put(PeersEntry.COLUMN_ICON, userIconList.get(i));
-            contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, "1");
-
-            // Insert the data into the database
-            return db.insert(PeersEntry.TABLE_NAME, null, contentValues);
-        }
-        // If no data was inserted, return -1
-        return -1;
-    }
-
-    public int insertPeer(String id, String icon, String name, String flavour) {
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-
-        // Insert to the Cloud
-        if (firebaseUser != null) {
-            String uID = firebaseUser.getUid();
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference classRef = ref.child("users").child(uID).child("peers").child(id);
-            classRef.child("name").setValue(name);
-            classRef.child("icon").setValue(icon);
-        }
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(PeersEntry.COLUMN_UID, id);
-        contentValues.put(PeersEntry.COLUMN_NAME, name);
-        contentValues.put(PeersEntry.COLUMN_ICON, icon);
-        contentValues.put(PeersEntry.COLUMN_FLAVOUR, flavour);
-        contentValues.put(PeersEntry.COLUMN_REQUEST_STATUS, 0);
-        return (int) db.insert(PeersEntry.TABLE_NAME, null, contentValues);
     }
 
 }

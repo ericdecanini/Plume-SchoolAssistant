@@ -1,11 +1,10 @@
 package com.pdt.plume;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
@@ -16,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -27,8 +25,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static com.pdt.plume.R.string.re;
 
 public class ScheduleAdapter extends ArrayAdapter {
     String LOG_TAG = ScheduleAdapter.class.getSimpleName();
@@ -67,7 +63,6 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher = (TextView)row.findViewById(R.id.schedule_teacher);
             holder.room = (TextView)row.findViewById(R.id.schedule_room);
             holder.timeIn = (TextView)row.findViewById(R.id.schedule_time_in);
-            holder.timeOut = (TextView)row.findViewById(R.id.schedule_time_out);
 
             row.setTag(holder);
         }
@@ -89,6 +84,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        holder.lesson.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
         holder.icon.setImageBitmap(setImageBitmap);
         if (schedule.scheduleLesson.contains("%0513%")) {
             if (schedule.scheduleLesson.split("%0513%")[1].equals("cross")) {
@@ -105,9 +101,16 @@ public class ScheduleAdapter extends ArrayAdapter {
         // If the teacher view returns null, an alternate layout is being used
         if (holder.teacher != null) {
             holder.teacher.setText(schedule.scheduleTeacher);
-            holder.room.setText(schedule.scheduleRoom);
-            holder.timeIn.setText(schedule.scheduleTimeIn);
-            holder.timeOut.setText(schedule.scheduleTimeOut);
+            if (schedule.scheduleTimeOut.equals("period")) {
+                // Period based format
+                holder.timeIn.setText(context.getString(R.string.format_period,
+                        schedule.scheduleTimeIn));
+            } else {
+                // Time based format
+                holder.timeIn.setText(context.getString(R.string.format_time,
+                        schedule.scheduleTimeIn, schedule.scheduleTimeOut));
+            }
+
         }
 
         // Set the activated state of the list item if it's selected
@@ -171,7 +174,6 @@ public class ScheduleAdapter extends ArrayAdapter {
         TextView teacher;
         TextView room;
         TextView timeIn;
-        TextView timeOut;
         ImageView menuIcon;
     }
 

@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -16,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,6 +43,9 @@ public class UserSearchActivity extends AppCompatActivity {
 
     // UI Elements
     ListView listView;
+    ProgressBar spinner;
+    EditText searchBar;
+    TextWatcher textWatcher;
 
     // UI Data
     PeerAdapter adapter;
@@ -50,7 +55,7 @@ public class UserSearchActivity extends AppCompatActivity {
     ArrayList<String> searchResultIDs = new ArrayList<>();
 
     // Theme Variables
-    int mPrimaryColor, mDarkColor;
+    int mPrimaryColor, mDarkColor, mSecondaryColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +64,10 @@ public class UserSearchActivity extends AppCompatActivity {
 
         // Get references to the views
         LinearLayout toolbar = (LinearLayout) findViewById(R.id.toolbar);
-        ImageView homeButton = (ImageView) findViewById(R.id.home);
-        final EditText searchBar = (EditText) findViewById(R.id.search_bar);
+        ImageView homeButton = (ImageView) findViewById(R.id.home);searchBar = (EditText) findViewById(R.id.search_bar);
         final ImageView clearButton = (ImageView) findViewById(R.id.clear);
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+        spinner.setVisibility(View.GONE);
 
         listView = (ListView) findViewById(R.id.listView);
         adapter = new PeerAdapter(this, R.layout.list_item_search_result, searchResults);
@@ -84,7 +90,7 @@ public class UserSearchActivity extends AppCompatActivity {
         });
 
         // This listener sets the behavior of the clear button's visibility
-        searchBar.addTextChangedListener(new TextWatcher() {
+        textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
             @Override
@@ -94,12 +100,14 @@ public class UserSearchActivity extends AppCompatActivity {
                 }
                 else {
                     clearButton.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.VISIBLE);
                     ASyncUserSearch(charSequence.toString());
                 }
             }
             @Override
             public void afterTextChanged(Editable editable) {}
-        });
+        };
+        searchBar.addTextChangedListener(textWatcher);
 
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,11 +133,13 @@ public class UserSearchActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
         toolbar.setBackgroundColor(mPrimaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+        searchBar.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
 
     }
 
@@ -142,9 +152,6 @@ public class UserSearchActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child: dataSnapshot.getChildren()) {
-                    Log.v(LOG_TAG, "User key: " + child.getKey());
-                    Log.v(LOG_TAG, "User ref: " + child.getRef().toString());
-                    Log.v(LOG_TAG, "User val: " + child.getValue().toString());
 
                     // Get the data and add them as a new list object
                     String nicknameResult = child.child("nickname").getValue(String.class);
@@ -152,14 +159,13 @@ public class UserSearchActivity extends AppCompatActivity {
                     searchResults.add(new Peer(iconResultUri, nicknameResult));
                     searchResultIDs.add(child.getRef().getKey());
                 }
-                Log.v(LOG_TAG, "Search Results: " + searchResults.size());
                 adapter.notifyDataSetChanged();
-                Log.v(LOG_TAG, "Adapter Count: " + adapter.getCount());
+                spinner.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                spinner.setVisibility(View.GONE);
             }
         });
     }
@@ -167,6 +173,7 @@ public class UserSearchActivity extends AppCompatActivity {
     private void loadLogInView() {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        searchBar.removeTextChangedListener(textWatcher);
         startActivity(intent);
     }
 

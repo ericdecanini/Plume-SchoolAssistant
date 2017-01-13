@@ -6,11 +6,15 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -18,7 +22,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,6 +35,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
@@ -38,13 +47,18 @@ import static android.R.attr.id;
 public class ClassesActivity extends AppCompatActivity {
     // Constantly used variables
     String LOG_TAG = ClassesActivity.class.getSimpleName();
+    View rootView;
 
     // CAM Variables
     private Menu mActionMenu;
     private int mOptionMenuCount;
 
     // UI Elements
+    AppBarLayout appbar;
     ListView listView;
+    ProgressBar spinner;
+
+    // Theme Variables
     int mPrimaryColor;
     int mDarkColor;
     int mSecondaryColor;
@@ -56,30 +70,61 @@ public class ClassesActivity extends AppCompatActivity {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
+    boolean loggedIn = false;
+    MenuItem logInOut;
 
     // List Varialbes
     ScheduleAdapter mScheduleAdapter;
-    ArrayList<Schedule> mScheduleList;
+    ArrayList<Schedule> mScheduleList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_classes);
+        rootView = findViewById(R.id.container);
+
+        // Initialise the toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        appbar = (AppBarLayout) findViewById(R.id.appbar);
+
+        // Initialise the ProgressBar
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        if (mFirebaseUser != null)
+        if (mFirebaseUser != null) {
             mUserId = mFirebaseUser.getUid();
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ImageView icon = (ImageView) findViewById(R.id.icon);
+                    String iconUri = dataSnapshot.child("icon").getValue(String.class);
+                    icon.setVisibility(View.VISIBLE);
+                    icon.setImageURI(Uri.parse(iconUri));
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
 
         // Get references to the views
         listView = (ListView) findViewById(R.id.schedule_list);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        TextView newClassTextView = (TextView) findViewById(R.id.new_class);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Set the mScheduleAdapter and listeners of the list view
+        mScheduleAdapter = new ScheduleAdapter(this, R.layout.list_item_schedule, mScheduleList);
+        refreshClassesList();
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -90,9 +135,9 @@ public class ClassesActivity extends AppCompatActivity {
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
         }
 
-        // Set the action of the FAB
-        if (fab != null)
-            fab.setOnClickListener(new View.OnClickListener() {
+        // Set the action of the new class
+        if (newClassTextView != null)
+            newClassTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(ClassesActivity.this, NewScheduleActivity.class);
@@ -114,8 +159,67 @@ public class ClassesActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        appbar.setBackgroundColor(mPrimaryColor);
+        newClassTextView.setTextColor(mPrimaryColor);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        logInOut = menu.findItem(R.id.action_logout);
+        if (loggedIn)
+            logInOut.setTitle(getString(R.string.action_logout));
+        else logInOut.setTitle(getString(R.string.action_login));
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_logout) {
+            if (loggedIn)
+                logOut();
+            else {
+                // Request for the permission WRITE SETTINGS
+                // TODO: Test if app can function normally without this permission
+//                boolean permissionCheck = Settings.System.canWrite(this);
+//                if (!permissionCheck) {
+//                    Intent intent = new Intent();
+//                    intent.setAction("android.settings.action.MANAGE_WRITE_SETTINGS");
+//                    intent.setData(Uri.parse("package:" + getPackageName()));
+//                    startActivity(intent);
+//                } else
+                loadLogInView();
+
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private void loadLogInView() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+    private void logOut() {
+        mFirebaseAuth.signOut();
+        loggedIn = false;
+        logInOut.setTitle(getString(R.string.action_login));
+        Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
 
     public AdapterView.OnItemClickListener ItemClickListener() {
         return new AdapterView.OnItemClickListener() {
@@ -143,6 +247,7 @@ public class ClassesActivity extends AppCompatActivity {
         // Inflate the listview
         if (mFirebaseUser != null) {
             // Get data from Firebase
+            loggedIn = true;
             if (mScheduleAdapter.getCount() == 0)
                 findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
             DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
@@ -152,13 +257,19 @@ public class ClassesActivity extends AppCompatActivity {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     String title = dataSnapshot.getKey();
                     String icon = dataSnapshot.child("icon").getValue(String.class);
+                    Log.v(LOG_TAG, "Icon: " + icon);
+                    Log.v(LOG_TAG, "Title: " + title);
                     String teacher = dataSnapshot.child("teacher").getValue(String.class);
                     String room = dataSnapshot.child("room").getValue(String.class);
                     mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
-                            teacher, room, "", "", ""));
+                            teacher, room, " ", " ", ""));
+
                     if (mScheduleAdapter.getCount() == 0)
-                        findViewById(R.id.header_textview).setVisibility(View.GONE);
+                        findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                    else findViewById(R.id.header_textview).setVisibility(View.GONE);
+
                     mScheduleAdapter.notifyDataSetChanged();
+                    spinner.setVisibility(View.GONE);
                 }
 
                 @Override
@@ -178,13 +289,17 @@ public class ClassesActivity extends AppCompatActivity {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    spinner.setVisibility(View.GONE);
+                    TextView headerTextView = (TextView) findViewById(R.id.header_textview);
+                    headerTextView.setVisibility(View.VISIBLE);
+                    headerTextView.setText(getString(R.string.check_internet));
                 }
             });
         } else {
             // Get data from SQLite
             DbHelper dbHelper = new DbHelper(this);
             mScheduleList = dbHelper.getAllClassesArray(this);
+            spinner.setVisibility(View.GONE);
             // Only show the header if there are no items in the class mScheduleAdapter
             if (mScheduleAdapter.getCount() == 0)
                 findViewById(R.id.header_textview).setVisibility(View.VISIBLE);

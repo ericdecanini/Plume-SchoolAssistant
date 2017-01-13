@@ -5,10 +5,12 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.*;
@@ -24,10 +26,16 @@ public class LoginActivity extends AppCompatActivity {
     protected EditText passwordEditText;
     protected Button logInButton;
     protected TextView signUpTextView;
+    private ImageView visibleIcon;
 
     // Firebase Variables
     private DatabaseReference mDatabase;
     private FirebaseAuth mFirebaseAuth;
+
+    // Theme Variables
+    int mSecondaryColor;
+
+    boolean passwordsAreVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +49,29 @@ public class LoginActivity extends AppCompatActivity {
         emailEditText = (EditText) findViewById(R.id.emailField);
         passwordEditText = (EditText) findViewById(R.id.passwordField);
         logInButton = (Button) findViewById(R.id.loginButton);
+        visibleIcon = (ImageView) findViewById(R.id.visible);
+
+        mSecondaryColor = getResources().getColor(R.color.colorAccent);
+
+        visibleIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (passwordsAreVisible) {
+                    passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    passwordEditText.setSelection(passwordEditText.getText().length());
+                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.white));
+                    passwordsAreVisible = false;
+                } else {
+                    passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    passwordEditText.setSelection(passwordEditText.getText().length());
+                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.colorAccent));
+                    passwordsAreVisible = true;
+                }
+            }
+        });
+
 
         signUpTextView.setOnClickListener(new View.OnClickListener() {
             @Override

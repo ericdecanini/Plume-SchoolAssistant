@@ -19,16 +19,33 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="@dimen/extended_app_bar_height"
             android:paddingTop="@dimen/appbar_padding_top"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+
+            <TextView
+                android:id="@+id/header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="28sp"
+                android:textColor="@color/white"
+                android:paddingTop="56dp"
+                android:layout_gravity="center"
+                android:foregroundGravity="center"/>
 
         </android.support.v7.widget.Toolbar>
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            app:tabTextColor="@color/gray_500"
+            app:tabBackground="@drawable/tab_item_selector"
+            app:tabIndicatorColor="@color/colorPrimary"
+            app:tabSelectedTextColor="@color/gray_900"
+            app:tabPaddingStart="0dp"
+            app:tabPaddingEnd="0dp" />
 
     </android.support.design.widget.AppBarLayout>
 

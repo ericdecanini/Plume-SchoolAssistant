@@ -9,11 +9,13 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -24,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.pdt.plume.R.string.format_period;
 import static com.pdt.plume.R.string.re;
 
 /**
@@ -59,6 +63,7 @@ public class TasksFragment extends Fragment {
     private int mOptionsMenuCount;
     FloatingActionButton fab;
     TextView headerTextView;
+    ProgressBar spinner;
 
     int mPrimaryColor;
     int mDarkColor;
@@ -76,6 +81,8 @@ public class TasksFragment extends Fragment {
     FirebaseUser mFirebaseUser;
     String mUserId;
     ArrayList<String> FirebaseIdList = new ArrayList<>();
+    DatabaseReference tasksRef;
+    ValueEventListener tasksListener;
 
     // Required empty public constructor
     public TasksFragment() {
@@ -101,6 +108,8 @@ public class TasksFragment extends Fragment {
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
@@ -109,33 +118,72 @@ public class TasksFragment extends Fragment {
         // using the current day schedule data
         if (mFirebaseUser != null) {
             // Get the data from Firebase
-            DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+            tasksRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks");
-            tasksRef.addChildEventListener(new ChildEventListener() {
+            tasksListener = new ValueEventListener() {
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String icon = dataSnapshot.child("icon").getValue(String.class);
-                    String title = dataSnapshot.child("title").getValue(String.class);
-                    String sharer = dataSnapshot.child("sharer").getValue(String.class);
-                    String description = dataSnapshot.child("description").getValue(String.class);
-                    float duedate = dataSnapshot.child("duedate").getValue(float.class);
-                    float reminderdate = dataSnapshot.child("reminderdate").getValue(float.class);
-                    tasksArray.add(new Task(icon, title, sharer, description, "", duedate, reminderdate));
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    long snapshotCount = dataSnapshot.getChildrenCount();
+                    for (DataSnapshot taskSnapshot: dataSnapshot.getChildren()) {
+                        FirebaseIdList.add(taskSnapshot.getKey());
+                        String icon = taskSnapshot.child("icon").getValue(String.class);
+                        String title = taskSnapshot.child("title").getValue(String.class);
+                        String sharer = taskSnapshot.child("sharer").getValue(String.class);
+                        String taskClass = taskSnapshot.child("class").getValue(String.class);
+                        String tasktType = taskSnapshot.child("type").getValue(String.class);
+                        String description = taskSnapshot.child("description").getValue(String.class);
+                        Float duedate = taskSnapshot.child("duedate").getValue(Float.class);
+                        Boolean completed = taskSnapshot.child("completed").getValue(Boolean.class);
+                        if (completed == null)
+                            completed = false;
+                        if (!completed) {
+                            tasksArray.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1));
+                            mTasksAdapter.notifyDataSetChanged();
+                            spinner.setVisibility(View.GONE);
+                        }
+                        // The header text view will only be visible if there is no items in the task adapter
+                        if (mTasksAdapter.getCount() == 0)
+                            headerTextView.setVisibility(View.VISIBLE);
+                        else headerTextView.setVisibility(View.GONE);
+                    }
+                    tasksRef.removeEventListener(this);
                 }
-                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onCancelled(DatabaseError databaseError) {}
+
+                @Override public void onCancelled(DatabaseError databaseError) {
+                    spinner.setVisibility(View.GONE);
+                    headerTextView.setVisibility(View.VISIBLE);
+                    headerTextView.setText(getString(R.string.check_internet));
+                }
+            };
+
+            // Check if the tasks ref doesn't exist
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId);
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child("tasks").getChildrenCount() == 0) {
+                            spinner.setVisibility(View.GONE);
+                            headerTextView.setVisibility(View.VISIBLE);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
             });
+
+
+            if (tasksRef != null)
+                tasksRef.addListenerForSingleValueEvent(tasksListener);
         }
         else {
             // Get the data from SQLite
             tasksArray = dbHelper.getUncompletedTaskArray();
+            spinner.setVisibility(View.GONE);
         }
 
         mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, tasksArray);
 
-        // The header text view will only be visible if there is no items in the task mScheduleAdapter
+        // The header text view will only be visible if there is no items in the task adapter
         if (mTasksAdapter.getCount() == 0)
             headerTextView.setVisibility(View.VISIBLE);
 
@@ -182,6 +230,13 @@ public class TasksFragment extends Fragment {
         fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (tasksRef != null)
+            tasksRef.removeEventListener(tasksListener);
+    }
+
     public AdapterView.OnItemClickListener ItemClickListener() {
 
         return new AdapterView.OnItemClickListener() {
@@ -201,7 +256,13 @@ public class TasksFragment extends Fragment {
                 // passing the data of the clicked row to the fragment
                 else {
                     final Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
+                    if (mFirebaseUser != null) {
+                        intent.putExtra("id", FirebaseIdList.get(position));
+                        tasksRef.removeEventListener(tasksListener);
+                    } else {
+                        intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
+                    }
+
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         // Shared element transition
@@ -281,23 +342,7 @@ public class TasksFragment extends Fragment {
             mode.setTitle("Select Items");
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-
-            int colorFrom = mPrimaryColor;
-            int colorTo = getResources().getColor(R.color.gray_500);
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-            colorAnimation.setDuration(200); // milliseconds
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animator) {
-                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
-                    if (!isTablet)
-                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
-                }
-
-            });
-            colorAnimation.start();
+                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_900));
 
             return true;
         }
@@ -321,16 +366,11 @@ public class TasksFragment extends Fragment {
             switch (item.getItemId()) {
                 case R.id.action_delete:
                     deleteSelectedItems();
-                    break;
+                    return true;
 
                 case R.id.action_edit:
                     editSelectedItem(CAMselectedItemsList.get(0));
-                    break;
-
-                default:
-                    Toast.makeText(getActivity(), "Clicked " + item.getTitle(),
-                            Toast.LENGTH_SHORT).show();
-                    break;
+                    return true;
             }
 
             return true;
@@ -343,22 +383,6 @@ public class TasksFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(mDarkColor);
-
-            int colorFrom = getResources().getColor(R.color.gray_500);
-            int colorTo = mPrimaryColor;
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-            colorAnimation.setDuration(800); // milliseconds
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animator) {
-                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
-                    if (!isTablet)
-                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
-                }
-
-            });
-            colorAnimation.start();
         }
 
         private void deleteSelectedItems() {
@@ -368,9 +392,10 @@ public class TasksFragment extends Fragment {
                 DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks");
                 for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                    Log.v(LOG_TAG, "i = " + i + " CAMindex = " + CAMselectedItemsList.get(i));
                     tasksRef.child(FirebaseIdList.get(CAMselectedItemsList.get(i))).removeValue();
-                    FirebaseIdList.remove(CAMselectedItemsList.get(i));
-                    tasksArray.remove(CAMselectedItemsList.get(i));
+                    FirebaseIdList.remove(((int) CAMselectedItemsList.get(i)));
+                    tasksArray.remove(((int) CAMselectedItemsList.get(i)));
                 }
 
                 // Refresh the list mScheduleAdapter
@@ -429,7 +454,7 @@ public class TasksFragment extends Fragment {
 
                 if (mFirebaseUser != null) {
                     // Get the data from Firebase
-                    DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
+                    final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("tasks").child(FirebaseIdList.get(CAMselectedItemsList.get(0)));
                     taskRef.addValueEventListener(new ValueEventListener() {
                         @Override
@@ -442,9 +467,7 @@ public class TasksFragment extends Fragment {
                             description[0] = dataSnapshot.child("description").getValue(String.class);
                             photo[0] = dataSnapshot.child("photo").getValue(String.class);
                             attachment[0] = dataSnapshot.child("attachment").getValue(String.class);
-                            dueDate[0] = dataSnapshot.child("duedate").getValue(float.class);
-                            reminderDate[0] = dataSnapshot.child("reminderdate").getValue(float.class);
-                            reminderTime[0] = dataSnapshot.child("remindertime").getValue(float.class);
+                            dueDate[0] = dataSnapshot.child("duedate").getValue(Float.class);
 
                             intent.putExtra("id", id);
                             intent.putExtra("icon", icon[0]);
@@ -465,8 +488,7 @@ public class TasksFragment extends Fragment {
 
                             // Clear the selected items list, exit the CAM and launch the activity
                             CAMselectedItemsList.clear();
-                            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                            getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                            taskRef.removeEventListener(this);
                             startActivity(intent);
                         }
                         @Override public void onCancelled(DatabaseError databaseError) {}});

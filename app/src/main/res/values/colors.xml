@@ -15,10 +15,12 @@
     <color name="gray_700">#616161</color>
     <color name="gray_900">#212121</color>
 
+    <color name="black_0.87">#DE000000</color>
     <color name="black_0.60">#96000000</color>
     <color name="black_0.54">#8C000000</color>
     <color name="black_0.10">#1A000000</color>
     <color name="dividerColor">#CCCCCC</color>
+    <color name="tab_indicator_unselected">#B1C1CC</color>
 
     <color name="mainTextColor">#95989A</color>
 
@@ -28,6 +30,8 @@
     <color name="hyperlink">#0B0080</color>
 
     <color name="black_overlay">#66000000</color>
+
+    <color name="login_background">#1A74C9</color>
     
     <!--
     Account intro

@@ -70,7 +70,7 @@
         android:text="@string/save"
         android:textColor="@color/white"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:background="@drawable/bg_dialog_button"
+        android:background="@drawable/bg_button"
         android:paddingLeft="24dp"
         android:paddingRight="24dp"/>
 

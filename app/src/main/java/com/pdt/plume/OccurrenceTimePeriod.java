@@ -47,7 +47,7 @@ public class OccurrenceTimePeriod {
         // Create an Array List to get the periods selected by a class item
         ArrayList<String> periodList = new ArrayList<>();
 
-        // Set the global variables for basis and week classType
+        // Set the global variables for basis and week taskType
         basis = splitOccurrence[0];
         weekType = splitOccurrence[1];
 

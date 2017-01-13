@@ -3,19 +3,13 @@ package com.pdt.plume;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
-import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,8 +77,8 @@ final RemoteViews remoteView = new RemoteViews(
         remoteView.setTextViewText(R.id.schedule_lesson, listItem.scheduleLesson);
         remoteView.setTextViewText(R.id.schedule_teacher, listItem.scheduleTeacher);
         remoteView.setTextViewText(R.id.schedule_room, listItem.scheduleRoom);
-        remoteView.setTextViewText(R.id.schedule_time_in, listItem.scheduleTimeIn);
-        remoteView.setTextViewText(R.id.schedule_time_out, listItem.scheduleTimeOut);
+        remoteView.setTextViewText(R.id.schedule_time_in, context.getString(R.string.format_time,
+                listItem.scheduleTimeIn, listItem.scheduleTimeOut));
         try {
         remoteView.setImageViewBitmap(R.id.schedule_icon,
         MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(listItem.scheduleIcon)));
@@ -94,7 +88,6 @@ final RemoteViews remoteView = new RemoteViews(
         remoteView.setTextColor(R.id.schedule_teacher, Color.parseColor("#000000"));
         remoteView.setTextColor(R.id.schedule_room, Color.parseColor("#000000"));
         remoteView.setTextColor(R.id.schedule_time_in, Color.parseColor("#000000"));
-        remoteView.setTextColor(R.id.schedule_time_out, Color.parseColor("#000000"));
 
         return remoteView;
         }

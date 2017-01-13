@@ -100,7 +100,7 @@ public class AddClassTimeTwoFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
-                    // Run the interface sending the week classType parameter
+                    // Run the interface sending the week taskType parameter
                     // based on the button selected
                     case R.id.class_two_weeksame:
                         weekTypeSelectedListener.onWeekTypeSelected("0", FLAG_EDIT, rowID);

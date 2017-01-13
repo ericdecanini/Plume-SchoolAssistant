@@ -15,7 +15,6 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +37,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
@@ -62,6 +63,7 @@ public class ScheduleFragment extends Fragment {
     ListView listView;
     TextView headerTextView;
     FloatingActionButton fab;
+    ProgressBar spinner;
 
     int mPrimaryColor;
     int mDarkColor;
@@ -80,6 +82,8 @@ public class ScheduleFragment extends Fragment {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
+    DatabaseReference classesRef;
+    ChildEventListener classesRefListener;
 
     // Required empty public constructor
     public ScheduleFragment() {
@@ -96,6 +100,8 @@ public class ScheduleFragment extends Fragment {
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
 
         // Check if the used device is a tablet
         // Currently this does nothing, but will later on be used
@@ -106,6 +112,8 @@ public class ScheduleFragment extends Fragment {
         // First check if the user is logged into an account
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser != null)
+            mUserId = mFirebaseUser.getUid();
 
         if (mFirebaseUser != null) {
             // Get the schedule data from Firebase
@@ -115,28 +123,30 @@ public class ScheduleFragment extends Fragment {
             DbHelper dbHelper = new DbHelper(getContext());
             try {
                 mScheduleList = dbHelper.getCurrentDayScheduleArray(getContext());
+                spinner.setVisibility(View.GONE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
+        // Check if the tasks ref doesn't exist
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("classes").getChildrenCount() == 0) {
+                    spinner.setVisibility(View.GONE);
+                    headerTextView.setVisibility(View.VISIBLE);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+
         // Apply the list data to the listview mScheduleAdapter
         mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, mScheduleList);
-
-        // Determine whether to show the header text view for a block format
-        if (showBlockHeaderA) {
-            String blockString = utility.formatBlockString(getContext(), 0);
-            headerTextView.setText(blockString);
-        } else if (showBlockHeaderB) {
-            String blockString = utility.formatBlockString(getContext(), 1);
-            headerTextView.setText(blockString);
-        } else if (mScheduleAdapter.getCount() != 0) {
-            Calendar c = Calendar.getInstance();
-            headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-        } else {
-            headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
-        }
 
         // Set the mScheduleAdapter and listeners of the list view
         if (listView != null) {
@@ -165,18 +175,11 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (showBlockHeaderA) {
-            String blockString = utility.formatBlockString(getContext(), 0);
-            headerTextView.setText(blockString);
-        } else if (showBlockHeaderB) {
-            String blockString = utility.formatBlockString(getContext(), 1);
-            headerTextView.setText(blockString);
-        } else if (mScheduleAdapter.getCount() != 0) {
-            Calendar c = Calendar.getInstance();
-            headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-        } else {
-            headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
-        }
+
+        // Set the splash text if there's no classes queried
+        if (mScheduleAdapter.getCount() == 0)
+            headerTextView.setVisibility(View.VISIBLE);
+        else headerTextView.setVisibility(View.GONE);
 
         mScheduleAdapter.notifyDataSetChanged();
 
@@ -196,6 +199,13 @@ public class ScheduleFragment extends Fragment {
         boolean firstLaunch = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
         if (firstLaunch)
             init();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (classesRef != null)
+            classesRef.removeEventListener(classesRefListener);
     }
 
     public AdapterView.OnItemClickListener ItemClickListener() {
@@ -237,7 +247,7 @@ public class ScheduleFragment extends Fragment {
     // This method is called when the app has been launched for the first time
     private void init() {
         headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
-        headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+        headerTextView.setVisibility(View.VISIBLE);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
@@ -255,43 +265,67 @@ public class ScheduleFragment extends Fragment {
         if (firebaseUser != null) {
             // Get data from Firebase
             String userId = firebaseUser.getUid();
-            DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+            classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
-            classesRef.addChildEventListener(new ChildEventListener() {
+            classesRefListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     String title = dataSnapshot.getKey();
                     String teacher = dataSnapshot.child("teacher").getValue(String.class);
                     String room = dataSnapshot.child("room").getValue(String.class);
-                    String occurrence = dataSnapshot.child("occurrence").getValue(String.class);
-                    String timein = utility.secondsToMinuteTime(dataSnapshot.child("timein").getValue(int.class));
-                    String timeout = utility.secondsToMinuteTime(dataSnapshot.child("timeout").getValue(int.class));
-                    String timeinalt = utility.secondsToMinuteTime(dataSnapshot.child("timeinalt").getValue(int.class));
-                    String timeoutalt = utility.secondsToMinuteTime(dataSnapshot.child("timeoutalt").getValue(int.class));
-                    String periods = dataSnapshot.child("periods").getValue(String.class);
                     String iconUri = dataSnapshot.child("icon").getValue(String.class);
 
-                    if (utility.occurrenceMatchesCurrentDay(getContext(), occurrence, periods, weekNumber, dayOfWeek)) {
-                        // Check if occurrence matches, then proceed if true
-                        if (weekNumber.equals("0")) {
-                            if (!periods.equals("-1")) {
-                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, weekNumber);
-                                for (int i = 0; i < periodList.size(); i++)
-                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                            room, timein, timeout, periodList.get(i)));
-                            }
-                        } else {
-                            // Alternate week data
-                            if (!periods.equals("-1")) {
-                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, weekNumber);
-                                for (int i = 0; i < periodList.size(); i++)
-                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                            room, timeinalt, timeoutalt, periodList.get(i)));
+                    ArrayList<String> occurrences = new ArrayList<>();
+                    for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren())
+                        occurrences.add(occurrenceSnapshot.getKey());
+                    ArrayList<Integer> timeins = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timein").getChildren())
+                        timeins.add(timeinSnapshot.getValue(int.class));
+                    ArrayList<Integer> timeouts = new ArrayList<>();
+                    for (DataSnapshot timeoutSnapshot: dataSnapshot.child("timeout").getChildren())
+                        timeouts.add(timeoutSnapshot.getValue(int.class));
+                    ArrayList<Integer> timeinalts = new ArrayList<>();
+                    for (DataSnapshot timeinaltSnapshot: dataSnapshot.child("timeinalt").getChildren())
+                        timeinalts.add(timeinaltSnapshot.getValue(int.class));
+                    ArrayList<Integer> timeoutalts = new ArrayList<>();
+                    for (DataSnapshot timeoutaltSnapshot: dataSnapshot.child("timeoutalt").getChildren())
+                        timeoutalts.add(timeoutaltSnapshot.getValue(int.class));
+                    ArrayList<String> periods = new ArrayList<>();
+                    for (DataSnapshot periodsSnapshot: dataSnapshot.child("periods").getChildren())
+                        periods.add(periodsSnapshot.getKey());
+
+                    for (int i = 0; i < occurrences.size(); i++) {
+                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
+                            // Check if occurrence matches, then proceed if true
+                            if (weekNumber.equals("0")) {
+                                if (!periods.equals("-1")) {
+                                    ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                    for (int l = 0; l < periodList.size(); l++)
+                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                room, utility.millisToHourTime(timeins.get(i)),
+                                                utility.millisToHourTime(timeouts.get(i)), periodList.get(l)));
+                                }
+                            } else {
+                                // Alternate week data
+                                if (!periods.equals("-1")) {
+                                    ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                    for (int l = 0; l < periodList.size(); l++)
+                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                room, utility.millisToHourTime(timeinalts.get(i)),
+                                                utility.millisToHourTime(timeoutalts.get(i)), periodList.get(l)));
+                                }
                             }
                         }
                     }
+
                     Collections.sort(mScheduleList, new ScheduleComparator());
                     mScheduleAdapter.notifyDataSetChanged();
+                    spinner.setVisibility(View.GONE);
+
+                    // Set the splash text if there's no classes queried
+                    if (mScheduleAdapter.getCount() == 0)
+                        headerTextView.setVisibility(View.VISIBLE);
+                    else headerTextView.setVisibility(View.GONE);
                 }
 
                 @Override
@@ -311,9 +345,14 @@ public class ScheduleFragment extends Fragment {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    spinner.setVisibility(View.GONE);
+                    headerTextView.setVisibility(View.VISIBLE);
+                    headerTextView.setText(getString(R.string.check_internet));
                 }
-            });
+            };
+
+            if (classesRef != null)
+                classesRef.addChildEventListener(classesRefListener);
         }
     }
 
@@ -382,23 +421,7 @@ public class ScheduleFragment extends Fragment {
             mode.setTitle(getContext().getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-
-            int colorFrom = mPrimaryColor;
-            int colorTo = getResources().getColor(R.color.gray_500);
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-            colorAnimation.setDuration(200); // milliseconds
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animator) {
-                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
-                    if (!isTablet)
-                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
-                }
-
-            });
-            colorAnimation.start();
+                getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.gray_900));
 
             return true;
         }
@@ -446,48 +469,24 @@ public class ScheduleFragment extends Fragment {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 getActivity().getWindow().setStatusBarColor(mDarkColor);
-
-            int colorFrom = getResources().getColor(R.color.gray_500);
-            int colorTo = mPrimaryColor;
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-            colorAnimation.setDuration(800); // milliseconds
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animator) {
-                    getActivity().findViewById(R.id.toolbar).setBackgroundColor((int) animator.getAnimatedValue());
-                    if (!isTablet)
-                        getActivity().findViewById(R.id.tabs).setBackgroundColor((int) animator.getAnimatedValue());
-                }
-
-            });
-            colorAnimation.start();
-
-            if (showBlockHeaderA) {
-                String blockString = utility.formatBlockString(getContext(), 0);
-                headerTextView.setText(blockString);
-            } else if (showBlockHeaderB) {
-                String blockString = utility.formatBlockString(getContext(), 1);
-                headerTextView.setText(blockString);
-            } else if (mScheduleAdapter.getCount() != 0) {
-                Calendar c = Calendar.getInstance();
-                headerTextView.setText(utility.formatDateString(getContext(), c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-            } else {
-                headerTextView.setText(getString(R.string.schedule_fragment_splash_no_classes));
-            }
         }
 
         private void deleteSelectedItems() throws IOException {
-            mScheduleAdapter.clear();
 
             if (mFirebaseUser != null) {
                 // Delete the data from Firebase
-                DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                classesRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes");
                 for (int i = 0; i < CAMselectedItemsList.size(); i++) {
-                    mScheduleList.remove(CAMselectedItemsList.get(i));
+                    mScheduleList.remove((int)CAMselectedItemsList.get(i));
+                    classesRef.child(mScheduleList.get(CAMselectedItemsList.get(i)).scheduleLesson).removeValue();
                 }
                 mScheduleAdapter.notifyDataSetChanged();
+
+                // Set the splash text if there's no classes queried
+                if (mScheduleAdapter.getCount() == 0)
+                    headerTextView.setVisibility(View.VISIBLE);
+                else headerTextView.setVisibility(View.GONE);
             } else {
                 // Delete the data from SQLite
                 DbHelper db = new DbHelper(getActivity());
@@ -506,13 +505,17 @@ public class ScheduleFragment extends Fragment {
                 // Requery the current day schedule
                 mScheduleAdapter.addAll(db.getCurrentDayScheduleArray(getContext()));
                 mScheduleAdapter.notifyDataSetChanged();
+
+                // Set the splash text if there's no classes queried
+                if (mScheduleAdapter.getCount() == 0)
+                    headerTextView.setVisibility(View.VISIBLE);
+                else headerTextView.setVisibility(View.GONE);
             }
 
 
             if (mScheduleAdapter.getCount() == 0) {
-                headerTextView.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
-                headerTextView.setGravity(Gravity.CENTER_HORIZONTAL);
-            }
+                headerTextView.setVisibility(View.VISIBLE);
+            } else headerTextView.setVisibility(View.GONE);
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode

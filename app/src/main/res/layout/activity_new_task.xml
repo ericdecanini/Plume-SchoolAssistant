@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/backgroundColor"
+    android:orientation="vertical"
     tools:context="com.pdt.plume.NewTaskActivity">
 
     <LinearLayout
@@ -12,121 +12,252 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <EditText
+            android:id="@+id/field_new_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:hint="@string/new_task_hint"
+            android:paddingLeft="24dp"
+            android:paddingStart="24dp"
+            android:textColor="@color/white"
+            android:textColorHint="#CCFFFFFF" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:paddingBottom="20dp"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin">
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="6"
+                android:layout_marginTop="2dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:text="@string/link_to_class"
+                    android:textColor="@color/black_0.54"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/task_type"
+                    android:textColor="@color/black_0.54"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="6"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/field_class_dropdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                                <TextView
+                                    android:id="@+id/field_class_textview"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:paddingLeft="5dp"
+                                    android:paddingStart="5dp"
+                                    android:text="@string/field_dropdown_class" />
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical|end"
+                                android:src="@drawable/ic_dropdown_black"
+                                android:layout_marginRight="12dp"
+                                android:tint="@color/gray_700"
+                                android:id="@+id/imageView" />
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_marginRight="16dp"
+                                android:layout_height="1dp"
+                                android:layout_gravity="bottom"
+                                android:layout_marginLeft="4dp"
+                                android:background="@color/gray_500" />
+                        </FrameLayout>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/field_type_dropdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp">
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/field_type_textview"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:paddingLeft="5dp"
+                                    android:paddingStart="5dp"
+                                    android:text="@string/field_dropdown_type" />
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical|end"
+                                    android:src="@drawable/ic_dropdown_black"
+                                    android:layout_marginRight="12dp"
+                                    android:tint="@color/gray_700" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_gravity="bottom"
+                                android:layout_marginRight="16dp"
+                                android:layout_marginLeft="4dp"
+                                android:background="@color/gray_500" />
+                        </FrameLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <com.pdt.plume.CircularImageView
                 android:id="@+id/field_new_task_icon"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:layout_gravity="center"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="16dp"
                 android:src="@drawable/art_task_64dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical">
-
-                <EditText
-                    android:id="@+id/field_new_task_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/new_task_hint"
-                    android:textCursorDrawable="@null" />
-
-                <LinearLayout
-                    android:id="@+id/field_class_dropdown"
-                    android:layout_width="128dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp">
-
-                    <TextView
-                        android:id="@+id/field_class_textview"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="4dp"
-                        android:paddingStart="4dp"
-                        android:text="@string/field_dropdown_class" />
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_dropdown_black"
-                        android:tint="@color/gray_700" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="128dp"
-                    android:layout_height="1dp"
-                    android:background="@color/gray_500" />
-
-                <LinearLayout
-                    android:id="@+id/field_type_dropdown"
-                    android:layout_width="128dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:paddingLeft="4dp"
-                    android:paddingStart="4dp">
-
-                    <TextView
-                        android:id="@+id/field_type_textview"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/field_dropdown_type" />
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_dropdown_black"
-                        android:tint="@color/gray_700" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="128dp"
-                    android:layout_height="1dp"
-                    android:background="@color/gray_500" />
-
-            </LinearLayout>
-
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
         </LinearLayout>
 
         <CheckBox
             android:id="@+id/field_shared"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/share_task"
-            android:textSize="16sp"
-            android:textColor="@color/gray_700"
             android:paddingLeft="8dp"
-            android:layout_marginBottom="8dp"/>
+            android:text="@string/share_task"
+            android:textColor="@color/gray_700"
+            android:textSize="16sp" />
 
         <View
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/dividerColor" />
 
         <LinearLayout
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="16dp"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingTop="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="8dp"
+                android:gravity="center_vertical"
+                android:text="@string/field_due_date"
+                android:textColor="@color/black_0.54"
+                android:textSize="16sp" />
+
+            <FrameLayout
+                android:id="@+id/field_new_task_duedate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:orientation="horizontal"
+                    android:paddingBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/field_new_task_duedate_textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginRight="8dp"
+                        android:text="February 30, 2017"
+                        android:textSize="16sp" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/ic_time_black_24dp"
+                        android:tint="@color/gray_700" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="160dp"
+                    android:layout_height="1dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="16dp"
+                    android:background="@color/gray_500" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/dividerColor"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingTop="16dp"
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -138,9 +269,9 @@
                 android:id="@+id/field_new_task_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
+                android:layout_marginTop="3dp"
                 android:text="@string/field_new_photo_dialog_title"
                 android:textSize="16sp" />
 
@@ -153,12 +284,50 @@
                 android:id="@+id/field_new_task_photo_slot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxHeight="64dp"
-                android:maxWidth="64dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+                android:maxHeight="64dp"
+                android:maxWidth="64dp" />
 
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/dividerColor" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:text="@string/field_hint_description"
+            android:textColor="@color/black_0.54"
+            android:textSize="18sp"
+            android:id="@+id/textView3" />
+
+        <View
+            android:layout_width="32dp"
+            android:layout_height="3dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="4dp"
+            android:background="@color/gray_700" />
+
+        <EditText
+            android:id="@+id/field_new_task_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:background="@null"
+            android:gravity="start"
+            android:hint="@string/enter_text_hint"
+            android:minLines="5"
+            android:textSize="16sp" />
 
         <View
             android:layout_width="match_parent"
@@ -168,227 +337,171 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="12dp"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="12dp">
+            android:visibility="gone"
+            android:orientation="vertical">
 
-            <ImageView
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_subject_black_32dp"
-                android:tint="@color/gray_700" />
-
-            <EditText
-                android:id="@+id/field_new_task_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="1dp"
-                android:textSize="16sp"
-                android:background="@null"
-                android:gravity="start"
-                android:hint="@string/field_hint_description"
-                android:minLines="5" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/dividerColor" />
-
-        <LinearLayout
-            android:id="@+id/field_new_task_duedate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="16dp"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="16dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_time_black_32dp"
-                android:tint="@color/gray_700" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/field_due_date"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/field_new_task_duedate_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="2dp"
-                    android:text="Sample Text" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="16dp"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="16dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_alarm_black_32dp"
-                android:tint="@color/gray_700" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp">
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:text="@string/field_set_reminder"
+                android:textColor="@color/black_0.54"
+                android:textSize="18sp" />
+
+            <View
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="4dp"
+                android:background="@color/gray_700" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="4"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/field_set_reminder"
-                        android:textColor="@color/black"
-                        android:textSize="16sp" />
+                    android:layout_gravity="center_vertical">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:orientation="vertical">
 
                         <LinearLayout
-                            android:id="@+id/field_new_task_reminder_date"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="4"
-                            android:orientation="vertical"
-                            android:paddingTop="8dp">
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
-                            <FrameLayout
-                                android:layout_width="match_parent"
+                            <LinearLayout
+                                android:id="@+id/field_new_task_reminder_date"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:paddingLeft="2dp"
-                                android:paddingStart="2dp">
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:paddingTop="8dp">
 
-                                <TextView
-                                    android:id="@+id/field_new_task_reminder_date_textview"
-                                    android:layout_width="wrap_content"
+                                <FrameLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_gravity="center_vertical"
-                                    android:text="Sample Text" />
+                                    android:paddingLeft="2dp"
+                                    android:paddingStart="2dp">
 
-                                <ImageView
-                                    android:layout_width="wrap_content"
+                                    <TextView
+                                        android:id="@+id/field_new_task_reminder_date_textview"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical" />
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="end"
+                                        android:src="@drawable/ic_calendar_black_24dp"
+                                        android:tint="@color/gray_700" />
+                                </FrameLayout>
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginTop="4dp"
+                                    android:background="@color/gray_500" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/field_new_task_reminder_time"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:layout_marginLeft="20dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:paddingTop="8dp">
+
+                                <FrameLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_gravity="end"
-                                    android:src="@drawable/ic_dropdown_black"
-                                    android:tint="@color/gray_700" />
-                            </FrameLayout>
+                                    android:paddingLeft="2dp"
+                                    android:paddingStart="2dp">
 
+                                    <TextView
+                                        android:id="@+id/field_new_task_reminder_time_textview"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical"
+                                        android:textSize="14sp" />
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="end"
+                                        android:src="@drawable/ic_time_black_24dp"
+                                        android:tint="@color/gray_700" />
+                                </FrameLayout>
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="@color/gray_500"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
                             <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="@color/gray_500" />
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:id="@+id/field_new_task_reminder_time"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginLeft="20dp"
-                            android:layout_marginRight="16dp"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="2"
-                            android:orientation="vertical"
-                            android:paddingTop="8dp">
 
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:paddingLeft="2dp"
-                                android:paddingStart="2dp">
-
-                                <TextView
-                                    android:id="@+id/field_new_task_reminder_time_textview"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center_vertical"
-                                    android:textSize="14sp" />
-
-                                <ImageView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="end"
-                                    android:src="@drawable/ic_dropdown_black"
-                                    android:tint="@color/gray_700" />
-                            </FrameLayout>
-
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="@color/gray_500" />
-                        </LinearLayout>
 
                     </LinearLayout>
 
                 </LinearLayout>
-
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/dividerColor"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingTop="16dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_attachment_black_32dp"
+                    android:tint="@color/gray_700" />
+
+                <TextView
+                    android:id="@+id/field_new_task_attach"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/field_attach_file"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:visibility="gone"
-            android:background="@color/dividerColor" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="16dp"
-            android:visibility="gone"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="16dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_attachment_black_32dp"
-                android:tint="@color/gray_700" />
-
-            <TextView
-                android:id="@+id/field_new_task_attach"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:text="@string/field_attach_file"
-                android:textSize="16sp" />
-        </LinearLayout>
 
     </LinearLayout>
 

@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,10 +14,14 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -27,6 +32,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.support.v7.widget.Toolbar;
@@ -45,7 +51,9 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,10 +69,15 @@ import com.pdt.plume.services.ScheduleNotificationService;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.pdt.plume.ScheduleFragment.showBlockHeaderA;
+import static com.pdt.plume.ScheduleFragment.showBlockHeaderB;
+import static java.security.AccessController.getContext;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
+    Utility utility = new Utility();
 
     // UI Elements
     Toolbar mToolbar;
@@ -90,19 +103,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     boolean loggedIn = false;
     MenuItem logInOut;
 
+    // Request Codes
+    private static final int REQUEST_STORAGE_PERMISSION = 6;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        //Displaying token on logcat
-        String token = FirebaseInstanceId.getInstance().getToken();
-        Log.d(LOG_TAG, "Token: " + token);
+        // Initialize Firebase
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        if (mFirebaseUser == null) {
+            loggedIn = false;
+        }
+        else {
+            loggedIn = true;
+        }
 
         // Set the custom toolbar as the action bar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle("");
         mAppbar = (AppBarLayout) findViewById(R.id.appbar);
 
         // If it's the first time running the app, launch this method
@@ -139,17 +163,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             notificationServiceIsRunning = true;
         }
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-        if (mFirebaseUser == null) {
-            loggedIn = false;
-        }
-        else {
-            loggedIn = true;
-            Toast.makeText(this, "Logged in", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -189,6 +202,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .putInt("weekOfYear", currentWeek)
                 .apply();
 
+        // Set the header date
+        TextView headerTextView = (TextView) findViewById(R.id.header);
+        if (showBlockHeaderA) {
+            String blockString = utility.formatBlockString(this, 0);
+            headerTextView.setText(blockString);
+        } else if (showBlockHeaderB) {
+            String blockString = utility.formatBlockString(this, 1);
+            headerTextView.setText(blockString);
+        } else {
+            headerTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        }
+
         // Set the action bar colour according to the theme
         mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
@@ -209,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Initialise the tab layout theme
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout!= null) {
-            tabLayout.setSelectedTabIndicatorColor(mSecondaryColor);
+            tabLayout.setSelectedTabIndicatorColor(mPrimaryColor);
         }
 
         // Initialise the fab
@@ -245,11 +271,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.action_logout) {
             if (loggedIn)
                 logOut();
-            else loadLogInView();
+            else {
+                // Request for the permission WRITE SETTINGS
+                // TODO: Test if app can function normally without this permission
+//                boolean permissionCheck = Settings.System.canWrite(this);
+//                if (!permissionCheck) {
+//                    Intent intent = new Intent();
+//                    intent.setAction("android.settings.action.MANAGE_WRITE_SETTINGS");
+//                    intent.setData(Uri.parse("package:" + getPackageName()));
+//                    startActivity(intent);
+//                } else
+                    loadLogInView();
+
+            }
             return true;
         }
 
         return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_STORAGE_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadLogInView();
+                }
+                return;
+        }
     }
 
     // Include back button action to close
@@ -343,7 +392,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             tabLayout.setupWithViewPager(mViewPager);
             mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
                     .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-            tabLayout.setSelectedTabIndicatorColor(mSecondaryColor);
+            tabLayout.setSelectedTabIndicatorColor(mPrimaryColor);
+
+            // Set the custom view of the tabs
+            LinearLayout linearLayout = (LinearLayout)tabLayout.getChildAt(0);
+            linearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+            GradientDrawable drawable = new GradientDrawable();
+            drawable.setColor(Color.GRAY);
+            drawable.setSize(2, 2);
+            linearLayout.setDividerPadding(0);
+            linearLayout.setDividerDrawable(drawable);
         }
 
         // Check if the activity was started from the NewTaskActivity
@@ -503,7 +561,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mFirebaseAuth.signOut();
         loggedIn = false;
         logInOut.setTitle(getString(R.string.action_login));
-        Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);

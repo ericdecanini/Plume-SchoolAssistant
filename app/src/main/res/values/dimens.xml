@@ -20,4 +20,8 @@
     <dimen name="slide_desc">16sp</dimen>
     <dimen name="desc_padding">40dp</dimen>
 
+    <!-- APP BAR DIMENSIONS -->
+    <dimen name="extended_app_bar_height">172dp</dimen>
+    <dimen name="extended_app_bar_height_newschedule">124dp</dimen>
+
 </resources>

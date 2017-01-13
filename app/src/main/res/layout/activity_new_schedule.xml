@@ -22,7 +22,7 @@
             android:textCursorDrawable="@null"
             android:paddingStart="24dp"
             android:textColor="@color/white"
-            android:textColorHint="@color/white" />
+            android:textColorHint="#CCFFFFFF" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -39,13 +39,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <com.pdt.plume.CircularImageView
-                        android:id="@+id/new_schedule_icon"
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/art_class_64dp" />
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_weight="1"
@@ -59,40 +52,48 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
+                            <EditText
+                                android:id="@+id/field_new_schedule_teacher"
+                                android:layout_width="wrap_content"
+                                android:minWidth="156dp"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/new_schedule_teacher" />
                             <ImageView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:src="@drawable/ic_person_black"
+                                android:src="@drawable/ic_edit_white"
                                 android:layout_gravity="center"
                                 android:tint="@color/gray_700"/>
-                            <EditText
-                                android:id="@+id/field_new_schedule_teacher"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textCursorDrawable="@null"
-                                android:hint="@string/new_schedule_teacher" />
                         </LinearLayout>
 
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
+                            <EditText
+                                android:id="@+id/field_new_schedule_room"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:minWidth="156dp"
+                                android:inputType="textVisiblePassword"
+                                android:hint="@string/new_schedule_room" />
                             <ImageView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:src="@drawable/ic_location_black"
+                                android:src="@drawable/ic_edit_white"
                                 android:layout_gravity="center"
                                 android:tint="@color/gray_700"/>
-                            <EditText
-                                android:id="@+id/field_new_schedule_room"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textCursorDrawable="@null"
-                                android:inputType="textVisiblePassword"
-                                android:hint="@string/new_schedule_room" />
                         </LinearLayout>
 
                     </LinearLayout>
+
+                    <com.pdt.plume.CircularImageView
+                        android:id="@+id/new_schedule_icon"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="40dp"
+                        android:src="@drawable/art_class_64dp" />
 
                 </LinearLayout>
 
@@ -111,31 +112,23 @@
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"/>
 
-                <LinearLayout
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    android:paddingStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:id="@+id/field_new_schedule_add_class_time_icon"
-                        android:src="@drawable/ic_add_class_time"
-                        android:layout_width="wrap_content"
-                        android:layout_marginRight="4dp"
-                        android:tint="@color/colorPrimary"
-                        android:layout_marginEnd="4dp"
-                        android:layout_height="wrap_content" />
-
+                
                     <TextView
-                        android:layout_gravity="center_vertical"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="16dp"
                         android:id="@+id/field_new_schedule_add_class_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorPrimary"
+                        android:textSize="16sp"
                         android:text="@string/new_schedule_add_class_time"/>
-                </LinearLayout>
+                <View
+                    android:id="@+id/new_schedule_underline"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_width="188dp"
+                    android:layout_height="2dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/colorPrimary"/>
 
             </LinearLayout>
         </ScrollView>

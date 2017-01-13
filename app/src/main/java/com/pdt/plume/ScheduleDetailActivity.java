@@ -8,7 +8,9 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -35,7 +37,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -64,14 +65,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     String teacher;
     String room;
     ListView listView;
-    //    LinearLayout addNoteView;
     ListView notesList;
     Uri iconUri;
 
     // Theme Variables
-//    int mPrimaryColor;
-//    int mDarkColor;
-//    int mSecondaryColor;
+    int mPrimaryColor;
+    int mDarkColor;
+    int mSecondaryColor;
 
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
@@ -95,9 +95,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Set enter transition and window features
-        setStatusBarTranslucent(true);
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setEnterTransition(new Fade());
         setContentView(R.layout.activity_schedule_detail);
@@ -111,7 +111,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         // Get references to the UI elements
         final TextView teacherTextview = (TextView) findViewById(R.id.teacher);
         final TextView roomTextview = (TextView) findViewById(R.id.room);
-//        addNoteView = (LinearLayout) findViewById(R.id.schedule_detail_notes_layout);
+        TextView addNoteTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
+        addNoteTextview.setOnClickListener(addNoteListener());
 
         // Set the attributes of the window
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -157,6 +158,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         teacher = dataSnapshot.child("teacher").getValue(String.class);
                         room = dataSnapshot.child("room").getValue(String.class);
+                        iconUri = Uri.parse(dataSnapshot.child("icon").getValue(String.class));
 
                         // Apply data to the UI
                         collapsingToolbar.setTitle(title);
@@ -175,55 +177,73 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     String icon = dataSnapshot.child("icon").getValue(String.class);
                                     String title = dataSnapshot.child("title").getValue(String.class);
                                     String sharer = dataSnapshot.child("sharer").getValue(String.class);
+                                    String taskClass = dataSnapshot.child("class").getValue(String.class);
+                                    String tasktType = dataSnapshot.child("type").getValue(String.class);
                                     String description = dataSnapshot.child("description").getValue(String.class);
                                     float duedate = dataSnapshot.child("duedate").getValue(float.class);
 
                                     taskFirebaseIDs.add(id);
-                                    mTasksList.add(new Task(icon, title, sharer, description, "", duedate, -1));
+                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1));
                                     ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
                                 }
                             }
-                            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                            @Override public void onCancelled(DatabaseError databaseError) {}
+
+                            @Override
+                            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                            }
+
+                            @Override
+                            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                            }
+
+                            @Override
+                            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
                         });
 
                         // Initialise the periods list
                         final DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                                 .child("users").child(mUserId).child("classes")
                                 .child(title);
-                            final ArrayList<String> occurrences = new ArrayList<>();
-                            final ArrayList<String> timeins = new ArrayList<>();
-                            final ArrayList<String> timeouts = new ArrayList<>();
-                            final ArrayList<String> timeinalts = new ArrayList<>();
-                            final ArrayList<String> timeoutalts = new ArrayList<>();
-                            final ArrayList<String> periods = new ArrayList<>();
+                        final ArrayList<String> occurrences = new ArrayList<>();
+                        final ArrayList<String> timeins = new ArrayList<>();
+                        final ArrayList<String> timeouts = new ArrayList<>();
+                        final ArrayList<String> timeinalts = new ArrayList<>();
+                        final ArrayList<String> timeoutalts = new ArrayList<>();
+                        final ArrayList<String> periods = new ArrayList<>();
 
-                            classRef.child("occurrence").addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    long snapshotCount = dataSnapshot.getChildrenCount();
-                                    for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
-                                        occurrences.add(occurrenceSnapshot.getKey());
-                                    }
-                                    if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
-                                            && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
-                                            && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
-                                        for (int i = 0; i < snapshotCount; i++)
-                                            mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
-                                                    timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
-                                                    periods.get(i), occurrences.get(i)));
-
-                                    mPeriodsAdapter.notifyDataSetChanged();
+                        classRef.child("occurrence").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                long snapshotCount = dataSnapshot.getChildrenCount();
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
+                                    occurrences.add(occurrenceSnapshot.getKey());
                                 }
-                                @Override public void onCancelled(DatabaseError databaseError) {}});
+                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
+                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
+                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
+                                    for (int i = 0; i < snapshotCount; i++)
+                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
+                                                periods.get(i), occurrences.get(i)));
+
+                                mPeriodsAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
 
                         classRef.child("timein").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
                                     timeins.add(occurrenceSnapshot.getKey());
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
@@ -236,13 +256,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                                 mPeriodsAdapter.notifyDataSetChanged();
                             }
-                            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
 
                         classRef.child("timeout").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
                                     timeouts.add(occurrenceSnapshot.getKey());
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
@@ -255,13 +279,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                                 mPeriodsAdapter.notifyDataSetChanged();
                             }
-                            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
 
                         classRef.child("timeinalt").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
                                     timeinalts.add(occurrenceSnapshot.getKey());
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
@@ -273,12 +301,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                                 periods.get(i), occurrences.get(i)));
 
                                 mPeriodsAdapter.notifyDataSetChanged();
-                            }@Override public void onCancelled(DatabaseError databaseError) {}});
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
                         classRef.child("timeoutalt").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
                                     timeoutalts.add(occurrenceSnapshot.getKey());
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
@@ -291,13 +324,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                                 mPeriodsAdapter.notifyDataSetChanged();
                             }
-                            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
 
                         classRef.child("periods").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot: dataSnapshot.getChildren()) {
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
                                     periods.add(occurrenceSnapshot.getKey());
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
@@ -309,12 +346,85 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                                 periods.get(i), occurrences.get(i)));
 
                                 mPeriodsAdapter.notifyDataSetChanged();
+
+                                classRef.removeEventListener(this);
+
+                                // Initialise the theme variables
+                                Bitmap iconBitmap = null;
+                                try {
+                                    iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                Log.v(LOG_TAG, "IconUri: " + iconUri);
+                                Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
+                                    @Override
+                                    public void onGenerated(Palette palette) {
+                                        int mainColour;
+
+                                        if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                                            mainColour = Color.parseColor("#29235C");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                                            mainColour = Color.parseColor("#575756");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                                            mainColour = Color.parseColor("#006838");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                                            mainColour = Color.parseColor("#A48A7B");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                                            mainColour = Color.parseColor("#7B6A58");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                                            mainColour = Color.parseColor("#9E9E9E");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                                            mainColour = Color.parseColor("#936037");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                                            mainColour = Color.parseColor("#F39200");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                                            mainColour = Color.parseColor("#432918");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                                            mainColour = Color.parseColor("#D35095");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                                            mainColour = Color.parseColor("#1D1D1B");
+                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                                            mainColour = Color.parseColor("#424242");
+                                        else {
+                                            // Set the action bar colour according to the theme
+                                            mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                                    getResources().getColor(R.color.colorPrimary))) ;
+                                            mainColour = palette.getVibrantColor(mPrimaryColor);
+                                        }
+
+                                        mPrimaryColor = mainColour;
+                                        float[] hsv = new float[3];
+                                        int color = mainColour;
+                                        Color.colorToHSV(color, hsv);
+                                        hsv[2] *= 0.8f; // value component
+                                        mDarkColor = Color.HSVToColor(hsv);
+                                        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+                                        collapsingToolbar.setBackgroundColor(mPrimaryColor);
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            getWindow().setStatusBarColor(mDarkColor);
+                                        }
+
+                                        // Initialise Notes
+                                        TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
+                                        notesTextview.setTextColor(mPrimaryColor);
+                                    }
+                                });
                             }
-                            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
 
 
                     }
-                    @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
             } else {
                 // Get the data from SQLite
                 DbHelper dbHelper = new DbHelper(this);
@@ -340,6 +450,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)),
                                     "",
+                                    cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS)),
+                                    cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT)),
                                     tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)),
@@ -366,76 +478,64 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE))));
                         cursor.moveToNext();
                     }
-                }
-            }
 
-
-
-            // Initialise the theme variables
-            Bitmap iconBitmap = null;
-            try {
-                iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    int mainColour;
-
-                    if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
-                        mainColour = Color.parseColor("#29235C");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
-                        mainColour = Color.parseColor("#575756");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
-                        mainColour = Color.parseColor("#006838");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
-                        mainColour = Color.parseColor("#A48A7B");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
-                        mainColour = Color.parseColor("#7B6A58");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
-                        mainColour = Color.parseColor("#9E9E9E");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
-                        mainColour = Color.parseColor("#936037");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
-                        mainColour = Color.parseColor("#F39200");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
-                        mainColour = Color.parseColor("#432918");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
-                        mainColour = Color.parseColor("#D35095");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
-                        mainColour = Color.parseColor("#1D1D1B");
-                    else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
-                        mainColour = Color.parseColor("#424242");
-                    else {
-                        // Set the action bar colour according to the theme
-//                        mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-//                                getResources().getColor(R.color.colorPrimary))) ;
-//                        mainColour = palette.getVibrantColor(mPrimaryColor);
+                    // Initialise the theme variables
+                    Bitmap iconBitmap = null;
+                    try {
+                        iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                    Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
+                        @Override
+                        public void onGenerated(Palette palette) {
+                            int mainColour;
 
-//                    float[] hsv = new float[3];
-//                    int color = mainColour;
-//                    Color.colorToHSV(color, hsv);
-//                    hsv[2] *= 0.8f; // value component
+                            if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                                mainColour = Color.parseColor("#29235C");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                                mainColour = Color.parseColor("#575756");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                                mainColour = Color.parseColor("#006838");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                                mainColour = Color.parseColor("#A48A7B");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                                mainColour = Color.parseColor("#7B6A58");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                                mainColour = Color.parseColor("#9E9E9E");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                                mainColour = Color.parseColor("#936037");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                                mainColour = Color.parseColor("#F39200");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                                mainColour = Color.parseColor("#432918");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                                mainColour = Color.parseColor("#D35095");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                                mainColour = Color.parseColor("#1D1D1B");
+                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                                mainColour = Color.parseColor("#424242");
+                            else {
+                                // Set the action bar colour according to the theme
+                                mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                        getResources().getColor(R.color.colorPrimary))) ;
+                                mainColour = palette.getVibrantColor(mPrimaryColor);
+                            }
 
-//                    mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
-                    ImageView notesIcon = (ImageView) findViewById(R.id.schedule_detail_notes_icon);
-                    TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
-//                    notesIcon.getBackground().setColorFilter(mainColour, PorterDuff.Mode.SRC_ATOP);
-//                    notesTextview.setTextColor(mainColour);
+                            float[] hsv = new float[3];
+                            int color = mainColour;
+                            Color.colorToHSV(color, hsv);
+                            hsv[2] *= 0.8f; // value component
 
-//                    mDarkColor = Color.HSVToColor(hsv);
-//                    actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-//                    }
-//                    else collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                        getWindow().setStatusBarColor(mDarkColor);
-//                    }
+                            mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+                            // Initialise Notes
+                            TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
+                            notesTextview.setTextColor(mPrimaryColor);
+                        }
+                    });
                 }
-            });
+            }
         }
     }
 
@@ -467,12 +567,24 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         notesArray.add(dataSnapshot.getKey());
                         mNotesAdapter.notifyDataSetChanged();
                     }
-
                 }
-                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
         } else {
             // Get the data from SQLite
             DbHelper dbHelper = new DbHelper(this);
@@ -489,8 +601,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu (Menu menu){
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_schedule_detail, menu);
 //        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
         return super.onCreateOptionsMenu(menu);
     }
@@ -498,15 +610,24 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_delete:
                 new AlertDialog.Builder(this)
                         .setMessage(getString(R.string.schedule_detail_dialog_delete_confirm))
                         .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DbHelper dbHelper = new DbHelper(ScheduleDetailActivity.this);
-                                dbHelper.deleteScheduleItemByTitle(title);
+                                if (mFirebaseUser != null) {
+                                    // Delete data from Firebase
+                                    FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(mUserId).child("classes")
+                                            .child(title).removeValue();
+                                } else {
+                                    // Delete data from SQLite
+                                    DbHelper dbHelper = new DbHelper(ScheduleDetailActivity.this);
+                                    dbHelper.deleteScheduleItemByTitle(title);
+                                }
+
                                 Intent intent = new Intent(ScheduleDetailActivity.this, MainActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                                 startActivity(intent);
@@ -569,14 +690,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 }
             }
         };
-    }
-
-    protected void setStatusBarTranslucent(boolean makeTranslucent) {
-        if (makeTranslucent) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        } else {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        }
     }
 
     private class OccurrenceModeCallback implements ListView.MultiChoiceModeListener {
@@ -732,7 +845,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
                     db.deleteTaskItem(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
@@ -755,9 +868,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(int position){
+        private void editSelectedItem(int position) {
             // Ensure that only one item is selected
-            if (CAMselectedItemsList.size() == 1){
+            if (CAMselectedItemsList.size() == 1) {
                 // Initialise intent data variables
                 int id;
                 String title;
@@ -776,7 +889,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 Cursor cursor = db.getUncompletedTaskData();
 
                 // Move the cursor to the position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
@@ -793,7 +906,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE),title);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
@@ -973,7 +1086,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for(int i = 0; i < CAMselectedItemsList.size(); i++) {
+            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
                 if (cursor.moveToPosition(CAMselectedItemsList.get(i))) {
                     db.deleteNoteItem(cursor.getInt(cursor.getColumnIndex(DbContract.NotesEntry._ID)));
                 }
@@ -996,9 +1109,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         }
 
-        private void editSelectedItem(int position){
+        private void editSelectedItem(int position) {
             // Ensure that only one item is selected
-            if (CAMselectedItemsList.size() == 1){
+            if (CAMselectedItemsList.size() == 1) {
                 // Initialise intent data variables
                 int id;
                 String title;
@@ -1017,7 +1130,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 Cursor cursor = db.getUncompletedTaskData();
 
                 // Move the cursor to the position of the selected item
-                if (cursor.moveToPosition(CAMselectedItemsList.get(0))){
+                if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {
                     // Get its Data
                     id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
                     title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
@@ -1034,7 +1147,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE),title);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
                     intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);

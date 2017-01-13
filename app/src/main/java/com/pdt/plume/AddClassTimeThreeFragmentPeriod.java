@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,10 +34,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
     TextView periodSix;
     TextView periodSeven;
     TextView periodEight;
-    TextView periodNine;
-    TextView periodTen;
-    TextView periodEleven;
-    TextView periodTwelve;
 
     TextView periodOneAlt;
     TextView periodTwoAlt;
@@ -46,10 +43,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
     TextView periodSixAlt;
     TextView periodSevenAlt;
     TextView periodEightAlt;
-    TextView periodNineAlt;
-    TextView periodTenAlt;
-    TextView periodElevenAlt;
-    TextView periodTwelveAlt;
+
+    TextView header, headerAlt;
 
     int mPrimaryColor;
     int mSecondaryColor;
@@ -120,22 +115,25 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         TextView basisTextView = (TextView) rootView.findViewById(R.id.class_time_one_value);
         TextView weekTypeTextView = (TextView) rootView.findViewById(R.id.class_time_two_value);
 
-        ImageView sunday = (ImageView) rootView.findViewById(R.id.class_three_sunday);
-        ImageView monday = (ImageView) rootView.findViewById(R.id.class_three_monday);
-        ImageView tuesday = (ImageView) rootView.findViewById(R.id.class_three_tuesday);
-        ImageView wednesday = (ImageView) rootView.findViewById(R.id.class_three_wednesday);
-        ImageView thursday = (ImageView) rootView.findViewById(R.id.class_three_thursday);
-        ImageView friday = (ImageView) rootView.findViewById(R.id.class_three_friday);
-        ImageView saturday = (ImageView) rootView.findViewById(R.id.class_three_saturday);
-        Button done = (Button) rootView.findViewById(R.id.class_three_done);
+        header = (TextView) rootView.findViewById(R.id.class_three_item_header);
+        TextView sunday = (TextView) rootView.findViewById(R.id.class_three_sunday);
+        TextView monday = (TextView) rootView.findViewById(R.id.class_three_monday);
+        TextView tuesday = (TextView) rootView.findViewById(R.id.class_three_tuesday);
+        TextView wednesday = (TextView) rootView.findViewById(R.id.class_three_wednesday);
+        TextView thursday = (TextView) rootView.findViewById(R.id.class_three_thursday);
+        TextView friday = (TextView) rootView.findViewById(R.id.class_three_friday);
+        TextView saturday = (TextView) rootView.findViewById(R.id.class_three_saturday);
+        LinearLayout done = (LinearLayout) rootView.findViewById(R.id.class_three_done);
+        LinearLayout cancel = (LinearLayout) rootView.findViewById(R.id.class_three_cancel);
 
-        ImageView sundayAlt = (ImageView) rootView.findViewById(R.id.class_three_sunday_alt);
-        ImageView mondayAlt = (ImageView) rootView.findViewById(R.id.class_three_monday_alt);
-        ImageView tuesdayAlt = (ImageView) rootView.findViewById(R.id.class_three_tuesday_alt);
-        ImageView wednesdayAlt = (ImageView) rootView.findViewById(R.id.class_three_wednesday_alt);
-        ImageView thursdayAlt = (ImageView) rootView.findViewById(R.id.class_three_thursday_alt);
-        ImageView fridayAlt = (ImageView) rootView.findViewById(R.id.class_three_friday_alt);
-        ImageView saturdayAlt = (ImageView) rootView.findViewById(R.id.class_three_saturday_alt);
+        headerAlt = (TextView) rootView.findViewById(R.id.class_three_item_header_alt);
+        TextView sundayAlt = (TextView) rootView.findViewById(R.id.class_three_sunday_alt);
+        TextView mondayAlt = (TextView) rootView.findViewById(R.id.class_three_monday_alt);
+        TextView tuesdayAlt = (TextView) rootView.findViewById(R.id.class_three_tuesday_alt);
+        TextView wednesdayAlt = (TextView) rootView.findViewById(R.id.class_three_wednesday_alt);
+        TextView thursdayAlt = (TextView) rootView.findViewById(R.id.class_three_thursday_alt);
+        TextView fridayAlt = (TextView) rootView.findViewById(R.id.class_three_friday_alt);
+        TextView saturdayAlt = (TextView) rootView.findViewById(R.id.class_three_saturday_alt);
 
         periodOne = (TextView) rootView.findViewById(R.id.class_three_period_one);
         periodTwo = (TextView) rootView.findViewById(R.id.class_three_period_two);
@@ -145,10 +143,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         periodSix = (TextView) rootView.findViewById(R.id.class_three_period_six);
         periodSeven = (TextView) rootView.findViewById(R.id.class_three_period_seven);
         periodEight = (TextView) rootView.findViewById(R.id.class_three_period_eight);
-        periodNine = (TextView) rootView.findViewById(R.id.class_three_period_nine);
-        periodTen = (TextView) rootView.findViewById(R.id.class_three_period_ten);
-        periodEleven = (TextView) rootView.findViewById(R.id.class_three_period_eleven);
-        periodTwelve = (TextView) rootView.findViewById(R.id.class_three_period_twelve);
 
         periodOneAlt = (TextView) rootView.findViewById(R.id.class_three_period_one_alt);
         periodTwoAlt = (TextView) rootView.findViewById(R.id.class_three_period_two_alt);
@@ -158,10 +152,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         periodSixAlt = (TextView) rootView.findViewById(R.id.class_three_period_six_alt);
         periodSevenAlt = (TextView) rootView.findViewById(R.id.class_three_period_seven_alt);
         periodEightAlt = (TextView) rootView.findViewById(R.id.class_three_period_eight_alt);
-        periodNineAlt = (TextView) rootView.findViewById(R.id.class_three_period_nine_alt);
-        periodTenAlt = (TextView) rootView.findViewById(R.id.class_three_period_ten_alt);
-        periodElevenAlt = (TextView) rootView.findViewById(R.id.class_three_period_eleven_alt);
-        periodTwelveAlt = (TextView) rootView.findViewById(R.id.class_three_period_twelve_alt);
 
         // Set the OnClickListeners of each UI element
         basisTextView.setOnClickListener(listener());
@@ -175,6 +165,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         friday.setOnClickListener(listener());
         saturday.setOnClickListener(listener());
         done.setOnClickListener(listener());
+        cancel.setOnClickListener(listener());
 
         sundayAlt.setOnClickListener(listener());
         mondayAlt.setOnClickListener(listener());
@@ -192,10 +183,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         periodSix.setOnClickListener(listener());
         periodSeven.setOnClickListener(listener());
         periodEight.setOnClickListener(listener());
-        periodNine.setOnClickListener(listener());
-        periodTen.setOnClickListener(listener());
-        periodEleven.setOnClickListener(listener());
-        periodTwelve.setOnClickListener(listener());
 
         periodOneAlt.setOnClickListener(listener());
         periodTwoAlt.setOnClickListener(listener());
@@ -205,10 +192,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
         periodSixAlt.setOnClickListener(listener());
         periodSevenAlt.setOnClickListener(listener());
         periodEightAlt.setOnClickListener(listener());
-        periodNineAlt.setOnClickListener(listener());
-        periodTenAlt.setOnClickListener(listener());
-        periodElevenAlt.setOnClickListener(listener());
-        periodTwelveAlt.setOnClickListener(listener());
 
         // Initialise the theme
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -217,66 +200,13 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 getResources().getColor(R.color.colorPrimary));
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR),
                 getResources().getColor(R.color.colorAccent));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            periodOne.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodOne.setTextColor(mPrimaryColor);
-            periodTwo.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwo.setTextColor(mPrimaryColor);
-            periodThree.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodThree.setTextColor(mPrimaryColor);
-            periodFour.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFour.setTextColor(mPrimaryColor);
-            periodFive.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFive.setTextColor(mPrimaryColor);
-            periodSix.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodSix.setTextColor(mPrimaryColor);
-            periodSeven.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodSeven.setTextColor(mPrimaryColor);
-            periodEight.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodEight.setTextColor(mPrimaryColor);
-            periodNine.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodNine.setTextColor(mPrimaryColor);
-            periodTen.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTen.setTextColor(mPrimaryColor);
-            periodEleven.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodEleven.setTextColor(mPrimaryColor);
-            periodTwelve.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwelve.setTextColor(mPrimaryColor);
-
-            periodOneAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodOneAlt.setTextColor(mPrimaryColor);
-            periodTwoAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwoAlt.setTextColor(mPrimaryColor);
-            periodThreeAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodThreeAlt.setTextColor(mPrimaryColor);
-            periodFourAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFourAlt.setTextColor(mPrimaryColor);
-            periodFiveAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFiveAlt.setTextColor(mPrimaryColor);
-            periodSixAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodSixAlt.setTextColor(mPrimaryColor);
-            periodSevenAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodSevenAlt.setTextColor(mPrimaryColor);
-            periodEightAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodEightAlt.setTextColor(mPrimaryColor);
-            periodNineAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodNineAlt.setTextColor(mPrimaryColor);
-            periodTenAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTenAlt.setTextColor(mPrimaryColor);
-            periodElevenAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodElevenAlt.setTextColor(mPrimaryColor);
-            periodTwelveAlt.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwelveAlt.setTextColor(mPrimaryColor);
-
-        }
 
         // Get the arguments of the fragment and
-        // Set the hyperlink basis week classType text accordingly
+        // Set the hyperlink basis week taskType text accordingly
         basisTextView.setText(getString(R.string.class_time_one_periodbased));
-        basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
+        basisTextView.setTextColor(getResources().getColor(R.color.gray_200));
         Bundle args = getArguments();
-        if (args != null){
+        if (args != null) {
             if (args.containsKey("FLAG_EDIT")) {
                 FLAG_EDIT = args.getBoolean("FLAG_EDIT");
                 rowID = args.getInt("rowID");
@@ -286,13 +216,16 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 rowID = args.getInt("rowId");
             }
 
-            if (!args.getString("weekType", "-1").equals("1")){
+            if (!args.getString("weekType", "-1").equals("1")) {
                 //Change the layout based on weekType
                 rootView.findViewById(R.id.class_time_three_week_type_alt_layout).setVisibility(View.GONE);
+                header.setText(getString(R.string.class_time_three_select_days));
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
+            } else {
+                weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
+                header.setText(getString(R.string.class_three_weekone));
             }
-            else weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
-            weekTypeTextView.setTextColor(mPrimaryColor);
+            weekTypeTextView.setTextColor(getResources().getColor(R.color.gray_200));
 
             // Check if the fragment was started through the list view's OnItemClick
             // If it is, receive the corresponding data and auto-fill that item's UI
@@ -309,43 +242,50 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 if (splitOccurrence[2].equals("1") || splitOccurrence[2].equals("3")) {
                     isButtonChecked[0] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) sunday).setColorFilter(mPrimaryColor);
+                        sunday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        sunday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[3].equals("1") || splitOccurrence[3].equals("3")) {
                     isButtonChecked[1] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) monday).setColorFilter(mPrimaryColor);
+                        monday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        monday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[4].equals("1") || splitOccurrence[4].equals("3")) {
                     isButtonChecked[2] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) tuesday).setColorFilter(mPrimaryColor);
+                        tuesday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        tuesday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[5].equals("1") || splitOccurrence[5].equals("3")) {
                     isButtonChecked[3] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) wednesday).setColorFilter(mPrimaryColor);
+                        wednesday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        wednesday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[6].equals("1") || splitOccurrence[6].equals("3")) {
                     isButtonChecked[4] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) thursday).setColorFilter(mPrimaryColor);
+                        thursday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        thursday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[7].equals("1") || splitOccurrence[7].equals("3")) {
                     isButtonChecked[5] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) friday).setColorFilter(mPrimaryColor);
+                        friday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        friday.getBackground().setAlpha(180);
                     }
                 }
                 if (splitOccurrence[8].equals("1") || splitOccurrence[8].equals("3")) {
                     isButtonChecked[6] = 1;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        ((ImageView) saturday).setColorFilter(mPrimaryColor);
+                        saturday.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                        saturday.getBackground().setAlpha(180);
                     }
                 }
 
@@ -356,7 +296,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[0] = 3;
                         else isButtonChecked[0] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) sundayAlt).setColorFilter(mPrimaryColor);
+                            sundayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            sundayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[3].equals("2") || splitOccurrence[3].equals("3")) {
@@ -364,7 +305,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[1] = 3;
                         else isButtonChecked[1] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) mondayAlt).setColorFilter(mPrimaryColor);
+                            mondayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            mondayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[4].equals("2") || splitOccurrence[4].equals("3")) {
@@ -372,7 +314,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[2] = 3;
                         else isButtonChecked[2] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) tuesdayAlt).setColorFilter(mPrimaryColor);
+                            tuesdayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            tuesdayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[5].equals("2") || splitOccurrence[5].equals("3")) {
@@ -380,7 +323,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[3] = 3;
                         else isButtonChecked[3] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) wednesdayAlt).setColorFilter(mPrimaryColor);
+                            wednesdayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            wednesdayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[6].equals("2") || splitOccurrence[6].equals("3")) {
@@ -388,7 +332,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[4] = 3;
                         else isButtonChecked[4] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) thursdayAlt).setColorFilter(mPrimaryColor);
+                            thursdayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            thursdayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[7].equals("2") || splitOccurrence[7].equals("3")) {
@@ -396,7 +341,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[5] = 3;
                         else isButtonChecked[5] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) fridayAlt).setColorFilter(mPrimaryColor);
+                            fridayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            fridayAlt.getBackground().setAlpha(180);
                         }
                     }
                     if (splitOccurrence[8].equals("2") || splitOccurrence[8].equals("3")) {
@@ -404,7 +350,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             isButtonChecked[6] = 3;
                         else isButtonChecked[6] = 2;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            ((ImageView) saturdayAlt).setColorFilter(mPrimaryColor);
+                            saturdayAlt.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            saturdayAlt.getBackground().setAlpha(180);
                         }
                     }
                 }
@@ -413,156 +360,108 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 if (splitPeriod[0].equals("1") || splitPeriod[0].equals("3")) {
                     isPeriodChecked[0] = "1";
                     periodOne.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodOne.setTextColor(getResources().getColor(R.color.white));
+                    periodOne.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[1].equals("1") || splitPeriod[1].equals("3")) {
                     isPeriodChecked[1] = "1";
                     periodTwo.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodTwo.setTextColor(getResources().getColor(R.color.white));
+                    periodTwo.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[2].equals("1") || splitPeriod[2].equals("3")) {
                     isPeriodChecked[2] = "1";
                     periodThree.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodThree.setTextColor(getResources().getColor(R.color.white));
+                    periodThree.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[3].equals("1") || splitPeriod[3].equals("3")) {
                     isPeriodChecked[3] = "1";
                     periodFour.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodFour.setTextColor(getResources().getColor(R.color.white));
+                    periodFour.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[4].equals("1") || splitPeriod[4].equals("3")) {
                     isPeriodChecked[4] = "1";
                     periodFive.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodFive.setTextColor(getResources().getColor(R.color.white));
+                    periodFive.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[5].equals("1") || splitPeriod[5].equals("3")) {
                     isPeriodChecked[5] = "1";
                     periodSix.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodSix.setTextColor(getResources().getColor(R.color.white));
+                    periodSix.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[6].equals("1") || splitPeriod[6].equals("3")) {
                     isPeriodChecked[6] = "1";
                     periodSeven.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodSeven.setTextColor(getResources().getColor(R.color.white));
+                    periodSeven.getBackground().setAlpha(180);
                 }
                 if (splitPeriod[7].equals("1") || splitPeriod[7].equals("3")) {
                     isPeriodChecked[7] = "1";
                     periodEight.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodEight.setTextColor(getResources().getColor(R.color.white));
-                }
-                if (splitPeriod[8].equals("1") || splitPeriod[8].equals("3")) {
-                    isPeriodChecked[8] = "1";
-                    periodNine.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodNine.setTextColor(getResources().getColor(R.color.white));
-                }
-                if (splitPeriod[9].equals("1") || splitPeriod[9].equals("3")) {
-                    isPeriodChecked[9] = "1";
-                    periodTen.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodTen.setTextColor(getResources().getColor(R.color.white));
-                }
-                if (splitPeriod[10].equals("1") || splitPeriod[10].equals("3")) {
-                    isPeriodChecked[10] = "1";
-                    periodEleven.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodEleven.setTextColor(getResources().getColor(R.color.white));
-                }
-                if (splitPeriod[11].equals("1") || splitPeriod[11].equals("3")) {
-                    isPeriodChecked[11] = "1";
-                    periodTwelve.setBackgroundResource(R.drawable.bg_period_button_active);
-                    periodTwelve.setTextColor(getResources().getColor(R.color.white));
-                }
+                    periodEight.getBackground().setAlpha(180);
 
-                // Do so as well for its alternate layout if it is available
-                if (splitOccurrence[1].equals("1")) {
-                    if (splitPeriod[0].equals("2") || splitPeriod[0].equals("3")) {
-                        if (isPeriodChecked[0].equals("1"))
-                            isPeriodChecked[0] = "3";
-                        else isPeriodChecked[0] = "2";
+                    // Do so as well for its alternate layout if it is available
+                    if (splitOccurrence[1].equals("1")) {
+                        if (splitPeriod[0].equals("2") || splitPeriod[0].equals("3")) {
+                            if (isPeriodChecked[0].equals("1"))
+                                isPeriodChecked[0] = "3";
+                            else isPeriodChecked[0] = "2";
                             periodOneAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodOneAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodOneAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[1].equals("2") || splitPeriod[1].equals("3")) {
                             if (isPeriodChecked[1].equals("1"))
                                 isPeriodChecked[1] = "3";
                             else isPeriodChecked[1] = "2";
                             periodTwoAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwoAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodTwoAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[2].equals("2") || splitPeriod[2].equals("3")) {
                             if (isPeriodChecked[2].equals("1"))
                                 isPeriodChecked[2] = "3";
                             else isPeriodChecked[2] = "2";
                             periodThreeAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodThreeAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodThreeAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[3].equals("2") || splitPeriod[3].equals("3")) {
                             if (isPeriodChecked[3].equals("1"))
                                 isPeriodChecked[3] = "3";
                             else isPeriodChecked[3] = "2";
                             periodFourAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFourAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFourAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[4].equals("2") || splitPeriod[4].equals("3")) {
                             if (isPeriodChecked[4].equals("1"))
                                 isPeriodChecked[4] = "3";
                             else isPeriodChecked[4] = "2";
                             periodFiveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFiveAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFiveAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[5].equals("2") || splitPeriod[5].equals("3")) {
                             if (isPeriodChecked[5].equals("1"))
                                 isPeriodChecked[5] = "3";
                             else isPeriodChecked[5] = "2";
                             periodSixAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSixAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSixAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[6].equals("2") || splitPeriod[6].equals("3")) {
                             if (isPeriodChecked[6].equals("1"))
                                 isPeriodChecked[6] = "3";
                             else isPeriodChecked[6] = "2";
                             periodSevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSevenAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSevenAlt.getBackground().setAlpha(180);
                         }
                         if (splitPeriod[7].equals("2") || splitPeriod[7].equals("3")) {
                             if (isPeriodChecked[7].equals("1"))
                                 isPeriodChecked[7] = "3";
                             else isPeriodChecked[7] = "2";
                             periodEightAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEightAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodEightAlt.getBackground().setAlpha(180);
                         }
-                        if (splitPeriod[8].equals("2") || splitPeriod[8].equals("3")) {
-                            if (isPeriodChecked[8].equals("1"))
-                                isPeriodChecked[8] = "3";
-                            else isPeriodChecked[8] = "2";
-                            periodNineAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodNineAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        if (splitPeriod[9].equals("2") || splitPeriod[9].equals("3")) {
-                            if (isPeriodChecked[9].equals("1"))
-                                isPeriodChecked[9] = "3";
-                            else isPeriodChecked[9] = "2";
-                            periodTenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        if (splitPeriod[10].equals("2") || splitPeriod[10].equals("3")) {
-                            if (isPeriodChecked[10].equals("1"))
-                                isPeriodChecked[10] = "3";
-                            else isPeriodChecked[10] = "2";
-                            periodElevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodElevenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        if (splitPeriod[11].equals("2") || splitPeriod[11].equals("3")) {
-                            if (isPeriodChecked[11].equals("1"))
-                                isPeriodChecked[11] = "3";
-                            else isPeriodChecked[11] = "2";
-                            periodTwelveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwelveAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
+
                     }
                 }
             }
-
-            return rootView;
         }
+        return rootView;
+    }
 
     private View.OnClickListener listener() {
         return new View.OnClickListener() {
@@ -574,25 +473,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -600,25 +501,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -626,25 +529,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[2] == 2) {
                             isButtonChecked[2] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -652,25 +557,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[3] == 0) {
                             isButtonChecked[3] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -678,25 +585,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -704,25 +613,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -730,25 +641,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -758,25 +671,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[0] == 0){
                             isButtonChecked[0] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[0] == 1){
                             isButtonChecked[0] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[0] == 2){
                             isButtonChecked[0] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[0] == 3){
                             isButtonChecked[0] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -784,25 +699,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[1] == 0){
                             isButtonChecked[1] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[1] == 1){
                             isButtonChecked[1] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[1] == 2){
                             isButtonChecked[1] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[1] == 3){
                             isButtonChecked[1] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -810,25 +727,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[2] == 0){
                             isButtonChecked[2] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[2] == 1){
                             isButtonChecked[2] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[2] == 2){
                             isButtonChecked[2] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[2] == 3){
                             isButtonChecked[2] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -836,25 +755,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[3] == 0){
                             isButtonChecked[3] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[3] == 1){
                             isButtonChecked[3] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[3] == 2){
                             isButtonChecked[3] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[3] == 3){
                             isButtonChecked[3] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -862,25 +783,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[4] == 0){
                             isButtonChecked[4] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[4] == 1){
                             isButtonChecked[4] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[4] == 2){
                             isButtonChecked[4] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[4] == 3){
                             isButtonChecked[4] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -888,25 +811,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[5] == 0){
                             isButtonChecked[5] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[5] == 1){
                             isButtonChecked[5] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[5] == 2){
                             isButtonChecked[5] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[5] == 3){
                             isButtonChecked[5] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -914,25 +839,27 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isButtonChecked[6] == 0){
                             isButtonChecked[6] = 2;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[6] == 1){
                             isButtonChecked[6] = 3;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(mPrimaryColor);
+                                v.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                                v.getBackground().setAlpha(180);
                             }
                         }
                         else if (isButtonChecked[6] == 2){
                             isButtonChecked[6] = 0;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         else if (isButtonChecked[6] == 3){
                             isButtonChecked[6] = 1;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                ((ImageView) v).setColorFilter(null);
+                                v.setBackgroundDrawable(null);
                             }
                         }
                         break;
@@ -942,21 +869,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[0].equals("0")) {
                             isPeriodChecked[0] = "1";
                             periodOne.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodOne.setTextColor(getResources().getColor(R.color.white));
+                            periodOne.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("1")) {
                             isPeriodChecked[0] = "0";
-                            periodOne.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOne.setBackgroundDrawable(null);
                             periodOne.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "3";
                             periodOne.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodOne.setTextColor(getResources().getColor(R.color.white));
+                            periodOne.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "2";
-                            periodOne.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOne.setBackgroundDrawable(null);
                             periodOne.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -964,21 +891,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[1].equals("0")) {
                             isPeriodChecked[1] = "1";
                             periodTwo.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwo.setTextColor(getResources().getColor(R.color.white));
+                            periodTwo.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("1")) {
                             isPeriodChecked[1] = "0";
-                            periodTwo.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwo.setBackgroundDrawable(null);
                             periodTwo.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "3";
                             periodTwo.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwo.setTextColor(getResources().getColor(R.color.white));
+                            periodTwo.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "2";
-                            periodTwo.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwo.setBackgroundDrawable(null);
                             periodTwo.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -986,21 +913,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[2].equals("0")) {
                             isPeriodChecked[2] = "1";
                             periodThree.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodThree.setTextColor(getResources().getColor(R.color.white));
+                            periodThree.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("1")) {
                             isPeriodChecked[2] = "0";
-                            periodThree.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThree.setBackgroundDrawable(null);
                             periodThree.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "3";
                             periodThree.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodThree.setTextColor(getResources().getColor(R.color.white));
+                            periodThree.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "2";
-                            periodThree.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThree.setBackgroundDrawable(null);
                             periodThree.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1008,21 +935,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[3].equals("0")) {
                             isPeriodChecked[3] = "1";
                             periodFour.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFour.setTextColor(getResources().getColor(R.color.white));
+                            periodFour.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("1")) {
                             isPeriodChecked[3] = "0";
-                            periodFour.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFour.setBackgroundDrawable(null);
                             periodFour.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "3";
                             periodFour.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFour.setTextColor(getResources().getColor(R.color.white));
+                            periodFour.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "2";
-                            periodFour.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFour.setBackgroundDrawable(null);
                             periodFour.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1030,21 +957,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[4].equals("0")) {
                             isPeriodChecked[4] = "1";
                             periodFive.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFive.setTextColor(getResources().getColor(R.color.white));
+                            periodFive.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[4].equals("1")) {
                             isPeriodChecked[4] = "0";
-                            periodFive.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFive.setBackgroundDrawable(null);
                             periodFive.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[4].equals("2")) {
                             isPeriodChecked[4] = "3";
                             periodFive.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFive.setTextColor(getResources().getColor(R.color.white));
+                            periodFive.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[4].equals("3")) {
                             isPeriodChecked[4] = "2";
-                            periodFive.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFive.setBackgroundDrawable(null);
                             periodFive.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1052,21 +979,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[5].equals("0")) {
                             isPeriodChecked[5] = "1";
                             periodSix.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSix.setTextColor(getResources().getColor(R.color.white));
+                            periodSix.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[5].equals("1")) {
                             isPeriodChecked[5] = "0";
-                            periodSix.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSix.setBackgroundDrawable(null);
                             periodSix.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[5].equals("2")) {
                             isPeriodChecked[5] = "3";
                             periodSix.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSix.setTextColor(getResources().getColor(R.color.white));
+                            periodSix.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[5].equals("3")) {
                             isPeriodChecked[5] = "2";
-                            periodSix.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSix.setBackgroundDrawable(null);
                             periodSix.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1074,21 +1001,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[6].equals("0")) {
                             isPeriodChecked[6] = "1";
                             periodSeven.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSeven.setTextColor(getResources().getColor(R.color.white));
+                            periodSeven.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[6].equals("1")) {
                             isPeriodChecked[6] = "0";
-                            periodSeven.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSeven.setBackgroundDrawable(null);
                             periodSeven.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[6].equals("2")) {
                             isPeriodChecked[6] = "3";
                             periodSeven.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSeven.setTextColor(getResources().getColor(R.color.white));
+                            periodSeven.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[6].equals("3")) {
                             isPeriodChecked[6] = "2";
-                            periodSeven.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSeven.setBackgroundDrawable(null);
                             periodSeven.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1096,110 +1023,22 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[7].equals("0")) {
                             isPeriodChecked[7] = "1";
                             periodEight.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEight.setTextColor(getResources().getColor(R.color.white));
+                            periodEight.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[7].equals("1")) {
                             isPeriodChecked[7] = "0";
-                            periodEight.setBackgroundResource(R.drawable.bg_period_button);
+                            periodEight.setBackgroundDrawable(null);
                             periodEight.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[7].equals("2")) {
                             isPeriodChecked[7] = "3";
                             periodEight.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEight.setTextColor(getResources().getColor(R.color.white));
+                            periodEight.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[7].equals("3")) {
                             isPeriodChecked[7] = "2";
-                            periodEight.setBackgroundResource(R.drawable.bg_period_button);
+                            periodEight.setBackgroundDrawable(null);
                             periodEight.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_nine:
-                        if (isPeriodChecked[8].equals("0")) {
-                            isPeriodChecked[8] = "1";
-                            periodNine.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodNine.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[8].equals("1")) {
-                            isPeriodChecked[8] = "0";
-                            periodNine.setBackgroundResource(R.drawable.bg_period_button);
-                            periodNine.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[8].equals("2")) {
-                            isPeriodChecked[8] = "3";
-                            periodNine.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodNine.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[8].equals("3")) {
-                            isPeriodChecked[8] = "2";
-                            periodNine.setBackgroundResource(R.drawable.bg_period_button);
-                            periodNine.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_ten:
-                        if (isPeriodChecked[9].equals("0")) {
-                            isPeriodChecked[9] = "1";
-                            periodTen.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTen.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[9].equals("1")) {
-                            isPeriodChecked[9] = "0";
-                            periodTen.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTen.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[9].equals("2")) {
-                            isPeriodChecked[9] = "3";
-                            periodTen.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTen.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[9].equals("3")) {
-                            isPeriodChecked[9] = "2";
-                            periodTen.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTen.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_eleven:
-                        if (isPeriodChecked[10].equals("0")) {
-                            isPeriodChecked[10] = "1";
-                            periodEleven.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEleven.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[10].equals("1")) {
-                            isPeriodChecked[10] = "0";
-                            periodEleven.setBackgroundResource(R.drawable.bg_period_button);
-                            periodEleven.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[10].equals("2")) {
-                            isPeriodChecked[10] = "3";
-                            periodEleven.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEleven.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[10].equals("3")) {
-                            isPeriodChecked[10] = "2";
-                            periodEleven.setBackgroundResource(R.drawable.bg_period_button);
-                            periodEleven.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_twelve:
-                        if (isPeriodChecked[11].equals("0")) {
-                            isPeriodChecked[11] = "1";
-                            periodTwelve.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwelve.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[11].equals("1")) {
-                            isPeriodChecked[11] = "0";
-                            periodTwelve.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTwelve.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[11].equals("2")) {
-                            isPeriodChecked[11] = "3";
-                            periodTwelve.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwelve.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[11].equals("3")) {
-                            isPeriodChecked[11] = "2";
-                            periodTwelve.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTwelve.setTextColor(mPrimaryColor);
                         }
                         break;
 
@@ -1208,21 +1047,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[0].equals("0")) {
                             isPeriodChecked[0] = "2";
                             periodOneAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodOneAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodOneAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("1")) {
                             isPeriodChecked[0] = "3";
                             periodOneAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodOneAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodOneAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "0";
-                            periodOneAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOneAlt.setBackgroundDrawable(null);
                             periodOneAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "1";
-                            periodOneAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOneAlt.setBackgroundDrawable(null);
                             periodOneAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1230,21 +1069,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[1].equals("0")) {
                             isPeriodChecked[1] = "2";
                             periodTwoAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwoAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodTwoAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("1")) {
                             isPeriodChecked[1] = "3";
                             periodTwoAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwoAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodTwoAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "0";
-                            periodTwoAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoAlt.setBackgroundDrawable(null);
                             periodTwoAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "1";
-                            periodTwoAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoAlt.setBackgroundDrawable(null);
                             periodTwoAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1252,21 +1091,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[2].equals("0")) {
                             isPeriodChecked[2] = "2";
                             periodThreeAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodThreeAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodThreeAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("1")) {
                             isPeriodChecked[2] = "3";
                             periodThreeAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodThreeAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodThreeAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "0";
-                            periodThreeAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeAlt.setBackgroundDrawable(null);
                             periodThreeAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "1";
-                            periodThreeAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeAlt.setBackgroundDrawable(null);
                             periodThreeAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1274,21 +1113,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[3].equals("0")) {
                             isPeriodChecked[3] = "2";
                             periodFourAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFourAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFourAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("1")) {
                             isPeriodChecked[3] = "3";
                             periodFourAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFourAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFourAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "0";
-                            periodFourAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourAlt.setBackgroundDrawable(null);
                             periodFourAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "1";
-                            periodFourAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourAlt.setBackgroundDrawable(null);
                             periodFourAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1296,21 +1135,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[4].equals("0")) {
                             isPeriodChecked[4] = "2";
                             periodFiveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFiveAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFiveAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[4].equals("1")) {
                             isPeriodChecked[4] = "3";
                             periodFiveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodFiveAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodFiveAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[4].equals("2")) {
                             isPeriodChecked[4] = "0";
-                            periodFiveAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFiveAlt.setBackgroundDrawable(null);
                             periodFiveAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[4].equals("3")) {
                             isPeriodChecked[4] = "1";
-                            periodFiveAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFiveAlt.setBackgroundDrawable(null);
                             periodFiveAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1318,21 +1157,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[5].equals("0")) {
                             isPeriodChecked[5] = "2";
                             periodSixAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSixAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSixAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[5].equals("1")) {
                             isPeriodChecked[5] = "3";
                             periodSixAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSixAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSixAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[5].equals("2")) {
                             isPeriodChecked[5] = "0";
-                            periodSixAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSixAlt.setBackgroundDrawable(null);
                             periodSixAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[5].equals("3")) {
                             isPeriodChecked[5] = "1";
-                            periodSixAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSixAlt.setBackgroundDrawable(null);
                             periodSixAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1340,21 +1179,21 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[6].equals("0")) {
                             isPeriodChecked[6] = "2";
                             periodSevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSevenAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSevenAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[6].equals("1")) {
                             isPeriodChecked[6] = "3";
                             periodSevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodSevenAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodSevenAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[6].equals("2")) {
                             isPeriodChecked[6] = "0";
-                            periodSevenAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSevenAlt.setBackgroundDrawable(null);
                             periodSevenAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[6].equals("3")) {
                             isPeriodChecked[6] = "1";
-                            periodSevenAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodSevenAlt.setBackgroundDrawable(null);
                             periodSevenAlt.setTextColor(mPrimaryColor);
                         }
                         break;
@@ -1362,112 +1201,25 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         if (isPeriodChecked[7].equals("0")) {
                             isPeriodChecked[7] = "2";
                             periodEightAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEightAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodEightAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[7].equals("1")) {
                             isPeriodChecked[7] = "3";
                             periodEightAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodEightAlt.setTextColor(getResources().getColor(R.color.white));
+                            periodEightAlt.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[7].equals("2")) {
                             isPeriodChecked[7] = "0";
-                            periodEightAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodEightAlt.setBackgroundDrawable(null);
                             periodEightAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[7].equals("3")) {
                             isPeriodChecked[7] = "1";
-                            periodEightAlt.setBackgroundResource(R.drawable.bg_period_button);
+                            periodEightAlt.setBackgroundDrawable(null);
                             periodEightAlt.setTextColor(mPrimaryColor);
                         }
                         break;
-                    case R.id.class_three_period_nine_alt:
-                        if (isPeriodChecked[8].equals("0")) {
-                            isPeriodChecked[8] = "2";
-                            periodNineAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodNineAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[8].equals("1")) {
-                            isPeriodChecked[8] = "3";
-                            periodNineAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodNineAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[8].equals("2")) {
-                            isPeriodChecked[8] = "0";
-                            periodNineAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodNineAlt.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[8].equals("3")) {
-                            isPeriodChecked[8] = "1";
-                            periodNineAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodNineAlt.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_ten_alt:
-                        if (isPeriodChecked[9].equals("0")) {
-                            isPeriodChecked[9] = "2";
-                            periodTenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[9].equals("1")) {
-                            isPeriodChecked[9] = "3";
-                            periodTenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[9].equals("2")) {
-                            isPeriodChecked[9] = "0";
-                            periodTenAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTenAlt.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[9].equals("3")) {
-                            isPeriodChecked[9] = "1";
-                            periodTenAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTenAlt.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_eleven_alt:
-                        if (isPeriodChecked[10].equals("0")) {
-                            isPeriodChecked[10] = "2";
-                            periodElevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodElevenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[10].equals("1")) {
-                            isPeriodChecked[10] = "3";
-                            periodElevenAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodElevenAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[10].equals("2")) {
-                            isPeriodChecked[10] = "0";
-                            periodElevenAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodElevenAlt.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[10].equals("3")) {
-                            isPeriodChecked[10] = "1";
-                            periodElevenAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodElevenAlt.setTextColor(mPrimaryColor);
-                        }
-                        break;
-                    case R.id.class_three_period_twelve_alt:
-                        if (isPeriodChecked[11].equals("0")) {
-                            isPeriodChecked[11] = "2";
-                            periodTwelveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwelveAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[11].equals("1")) {
-                            isPeriodChecked[11] = "3";
-                            periodTwelveAlt.setBackgroundResource(R.drawable.bg_period_button_active);
-                            periodTwelveAlt.setTextColor(getResources().getColor(R.color.white));
-                        }
-                        else if (isPeriodChecked[11].equals("2")) {
-                            isPeriodChecked[11] = "0";
-                            periodTwelveAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTwelveAlt.setTextColor(mPrimaryColor);
-                        }
-                        else if (isPeriodChecked[11].equals("3")) {
-                            isPeriodChecked[11] = "1";
-                            periodTwelveAlt.setBackgroundResource(R.drawable.bg_period_button);
-                            periodTwelveAlt.setTextColor(mPrimaryColor);
-                        }
-                        break;
+
 
                     // In the case that it's one of the hyperlink text views to the
                     // previous stages of the add class time process
@@ -1498,6 +1250,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                             return;
                         }
 
+
                         // If the fragment was started through the list view's OnItemClick
                         // Pass true as the Edit Flag to tell the activity to update instead
                         // the occurrence item instead of adding a new item
@@ -1507,6 +1260,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         }
                         daysSelectedListener.onDaysSelected(classDays, -1, -1,
                                 -1, -1, periods, FLAG_EDIT, rowID);
+                        break;
+
+                    case R.id.class_three_cancel:
+                        dismiss();
                         break;
                 }
             }

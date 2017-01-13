@@ -13,6 +13,15 @@
     <string name="none">None</string>
     <string name="coming_soon">Coming soon&#8230;</string>
 
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="six">6</string>
+    <string name="seven">7</string>
+    <string name="eight">8</string>
+
     <!-- Common keys -->
     <string name="INTENT_EXTRA_TITLE" translatable="false">INTENT_EXTRA_TITLE</string>
     <string name="INTENT_EXTRA_PATH" translatable="false">INTENT_EXTRA_PATH</string>
@@ -34,9 +43,19 @@
     <string name="SKIP">SKIP</string>
     <string name="GOT_IT">GOT IT</string>
     <string name="Search">Search</string>
+    <string name="timeTask">Time Task</string>
+    <string name="select">Select</string>
 
     <string name="schedule">Schedule</string>
     <string name="tasks">Tasks</string>
+
+    <!--
+    PERMISSION CHECK DIALOGS
+    -->
+    <string name="deny">Deny</string>
+    <string name="allow">Allow</string>
+    <string name="storage_title">Allow Plume to access your storage?</string>
+    <string name="storage_message">This will allow Plume to sync your data online.</string>
 
     <!--
     INTRO STRINGS
@@ -92,6 +111,8 @@
     <string name="activity_classes_label">Classes</string>
     <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
 
+    <string name="all_classes">All Classes</string>
+
     <string name="STARTED_FROM_CLASSES_ACTIVITY" translatable="false">STARTED_FROM_CLASSES_ACTIVITY</string>
 
     <!-- Strings for CompletedTasksActivity -->
@@ -108,6 +129,9 @@
 
     <!-- Strings for ScheduleFragment -->
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
+    <string name="check_internet">Please check your network connection.</string>
+    <string name="format_time">%1$s - %2$s</string>
+    <string name="format_period">%1$s period</string>
 
     <!-- Strings for NotificationService -->
     <string name="schedule_notification_message">Class starts in</string>
@@ -120,6 +144,9 @@
     <string name="schedule_detail_notes_title">Notes</string>
     <string name="schedule_detail_notes_add">Add note</string>
     <string name="schedule_detail_tasks_title">Tasks</string>
+    
+    <string name="schedule_detail_add_task">Add task to %1%s</string>
+    <string name="schedule_detail_add_note">Add a note</string>
 
     <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
 
@@ -135,8 +162,8 @@
     <string name="new_schedule_toast_class_inserted"> added to Classes</string>
 
     <!-- Main UI -->
-    <string name="new_schedule_hint">Enter class title&#8230;</string>
-    <string name="new_schedule_add_class_time">Add Period</string>
+    <string name="new_schedule_hint">Enter a title</string>
+    <string name="new_schedule_add_class_time">Add a Period for this Class</string>
     <string name="new_schedule_repeats">Repeats</string>
     <string name="new_schedule_time_in">From</string>
     <string name="new_schedule_time_out">To</string>
@@ -161,17 +188,28 @@
     <string name="class_time_list_header_substring_periods">periods</string>
 
     <!-- UI for Add Class Time Fragment One -->
-    <string name="class_time_one_title">Select your school\'s class schedule type.</string>
+    <string name="class_time_one_title">Select your school\'s class schedule</string>
     <string name="class_time_one_timebased">Time based</string>
     <string name="class_time_one_periodbased">Period based</string>
     <string name="class_time_one_blockbased">Block based</string>
+    <string name="timebased_description">Class periods are scheduled by time.</string>
+    <string name="periodbased_description">Class periods are numbered by period.</string>
+    <string name="blockbased_description">Class periods alternate every day each with up to 4 classes.</string>
+    <string name="timebased_exmaple">Maths - 9:00&#8211;10:00am</string>
+    <string name="periodbased_example">Maths - 1st Period</string>
+    <string name="blockbased_example">Day A - Maths 1st Period</string>
 
     <!-- UI for Add Class Time Fragment Two -->
     <string name="class_time_two_sameweek">Same time every week</string>
     <string name="class_time_two_altweeks">Alternating weeks</string>
+    <string name="sameweek_description">Classes are at the same time every week.</string>
+    <string name="altweek_decription">Schedule may change between alternating weeks.</string>
+    <string name="sameweek_example">Maths on Mon, 9:00 Every Week</string>
+    <string name="altweek_example">Week A - Maths on Monday, 9:00\nWeek B - Maths on Tue, 11:00</string>
 
     <!-- Add Class Time Fragment Three -->
-    <string name="class_time_three_select_days">Select when your class takes place.</string>
+    <string name="class_time_three_select_days">Select when your class takes place</string>
+    <string name="select_periods">Choose periods</string>
 
     <!-- Days and Week Number -->
     <string name="class_three_everyweek">Every week</string>
@@ -184,6 +222,14 @@
     <string name="class_three_thursday">Thursday</string>
     <string name="class_three_friday">Friday</string>
     <string name="class_three_saturday">Saturday</string>
+
+    <string name="sunday_initial">S</string>
+    <string name="monday_initial">M</string>
+    <string name="tuesday_initial">T</string>
+    <string name="wednesday_initial">W</string>
+    <string name="thursday_initial">T</string>
+    <string name="friday_initial">F</string>
+    <string name="saturday_initial">S</string>
 
     <string name="class_three_sunday_abr">Sun</string>
     <string name="class_three_monday_abr">Mon</string>
@@ -240,7 +286,11 @@
     <!-- Strings for TasksDetailActivity -->
     <string name="task_detail_dialog_delete_confirm">Are you sure you want to delete this task?</string>
     <string name="task_detail_dialog_completed_confirm">Completed task?</string>
-    <string name="due">Due</string>
+    <string name="due">Due %1$s</string>
+    <!-- Formats as shown: Maths Homework, change the order of the %n$s to proper translated style
+     e.g. French: %1$s pour %2$s = Des Devoirs pour Math -->
+    <string name="format_subtitle">%1$s %2$s</string>
+    <string name="mark_as_done">Mark as Done</string>
 
     <string name="completed_task">Completed task</string>
     <string name="set_timer">Set timer</string>
@@ -261,6 +311,8 @@
     <string name="activity_new_task_label">New Task</string>
     <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
     <string name="share_task">Share task with peers</string>
+    <string name="link_to_class">Link to Class</string>
+    <string name="task_type">Task type</string>
 
     <!-- Actions and Toasts -->
     <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
@@ -269,7 +321,8 @@
     <string name="field_dropdown_class">Class</string>
     <string name="field_dropdown_type">Type</string>
     <string name="field_hint_description">Description</string>
-    <string name="field_due_date">Due date</string>
+    <string name="enter_text_hint">Enter text here&#8230;</string>
+    <string name="field_due_date">Due date:</string>
     <string name="field_attach_file">Attach file</string>
     <string name="field_set_reminder">Set reminder</string>
 
@@ -420,7 +473,7 @@
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
     <string name="Version">Version 0.1 Beta</string>
-    <string name="Weblink" translatable="false">https://plumeacademyassistant.co.uk</string>
+    <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
     <string name="Plume_Email">team@plumeacademyassistant.co.uk</string>
@@ -443,31 +496,41 @@
     <string name="KEY_PREFERENCES_FLAVOUR" translatable="false">KEY_PREFERENCES_FLAVOUR</string>
     <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>
 
+
+    <string name="your_peers">Your Peers</string>
+    <string name="add_peer">Add a new Peer</string>
     <string name="yourNameHere">Your Name Here</string>
-    <string name="onYourMind">What\'s on your mind?</string>
+    <string name="whats_up">What՚s up??</string>
     <string name="addPeers">Add Peers</string>
     <string name="viewPeers">View Peers</string>
     <string name="editName">Edit Name</string>
     <string name="editNameMessage">How do you want your peers to see you?</string>
     <string name="editNameHint">Your Name</string>
     <string name="flavourTitle">Enter a Message</string>
+    <string name="scan">Scan</string>
+    <string name="here">Here</string>
 
     <string name="added">added</string>
     <string name="qrScanPrompt">Scan a peer\'s QR code</string>
+    <string name="nice_try_title">Nice try</string>
+    <string name="nice_try_message">If you devour yourself whole, will you grow twice as big or completely disappear?</string>
 
     <!--
     PEER PROFILE ACTIVITY STRINGS
     -->
-    <string name="sendPeerRequest">Send Peer Request</string>
-    <string name="whichClasses">Which of your classes is&#160;</string>
+    <string name="sendPeerRequest">Send Request</string>
+    <string name="whichClasses">Which of your classes is %1$s in?</string>
     <string name="in">&#160;in</string>
+    <string name="classes_you_share">Classes you share</string>
 
     <!--
     ACCEPT PEER ACTIVITY STRINGS
     -->
-    <string name="acceptPeerHeader">&#160;wants to add you in these classes</string>
+    <string name="acceptPeerHeader">%1$s wants to add you in these classes</string>
     <string name="mismatchDialogHeader">Did you name these classes differently?</string>
     <string name="select_class">Select class</string>
+    <string name="accept">Accept</string>
+    <string name="ignore">Ignore</string>
 
     <!--
     LOGIN ACTIVITY STRINGS
@@ -479,11 +542,13 @@
     <string name="sign_up_button_label">Sign Up</string>
     <string name="signup_error_message">Please make sure you fill in all the fields!</string>
     <string name="signup_error_title">Error!</string>
+    <string name="signup_error_message_no_confirm">Please confirm your password</string>
+    <string name="signup_error_message_wrong_confirm">Passwords don՚t match. Please try again.</string>
     <string name="signup_success">Account successfully created! You can now Login.</string>
     <string name="login_error_message">Please make sure you enter an email address and password!</string>
     <string name="login_error_title">Error!</string>
     <string name="login_button_label">Login</string>
-    <string name="sign_up_text">Sign Up!</string>
+    <string name="sign_up_text">New here? Sign Up!</string>
     <string name="title_activity_login">Sign in</string>
     <string name="add_item">Add New Item</string>
     <string name="action_login">Log in</string>
@@ -501,6 +566,11 @@
     <string name="requestSent">Request sent to %1$s</string>
     <string name="dialog_remove_peer">Do you want to remove %1$s from being your peer?</string>
     <string name="dialog_remove_class">Do you want to remove %1$s from %2$s and stop sharing tasks?</string>
+
+    <!--
+    REQUEST ACTIVITY STRINGS
+    -->
+    <string name="splash_no_request">You have no Peer Requests</string>
 
     <!--
     ARRAY STRINGS

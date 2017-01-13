@@ -3,6 +3,7 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -52,9 +53,8 @@ public class TaskAdapter extends ArrayAdapter {
             holder = new ViewHolder();
             holder.icon = (ImageView)row.findViewById(R.id.task_icon);
             holder.title = (TextView)row.findViewById(R.id.task_title);
-            holder.shared = (TextView)row.findViewById(R.id.task_shared);
-            holder.description = (TextView)row.findViewById(R.id.task_description);
-            holder.attachment = (TextView)row.findViewById(R.id.task_attachment);
+            holder.taskClass = (TextView) row.findViewById(R.id.task_class);
+            holder.taskType = (TextView) row.findViewById(R.id.task_type);
             holder.date = (TextView)row.findViewById(R.id.task_date);
 
             row.setTag(holder);
@@ -79,11 +79,11 @@ public class TaskAdapter extends ArrayAdapter {
         }
         holder.icon.setImageBitmap(setImageBitmap);
         holder.title.setText(task.taskTitle);
-        holder.shared.setText(task.taskShared);
-        if (task.taskShared.equals(""))
-            holder.shared.setVisibility(View.GONE);
-        holder.description.setText(task.taskDescription);
-        holder.attachment.setText(task.taskAttachment);
+        holder.title.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
+
+        holder.taskClass.setText(task.taskClass);
+        holder.taskType.setText(task.taskType);
+
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(((long)task.taskDueDate));
         holder.date.setText(context.getString(R.string.due_date) + " "
@@ -95,9 +95,8 @@ public class TaskAdapter extends ArrayAdapter {
     static class ViewHolder {
         ImageView icon;
         TextView title;
-        TextView shared;
-        TextView description;
-        TextView attachment;
+        TextView taskClass;
+        TextView taskType;
         TextView date;
     }
 

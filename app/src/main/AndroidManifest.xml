@@ -3,7 +3,6 @@
     package="com.pdt.plume">
 
     <compatible-screens>
-
         <!-- all small size screens -->
         <screen
             android:screenDensity="ldpi"
@@ -42,6 +41,7 @@
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <permission
         android:name="com.pdt.plume.permission.C2D_MESSAGE"
@@ -53,6 +53,7 @@
 
     <application
         android:allowBackup="true"
+        android:name=".App"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -75,6 +76,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+
 
         <activity
             android:name=".MainActivity"
@@ -127,6 +130,7 @@
         <activity
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SettingsActivity"
@@ -140,7 +144,8 @@
             android:name=".AboutActivity"
             android:label="@string/about_activity_label"
             android:parentActivityName=".SettingsActivity" />
-        <activity android:name=".NoteActivity" />
+        <activity android:name=".NoteActivity"
+            android:parentActivityName=".ScheduleDetailActivity"/>
         <activity
             android:name=".CompletedTasksActivity"
             android:label="@string/activity_completedTasks_label"
@@ -168,40 +173,41 @@
             android:parentActivityName=".TasksDetailActivity"
             android:theme="@style/FullscreenTheme" />
 
-        <receiver
-            android:name=".ScheduleWidgetProvider"
-            android:label="@string/schedule">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
+        <!--<receiver-->
+            <!--android:name=".ScheduleWidgetProvider"-->
+            <!--android:label="@string/schedule">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
+            <!--</intent-filter>-->
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/provider_widget_schedule" />
-        </receiver>
+            <!--<meta-data-->
+                <!--android:name="android.appwidget.provider"-->
+                <!--android:resource="@xml/provider_widget_schedule" />-->
+        <!--</receiver>-->
 
-        <service
-            android:name=".services.ScheduleWidgetService"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
+        <!--<service-->
+            <!--android:name=".services.ScheduleWidgetService"-->
+            <!--android:permission="android.permission.BIND_REMOTEVIEWS" />-->
 
-        <receiver
-            android:name=".TasksWidgetProvider"
-            android:label="@string/tasks">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
+        <!--<receiver-->
+            <!--android:name=".TasksWidgetProvider"-->
+            <!--android:label="@string/tasks">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
+            <!--</intent-filter>-->
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/provider_widget_tasks" />
-        </receiver>
+            <!--<meta-data-->
+                <!--android:name="android.appwidget.provider"-->
+                <!--android:resource="@xml/provider_widget_tasks" />-->
+        <!--</receiver>-->
 
-        <service
-            android:name=".services.TasksWidgetService"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
+        <!--<service-->
+            <!--android:name=".services.TasksWidgetService"-->
+            <!--android:permission="android.permission.BIND_REMOTEVIEWS" />-->
 
         <activity
             android:name=".PeopleActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".PeersActivity"
@@ -220,12 +226,15 @@
             android:parentActivityName=".PeopleActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AddPeerActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".UserSearchActivity"/>
         <activity
             android:name=".AcceptPeerActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".RequestsActivity" />
         <activity android:name=".PeerProfileActivity"
-            android:parentActivityName=".PeersActivity"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".PeersActivity" />
     </application>
 
 </manifest>

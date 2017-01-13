@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -104,7 +105,8 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
         periodThreeB = (TextView) rootView.findViewById(R.id.class_three_period_three_alt);
         periodFourB = (TextView) rootView.findViewById(R.id.class_three_period_four_alt);
 
-        Button done = (Button) rootView.findViewById(R.id.class_three_done);
+        LinearLayout done = (LinearLayout) rootView.findViewById(R.id.class_three_done);
+        LinearLayout cancel = (LinearLayout) rootView.findViewById(R.id.class_three_cancel);
 
         // Set OnClickListeners to each UI element
         basisTextView.setOnClickListener(listener());
@@ -120,6 +122,7 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
         periodFourB.setOnClickListener(listener());
 
         done.setOnClickListener(listener());
+        cancel.setOnClickListener(listener());
 
         // Initialise the theme
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -131,28 +134,27 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
 
         // Set text of hyperlink basis text
         basisTextView.setText(getString(R.string.class_time_one_blockbased));
-        basisTextView.setTextColor(PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary)));
+        basisTextView.setTextColor(getResources().getColor(R.color.gray_200));
 
         // Initialise the theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             periodOneA.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodOneA.setTextColor(mPrimaryColor);
+            periodOneA.setBackgroundDrawable(null);
             periodTwoA.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwoA.setTextColor(mPrimaryColor);
+            periodTwoA.setBackgroundDrawable(null);
             periodThreeA.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodThreeA.setTextColor(mPrimaryColor);
+            periodThreeA.setBackgroundDrawable(null);
             periodFourA.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFourA.setTextColor(mPrimaryColor);
+            periodFourA.setBackgroundDrawable(null);
 
             periodOneB.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodOneB.setTextColor(mPrimaryColor);
+            periodOneB.setBackgroundDrawable(null);
             periodTwoB.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodTwoB.setTextColor(mPrimaryColor);
+            periodTwoB.setBackgroundDrawable(null);
             periodThreeB.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodThreeB.setTextColor(mPrimaryColor);
+            periodThreeB.setBackgroundDrawable(null);
             periodFourB.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            periodFourB.setTextColor(mPrimaryColor);
+            periodFourB.setBackgroundDrawable(null);
         }
 
         // Get the arguments to check if the fragment was launched through an
@@ -175,19 +177,19 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
             // and set it in the activity
             if (splitPeriod[0].equals("1") || splitPeriod[0].equals("3")) {
                 isPeriodChecked[0] = "1";
-                periodOneA.setTextColor(getResources().getColor(R.color.white));
+                periodOneA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
             }
             if (splitPeriod[1].equals("1") || splitPeriod[1].equals("3")) {
                 isPeriodChecked[1] = "1";
-                periodTwoA.setTextColor(getResources().getColor(R.color.white));
+                periodTwoA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
             }
             if (splitPeriod[2].equals("1") || splitPeriod[2].equals("3")) {
                 isPeriodChecked[2] = "1";
-                periodThreeA.setTextColor(getResources().getColor(R.color.white));
+                periodThreeA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
             }
             if (splitPeriod[3].equals("1") || splitPeriod[3].equals("3")) {
                 isPeriodChecked[3] = "1";
-                periodThreeA.setTextColor(getResources().getColor(R.color.white));
+                periodThreeA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
             } ;
 
             // Do so as well for its alternate layout if it is available
@@ -196,25 +198,25 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
                     if (isPeriodChecked[0].equals("1"))
                         isPeriodChecked[0] = "3";
                     else isPeriodChecked[0] = "2";
-                    periodOneB.setTextColor(getResources().getColor(R.color.white));
+                    periodOneB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
                 }
                 if (splitPeriod[1].equals("2") || splitPeriod[1].equals("3")) {
                     if (isPeriodChecked[1].equals("1"))
                         isPeriodChecked[1] = "3";
                     else isPeriodChecked[1] = "2";
-                    periodTwoB.setTextColor(getResources().getColor(R.color.white));
+                    periodTwoB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
                 }
                 if (splitPeriod[2].equals("2") || splitPeriod[2].equals("3")) {
                     if (isPeriodChecked[2].equals("1"))
                         isPeriodChecked[2] = "3";
                     else isPeriodChecked[2] = "2";
-                    periodThreeB.setTextColor(getResources().getColor(R.color.white));
+                    periodThreeB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
                 }
                 if (splitPeriod[3].equals("2") || splitPeriod[3].equals("3")) {
                     if (isPeriodChecked[3].equals("1"))
                         isPeriodChecked[3] = "3";
                     else isPeriodChecked[3] = "2";
-                    periodFourB.setTextColor(getResources().getColor(R.color.white));
+                    periodFourB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
                 }
             }
         }
@@ -231,89 +233,81 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
                     case R.id.class_three_period_one:
                         if (isPeriodChecked[0].equals("0")) {
                             isPeriodChecked[0] = "1";
-                            periodOneA.setTextColor(getResources().getColor(R.color.white));
-                            periodOneA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodOneA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodOneA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("1")) {
                             isPeriodChecked[0] = "0";
-                            periodOneA.setTextColor(mPrimaryColor);
-                            periodOneA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOneA.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "3";
-                            periodOneA.setTextColor(getResources().getColor(R.color.white));
-                            periodOneA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodOneA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodOneA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "2";
                             periodOneA.setTextColor(mSecondaryColor);
-                            periodOneA.setBackgroundResource(R.drawable.bg_period_button);
                         }
                         break;
                     case R.id.class_three_period_two:
                         if (isPeriodChecked[1].equals("0")) {
                             isPeriodChecked[1] = "1";
-                            periodTwoA.setTextColor(getResources().getColor(R.color.white));
-                            periodTwoA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodTwoA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodTwoA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("1")) {
                             isPeriodChecked[1] = "0";
-                            periodTwoA.setTextColor(mPrimaryColor);
-                            periodTwoA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoA.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "3";
-                            periodTwoA.setTextColor(getResources().getColor(R.color.white));
-                            periodTwoA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodTwoA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodTwoA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "2";
-                            periodTwoA.setTextColor(mPrimaryColor);
-                            periodTwoA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoA.setBackgroundDrawable(null);
                         }
                         break;
                     case R.id.class_three_period_three:
                         if (isPeriodChecked[2].equals("0")) {
                             isPeriodChecked[2] = "1";
-                            periodThreeA.setTextColor(getResources().getColor(R.color.white));
-                            periodThreeA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodThreeA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodThreeA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("1")) {
                             isPeriodChecked[2] = "0";
-                            periodThreeA.setTextColor(mPrimaryColor);
-                            periodThreeA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeA.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "3";
-                            periodThreeA.setTextColor(getResources().getColor(R.color.white));
-                            periodThreeA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodThreeA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodThreeA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "2";
-                            periodThreeA.setTextColor(mPrimaryColor);
-                            periodThreeA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeA.setBackgroundDrawable(null);
                         }
                         break;
                     case R.id.class_three_period_four:
                         if (isPeriodChecked[3].equals("0")) {
                             isPeriodChecked[3] = "1";
-                            periodFourA.setTextColor(getResources().getColor(R.color.white));
-                            periodFourA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodFourA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodFourA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("1")) {
                             isPeriodChecked[3] = "0";
-                            periodFourA.setTextColor(mPrimaryColor);
-                            periodFourA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourA.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "3";
-                            periodFourA.setTextColor(getResources().getColor(R.color.white));
-                            periodFourA.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodFourA.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodFourA.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "2";
-                            periodFourA.setTextColor(mPrimaryColor);
-                            periodFourA.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourA.setBackgroundDrawable(null);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 periodFourA.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
                             }
@@ -324,92 +318,84 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
                     case R.id.class_three_period_one_alt:
                         if (isPeriodChecked[0].equals("0")) {
                             isPeriodChecked[0] = "2";
-                            periodOneB.setTextColor(getResources().getColor(R.color.white));
-                            periodOneB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodOneB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodOneB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("1")) {
                             isPeriodChecked[0] = "3";
-                            periodOneB.setTextColor(getResources().getColor(R.color.white));
-                            periodOneB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodOneB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodOneB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "0";
-                            periodOneB.setTextColor(mPrimaryColor);
-                            periodOneB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOneB.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "1";
-                            periodOneB.setTextColor(mPrimaryColor);
-                            periodOneB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodOneB.setBackgroundDrawable(null);
                         }
                         break;
                     case R.id.class_three_period_two_alt:
                         if (isPeriodChecked[1].equals("0")) {
                             isPeriodChecked[1] = "1";
-                            periodTwoB.setTextColor(getResources().getColor(R.color.white));
-                            periodTwoB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodTwoB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodTwoB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[1].equals("1")) {
                             isPeriodChecked[1] = "3";
-                            periodTwoB.setTextColor(getResources().getColor(R.color.white));
-                            periodTwoB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodTwoB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodTwoB.getBackground().setAlpha(180);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 periodTwoB.setBackgroundTintList(null);
                             }
                         }
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "0";
-                            periodTwoB.setTextColor(mPrimaryColor);
-                            periodTwoB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoB.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "1";
-                            periodTwoB.setTextColor(mPrimaryColor);
-                            periodTwoB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodTwoB.setBackgroundDrawable(null);
                         }
                         break;
                     case R.id.class_three_period_three_alt:
                         if (isPeriodChecked[2].equals("0")) {
                             isPeriodChecked[2] = "2";
-                            periodThreeB.setTextColor(getResources().getColor(R.color.white));
-                            periodThreeB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodThreeB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodThreeB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("1")) {
                             isPeriodChecked[2] = "3";
-                            periodThreeB.setTextColor(getResources().getColor(R.color.white));
-                            periodThreeB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodThreeB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodThreeB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "0";
-                            periodThreeB.setTextColor(mPrimaryColor);
-                            periodThreeB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeB.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "1";
-                            periodThreeB.setTextColor(mPrimaryColor);
-                            periodThreeB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodThreeB.setBackgroundDrawable(null);
                         }
                         break;
                     case R.id.class_three_period_four_alt:
                         if (isPeriodChecked[3].equals("0")) {
                             isPeriodChecked[3] = "2";
-                            periodFourB.setTextColor(getResources().getColor(R.color.white));
-                            periodFourB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodFourB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodFourB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("1")) {
                             isPeriodChecked[3] = "3";
-                            periodFourB.setTextColor(getResources().getColor(R.color.white));
-                            periodFourB.setBackgroundResource(R.drawable.bg_period_button_active);
+                            periodFourB.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_period_button_active));
+                            periodFourB.getBackground().setAlpha(180);
                         }
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "0";
-                            periodFourB.setTextColor(mPrimaryColor);
-                            periodFourB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourB.setBackgroundDrawable(null);
                         }
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "1";
-                            periodFourB.setTextColor(mPrimaryColor);
-                            periodFourB.setBackgroundResource(R.drawable.bg_period_button);
+                            periodFourB.setBackgroundDrawable(null);
                         }
                         break;
 
@@ -437,6 +423,10 @@ public class AddClassTimeThreeFragmentBlock extends DialogFragment {
                         }
                         daysSelectedListener.onDaysSelected("-1", -1, -1,
                                 -1, -1, periods, FLAG_EDIT, rowID);
+                        break;
+
+                    case R.id.class_three_cancel:
+                        dismiss();
                         break;
                 }
             }

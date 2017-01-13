@@ -69,7 +69,6 @@ public class TasksListProvider implements RemoteViewsService.RemoteViewsFactory 
 
         Task listItem = listItemList.get(position);
         remoteView.setTextViewText(R.id.task_title, listItem.taskTitle);
-        remoteView.setTextViewText(R.id.task_description, listItem.taskDescription);
 
         try {
             if (listItem.taskIcon != null)
@@ -78,8 +77,6 @@ public class TasksListProvider implements RemoteViewsService.RemoteViewsFactory 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        remoteView.setTextColor(R.id.task_description, Color.parseColor("#000000"));
 
         return remoteView;
     }

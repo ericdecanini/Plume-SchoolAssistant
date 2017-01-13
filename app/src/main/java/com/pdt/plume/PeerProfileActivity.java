@@ -2,10 +2,16 @@ package com.pdt.plume;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,6 +40,9 @@ public class PeerProfileActivity extends AppCompatActivity {
     FirebaseUser mFirebaseUser;
     String mUserId, uid, profileName, profileIcon, profileFlavour;
 
+    // Theme Variables
+    int mPrimaryColor, mDarkColor;
+
     // List Variables
     ListView listView;
     ArrayList<Schedule> arrayList = new ArrayList<>();
@@ -43,11 +52,28 @@ public class PeerProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_peer_profile);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Get reference to the views
         TextView nameView = (TextView) findViewById(R.id.name);
         TextView flavourView = (TextView) findViewById(R.id.flavour);
         ImageView iconView = (ImageView) findViewById(R.id.icon);
+
+        // Initialise the theme
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
+        findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();

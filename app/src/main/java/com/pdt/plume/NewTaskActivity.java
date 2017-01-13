@@ -44,6 +44,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -59,6 +60,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
@@ -73,7 +75,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NewTaskActivity extends AppCompatActivity
         implements IconPromptDialog.iconDialogListener {
@@ -95,7 +99,7 @@ public class NewTaskActivity extends AppCompatActivity
 
     TextView fieldTakePhoto;
     ImageView fieldPhotoSlot;
-    LinearLayout fieldDueDate;
+    FrameLayout fieldDueDate;
     TextView fieldDueDateTextView;
     TextView fieldAttachFile;
     LinearLayout fieldSetReminderDate;
@@ -182,6 +186,7 @@ public class NewTaskActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_task);
+        getSupportActionBar().setElevation(0f);
 
         // Initialise Firebase and SQLite
         DbHelper dbHelper = new DbHelper(this);
@@ -214,7 +219,7 @@ public class NewTaskActivity extends AppCompatActivity
         fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
         fieldTakePhoto = (TextView) findViewById(R.id.field_new_task_photo);
         fieldPhotoSlot = (ImageView) findViewById(R.id.field_new_task_photo_slot);
-        fieldDueDate = (LinearLayout) findViewById(R.id.field_new_task_duedate);
+        fieldDueDate = (FrameLayout) findViewById(R.id.field_new_task_duedate);
         fieldDueDateTextView = (TextView) findViewById(R.id.field_new_task_duedate_textview);
         fieldAttachFile = (TextView) findViewById(R.id.field_new_task_attach);
         fieldSetReminderDate = (LinearLayout) findViewById(R.id.field_new_task_reminder_date);
@@ -244,14 +249,15 @@ public class NewTaskActivity extends AppCompatActivity
         // Initialise the class dropdown data
         if (mFirebaseUser != null) {
             // Get schedule data from Firebase
-            DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+            final DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("classes");
             classesRef.addChildEventListener(new ChildEventListener() {
                 @Override public void onChildAdded(DataSnapshot dataSnapshot, String s) {classTitleArray.add(dataSnapshot.getKey());}
                 @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
                 @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onCancelled(DatabaseError databaseError) {}});
+                @Override public void onCancelled(DatabaseError databaseError) {}
+            });
         } else {
             // Get schedule data from SQLite
             Cursor scheduleCursor = dbHelper.getAllScheduleData();
@@ -268,9 +274,7 @@ public class NewTaskActivity extends AppCompatActivity
             scheduleCursor.close();
         }
 
-
-
-        // Initialise the classType dropdown data
+        // Initialise the taskType dropdown data
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_homework));
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_test));
         classTypeArray.add(getString(R.string.field_dropdown_type_menu_item_revision));
@@ -312,11 +316,12 @@ public class NewTaskActivity extends AppCompatActivity
                     fieldDescription.setText(description);
 
                     // Set the saved photo's bitmap
-                    if (!photo.equals("")) {
-                        fieldPhotoSlot.setImageURI(Uri.parse(photo));
-                        mCurrentPhotoPathString = photo;
-                        mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
-                    }
+                    // PHOTO DISABLED FOR THE BETA
+//                    if (!photo.equals("")) {
+//                        fieldPhotoSlot.setImageURI(Uri.parse(photo));
+//                        mCurrentPhotoPathString = photo;
+//                        mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
+//                    }
 
 
                     // Set the current state of the dropdown text views
@@ -328,6 +333,7 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldTypeTextview.setText(getString(R.string.none));
                     else fieldTypeTextview.setText(classType);
                     this.classType = classType;
+                    this.iconUriString = icon;
 
                     // Set the current state of the due date
                     if (dueDate != 0f) {
@@ -438,8 +444,8 @@ public class NewTaskActivity extends AppCompatActivity
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
-            fieldTitle.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
         }
+        fieldTitle.setBackgroundColor(mPrimaryColor);
 
         if (LAUNCHED_NEW_CLASS) {
             DbHelper dbHelper = new DbHelper(this);
@@ -464,7 +470,7 @@ public class NewTaskActivity extends AppCompatActivity
                 if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
                     fieldTitle.setText("");
                 else fieldTitle.setText(NewTaskActivity.this.classTitle);
-                // Check if the classType was set before the class
+                // Check if the taskType was set before the class
             else if (classTypeArray.contains(titleText))
                 fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
                 // Check if the title editText contains text as a result
@@ -504,13 +510,15 @@ public class NewTaskActivity extends AppCompatActivity
                 }
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
-                if (insertTaskDataIntoDatabase())
+                if (insertTaskDataIntoDatabase()) {
                     startActivity(intent);
+                    return true;
+                }
                 else {
                     Log.w(LOG_TAG, "Error creating new task");
                     finish();
+                    return true;
                 }
-                break;
         }
 
         return true;
@@ -660,7 +668,7 @@ public class NewTaskActivity extends AppCompatActivity
                     if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
                         fieldTitle.setText("");
                     else fieldTitle.setText(NewTaskActivity.this.classTitle);
-                    // Check if the classType was set before the class
+                    // Check if the taskType was set before the class
                 else if (classTypeArray.contains(titleText))
                     fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
                     // Check if the title editText contains text as a result
@@ -702,12 +710,12 @@ public class NewTaskActivity extends AppCompatActivity
                     fieldTitle.setText(NewTaskActivity.this.classType);
                 if (titleText.contains(classTitle) && NewTaskActivity.this.classType.equals(getString(R.string.none)))
                     fieldTitle.setText(classTitle);
-                    // Check if another classType was set before
+                    // Check if another taskType was set before
                 else if (classTypeArray.contains(titleText))
                     if (NewTaskActivity.this.classType.equals(getString(R.string.none)))
                         fieldTitle.setText("");
                     else fieldTitle.setText(NewTaskActivity.this.classType);
-                    // Check if the classType was set before the class
+                    // Check if the taskType was set before the class
                 else if (classTitleArray.contains(titleText)) {
                     fieldTitle.setText(titleText + " " + NewTaskActivity.this.classType);
                 }
@@ -797,11 +805,15 @@ public class NewTaskActivity extends AppCompatActivity
                         datePickerDialog_duedate.show();
                         break;
                     case R.id.field_new_task_attach:
+                        if (mFirebaseUser != null)
+                            Toast.makeText(NewTaskActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
+                        else {
                         Intent attach_intent = new Intent(Intent.ACTION_PICK);
                         attach_intent.setType("*/*");
                         attach_intent.setAction(Intent.ACTION_GET_CONTENT);
                         attach_intent.addCategory(Intent.CATEGORY_OPENABLE);
                         startActivityForResult(attach_intent, REQUEST_FILE_GET);
+                        }
                         break;
                     case R.id.field_new_task_photo:
                         // Request all permissions (for API 23+)
@@ -1026,20 +1038,24 @@ public class NewTaskActivity extends AppCompatActivity
         if (mFirebaseUser != null) {
             // Insert into Firebase
             DatabaseReference taskRef;
+            FirebaseStorage storage = FirebaseStorage.getInstance();
             if (FLAG_EDIT)
                 taskRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks").child(firebaseEditId);
             else taskRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks").push();
+            Map<String, Float> duedateMap = new HashMap<>();
+            duedateMap.put("duedate", dueDateMillis);
+            taskRef.setValue(duedateMap);
             taskRef.child("title").setValue(title);
             taskRef.child("class").setValue(classTitle);
             taskRef.child("type").setValue(classType);
+            taskRef.child("sharer").setValue("");
             taskRef.child("description").setValue(description);
-            taskRef.child("duedate").setValue(dueDateMillis);
             taskRef.child("icon").setValue(iconUriString);
             taskRef.child("completed").setValue(false);
 
-            // Share the task to peers if checked shared
+//            // Share the task to peers if checked shared
             if (fieldShared.isChecked()) {
                 final ArrayList<String> peerUIDs = new ArrayList<>();
                 DatabaseReference classPeersRef = FirebaseDatabase.getInstance().getReference()
@@ -1101,6 +1117,7 @@ public class NewTaskActivity extends AppCompatActivity
 
             return false;
         }
+
     }
 
 

@@ -3,7 +3,7 @@
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/master_layout"
-    android:background="@color/backgroundColor"
+    android:background="@drawable/bg_grey_tiled"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.pdt.plume.ScheduleDetailFragment">
@@ -23,21 +23,6 @@
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-            <TextView
-                android:id="@+id/collapsingToolbarSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/abc_text_size_subhead_material"
-                android:textColor="@android:color/white"
-                android:layout_marginBottom="32dp"
-                android:layout_marginRight="64dp"
-                android:layout_marginEnd="64dp"
-                android:layout_marginLeft="48dp"
-                android:layout_marginStart="48dp"
-                app:layout_collapseMode="parallax"
-                android:layout_gravity="bottom"
-                android:text="Maths Homework "/>
 
             <TextView
                 android:id="@+id/task_detail_timer"
@@ -61,6 +46,32 @@
                 android:background="?attr/colorPrimary"
                 app:layout_collapseMode="pin" />
 
+            <TextView
+                android:id="@+id/collapsingToolbarSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/abc_text_size_subhead_material"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                app:layout_collapseMode="parallax"
+                android:layout_gravity="bottom"
+                android:text="Maths Homework "/>
+
+            <TextView
+                android:id="@+id/task_detail_duedate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:textSize="14sp"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                app:layout_collapseMode="parallax"
+                android:paddingBottom="8dp"
+                android:text="@string/due"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/white" />
+
         </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
@@ -76,47 +87,48 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RelativeLayout
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:background="@color/white"
+                android:layout_height="56dp">
+                <TextView
+                    android:id="@+id/mark_as_done"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:textColor="@color/colorPrimary"
+                    android:text="@string/mark_as_done"
+                    android:textSize="14sp"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray_200"
+                    android:layout_gravity="bottom"/>
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:paddingBottom="16dp"
-                android:paddingTop="16dp">
-
-                <ImageView
-                    android:id="@+id/task_detail_duedate_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:src="@drawable/ic_time_black_24dp"
-                    android:tint="@color/gray_700" />
-
+                android:background="@color/gray_50"
+                android:minHeight="223dp"
+                android:paddingBottom="34dp"
+                android:paddingTop="34dp"
+                android:paddingLeft="40dp"
+                android:orientation="horizontal">
                 <TextView
-                    android:id="@+id/task_detail_duedate"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/task_detail_description"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_duedate_icon"
-                    android:layout_toRightOf="@id/task_detail_duedate_icon"
-                    android:text="Mon, 05 September 2000"
+                    android:layout_weight="6"
+                    android:text="@string/lorem_ipsum_sentence"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/task_detail_duedate_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/task_detail_duedate"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_duedate_icon"
-                    android:layout_toRightOf="@id/task_detail_duedate_icon"
-                    android:text="@string/due_date"
-                    android:textColor="@color/gray_700" />
-            </RelativeLayout>
+                    android:textColor="@color/black_0.54" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="2" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,43 +170,6 @@
 
 
             </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/dividerColor" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingBottom="16dp"
-                android:paddingTop="16dp">
-
-                <ImageView
-                    android:id="@+id/task_detail_description_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="2dp"
-                    android:src="@drawable/ic_subject_black_24dp"
-                    android:tint="@color/gray_700" />
-
-                <TextView
-                    android:id="@+id/task_detail_description"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="16dp"
-                    android:layout_marginStart="40dp"
-                    android:layout_toEndOf="@id/task_detail_description_icon"
-                    android:layout_toRightOf="@id/task_detail_description_icon"
-                    android:text="@string/lorem_ipsum_sentence"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/black" />
-            </RelativeLayout>
 
 
             <RelativeLayout
@@ -241,29 +216,5 @@
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab1"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
-        android:layout_gravity="end"
-        android:elevation="12dp"
-        android:src="@drawable/ic_access_alarm_white_24dp"
-        app:layout_anchor="@id/appbar"
-        app:layout_anchorGravity="bottom|right|end"
-        android:visibility="invisible" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
-        android:src="@drawable/ic_done_white_24dp"
-        android:elevation="12dp"
-        app:layout_anchor="@id/appbar"
-        app:layout_anchorGravity="bottom|right|end" />
 
 </android.support.design.widget.CoordinatorLayout>

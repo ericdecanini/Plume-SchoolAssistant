@@ -96,7 +96,6 @@ public class NewScheduleActivity extends AppCompatActivity
     ImageView fieldIcon;
     ListView classTimeList;
     TextView fieldAddClassTime;
-    ImageView fieldAddClassTimeIcon;
 
     // UI Data
     String iconUri;
@@ -197,7 +196,6 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldTeacher = (EditText) findViewById(R.id.field_new_schedule_teacher);
         fieldRoom = (EditText) findViewById(R.id.field_new_schedule_room);
         fieldAddClassTime = (TextView) findViewById(R.id.field_new_schedule_add_class_time);
-        fieldAddClassTimeIcon = (ImageView) findViewById(R.id.field_new_schedule_add_class_time_icon);
         fieldIcon = (ImageView) findViewById(R.id.new_schedule_icon);
         classTimeList = (ListView) findViewById(R.id.field_new_schedule_class_time_list);
 
@@ -239,17 +237,18 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Get schedule data in database based on the schedule title to auto-fill the fields in the UI element
         if (isEdited) {
-
             if (mFirebaseUser != null) {
                 // Get the data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
-                        .child("classes").child(mUserId).child("classes").child(title);
+                        .child("users").child(mUserId).child("classes").child(title);
                 classRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get key values
                         teacher = dataSnapshot.child("teacher").getValue(String.class);
                         room = dataSnapshot.child("room").getValue(String.class);
+                        iconUri = dataSnapshot.child("icon").getValue(String.class);
+                        Log.v(LOG_TAG, "Children: " + dataSnapshot.getChildrenCount());
 
                         // Get listed values
                         DataSnapshot occurrences = dataSnapshot.child("occurrence");
@@ -272,6 +271,10 @@ public class NewScheduleActivity extends AppCompatActivity
                         for (DataSnapshot timeoutaltSnapshot: timeoutsalt.getChildren()) {
                             timeOutAltList.add(timeoutaltSnapshot.getValue(Integer.class));
                         }
+                        DataSnapshot periods = dataSnapshot.child("periods");
+                        for (DataSnapshot periodsSnapshot: periods .getChildren()) {
+                            periodsList.add(periodsSnapshot.getKey());
+                        }
 
                         // These arrays should all be of equal size
                         // Add them to a user viewable list
@@ -287,6 +290,19 @@ public class NewScheduleActivity extends AppCompatActivity
                                         periodsList.get(i), occurrence
                                 ));
                             }
+                        }
+
+                        // Apply the data to the views
+                        fieldTitle.setText(title);
+                        fieldTeacher.setText(teacher);
+                        fieldRoom.setText(room);
+                        Log.v(LOG_TAG, "IconUri: " + iconUri);
+                        try {
+                            Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(NewScheduleActivity.this.getContentResolver(),
+                                    Uri.parse(iconUri));
+                            fieldIcon.setImageBitmap(setImageBitmap);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
 
@@ -330,17 +346,17 @@ public class NewScheduleActivity extends AppCompatActivity
                     }
                 }
                 cursor.close();
-            }
 
-            // Apply the data to the views
-            fieldTitle.setText(title);
-            fieldTeacher.setText(teacher);
-            fieldRoom.setText(room);
-            try {
-                Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUri));
-                fieldIcon.setImageBitmap(setImageBitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
+                // Apply the data to the views
+                fieldTitle.setText(title);
+                fieldTeacher.setText(teacher);
+                fieldRoom.setText(room);
+                try {
+                    Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUri));
+                    fieldIcon.setImageBitmap(setImageBitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         } else {
@@ -377,13 +393,13 @@ public class NewScheduleActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+        findViewById(R.id.new_schedule_underline).setBackgroundColor(mPrimaryColor);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
         fieldTitle.setBackgroundColor(mPrimaryColor);
         fieldAddClassTime.setTextColor(mPrimaryColor);
-        fieldAddClassTimeIcon.setColorFilter(mPrimaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
-            fieldRoom.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+            fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+            fieldRoom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
         }
     }
 
@@ -423,9 +439,13 @@ public class NewScheduleActivity extends AppCompatActivity
                 widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                 sendBroadcast(widgetUpdate);
 
+                // Make the toast
+                if (!FLAG_EDIT)
+                    Toast.makeText(NewScheduleActivity.this, title + " "
+                            + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
+
                 if (!STARTED_BY_NEWTASKACTIVITY) {
                     Intent intent = new Intent(this, MainActivity.class);
-                    Toast.makeText(NewScheduleActivity.this, title + " " + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
                     startActivity(intent);
                 }
                 finish();
@@ -468,6 +488,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 .child("users").child(mUserId).child("classes").child(title);
         classRef.child("teacher").setValue(teacher);
         classRef.child("room").setValue(room);
+        classRef.child("icon").setValue(iconUri);
 
         // Set the listed values of the class
         if (occurrenceTimePeriodList.size() != 0) {
@@ -484,6 +505,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 classRef.child("timeout").child(String.valueOf(i)).setValue(timeOut);
                 classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeInAlt);
                 classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOutAlt);
+                classRef.child("periods").child(periodsList.get(i)).setValue("");
             }
         } else {
             // Set a class with no listed values, removing any old ones
@@ -492,6 +514,7 @@ public class NewScheduleActivity extends AppCompatActivity
             classRef.child("timeout").removeValue();
             classRef.child("timeinalt").removeValue();
             classRef.child("timeoutalt").removeValue();
+            classRef.child("periods").removeValue();
         }
 
         return true;
@@ -1167,10 +1190,14 @@ public class NewScheduleActivity extends AppCompatActivity
                 showBuiltInIconsDialog();
                 break;
             case 1:
+                if (mFirebaseUser != null)
+                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                else {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
                 if (intent.resolveActivity(getPackageManager()) != null)
                     startActivityForResult(intent, REQUEST_IMAGE_GET);
+                }
                 break;
         }
     }

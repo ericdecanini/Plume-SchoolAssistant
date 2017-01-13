@@ -2,10 +2,15 @@ package com.pdt.plume;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,6 +18,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +33,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import static com.pdt.plume.R.id.appbar;
+
 public class AddPeerActivity extends AppCompatActivity {
 
     String LOG_TAG = AddPeerActivity.class.getSimpleName();
@@ -38,6 +46,10 @@ public class AddPeerActivity extends AppCompatActivity {
     String iconUri;
     String name;
     String flavour;
+    ProgressBar spinner;
+
+    // Theme Variables
+    int mPrimaryColor, mDarkColor;
 
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
@@ -48,12 +60,35 @@ public class AddPeerActivity extends AppCompatActivity {
     // Arrays and Adapters
     ScheduleAdapter mScheduleAdapter;
     ArrayList<Schedule> mScheduleList = new ArrayList<>();
-    ArrayList<Bundle> classList;
+    ArrayList<Bundle> classList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_peer);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Initialise the Progress Bar
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
+        findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
+        ((Button) findViewById(R.id.button)).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -68,6 +103,7 @@ public class AddPeerActivity extends AppCompatActivity {
             classesRef.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    spinner.setVisibility(View.GONE);
                     // For listed values, arrayLists must be stored in the bundle
                     ArrayList<String> occurrenceList = new ArrayList<>();
                     for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren()) {
@@ -103,6 +139,7 @@ public class AddPeerActivity extends AppCompatActivity {
                     bundle.putIntegerArrayList("timeins", timeInList);
                     bundle.putIntegerArrayList("timeouts", timeOutList);
                     bundle.putIntegerArrayList("timeinalts", timeInAltList);
+                    Log.v(LOG_TAG, "Putting in timeinaltlist of size " + timeInList.size());
                     bundle.putIntegerArrayList("timeoutalts", timeOutAltList);
                     bundle.putStringArrayList("periods", periodsList);
 
@@ -111,7 +148,9 @@ public class AddPeerActivity extends AppCompatActivity {
                 @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
                 @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onCancelled(DatabaseError databaseError) {}});
+                @Override public void onCancelled(DatabaseError databaseError) {
+                    spinner.setVisibility(View.GONE);
+                }});
         }
 
 
@@ -155,8 +194,7 @@ public class AddPeerActivity extends AppCompatActivity {
                     name = (String) dataSnapshot.getValue();
                     nameView.setText(name);
                     ((TextView) findViewById(R.id.whichClasses)).setText
-                            (getString(R.string.whichClasses) + name + getString(R.string.in));
-
+                            (getString(R.string.whichClasses, name));
                 }
 
                 @Override
@@ -236,7 +274,8 @@ public class AddPeerActivity extends AppCompatActivity {
                 classTimeIns.add(classList.get(i).getIntegerArrayList("timeins"));
                 classTimeOuts.add(classList.get(i).getIntegerArrayList("timeouts"));
                 classTimeInAlts.add(classList.get(i).getIntegerArrayList("timeinalts"));
-                classTimeOutAlts.add(classList.get(i).getIntegerArrayList("timeoualts"));
+                Log.v(LOG_TAG, "Getting timeinaltlist of size " + classList.get(i).getIntegerArrayList("timeinalts").size());
+                classTimeOutAlts.add(classList.get(i).getIntegerArrayList("timeoutalts"));
                 classPeriods.add(classList.get(i).getStringArrayList("periods"));
                 classIcons.add(classList.get(i).getString("icon"));
             }
@@ -250,14 +289,18 @@ public class AddPeerActivity extends AppCompatActivity {
             classTitleRef.child("room").setValue(classRooms.get(i));
 
             // Set the listed values to the cloud
-            for (int l = 0; l < classOccurrences.size(); l++) {
-                classTitleRef.child("occurrence").child(classOccurrences.get(i).get(l)).setValue("");
-                classTitleRef.child("timein").child(String.valueOf(l)).setValue(classTimeIns.get(i).get(l));
-                classTitleRef.child("timeout").child(String.valueOf(l)).setValue(classTimeOuts.get(i).get(l));
-                classTitleRef.child("timeinalt").child(String.valueOf(l)).setValue(classTimeInAlts.get(i).get(l));
-                classTitleRef.child("timeoutalt").child(String.valueOf(l)).setValue(classTimeOutAlts.get(i).get(l));
-                classTitleRef.child("periods").child(classPeriods.get(i).get(l)).setValue("");
-            }
+            if (classOccurrences.size() != 0)
+                for (int l = 0; l < classOccurrences.get(0).size(); l++) {
+                    Log.v(LOG_TAG, "l = " + l);
+                    classTitleRef.child("occurrence").child(classOccurrences.get(i).get(l)).setValue("");
+                    classTitleRef.child("timein").child(String.valueOf(l)).setValue(classTimeIns.get(i).get(l));
+                    classTitleRef.child("timeout").child(String.valueOf(l)).setValue(classTimeOuts.get(i).get(l));
+                    classTitleRef.child("timeinalt").child(String.valueOf(l)).setValue(classTimeInAlts.get(i).get(l));
+                    Log.v(LOG_TAG, "ClassTimeOutAltsSize: " + classTimeOutAlts.size());
+                    Log.v(LOG_TAG, "ClassTimeOutAlts" + i + "Size: " + classTimeOutAlts.get(i).size());
+                    classTitleRef.child("timeoutalt").child(String.valueOf(l)).setValue(classTimeOutAlts.get(i).get(l));
+                    classTitleRef.child("periods").child(classPeriods.get(i).get(l)).setValue("");
+                }
         }
 
         Toast.makeText(this, getString(R.string.requestSent, name), Toast.LENGTH_SHORT).show();

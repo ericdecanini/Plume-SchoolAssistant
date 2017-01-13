@@ -1,12 +1,19 @@
 package com.pdt.plume;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,9 +32,16 @@ public class RequestsActivity extends AppCompatActivity {
 
     String LOG_TAG = RequestsActivity.class.getSimpleName();
 
+    // UI Data
+    ProgressBar spinner;
+    TextView headerTextView;
+
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
+
+    // Theme Variables
+    int mPrimaryColor, mDarkColor;
 
     // Arrays and Lists
     ArrayList<String> userIdList = new ArrayList<>();
@@ -39,7 +53,26 @@ public class RequestsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_requests);
-        DbHelper dbHelper = new DbHelper(this);
+
+        // Initialise the progress bar
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
+        headerTextView = (TextView) findViewById(R.id.header_textview);
+        headerTextView.setVisibility(View.GONE);
+
+        // Initialise the theme
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(mDarkColor);
+        }
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -47,7 +80,6 @@ public class RequestsActivity extends AppCompatActivity {
 
         // Inflate the list
         setRequestsListAdapater();
-        dbHelper.updateRequestsInDb();
 
     }
 
@@ -64,9 +96,15 @@ public class RequestsActivity extends AppCompatActivity {
                     .child("users").child(mFirebaseUser.getUid()).child("requests").getRef();
 
             // Add the values to the array lists
-            requestsRef.addValueEventListener(new ValueEventListener() {
+            requestsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    spinner.setVisibility(View.GONE);
+                    if (dataSnapshot.getChildrenCount() == 0) {
+                        headerTextView.setVisibility(View.VISIBLE);
+                        headerTextView.setText(getString(R.string.splash_no_request));
+                    }
+
                     for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
                         final String userIDItem = userSnapshot.getKey();
                         userIdList.add(userIDItem);
@@ -83,7 +121,8 @@ public class RequestsActivity extends AppCompatActivity {
 
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
-
+                                spinner.setVisibility(View.GONE);
+                                headerTextView.setVisibility(View.VISIBLE);
                             }
                         });
                         userSnapshot.getRef().child("icon").addValueEventListener(new ValueEventListener() {
@@ -120,7 +159,8 @@ public class RequestsActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    headerTextView.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.GONE);
                 }
             });
         }
@@ -135,6 +175,7 @@ public class RequestsActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listView);
         PeerAdapter adapter = new PeerAdapter(this, R.layout.list_item_peer, peerArrayList);
         listView.setAdapter(adapter);
+        spinner.setVisibility(View.GONE);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
