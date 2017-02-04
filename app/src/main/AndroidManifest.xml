@@ -217,7 +217,7 @@
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SignUpActivity"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".LoginActivity" />
         <activity
             android:name=".RequestsActivity"
             android:parentActivityName=".MainActivity" />

@@ -1,38 +1,34 @@
 package com.pdt.plume;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.Calendar;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_UNMUTE_ALARM;
 
 public class MuteAlarmReceiver extends BroadcastReceiver {
 
     String LOG_TAG = MuteAlarmReceiver.class.getSimpleName();
     Utility utility = new Utility();
-    int REQUEST_UNMUTE_ALARM = 52;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
         int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-        audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
+        try {
+            int zen_mode = Settings.Global.getInt(context.getContentResolver(), "zen_mode");
+            if (zen_mode == 0)
+                audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
 
         Log.v(LOG_TAG, "Mute alarm received");
 

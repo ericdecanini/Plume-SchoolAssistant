@@ -17,7 +17,7 @@
             android:title="@string/settings_class_mute_title" />
 
         <ListPreference
-            android:key="@string/KEY_SETTINGS_WEEK_NUMBER"
+            android:key="@string/KEY_WEEK_NUMBER_SETTING"
             android:title="@string/settings_week_number_title"
             android:entries="@array/settings_week_number_entries"
             android:entryValues="@array/settings_week_number_values"

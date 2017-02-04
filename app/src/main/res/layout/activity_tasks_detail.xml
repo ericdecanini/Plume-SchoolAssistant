@@ -97,7 +97,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:textColor="@color/colorPrimary"
-                    android:text="@string/mark_as_done"
+                    android:text="@string/mark_as_undone"
                     android:textSize="14sp"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"/>
                 <View

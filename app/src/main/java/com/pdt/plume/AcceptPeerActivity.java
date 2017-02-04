@@ -53,6 +53,7 @@ public class AcceptPeerActivity extends AppCompatActivity
     // Self Profile Variables
     String selfName;
     String selfIcon;
+    String selfFlavour;
 
     // Target User Profile Variables
     String requestingUserId;
@@ -123,6 +124,13 @@ public class AcceptPeerActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfIcon = dataSnapshot.getValue(String.class);
+            }
+            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+        selfRef.child("flavour").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                selfFlavour = dataSnapshot.getValue(String.class);
             }
             @Override public void onCancelled(DatabaseError databaseError) {}});
 
@@ -317,10 +325,12 @@ public class AcceptPeerActivity extends AppCompatActivity
                 // User's peers ref
                 mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
                 mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
+                mUserPeersRef.child(requestingUserId).child("flavour").setValue(flavour);
                 mUserPeersRef.child(requestingUserId).child("classes").child(title).setValue(classIcon);
                 // Requesting user's peers ref
                 requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
                 requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
+                requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
                 requestingUserPeersRef.child(mUserId).child("classes").child(title).setValue(classIcon);
                 // Both user's classes refs
                 mUserClassesRef.child(title).child("peers").child(requestingUserId).setValue("");

@@ -1,13 +1,23 @@
 package com.pdt.plume.data;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -17,9 +27,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.journeyapps.barcodescanner.Util;
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
+import com.pdt.plume.ScheduleDetailActivity;
 import com.pdt.plume.Task;
+import com.pdt.plume.TaskNotificationPublisher;
 import com.pdt.plume.Utility;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
@@ -29,6 +42,11 @@ import com.pdt.plume.data.DbContract.PeersEntry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static java.security.AccessController.getContext;
 
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -119,7 +137,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public Cursor getCurrentDayScheduleDataFromSQLite(Context context) {
         SQLiteDatabase db = this.getReadableDatabase();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String weekNumber = preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
+        String weekNumber = "0";
         Cursor cursor;
         if (weekNumber.equals("0"))
             cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
@@ -185,7 +203,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Schedule> getCurrentDayScheduleArray(Context context) throws IOException {
-        // Get the calendar data for the week number
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int forerunnerTime = preferences.getInt(context.getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
         Calendar c = Calendar.getInstance();
         String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -211,7 +230,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
-                    // Add the time based list item
+                    // Add the time based list item and schedule the notification
                     if (!timeIn.equals("")) {
                         arrayList.add(new Schedule(
                                 context,
@@ -223,6 +242,22 @@ public class DbHelper extends SQLiteOpenHelper {
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                 ""
                         ));
+                        // Schedule the notification
+                        int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
+                        String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+                        long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+
+                        Calendar timeInCalendar = Calendar.getInstance();
+                        timeInCalendar.setTimeInMillis(timeInValue);
+                        c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR));
+                        c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                        Calendar current = Calendar.getInstance();
+                        if (c.getTimeInMillis() > current.getTimeInMillis())
+                            c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+
+                        ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
+                                context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
                     // Add the period/block based list item
                     else if (!periods.equals("-1")) {
@@ -260,6 +295,14 @@ public class DbHelper extends SQLiteOpenHelper {
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 ""
                         ));
+                        // Schedule the notification
+                        int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
+                        String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+                        long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                        c.setTimeInMillis(timeInValue);
+                        c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
+                        ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
+                                context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
                     // Add the period/block based list item
                     else {
@@ -514,6 +557,50 @@ public class DbHelper extends SQLiteOpenHelper {
         return db.delete(ScheduleEntry.TABLE_NAME, ScheduleEntry.COLUMN_TITLE + " = ?", new String[]{title});
     }
 
+    private void ScheduleClassNotification(final Context context, final Date dateTime, int ID, final String title, final String message, String icon) {
+        Log.v(LOG_TAG, "Notification set for " + utility.millisToHourTime(dateTime.getTime()));
+        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        Bitmap largeIcon = null;
+        try {
+            largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                .setBackground(largeIcon);
+
+        Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
+        contentIntent.putExtra("_ID", ID);
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
+                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                builder.setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(context.getResources().getColor(R.color.colorPrimary))
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                Notification notification = builder.build();
+
+                Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
+                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+            }
+        });
+    }
+
     /**
      * Task Database Functions
      * getCursor
@@ -648,21 +735,6 @@ public class DbHelper extends SQLiteOpenHelper {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(TasksEntry.COLUMN_TITLE, title);
-        contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
-        contentValues.put(TasksEntry.COLUMN_TYPE, type);
-        contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
-        contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
-        contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
-        contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
-        contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
-        contentValues.put(TasksEntry.COLUMN_ICON, icon);
-        contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
-        contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
-        db.insert(TasksEntry.TABLE_NAME, null, contentValues);
-
         // Insert to the Cloud
         if (firebaseUser != null) {
             String uID = firebaseUser.getUid();
@@ -678,6 +750,23 @@ public class DbHelper extends SQLiteOpenHelper {
             classRef.child("icon").setValue(icon);
             classRef.child("picture").setValue(picture);
             classRef.child("completed").setValue(completed);
+        } else {
+            // Insert locally into SQLite
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(TasksEntry.COLUMN_TITLE, title);
+            contentValues.put(TasksEntry.COLUMN_CLASS, classTitle);
+            contentValues.put(TasksEntry.COLUMN_TYPE, type);
+            contentValues.put(TasksEntry.COLUMN_DESCRIPTION, description);
+            contentValues.put(TasksEntry.COLUMN_ATTACHMENT, attachment);
+            contentValues.put(TasksEntry.COLUMN_DUEDATE, dueDate);
+            contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
+            contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
+            contentValues.put(TasksEntry.COLUMN_ICON, icon);
+            contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
+            contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
+            long insertTask = db.insert(TasksEntry.TABLE_NAME, null, contentValues);
+            Log.v(LOG_TAG, "Insert Task Result: " + insertTask);
         }
 
         return true;

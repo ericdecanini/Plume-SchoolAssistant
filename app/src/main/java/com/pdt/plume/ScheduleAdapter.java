@@ -79,6 +79,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
         Bitmap setImageBitmap = null;
+        Log.v(LOG_TAG, "Schedule Icon for " + schedule.scheduleLesson + ": " + schedule.scheduleIcon);
         try {
             setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(schedule.scheduleIcon));
         } catch (IOException e) {

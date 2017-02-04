@@ -7,10 +7,10 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-public class BuiltInIconsAdapter extends BaseAdapter {
+public class BuiltInProfileIconsAdapter extends BaseAdapter {
     private Context mContext;
 
-    public BuiltInIconsAdapter(Context c) {
+    public BuiltInProfileIconsAdapter(Context c) {
         mContext = c;
     }
 
@@ -46,33 +46,11 @@ public class BuiltInIconsAdapter extends BaseAdapter {
 
     // references to our images
     private Integer[] mThumbIds = {
-            R.drawable.art_arts_64dp,
-            R.drawable.art_biology_64dp,
-            R.drawable.art_business_64dp,
-            R.drawable.art_chemistry_64dp,
-            R.drawable.art_childdevelopment_64dp,
-            R.drawable.art_class_64dp,
-            R.drawable.art_computing_64dp,
-            R.drawable.art_cooking_64dp,
-            R.drawable.art_creativestudies_64dp,
-            R.drawable.art_drama_64dp,
-            R.drawable.art_engineering_64dp,
-            R.drawable.art_english_64dp,
-            R.drawable.art_french_64dp,
-            R.drawable.art_geography_64dp,
-            R.drawable.art_graphics_64dp,
-            R.drawable.art_hospitality_64dp,
-            R.drawable.art_ict_64dp,
-            R.drawable.art_maths_64dp,
-            R.drawable.art_media_64dp,
-            R.drawable.art_music_64dp,
-            R.drawable.art_pe_64dp,
-            R.drawable.art_physics_64dp,
-            R.drawable.art_psychology_64dp,
-            R.drawable.art_re_64dp,
-            R.drawable.art_science_64dp,
-            R.drawable.art_spanish_64dp,
-            R.drawable.art_task_64dp,
-            R.drawable.art_woodwork_64dp
+            R.drawable.art_profile_default,
+            R.drawable.art_profile_uniform,
+            R.drawable.art_profile_blazer,
+            R.drawable.art_profile_mustache,
+            R.drawable.art_profile_blazerpanda,
+            R.drawable.art_profile_alien
     };
 }

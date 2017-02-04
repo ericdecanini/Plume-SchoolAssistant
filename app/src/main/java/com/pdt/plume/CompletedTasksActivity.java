@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +37,7 @@ import com.pdt.plume.data.DbHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Build.ID;
 import static com.pdt.plume.R.id.fab;
 import static com.pdt.plume.R.id.listView;
 
@@ -63,6 +65,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
+    ChildEventListener tasksListener = null;
 
 
     @Override
@@ -96,16 +99,21 @@ public class CompletedTasksActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Create an intent to the TaskDetailActivity passing on the ID
-                int ID = taskIDs.get(position);
                 Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
-                intent.putExtra("_ID", ID);
+                if (mFirebaseUser != null) {
+                    String firebaseID = taskFirebaseIDs.get(position);
+                    intent.putExtra("id", firebaseID);
+                } else {
+                    int ID = taskIDs.get(position);
+                    intent.putExtra("_ID", ID);
+                }
+
                 intent.putExtra(getString(R.string.FLAG_TASK_COMPLETED), true);
                 startActivity(intent);
             }
         });
 
         // Initialise the FAB
-        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,8 +162,14 @@ public class CompletedTasksActivity extends AppCompatActivity {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     boolean isTaskCompleted = dataSnapshot.child("completed").getValue(boolean.class);
-                    if (isTaskCompleted)
-                        taskTitles.add(dataSnapshot.child("title").getValue(String.class));}
+                    if (isTaskCompleted) {
+                        taskTitles.add(dataSnapshot.child("title").getValue(String.class));
+                        taskFirebaseIDs.add(dataSnapshot.getKey());
+                        findViewById(R.id.header_textview).setVisibility(View.GONE);
+                    }
+                    mScheduleAdapter.notifyDataSetChanged();
+                    tasksListener = this;
+                }
                 @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
                 @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
@@ -169,11 +183,20 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
                     taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
-            } else findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                findViewById(R.id.header_textview).setVisibility(View.GONE);
+            }
             cursor.close();
         }
 
         mScheduleAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onStop() {
+        FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId).child("tasks")
+                .removeEventListener(tasksListener);
+        super.onStop();
     }
 
     // Set a task item to incomplete state so it shows in TasksFragment again

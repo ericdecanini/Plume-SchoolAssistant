@@ -874,7 +874,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[0].equals("1")) {
                             isPeriodChecked[0] = "0";
                             periodOne.setBackgroundDrawable(null);
-                            periodOne.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "3";
@@ -884,7 +883,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "2";
                             periodOne.setBackgroundDrawable(null);
-                            periodOne.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_two:
@@ -896,7 +894,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[1].equals("1")) {
                             isPeriodChecked[1] = "0";
                             periodTwo.setBackgroundDrawable(null);
-                            periodTwo.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "3";
@@ -906,7 +903,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "2";
                             periodTwo.setBackgroundDrawable(null);
-                            periodTwo.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_three:
@@ -918,7 +914,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[2].equals("1")) {
                             isPeriodChecked[2] = "0";
                             periodThree.setBackgroundDrawable(null);
-                            periodThree.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "3";
@@ -928,7 +923,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "2";
                             periodThree.setBackgroundDrawable(null);
-                            periodThree.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_four:
@@ -940,7 +934,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[3].equals("1")) {
                             isPeriodChecked[3] = "0";
                             periodFour.setBackgroundDrawable(null);
-                            periodFour.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "3";
@@ -950,7 +943,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "2";
                             periodFour.setBackgroundDrawable(null);
-                            periodFour.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_five:
@@ -962,7 +954,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[4].equals("1")) {
                             isPeriodChecked[4] = "0";
                             periodFive.setBackgroundDrawable(null);
-                            periodFive.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[4].equals("2")) {
                             isPeriodChecked[4] = "3";
@@ -972,7 +963,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[4].equals("3")) {
                             isPeriodChecked[4] = "2";
                             periodFive.setBackgroundDrawable(null);
-                            periodFive.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_six:
@@ -984,7 +974,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[5].equals("1")) {
                             isPeriodChecked[5] = "0";
                             periodSix.setBackgroundDrawable(null);
-                            periodSix.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[5].equals("2")) {
                             isPeriodChecked[5] = "3";
@@ -994,7 +983,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[5].equals("3")) {
                             isPeriodChecked[5] = "2";
                             periodSix.setBackgroundDrawable(null);
-                            periodSix.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_seven:
@@ -1006,7 +994,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[6].equals("1")) {
                             isPeriodChecked[6] = "0";
                             periodSeven.setBackgroundDrawable(null);
-                            periodSeven.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[6].equals("2")) {
                             isPeriodChecked[6] = "3";
@@ -1016,7 +1003,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[6].equals("3")) {
                             isPeriodChecked[6] = "2";
                             periodSeven.setBackgroundDrawable(null);
-                            periodSeven.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_eight:
@@ -1028,7 +1014,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[7].equals("1")) {
                             isPeriodChecked[7] = "0";
                             periodEight.setBackgroundDrawable(null);
-                            periodEight.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[7].equals("2")) {
                             isPeriodChecked[7] = "3";
@@ -1038,7 +1023,6 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[7].equals("3")) {
                             isPeriodChecked[7] = "2";
                             periodEight.setBackgroundDrawable(null);
-                            periodEight.setTextColor(mPrimaryColor);
                         }
                         break;
 
@@ -1057,12 +1041,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[0].equals("2")) {
                             isPeriodChecked[0] = "0";
                             periodOneAlt.setBackgroundDrawable(null);
-                            periodOneAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[0].equals("3")) {
                             isPeriodChecked[0] = "1";
                             periodOneAlt.setBackgroundDrawable(null);
-                            periodOneAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_two_alt:
@@ -1079,12 +1061,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[1].equals("2")) {
                             isPeriodChecked[1] = "0";
                             periodTwoAlt.setBackgroundDrawable(null);
-                            periodTwoAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[1].equals("3")) {
                             isPeriodChecked[1] = "1";
                             periodTwoAlt.setBackgroundDrawable(null);
-                            periodTwoAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_three_alt:
@@ -1101,12 +1081,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[2].equals("2")) {
                             isPeriodChecked[2] = "0";
                             periodThreeAlt.setBackgroundDrawable(null);
-                            periodThreeAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[2].equals("3")) {
                             isPeriodChecked[2] = "1";
                             periodThreeAlt.setBackgroundDrawable(null);
-                            periodThreeAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_four_alt:
@@ -1123,12 +1101,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[3].equals("2")) {
                             isPeriodChecked[3] = "0";
                             periodFourAlt.setBackgroundDrawable(null);
-                            periodFourAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[3].equals("3")) {
                             isPeriodChecked[3] = "1";
                             periodFourAlt.setBackgroundDrawable(null);
-                            periodFourAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_five_alt:
@@ -1145,12 +1121,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[4].equals("2")) {
                             isPeriodChecked[4] = "0";
                             periodFiveAlt.setBackgroundDrawable(null);
-                            periodFiveAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[4].equals("3")) {
                             isPeriodChecked[4] = "1";
                             periodFiveAlt.setBackgroundDrawable(null);
-                            periodFiveAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_six_alt:
@@ -1167,12 +1141,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[5].equals("2")) {
                             isPeriodChecked[5] = "0";
                             periodSixAlt.setBackgroundDrawable(null);
-                            periodSixAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[5].equals("3")) {
                             isPeriodChecked[5] = "1";
                             periodSixAlt.setBackgroundDrawable(null);
-                            periodSixAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_seven_alt:
@@ -1189,12 +1161,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[6].equals("2")) {
                             isPeriodChecked[6] = "0";
                             periodSevenAlt.setBackgroundDrawable(null);
-                            periodSevenAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[6].equals("3")) {
                             isPeriodChecked[6] = "1";
                             periodSevenAlt.setBackgroundDrawable(null);
-                            periodSevenAlt.setTextColor(mPrimaryColor);
                         }
                         break;
                     case R.id.class_three_period_eight_alt:
@@ -1211,12 +1181,10 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         else if (isPeriodChecked[7].equals("2")) {
                             isPeriodChecked[7] = "0";
                             periodEightAlt.setBackgroundDrawable(null);
-                            periodEightAlt.setTextColor(mPrimaryColor);
                         }
                         else if (isPeriodChecked[7].equals("3")) {
                             isPeriodChecked[7] = "1";
                             periodEightAlt.setBackgroundDrawable(null);
-                            periodEightAlt.setTextColor(mPrimaryColor);
                         }
                         break;
 
@@ -1266,6 +1234,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                         dismiss();
                         break;
                 }
+
             }
         };
     }
@@ -1285,7 +1254,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
     private String processPeriodsString(){
         // Creates the convertible period string
         // for database storage
-        return isPeriodChecked[0] + ":"
+        String periods =  isPeriodChecked[0] + ":"
                 + isPeriodChecked[1] + ":"
                 + isPeriodChecked[2] + ":"
                 + isPeriodChecked[3] + ":"
@@ -1297,6 +1266,8 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 + isPeriodChecked[9] + ":"
                 + isPeriodChecked[10] + ":"
                 + isPeriodChecked[11];
+
+        return periods;
     }
 
 }

@@ -50,6 +50,7 @@ import com.pdt.plume.data.DbHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ScheduleDetailActivity extends AppCompatActivity {
@@ -156,8 +157,10 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 classRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.v(LOG_TAG, "Snapshot key in detail: " + dataSnapshot.getKey());
                         teacher = dataSnapshot.child("teacher").getValue(String.class);
                         room = dataSnapshot.child("room").getValue(String.class);
+                        Log.v(LOG_TAG, "Parsing Icon " + dataSnapshot.child("icon").getValue(String.class));
                         iconUri = Uri.parse(dataSnapshot.child("icon").getValue(String.class));
 
                         // Apply data to the UI
@@ -168,9 +171,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         // Intialise the tasks list
                         DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                                 .child("users").child(mUserId).child("tasks");
+                        findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.GONE);
                         tasksRef.addChildEventListener(new ChildEventListener() {
                             @Override
                             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                                findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.VISIBLE);
                                 String classTitle = dataSnapshot.child("class").getValue(String.class);
                                 if (classTitle.equals(title)) {
                                     String id = dataSnapshot.getKey();
@@ -391,6 +396,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                             mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
                                                     getResources().getColor(R.color.colorPrimary))) ;
                                             mainColour = palette.getVibrantColor(mPrimaryColor);
+                                            Log.v(LOG_TAG, "Primary colour set to " + String.format("#%06X", 0xFFFFFF & mPrimaryColor));
                                         }
 
                                         mPrimaryColor = mainColour;
@@ -528,6 +534,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             hsv[2] *= 0.8f; // value component
 
                             mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+                            mDarkColor = Color.HSVToColor(hsv);
+                            collapsingToolbar.setBackgroundColor(mPrimaryColor);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                getWindow().setStatusBarColor(mDarkColor);
+                            }
 
                             // Initialise Notes
                             TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
@@ -732,11 +743,16 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 // When it does, set the itemId to the matched position
                 // and then remove the item in that array list
                 // matching that position
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--)
                     if (position == CAMselectedItemsList.get(i)) {
                         itemId = i;
                     }
-                }
+
                 if (itemId != -1)
                     CAMselectedItemsList.remove(itemId);
             }

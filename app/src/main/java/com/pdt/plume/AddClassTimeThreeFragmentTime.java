@@ -57,7 +57,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
     // View IDs passed along activities
     int resourceId = -1;
-    int rowID = 0;
+    int rowID = -1;
     boolean FLAG_EDIT = false;
 
     // Interface variables
@@ -84,7 +84,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
     }
     public interface onTimeSelectedListener {
         public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
-                                   int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked);
+                                   int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked, boolean FLAG_EDIT);
     }
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
@@ -192,15 +192,14 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
         Bundle args = getArguments();
         if (args != null){
             if (args.containsKey("FLAG_EDIT")) {
-                FLAG_EDIT = args.getBoolean("FLAG_EDIT");
+                FLAG_EDIT = true;
                 rowID = args.getInt("rowID");
-                Log.v(LOG_TAG, "rowID: " + rowID);
             }
             if (args.containsKey("occurrence")) {
                 FLAG_EDIT = true;
                 rowID = args.getInt("rowId");
+
             }
-            Log.v(LOG_TAG, "FLAG EDIT set true");
             // Hide the alternate layout if the week taskType selected is 0 (Same time every week)
             // and set the hyperlink week taskType text to the selected week taskType text
             if (!args.getString("weekType", "-1").equals("1")){
@@ -219,8 +218,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
             // If the fragment contains the 'hourOfDay' string, it must contain other previous state data
             if (args.containsKey("hourOfDay")){
                 // Get previous state data
-                FLAG_EDIT = true;
-                Log.v(LOG_TAG, "FLAG EDIT set true");
+                FLAG_EDIT = args.getBoolean("FLAG_EDIT", false);
                 String weekType = args.getString("weekType", "-1");
                 String classDays = args.getString("classDays", "-1");
                 String[] splitClassDays = classDays.split(":");
@@ -847,10 +845,14 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
                         // If the fragment was started through the list view's OnItemClick
                         // Pass true as the Edit Flag to tell the activity to update instead
                         // the occurrence item instead of adding a new item
-                        if (getArguments().containsKey("occurrence")) {
-                            FLAG_EDIT = true;
-                            rowID = getArguments().getInt("rowId");
-                        }
+//                        if (getArguments().containsKey("occurrence")) {
+//                            FLAG_EDIT = getArguments().getBoolean("FLAG_EDIT", false);
+//                            rowID = getArguments().getInt("rowId");
+//                        }
+                        // Log all data here
+                        Log.v(LOG_TAG, "Period log: " + classDays + "\n" + timeInSeconds + "\n" + timeOutSeconds
+                        + "\n" + timeInAltSeconds + "\n" + timeOutAltSeconds + "\n " + FLAG_EDIT + "\n" + rowID);
+
                         daysSelectedListener.onDaysSelected(classDays, timeInSeconds, timeOutSeconds,
                                 timeInAltSeconds, timeOutAltSeconds, "-1", FLAG_EDIT, rowID);
                         break;
@@ -886,7 +888,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
                 // Launch the interface to send the fragment's current state data to the activity
                 timeSelectedListener.onTimeSelected(resourceId, processClassDaysString(), timeInSeconds, timeOutSeconds,
-                        timeInAltSeconds, timeOutAltSeconds, isButtonChecked);
+                        timeInAltSeconds, timeOutAltSeconds, isButtonChecked, FLAG_EDIT);
             }
         };
     }

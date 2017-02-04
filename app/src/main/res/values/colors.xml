@@ -22,6 +22,8 @@
     <color name="dividerColor">#CCCCCC</color>
     <color name="tab_indicator_unselected">#B1C1CC</color>
 
+    <color name="red_500">#F44336</color>
+
     <color name="mainTextColor">#95989A</color>
 
     <color name="grey">#cccccc</color>

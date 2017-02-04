@@ -211,7 +211,7 @@
         android:layout_height="wrap_content">
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_one_alt"
+            android:id="@+id/class_three_period_one"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -221,7 +221,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_two_alt"
+            android:id="@+id/class_three_period_two"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -231,7 +231,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_three_alt"
+            android:id="@+id/class_three_period_three"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -241,7 +241,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_four_alt"
+            android:id="@+id/class_three_period_four"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -251,7 +251,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_five_alt"
+            android:id="@+id/class_three_period_five"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -261,7 +261,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_six_alt"
+            android:id="@+id/class_three_period_six"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -271,7 +271,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_seven_alt"
+            android:id="@+id/class_three_period_seven"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -281,7 +281,7 @@
             android:textSize="32sp"/>
 
         <TextView android:layout_weight="1"
-            android:id="@+id/class_three_period_eight_alt"
+            android:id="@+id/class_three_period_eight"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_gravity="center_horizontal"
@@ -427,7 +427,7 @@
             android:layout_height="wrap_content">
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_one"
+                android:id="@+id/class_three_period_one_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -437,7 +437,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_two"
+                android:id="@+id/class_three_period_two_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -447,7 +447,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_three"
+                android:id="@+id/class_three_period_three_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -457,7 +457,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_four"
+                android:id="@+id/class_three_period_four_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -467,7 +467,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_five"
+                android:id="@+id/class_three_period_five_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -477,7 +477,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_six"
+                android:id="@+id/class_three_period_six_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -487,7 +487,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_seven"
+                android:id="@+id/class_three_period_seven_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"
@@ -497,7 +497,7 @@
                 android:textSize="32sp"/>
 
             <TextView android:layout_weight="1"
-                android:id="@+id/class_three_period_eight"
+                android:id="@+id/class_three_period_eight_alt"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_gravity="center_horizontal"

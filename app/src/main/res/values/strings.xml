@@ -43,7 +43,7 @@
     <string name="SKIP">SKIP</string>
     <string name="GOT_IT">GOT IT</string>
     <string name="Search">Search</string>
-    <string name="timeTask">Time Task</string>
+    <string name="timeTask">Setup a timer</string>
     <string name="select">Select</string>
 
     <string name="schedule">Schedule</string>
@@ -80,7 +80,7 @@
     <string name="nav_people">People</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
-    <string name="nav_about">About Plume - School Assistant</string>
+    <string name="nav_about">About Plume - Academy Assistant</string>
 
     <!-- Contextual Action Mode -->
     <string name="select_items">Select Items</string>
@@ -99,6 +99,7 @@
 
     <!-- Strings for week number -->
     <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
+    <string name="KEY_WEEK_NUMBER_SETTING" translatable="false">KEY_WEEK_NUMBER_SETTING</string>
 
     <!--
     MAIN ACTIVITY END
@@ -132,6 +133,7 @@
     <string name="check_internet">Please check your network connection.</string>
     <string name="format_time">%1$s - %2$s</string>
     <string name="format_period">%1$s period</string>
+    <string name="class_notification_message">In %1$s minutes</string>
 
     <!-- Strings for NotificationService -->
     <string name="schedule_notification_message">Class starts in</string>
@@ -164,7 +166,6 @@
     <!-- Main UI -->
     <string name="new_schedule_hint">Enter a title</string>
     <string name="new_schedule_add_class_time">Add a Period for this Class</string>
-    <string name="new_schedule_repeats">Repeats</string>
     <string name="new_schedule_time_in">From</string>
     <string name="new_schedule_time_out">To</string>
     <string name="new_schedule_teacher">Teacher</string>
@@ -188,7 +189,7 @@
     <string name="class_time_list_header_substring_periods">periods</string>
 
     <!-- UI for Add Class Time Fragment One -->
-    <string name="class_time_one_title">Select your school\'s class schedule</string>
+    <string name="class_time_one_title">How does your schedule work?</string>
     <string name="class_time_one_timebased">Time based</string>
     <string name="class_time_one_periodbased">Period based</string>
     <string name="class_time_one_blockbased">Block based</string>
@@ -200,10 +201,10 @@
     <string name="blockbased_example">Day A - Maths 1st Period</string>
 
     <!-- UI for Add Class Time Fragment Two -->
-    <string name="class_time_two_sameweek">Same time every week</string>
+    <string name="class_time_two_sameweek">Same schedule every week</string>
     <string name="class_time_two_altweeks">Alternating weeks</string>
     <string name="sameweek_description">Classes are at the same time every week.</string>
-    <string name="altweek_decription">Schedule may change between alternating weeks.</string>
+    <string name="altweek_decription">Schedule changes every week</string>
     <string name="sameweek_example">Maths on Mon, 9:00 Every Week</string>
     <string name="altweek_example">Week A - Maths on Monday, 9:00\nWeek B - Maths on Tue, 11:00</string>
 
@@ -291,6 +292,7 @@
      e.g. French: %1$s pour %2$s = Des Devoirs pour Math -->
     <string name="format_subtitle">%1$s %2$s</string>
     <string name="mark_as_done">Mark as Done</string>
+    <string name="mark_as_undone">Mark as Undone</string>
 
     <string name="completed_task">Completed task</string>
     <string name="set_timer">Set timer</string>
@@ -340,6 +342,15 @@
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="set_date">Set date</string>
+
+    <string name="morning_time">Morning (9:00am)</string>
+    <string name="afternoon_time">Afternoon (2:00pm)</string>
+    <string name="evening_time">Evening (6:00pm)</string>
+    <string name="set_time">Set time</string>
+
+    <string name="morning">Morning</string>
+    <string name="afternoon">Afternoon</string>
+    <string name="evening">Evening</string>
 
     <string name="field_new_photo_dialog_title">Insert photo</string>
     <string-array name="field_new_photo_dialog_items">
@@ -458,13 +469,13 @@
     <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
     <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
 
-    <string name="settings_theme_primary_title">Primary Color</string>
+    <string name="settings_theme_primary_title">Primary Colour</string>
     <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
 
-    <string name="settings_theme_secondary_title">Secondary Color</string>
+    <string name="settings_theme_secondary_title">Secondary Colour</string>
     <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
 
-    <string name="color_dialog_title">Select color</string>
+    <string name="color_dialog_title">Select colour</string>
 
     <!--
     ABOUT ACTIVITY STRINGS
@@ -472,17 +483,18 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.1 Beta</string>
+    <string name="Version">Version 0.2 Beta</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
-    <string name="Plume_Email">team@plumeacademyassistant.co.uk</string>
+    <string name="Plume_Email">team@plumeacademyassistant.com</string>
     <string name="Developed">Developed by:</string>
     <string name="PDT" translatable="false">Plume Development Team</string>
     <string name="Coding">Software and coding:</string>
     <string name="Eric" translatable="false">Eric Decanini</string>
     <string name="Graphics">Graphics and design:</string>
     <string name="Reiss" translatable="false">Reiss Tozer</string>
+    <string name="Michael" translatable="false">Michael Sumner</string>
     <string name="Testers">Alpha testers:</string>
     <string name="Connor" translatable="false">Connor Hutchings</string>
     <string name="Ryan" translatable="false">Ryan Hutchings</string>
@@ -545,7 +557,7 @@
     <string name="signup_error_message_no_confirm">Please confirm your password</string>
     <string name="signup_error_message_wrong_confirm">Passwords don՚t match. Please try again.</string>
     <string name="signup_success">Account successfully created! You can now Login.</string>
-    <string name="login_error_message">Please make sure you enter an email address and password!</string>
+    <string name="login_error_message">Email or password is invalid</string>
     <string name="login_error_title">Error!</string>
     <string name="login_button_label">Login</string>
     <string name="sign_up_text">New here? Sign Up!</string>
@@ -617,5 +629,8 @@
     <string name="transition_picture" translatable="false">TRANSITION_PICTURE</string>
 
     <string name="title_activity_temp_fullscreen">tempFullscreenActivity</string>
+
+    <!-- MISC -->
+    <string name="PREFERENCE_UNIQUE_ID_COUNT">PREFERENCE_UNIQUE_UD_COUNT</string>
 
 </resources>

@@ -4,16 +4,25 @@ package com.pdt.plume;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.ActivityOptions;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -45,10 +54,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static android.media.CamcorderProfile.get;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.R.bool.isTablet;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 
 public class ScheduleFragment extends Fragment {
     // Constantly used variables
@@ -101,7 +114,7 @@ public class ScheduleFragment extends Fragment {
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
-        spinner.setVisibility(View.VISIBLE);
+        spinner.setVisibility(View.GONE);
 
         // Check if the used device is a tablet
         // Currently this does nothing, but will later on be used
@@ -130,19 +143,23 @@ public class ScheduleFragment extends Fragment {
         }
 
         // Check if the tasks ref doesn't exist
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(mUserId);
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child("classes").getChildrenCount() == 0) {
-                    spinner.setVisibility(View.GONE);
-                    headerTextView.setVisibility(View.VISIBLE);
+        if (mFirebaseUser != null) {
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId);
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child("classes").getChildrenCount() == 0) {
+                        spinner.setVisibility(View.GONE);
+                        headerTextView.setVisibility(View.VISIBLE);
+                    }
                 }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        }
 
         // Apply the list data to the listview mScheduleAdapter
         mScheduleAdapter = new ScheduleAdapter(getContext(),
@@ -264,6 +281,7 @@ public class ScheduleFragment extends Fragment {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser != null) {
             // Get data from Firebase
+            spinner.setVisibility(View.VISIBLE);
             String userId = firebaseUser.getUid();
             classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
@@ -274,6 +292,10 @@ public class ScheduleFragment extends Fragment {
                     String teacher = dataSnapshot.child("teacher").getValue(String.class);
                     String room = dataSnapshot.child("room").getValue(String.class);
                     String iconUri = dataSnapshot.child("icon").getValue(String.class);
+
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
+                    Calendar c = Calendar.getInstance();
 
                     ArrayList<String> occurrences = new ArrayList<>();
                     for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren())
@@ -298,21 +320,65 @@ public class ScheduleFragment extends Fragment {
                         if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
                             // Check if occurrence matches, then proceed if true
                             if (weekNumber.equals("0")) {
-                                if (!periods.equals("-1")) {
+                                if (!periods.get(i).equals("")) {
                                     ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                    for (int l = 0; l < periodList.size(); l++)
+                                    for (int l = 0; l < periodList.size(); l++) {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                room, utility.millisToHourTime(timeins.get(i)),
-                                                utility.millisToHourTime(timeouts.get(i)), periodList.get(l)));
+                                                room, "",
+                                                "", periodList.get(l)));
+                                    }
+
+                                        if (timeins.get(i) > -1) {
+                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                    room, utility.millisToHourTime(timeins.get(i)),
+                                                    utility.millisToHourTime(timeouts.get(i)), ""));
+                                            // Schedule the notification
+                                            int timeIn = timeins.get(i);
+
+                                            Calendar timeInCalendar = Calendar.getInstance();
+                                            timeInCalendar.setTimeInMillis(timeIn);
+                                            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR));
+                                            c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                                            Calendar current = Calendar.getInstance();
+                                            if (c.getTimeInMillis() > current.getTimeInMillis())
+                                                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+
+                                            ScheduleNotification(new Date(c.getTimeInMillis()), title,
+                                                    title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                    iconUri);
+                                        }
                                 }
                             } else {
                                 // Alternate week data
-                                if (!periods.equals("-1")) {
+                                if (!periods.get(i).equals("")) {
                                     ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                    for (int l = 0; l < periodList.size(); l++)
+                                    for (int l = 0; l < periodList.size(); l++) {
+                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                room, "",
+                                                "", periodList.get(l)));
+                                    }
+
+                                    if (timeinalts.get(i) > -1) {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
                                                 room, utility.millisToHourTime(timeinalts.get(i)),
-                                                utility.millisToHourTime(timeoutalts.get(i)), periodList.get(l)));
+                                                utility.millisToHourTime(timeoutalts.get(i)), ""));
+                                        // Schedule the notification
+                                        int timeIn = timeinalts.get(i);
+
+                                        Calendar timeInCalendar = Calendar.getInstance();
+                                        timeInCalendar.setTimeInMillis(timeIn);
+                                        c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR));
+                                        c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                                        Calendar current = Calendar.getInstance();
+                                        if (c.getTimeInMillis() > current.getTimeInMillis())
+                                            c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+
+                                        ScheduleNotification(new Date(c.getTimeInMillis()), title,
+                                                title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                iconUri);
+                                    }
                                 }
                             }
                         }
@@ -356,6 +422,45 @@ public class ScheduleFragment extends Fragment {
         }
     }
 
+    private void ScheduleNotification(final Date dateTime, Object ID, final String title, final String message, String icon) {
+        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext());
+        Bitmap largeIcon = null;
+        try {
+            largeIcon = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.parse(icon));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                .setBackground(largeIcon);
+
+        Intent contentIntent = new Intent(getContext(), ScheduleDetailActivity.class);
+        if (mFirebaseUser != null)
+            contentIntent.putExtra("id", ((String) ID));
+        else contentIntent.putExtra("_ID", ((int) ID));
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setContentIntent(contentPendingIntent)
+                .setSmallIcon(R.drawable.ic_assignment)
+                .setColor(getResources().getColor(R.color.colorPrimary))
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .extend(wearableExtender)
+                .setDefaults(Notification.DEFAULT_ALL);
+
+        Notification notification = builder.build();
+
+        Intent notificationIntent = new Intent(getContext(), TaskNotificationPublisher.class);
+        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
+        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_NOTIFICATION_ALARM,
+                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+    }
+
     // Subclass for the Contextual Action Mode
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
@@ -395,11 +500,16 @@ public class ScheduleFragment extends Fragment {
                 // When it does, set the itemId to the matched position
                 // and then remove the item in that array list
                 // matching that position
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--)
                     if (position == CAMselectedItemsList.get(i)) {
                         itemId = i;
                     }
-                }
+
                 if (itemId != -1)
                     CAMselectedItemsList.remove(itemId);
             }
@@ -408,6 +518,7 @@ public class ScheduleFragment extends Fragment {
             // which will show or hide the edit menu action based on
             // the number of items selected
             mode.invalidate();
+            Log.d(LOG_TAG, "CAM Count: " + CAMselectedItemsList.size());
         }
 
         @Override
@@ -477,11 +588,10 @@ public class ScheduleFragment extends Fragment {
                 // Delete the data from Firebase
                 classesRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes");
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
-                    mScheduleList.remove((int)CAMselectedItemsList.get(i));
+                for (int i = CAMselectedItemsList.size() - 1; i > - 1; i--) {
                     classesRef.child(mScheduleList.get(CAMselectedItemsList.get(i)).scheduleLesson).removeValue();
+                    mScheduleList.remove((int)CAMselectedItemsList.get(i));
                 }
-                mScheduleAdapter.notifyDataSetChanged();
 
                 // Set the splash text if there's no classes queried
                 if (mScheduleAdapter.getCount() == 0)
@@ -503,7 +613,8 @@ public class ScheduleFragment extends Fragment {
                 cursor.close();
 
                 // Requery the current day schedule
-                mScheduleAdapter.addAll(db.getCurrentDayScheduleArray(getContext()));
+                mScheduleList.clear();
+                mScheduleList.addAll(db.getCurrentDayScheduleArray(getContext()));
                 mScheduleAdapter.notifyDataSetChanged();
 
                 // Set the splash text if there's no classes queried

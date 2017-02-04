@@ -47,7 +47,7 @@ public class SettingsActivity extends PreferenceActivity
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_WEEK_NUMBER)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_WEEK_NUMBER_SETTING)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)));
 
@@ -116,7 +116,7 @@ public class SettingsActivity extends PreferenceActivity
 
                 // If 'Week number'
                 if (prefKey.equals(getString(R.string.KEY_SETTINGS_WEEK_NUMBER))){
-                    editor.putString(getString(R.string.KEY_WEEK_NUMBER), ((String)listPreference.getEntryValues()[prefIndex]));
+                    editor.putString(getString(R.string.KEY_WEEK_NUMBER_SETTING), ((String)listPreference.getEntryValues()[prefIndex]));
                     Log.v(LOG_TAG, "Setting week number to " + prefIndex);
                 }
 

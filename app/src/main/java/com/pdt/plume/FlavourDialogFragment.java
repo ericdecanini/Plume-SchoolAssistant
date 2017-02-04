@@ -59,7 +59,8 @@ public class FlavourDialogFragment extends DialogFragment {
         // Automatically inflate the EditText with the name
         Bundle args = getArguments();
         if (args != null) {
-            flavourField.setText(args.getString("name"));
+            flavourField.setText(args.getString("flavour"));
+            flavourField.setSelection(flavourField.length());
         }
 
         // Set the ItemClickListener on the buttons

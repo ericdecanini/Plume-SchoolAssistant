@@ -2,6 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:background="@color/backgroundColor"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="8dp"
     android:layout_height="match_parent" >
 
     <LinearLayout
@@ -9,7 +12,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <TextView
-            android:visibility="gone"
             android:id="@+id/header_textview"
             android:gravity="center_horizontal"
             android:layout_gravity="center_horizontal"

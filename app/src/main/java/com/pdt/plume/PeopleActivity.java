@@ -1,29 +1,32 @@
 package com.pdt.plume;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
@@ -35,7 +38,6 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,15 +57,24 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
+import com.pdt.plume.data.DbContract;
+import com.pdt.plume.data.DbHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-import static android.R.attr.bitmap;
-import static android.R.attr.data;
+import static android.os.Build.ID;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_MANAGE_DOCUMENTS;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_SCAN_QR_CODE;
 
 public class PeopleActivity extends AppCompatActivity
         implements IconPromptDialog.iconDialogListener,
@@ -72,23 +83,17 @@ public class PeopleActivity extends AppCompatActivity
 
     String LOG_TAG = PeopleActivity.class.getSimpleName();
 
-    // TODO: Make custom icon upload ask for permission
-
     // UI Variables
     ImageView selfIconView;
     TextView selfNameView, flavourView;
+    View flavourBox;
 
     // UI Data
     String selfIconUri, selfName, flavour;
-    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/ic_person_white";
+    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
 
     // Theme Variables
     int mPrimaryColor, mDarkColor;
-
-    // Intent Data
-    private static final int REQUEST_IMAGE_GET_ICON = 0;
-    private static final int REQUEST_PERMISSION_MANAGE_DOCUMENTS = 1;
-    private static final int REQUEST_SCAN_QR_CODE = 7;
 
     // Firebase Variables
     private DatabaseReference mDatabase;
@@ -112,34 +117,12 @@ public class PeopleActivity extends AppCompatActivity
 
     // Dialog item arrays
     private Integer[] mThumbIds = {
-            R.drawable.art_arts_64dp,
-            R.drawable.art_biology_64dp,
-            R.drawable.art_business_64dp,
-            R.drawable.art_chemistry_64dp,
-            R.drawable.art_childdevelopment_64dp,
-            R.drawable.art_class_64dp,
-            R.drawable.art_computing_64dp,
-            R.drawable.art_cooking_64dp,
-            R.drawable.art_creativestudies_64dp,
-            R.drawable.art_drama_64dp,
-            R.drawable.art_engineering_64dp,
-            R.drawable.art_english_64dp,
-            R.drawable.art_french_64dp,
-            R.drawable.art_geography_64dp,
-            R.drawable.art_graphics_64dp,
-            R.drawable.art_hospitality_64dp,
-            R.drawable.art_ict_64dp,
-            R.drawable.art_maths_64dp,
-            R.drawable.art_media_64dp,
-            R.drawable.art_music_64dp,
-            R.drawable.art_pe_64dp,
-            R.drawable.art_physics_64dp,
-            R.drawable.art_psychology_64dp,
-            R.drawable.art_re_64dp,
-            R.drawable.art_science_64dp,
-            R.drawable.art_spanish_64dp,
-            R.drawable.art_task_64dp,
-            R.drawable.art_woodwork_64dp
+            R.drawable.art_profile_default,
+            R.drawable.art_profile_uniform,
+            R.drawable.art_profile_blazer,
+            R.drawable.art_profile_mustache,
+            R.drawable.art_profile_blazerpanda,
+            R.drawable.art_profile_alien
     };
 
     private CharSequence[] addPeerMethodsArray = {"", ""};
@@ -162,6 +145,7 @@ public class PeopleActivity extends AppCompatActivity
         selfIconView = (ImageView) findViewById(R.id.icon);
         selfNameView = (TextView) findViewById(R.id.name);
         flavourView = (TextView) findViewById(R.id.flavour);
+        flavourBox = findViewById(R.id.box);
         ImageView QRCodeView = (ImageView) findViewById(R.id.qr);
         TextView addPeersTextview = (TextView) findViewById(R.id.add_peer);
         listView = (ListView) findViewById(R.id.listView);
@@ -194,7 +178,7 @@ public class PeopleActivity extends AppCompatActivity
                 fragment.show(getSupportFragmentManager(), "dialog");
             }
         });
-        flavourView.setOnClickListener(new View.OnClickListener() {
+        flavourBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FlavourDialogFragment fragment = FlavourDialogFragment.newInstance(flavour);
@@ -296,58 +280,70 @@ public class PeopleActivity extends AppCompatActivity
                     Log.v(LOG_TAG, "Snapshot Value: " + dataSnapshot.getValue());
                     String iconData = dataSnapshot.child("icon").getValue(String.class);
                     String nicknameData = dataSnapshot.child("nickname").getValue(String.class);
+                    String flavourData = dataSnapshot.child("flavour").getValue(String.class);
                     final Bitmap[] bitmap = {null};
-                    Log.v(LOG_TAG, "mUserId: " + mUserId);
-                    Log.v(LOG_TAG, "Icon Value: " + iconData);
-                    Log.v(LOG_TAG, "Nickname Value: " + nicknameData);
                     // Data snapshot is the icon
+                    // TODO: ADD STORAGE FUNCTIONS
+//                    if (iconData != null) {
+//                        // Download from storage
+//                        StorageReference storageRef = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com");
+//                        StorageReference pathReference = storageRef.child("images/" + mUserId + ".jpg");
+//                        StorageReference gsReference = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com/images/" + mUserId + ".jpg");
+//                        StorageReference httpsReference = mFirebaseStorage.getReferenceFromUrl
+//                                ("https://firebasestorage.googleapis.com/b/plume-academy-assistant.appspot.com/o/images%20" + mUserId + ".jpg");
+//
+//                        final long TEN_MEGABYTE = 1024 * 1024 * 10;
+//                        gsReference.getBytes(TEN_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+//                            @Override
+//                            public void onSuccess(byte[] bytes) {
+//                                // Data for "images/island.jpg" is returns, use this as needed
+//                                bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception exception) {
+//                                // Handle any errors
+//                            }
+//                        });
+//
+//
+//                        try {
+//                            if (bitmap[0] == null)
+//                                bitmap[0] = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(selfIconUri));
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        selfIconView.setImageBitmap(bitmap[0]);
+//                        selfIconUri = iconData;
+//                        // Save the data to shared preferences
+//                        preferences.edit()
+//                                .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), iconData)
+//                                .apply();
+//                    }
+
                     if (iconData != null) {
-                        // Download from storage
-                        StorageReference storageRef = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com");
-                        StorageReference pathReference = storageRef.child("images/" + mUserId + ".jpg");
-                        StorageReference gsReference = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com/images/" + mUserId + ".jpg");
-                        StorageReference httpsReference = mFirebaseStorage.getReferenceFromUrl
-                                ("https://firebasestorage.googleapis.com/b/plume-academy-assistant.appspot.com/o/images%20" + mUserId + ".jpg");
-
-                        final long TEN_MEGABYTE = 1024 * 1024 * 10;
-                        gsReference.getBytes(TEN_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                            @Override
-                            public void onSuccess(byte[] bytes) {
-                                // Data for "images/island.jpg" is returns, use this as needed
-                                bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                // Handle any errors
-                            }
-                        });
-
-
-                        try {
-                            if (bitmap[0] == null)
-                                bitmap[0] = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(selfIconUri));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        selfIconView.setImageBitmap(bitmap[0]);
-                        selfIconUri = iconData;
-                        // Save the data to shared preferences
-                        preferences.edit()
-                                .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), iconData)
-                                .apply();
+                        selfIconView.setImageURI(Uri.parse(iconData));
                     }
 
-                        // Data snapshot is the name
+                    if (flavourData == null) {
+                        flavourData = flavour;
+                    }
+
+                    // Data snapshot is the name
                     if (nicknameData != null) {
                         selfNameView.setText(nicknameData);
                         selfName = nicknameData;
+                        flavourView.setText(flavourData);
+                        flavour = flavourData;
                         // Save the data to shared preferences
                         preferences.edit()
                                 .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), nicknameData)
+                                .putString(getString(R.string.KEY_PREFERENCES_FLAVOUR), flavourData)
                                 .apply();
                     }
+
+
 
                 }
 
@@ -393,10 +389,34 @@ public class PeopleActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         logInOut = menu.findItem(R.id.action_logout);
+        if (mFirebaseUser != null)
+            loggedIn = true;
+        else loggedIn = false;
         if (loggedIn)
             logInOut.setTitle(getString(R.string.action_logout));
         else logInOut.setTitle(getString(R.string.action_login));
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_logout) {
+            if (loggedIn)
+                logOut();
+            else {
+                loadLogInView();
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -541,6 +561,257 @@ public class PeopleActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    private void logOut() {
+        // Disable any notifications
+        // CANCEL TASK REFERENCES
+        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mFirebaseUser.getUid()).child("tasks");
+        tasksRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                // Get the data
+                String title = dataSnapshot.child("title").getValue(String.class);
+                String icon = dataSnapshot.child("icon").getValue(String.class);
+
+                // Rebuild the notification
+                final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(PeopleActivity.this);
+                Bitmap largeIcon = null;
+                try {
+                    largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                        .setBackground(largeIcon);
+
+                Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
+                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                builder.setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(getResources().getColor(R.color.colorPrimary))
+                        .setContentTitle(getString(R.string.notification_message_reminder))
+                        .setContentText(title)
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                Notification notification = builder.build();
+
+                Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
+                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                alarmManager.cancel(pendingIntent);
+            }
+            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+        // CANCEL CLASS NOTIFICATIONS
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final int weekNumber = preferences.getInt(getString(R.string.KEY_WEEK_NUMBER), 0);
+        DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mFirebaseUser.getUid()).child("classes");
+        classesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                // Get the key data
+                String title = dataSnapshot.getKey();
+                String icon = dataSnapshot.child("icon").getValue(String.class);
+                String message = getString(R.string.class_notification_message,
+                        Integer.toString(preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)));
+
+                // Get the listed data
+                ArrayList<Integer> timeins = new ArrayList<>();
+                if (weekNumber == 0)
+                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren())
+                        timeins.add(timeinSnapshot.getValue(int.class));
+                else
+                    for (DataSnapshot timeinaltSnapshot : dataSnapshot.child("timeinalt").getChildren())
+                        timeins.add(timeinaltSnapshot.getValue(int.class));
+
+                Calendar c = Calendar.getInstance();
+                for (int i = 0; i < timeins.size(); i++) {
+                    c.setTimeInMillis(timeins.get(i));
+
+                    // Rebuild the notification
+                    final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(PeopleActivity.this);
+                    Bitmap largeIcon = null;
+                    try {
+                        largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                            .setBackground(largeIcon);
+
+                    Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
+                    if (mFirebaseUser != null)
+                        contentIntent.putExtra("id", title);
+                    final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    builder.setContentIntent(contentPendingIntent)
+                            .setSmallIcon(R.drawable.ic_assignment)
+                            .setColor(getResources().getColor(R.color.colorPrimary))
+                            .setContentTitle(title)
+                            .setContentText(message)
+                            .setAutoCancel(true)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .extend(wearableExtender)
+                            .setDefaults(Notification.DEFAULT_ALL);
+
+                    Notification notification = builder.build();
+
+                    Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
+                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                }
+
+            }
+            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+            @Override public void onCancelled(DatabaseError databaseError) {}
+        });
+
+        // Reschedule all SQLite based Task Notifications
+        DbHelper dbHelper = new DbHelper(PeopleActivity.this);
+        Cursor tasksCursor = dbHelper.getTaskData();
+        tasksCursor.moveToFirst();
+        for (int i = 0; i < tasksCursor.getCount(); i++) {
+            // Get the data
+            tasksCursor.moveToPosition(i);
+            String title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+            String icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+            long reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+            long reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(reminderDateMillis);
+            int hour = (int) reminderTimeSeconds / 3600;
+            int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+            c.set(Calendar.HOUR_OF_DAY, hour);
+            c.set(Calendar.MINUTE, minute);
+            long notificationMillis = (c.getTimeInMillis());
+
+            // Rebuild the notification
+            final android.support.v4.app.NotificationCompat.Builder builder
+                    = new NotificationCompat.Builder(PeopleActivity.this);
+            Bitmap largeIcon = null;
+            try {
+                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender
+                    = new NotificationCompat.WearableExtender().setBackground(largeIcon);
+
+            Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
+            contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
+                    (PeopleActivity.this, REQUEST_NOTIFICATION_INTENT,
+                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            builder.setContentIntent(contentPendingIntent)
+                    .setSmallIcon(R.drawable.ic_assignment)
+                    .setColor(getResources().getColor(R.color.colorPrimary))
+                    .setContentTitle(getString(R.string.notification_message_reminder))
+                    .setContentText(title)
+                    .setAutoCancel(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .extend(wearableExtender)
+                    .setDefaults(Notification.DEFAULT_ALL);
+
+            Notification notification = builder.build();
+
+            Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
+            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+            final PendingIntent pendingIntent = PendingIntent.getBroadcast
+                    (PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
+                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (reminderDateMillis > 0)
+                alarmManager.set(AlarmManager.RTC, new Date(notificationMillis).getTime(), pendingIntent);
+        }
+        tasksCursor.close();
+
+        // Reschedule all SQLite based Class Notifications
+        Cursor classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
+        final Calendar c = Calendar.getInstance();
+        final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
+        for (int i = 0; i < classesCursor.getCount(); i++) {
+            classesCursor.moveToPosition(i);
+            final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+            String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+            int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+            long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
+            c.setTimeInMillis(timeInValue);
+            c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
+
+            final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+            Bitmap largeIcon = null;
+            try {
+                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                    .setBackground(largeIcon);
+
+            Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
+            contentIntent.putExtra("_ID", ID);
+            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT,
+                    contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    builder.setContentIntent(contentPendingIntent)
+                            .setSmallIcon(R.drawable.ic_assignment)
+                            .setColor(getResources().getColor(R.color.colorPrimary))
+                            .setContentTitle(title)
+                            .setContentText(getString(R.string.class_notification_message, Integer.toString(forerunnerTime)))
+                            .setAutoCancel(true)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .extend(wearableExtender)
+                            .setDefaults(Notification.DEFAULT_ALL);
+
+                    Notification notification = builder.build();
+
+                    Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
+                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                }
+            });
+        }
+        classesCursor.close();
+
+        // Execute the Sign Out Operation
+        mFirebaseAuth.signOut();
+        loggedIn = false;
+        logInOut.setTitle(getString(R.string.action_login));
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     private View.OnClickListener showIconDialog() {
         return new View.OnClickListener() {
             @Override
@@ -581,7 +852,7 @@ public class PeopleActivity extends AppCompatActivity
             mList.add(builtinIcons[i]);
         }
 
-        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setAdapter(new BuiltInProfileIconsAdapter(this));
         gridView.setNumColumns(4);
         gridView.setPadding(0, 16, 0, 16);
         gridView.setGravity(Gravity.CENTER);

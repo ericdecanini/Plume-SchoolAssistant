@@ -58,11 +58,13 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
@@ -157,7 +159,6 @@ public class NewScheduleActivity extends AppCompatActivity
     boolean INTENT_FLAG_EDIT = false;
     public static boolean isEdited;
     int editId = -1;
-    int REQUEST_IMAGE_GET = 2;
     boolean STARTED_BY_NEWTASKACTIVITY = false;
 
     // Interface Data
@@ -290,7 +291,7 @@ public class NewScheduleActivity extends AppCompatActivity
                                         periodsList.get(i), occurrence
                                 ));
                             }
-                        }
+                    }
 
                         // Apply the data to the views
                         fieldTitle.setText(title);
@@ -479,7 +480,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
     private boolean insertScheduleDataIntoFirebase() {
         // Get the input from the fields
-        String title = fieldTitle.getText().toString();
+        title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
 
@@ -878,7 +879,7 @@ public class NewScheduleActivity extends AppCompatActivity
             mList.add(builtinIcons[i]);
         }
 
-        gridView.setAdapter(new BuiltInIconsAdapter(this));
+        gridView.setAdapter(new BuiltInSubjectIconsAdapter(this));
         gridView.setNumColumns(4);
         gridView.setPadding(0, 16, 0, 16);
         gridView.setGravity(Gravity.CENTER);
@@ -1008,7 +1009,8 @@ public class NewScheduleActivity extends AppCompatActivity
         // Check the interface for the edit flag and choose
         // to either update or insert
         // If the interface contains an edit flag, update the array list items
-        if (FLAG_EDIT) {
+        Log.v(LOG_TAG, "Row id = " + rowId);
+        if (FLAG_EDIT && rowId > -1) {
             // Create temporary array lists to hold the list's data as it is cleared for bulk re-inserting
             ArrayList<String> previousStringObjects = new ArrayList<>();
             ArrayList<Integer> previousIntObjects = new ArrayList<>();
@@ -1032,17 +1034,17 @@ public class NewScheduleActivity extends AppCompatActivity
             // Update timeOutList
             previousIntObjects.addAll(timeOutList);
             timeOutList.clear();
-            timeOutList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            timeOutList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeOutSeconds));
             previousIntObjects.clear();
             // Update timeInAltList
             previousIntObjects.addAll(timeInAltList);
             timeInAltList.clear();
-            timeInAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            timeInAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInAltSeconds));
             previousIntObjects.clear();
             // Update timeOutAltList
             previousIntObjects.addAll(timeOutAltList);
             timeOutAltList.clear();
-            timeOutAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeInSeconds));
+            timeOutAltList.addAll(utility.updateIntegerArrayListItemAtPosition(previousIntObjects, rowId, timeOutAltSeconds));
             previousIntObjects.clear();
 
             // Update the item in the visual list view
@@ -1155,6 +1157,7 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("timeInAltSeconds", previousTimeInAltSeconds);
         args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
         args.putIntArray("buttonsChecked", previousButtonsChecked);
+        args.putBoolean("FLAG_EDIT", FLAG_EDIT);
 
         // Launch the fragment
         // Check if other dialogs are present and remove them if so
@@ -1171,7 +1174,7 @@ public class NewScheduleActivity extends AppCompatActivity
     // Used in AddPeriodFragmentThreeTime to open the time dialog
     @Override
     public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
-                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked) {
+                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked, boolean FLAG_EDIT) {
         // Interface from AddClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
         // This creates the illusion that the fragment was never restarted
         timeSelectedResourceId = resourceId;
@@ -1181,6 +1184,7 @@ public class NewScheduleActivity extends AppCompatActivity
         this.previousTimeInAltSeconds = previousTimeInAltSeconds;
         this.previousTimeOutAltSeconds = previousTimeOutAltSeconds;
         previousButtonsChecked = buttonsChecked;
+        this.FLAG_EDIT = FLAG_EDIT;
     }
 
     @Override
@@ -1239,11 +1243,16 @@ public class NewScheduleActivity extends AppCompatActivity
                 // When it does, set the itemId to the matched position
                 // and then remove the item in that array list
                 // matching that position
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--)
                     if (position == CAMselectedItemsList.get(i)) {
                         itemId = i;
                     }
-                }
+
                 if (itemId != -1)
                     CAMselectedItemsList.remove(itemId);
             }
@@ -1329,14 +1338,19 @@ public class NewScheduleActivity extends AppCompatActivity
         private void deleteSelectedItems() {
             // Delete all the selected items based on the itemIDs
             // Stored in the array list
-            for (int i = 0; i < CAMselectedItemsList.size(); i++) {
-                occurrenceList.remove((int) CAMselectedItemsList.get(i));
-                periodsList.remove((int) CAMselectedItemsList.get(i));
-                timeInList.remove((int) CAMselectedItemsList.get(i));
-                timeOutList.remove((int) CAMselectedItemsList.get(i));
-                timeInAltList.remove((int) CAMselectedItemsList.get(i));
-                timeOutAltList.remove((int) CAMselectedItemsList.get(i));
-                occurrenceTimePeriodList.remove((int) CAMselectedItemsList.get(i));
+            ArrayList<Integer> indexes = new ArrayList<>();
+            for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                indexes.add(CAMselectedItemsList.get(i));
+
+            Collections.sort(indexes);
+            for (int i = indexes.size() - 1; i > -1; i--) {
+                occurrenceList.remove((int) indexes.get(i));
+                periodsList.remove((int) indexes.get(i));
+                timeInList.remove((int) indexes.get(i));
+                timeOutList.remove((int) indexes.get(i));
+                timeInAltList.remove((int) indexes.get(i));
+                timeOutAltList.remove((int) indexes.get(i));
+                occurrenceTimePeriodList.remove((int) indexes.get(i));
             }
 
             // Notify the mScheduleAdapter of the changes

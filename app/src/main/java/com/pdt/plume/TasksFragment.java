@@ -1,21 +1,17 @@
 package com.pdt.plume;
 
 
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -28,11 +24,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,11 +36,8 @@ import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
-
-import static com.pdt.plume.R.string.format_period;
-import static com.pdt.plume.R.string.re;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,7 +64,7 @@ public class TasksFragment extends Fragment {
     boolean isTablet;
 
     // List Variables
-    ArrayList<Task> tasksArray = new ArrayList<>();
+    ArrayList<Task> mTasksList = new ArrayList<>();
     TaskAdapter mTasksAdapter;
 
     // Firebase Variables
@@ -109,7 +100,6 @@ public class TasksFragment extends Fragment {
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
-        spinner.setVisibility(View.VISIBLE);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
@@ -118,6 +108,7 @@ public class TasksFragment extends Fragment {
         // using the current day schedule data
         if (mFirebaseUser != null) {
             // Get the data from Firebase
+            spinner.setVisibility(View.VISIBLE);
             tasksRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks");
             tasksListener = new ValueEventListener() {
@@ -137,7 +128,7 @@ public class TasksFragment extends Fragment {
                         if (completed == null)
                             completed = false;
                         if (!completed) {
-                            tasksArray.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1));
+                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f));
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
                         }
@@ -155,7 +146,6 @@ public class TasksFragment extends Fragment {
                     headerTextView.setText(getString(R.string.check_internet));
                 }
             };
-
             // Check if the tasks ref doesn't exist
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId);
@@ -163,12 +153,14 @@ public class TasksFragment extends Fragment {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.child("tasks").getChildrenCount() == 0) {
-                            spinner.setVisibility(View.GONE);
-                            headerTextView.setVisibility(View.VISIBLE);
+                        spinner.setVisibility(View.GONE);
+                        headerTextView.setVisibility(View.VISIBLE);
                     }
                 }
+
                 @Override
-                public void onCancelled(DatabaseError databaseError) {}
+                public void onCancelled(DatabaseError databaseError) {
+                }
             });
 
 
@@ -177,11 +169,11 @@ public class TasksFragment extends Fragment {
         }
         else {
             // Get the data from SQLite
-            tasksArray = dbHelper.getUncompletedTaskArray();
+            mTasksList = dbHelper.getUncompletedTaskArray();
             spinner.setVisibility(View.GONE);
         }
 
-        mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, tasksArray);
+        mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, mTasksList);
 
         // The header text view will only be visible if there is no items in the task adapter
         if (mTasksAdapter.getCount() == 0)
@@ -315,11 +307,16 @@ public class TasksFragment extends Fragment {
                 // When it does, set the itemId to the matched position
                 // and then remove the item in that array list
                 // matching that position
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--)
                     if (position == CAMselectedItemsList.get(i)) {
                         itemId = i;
                     }
-                }
+
                 if (itemId != -1)
                     CAMselectedItemsList.remove(itemId);
             }
@@ -391,11 +388,17 @@ public class TasksFragment extends Fragment {
                 // Delete data from Firebase
                 DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks");
-                for (int i = 0; i < CAMselectedItemsList.size(); i++) {
-                    Log.v(LOG_TAG, "i = " + i + " CAMindex = " + CAMselectedItemsList.get(i));
+
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--) {
+                    Log.v(LOG_TAG, "CAM size = " + CAMselectedItemsList.size() + ", i = " + i);
                     tasksRef.child(FirebaseIdList.get(CAMselectedItemsList.get(i))).removeValue();
                     FirebaseIdList.remove(((int) CAMselectedItemsList.get(i)));
-                    tasksArray.remove(((int) CAMselectedItemsList.get(i)));
+                    mTasksList.remove(((int) CAMselectedItemsList.get(i)));
                 }
 
                 // Refresh the list mScheduleAdapter
@@ -418,8 +421,8 @@ public class TasksFragment extends Fragment {
                 cursor.close();
 
                 // Query all the tasks data again from SQLite
-                mTasksAdapter.clear();
-                mTasksAdapter.addAll(db.getTaskDataArray());
+                mTasksList.clear();
+                mTasksList.addAll(db.getTaskDataArray());
 
                 // Refresh the mScheduleAdapter
                 mTasksAdapter.notifyDataSetChanged();

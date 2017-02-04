@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.*;
@@ -22,13 +23,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import static com.pdt.plume.R.id.spinner;
+
 public class SignUpActivity extends AppCompatActivity {
 
     String LOG_TAG = SignUpActivity.class.getSimpleName();
 
     private DatabaseReference mDatabase;
     private String mUserId;
-    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/icon_default";
+    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
 
     protected EditText passwordEditText;
     private EditText confirmPasswordEditText;
@@ -36,6 +39,7 @@ public class SignUpActivity extends AppCompatActivity {
     protected EditText nicknameEditText;
     protected Button signUpButton;
     private ImageView visibleIcon;
+    private ProgressBar spinner;
     private FirebaseAuth mFirebaseAuth;
 
     private boolean passwordsAreVisible = false;
@@ -62,6 +66,7 @@ public class SignUpActivity extends AppCompatActivity {
         nicknameEditText = (EditText) findViewById(R.id.nicknameField);
         signUpButton = (Button) findViewById(R.id.signupButton);
         visibleIcon = (ImageView) findViewById(R.id.visible);
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
 
 
 
@@ -128,6 +133,17 @@ public class SignUpActivity extends AppCompatActivity {
                         return;
                     } else {
                         // Successful sign up
+
+                        // Hide/Disable the buttons, Show the Spinner
+                        nicknameEditText.setEnabled(false);
+                        emailEditText.setEnabled(false);
+                        passwordEditText.setEnabled(false);
+                        confirmPasswordEditText.setEnabled(false);
+                        visibleIcon.setEnabled(false);
+                        signUpButton.setVisibility(View.GONE);
+                        spinner.setVisibility(View.VISIBLE);
+
+
                         final String finalNickname = nickname;
                         final String finalEmail = email;
                         mFirebaseAuth.createUserWithEmailAndPassword(email, password)
@@ -156,6 +172,16 @@ public class SignUpActivity extends AppCompatActivity {
                                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                             startActivity(intent);
                                         } else {
+                                            // Show/Enable the buttons, Show the Spinner
+                                            nicknameEditText.setEnabled(true);
+                                            emailEditText.setEnabled(true);
+                                            passwordEditText.setEnabled(true);
+                                            confirmPasswordEditText.setEnabled(true);
+                                            visibleIcon.setEnabled(true);
+                                            signUpButton.setVisibility(View.VISIBLE);
+                                            spinner.setVisibility(View.GONE);
+
+                                            // Show the error message
                                             AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);
                                             builder.setMessage(task.getException().getMessage())
                                                     .setTitle(R.string.login_error_title)

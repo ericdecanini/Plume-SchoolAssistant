@@ -67,7 +67,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     int mDarkColor;
     int mSecondaryColor;
 
-    boolean FLAG_TASK_COMPLETD;
+    boolean FLAG_TASK_COMPLETED;
 
     int id;
     String firebaseID;
@@ -80,6 +80,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     Uri photoUri;
     String attachmentPath;
     String iconUri;
+    TextView markAsDoneView;
 
     TextView fieldTimer;
     Intent serviceIntent;
@@ -112,7 +113,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         collapsingToolbar.setTitle("");
 
         // Set the mark as done button
-        TextView markAsDoneView = (TextView) findViewById(R.id.mark_as_done);
+        markAsDoneView = (TextView) findViewById(R.id.mark_as_done);
         markAsDoneView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,7 +125,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         // An ID is passed by the intent so we query using that
         Intent intent = getIntent();
         if (intent != null) {
-            FLAG_TASK_COMPLETD = intent.getBooleanExtra(getString(R.string.FLAG_TASK_COMPLETED), false);
+            FLAG_TASK_COMPLETED = intent.getBooleanExtra(getString(R.string.FLAG_TASK_COMPLETED), false);
             int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
 
             if (mFirebaseUser != null) {
@@ -166,7 +167,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                 Cursor cursor;
                 if (intent.hasExtra("_ID")) {
                     cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
-                } else if (FLAG_TASK_COMPLETD) cursor = dbHelper.getTaskData();
+                } else if (FLAG_TASK_COMPLETED) cursor = dbHelper.getTaskData();
                 else cursor = dbHelper.getUncompletedTaskData();
 
 
@@ -322,6 +323,14 @@ public class TasksDetailActivity extends AppCompatActivity {
             }
         });
 
+        markAsDoneView.setTextColor(mPrimaryColor);
+
+        if (FLAG_TASK_COMPLETED) {
+            markAsDoneView.setText(getString(R.string.mark_as_undone));
+            markAsDoneView.setTextColor(getResources().getColor(R.color.red_500));
+        }
+
+        // TODO: Bring back the revision timer
         fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
     }
 
@@ -338,7 +347,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     }
 
     private void promptCompleteTask() {
-        if (FLAG_TASK_COMPLETD) {
+        if (FLAG_TASK_COMPLETED) {
             // ACTION RESTORE TASK
             new AlertDialog.Builder(TasksDetailActivity.this)
                     .setTitle(getString(R.string.activity_tasksDetail_restore_dialog_title))
@@ -351,7 +360,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                                 // Set the data in Firebase
                                 DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                                         .child("users").child(mUserId).child("tasks").child(firebaseID);
-                                taskRef.child("completed").setValue(true);
+                                taskRef.child("completed").setValue(false);
 
                             } else {
                                 // Set the data in SQLite

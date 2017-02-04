@@ -3,7 +3,7 @@
 
     <!-- Array containing built-in class icons
     To add new icons, add the reference here
-    in BuiltInIconsAdapter.java and in
+    in BuiltInSubjectIconsAdapter.java and in
     NewScheduleActivity.java
     -->
     <integer-array name="builtin_icons">

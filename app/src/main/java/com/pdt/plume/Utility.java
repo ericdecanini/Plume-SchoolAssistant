@@ -515,4 +515,11 @@ public class Utility {
         return BitmapFactory.decodeFile(filePath, options);
     }
 
+    public static int generateUniqueID(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int uniqueIdCount = preferences.getInt(context.getString(R.string.PREFERENCE_UNIQUE_ID_COUNT), -1) + 1;
+        preferences.edit().putInt(context.getString(R.string.PREFERENCE_UNIQUE_ID_COUNT), uniqueIdCount);
+        return uniqueIdCount;
+    }
+
 }
