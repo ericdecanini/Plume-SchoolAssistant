@@ -21,6 +21,7 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -586,6 +587,9 @@ public class PeopleActivity extends AppCompatActivity
 
                 Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
                 contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
+                stackBuilder.addParentStack(TasksDetailActivity.class);
+                stackBuilder.addNextIntent(contentIntent);
                 final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
@@ -654,6 +658,9 @@ public class PeopleActivity extends AppCompatActivity
                     Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
                     if (mFirebaseUser != null)
                         contentIntent.putExtra("id", title);
+                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
+                    stackBuilder.addParentStack(ScheduleDetailActivity.class);
+                    stackBuilder.addNextIntent(contentIntent);
                     final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     builder.setContentIntent(contentPendingIntent)
@@ -718,6 +725,9 @@ public class PeopleActivity extends AppCompatActivity
 
             Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
             contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
+            stackBuilder.addParentStack(TasksDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
                     (PeopleActivity.this, REQUEST_NOTIFICATION_INTENT,
                             contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -771,6 +781,9 @@ public class PeopleActivity extends AppCompatActivity
 
             Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
             contentIntent.putExtra("_ID", ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
+            stackBuilder.addParentStack(ScheduleDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_INTENT,
                     contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

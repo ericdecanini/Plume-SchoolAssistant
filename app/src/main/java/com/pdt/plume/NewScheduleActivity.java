@@ -172,6 +172,7 @@ public class NewScheduleActivity extends AppCompatActivity
     int previousTimeOutAltSeconds;
     int[] previousButtonsChecked;
     public static int resourceId = -1;
+    int rowID = -1;
 
     // Flags
     boolean isTablet;
@@ -1158,6 +1159,7 @@ public class NewScheduleActivity extends AppCompatActivity
         args.putInt("timeOutAltSeconds", previousTimeOutAltSeconds);
         args.putIntArray("buttonsChecked", previousButtonsChecked);
         args.putBoolean("FLAG_EDIT", FLAG_EDIT);
+        args.putInt("rowID", rowID);
 
         // Launch the fragment
         // Check if other dialogs are present and remove them if so
@@ -1174,7 +1176,8 @@ public class NewScheduleActivity extends AppCompatActivity
     // Used in AddPeriodFragmentThreeTime to open the time dialog
     @Override
     public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
-                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked, boolean FLAG_EDIT) {
+                               int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked,
+                               boolean FLAG_EDIT, int rowID) {
         // Interface from AddClassTimeThreeFragmentTime to save fragment data when the TimePickerDialog is opened
         // This creates the illusion that the fragment was never restarted
         timeSelectedResourceId = resourceId;
@@ -1185,6 +1188,7 @@ public class NewScheduleActivity extends AppCompatActivity
         this.previousTimeOutAltSeconds = previousTimeOutAltSeconds;
         previousButtonsChecked = buttonsChecked;
         this.FLAG_EDIT = FLAG_EDIT;
+        this.rowID = rowID;
     }
 
     @Override

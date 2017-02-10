@@ -84,7 +84,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
     }
     public interface onTimeSelectedListener {
         public void onTimeSelected(int resourceId, String classDays, int previousTimeInSeconds, int previousTimeOutSeconds,
-                                   int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked, boolean FLAG_EDIT);
+                                   int previousTimeInAltSeconds, int previousTimeOutAltSeconds, int[] buttonsChecked,
+                                   boolean FLAG_EDIT, int rowID);
     }
     public interface onBasisTextviewSelectedListener {
         //Pass all data through input params here
@@ -888,7 +889,8 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
 
                 // Launch the interface to send the fragment's current state data to the activity
                 timeSelectedListener.onTimeSelected(resourceId, processClassDaysString(), timeInSeconds, timeOutSeconds,
-                        timeInAltSeconds, timeOutAltSeconds, isButtonChecked, FLAG_EDIT);
+                        timeInAltSeconds, timeOutAltSeconds, isButtonChecked,
+                        FLAG_EDIT, rowID);
             }
         };
     }

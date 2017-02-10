@@ -21,6 +21,7 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
@@ -84,7 +85,7 @@ public class ScheduleFragment extends Fragment {
 
     // UI Data
     ScheduleAdapter mScheduleAdapter;
-    ArrayList<Schedule> mScheduleList = new ArrayList<>();
+    ArrayList<Schedule> mScheduleList;
 
     // Flags
     boolean isTablet;
@@ -108,6 +109,7 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        mScheduleList = new ArrayList<>();
 
         // Get references to the views
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
@@ -334,19 +336,26 @@ public class ScheduleFragment extends Fragment {
                                                     utility.millisToHourTime(timeouts.get(i)), ""));
                                             // Schedule the notification
                                             int timeIn = timeins.get(i);
+                                            Log.v(LOG_TAG, "Time in: " + utility.millisToHourTime(timeIn));
 
+                                            c = Calendar.getInstance();
                                             Calendar timeInCalendar = Calendar.getInstance();
                                             timeInCalendar.setTimeInMillis(timeIn);
-                                            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR));
+                                            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
                                             c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+                                            Log.v(LOG_TAG, "TimeInCalendar stats: " + timeInCalendar.get(Calendar.HOUR)
+                                                    + ":" + timeInCalendar.get(Calendar.MINUTE));
+                                            Log.v(LOG_TAG, "Calendar c stats: " + c.get(Calendar.YEAR) + " " + c.get(Calendar.MONTH) + " "
+                                                    + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE));
 
                                             Calendar current = Calendar.getInstance();
-                                            if (c.getTimeInMillis() > current.getTimeInMillis())
+                                            if (c.getTimeInMillis() < current.getTimeInMillis())
                                                 c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
 
-                                            ScheduleNotification(new Date(c.getTimeInMillis()), title,
-                                                    title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                    iconUri);
+                                            if (forerunnerTime != 0)
+                                                ScheduleNotification(new Date(c.getTimeInMillis()), title,
+                                                        title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                        iconUri);
                                         }
                                 }
                             } else {
@@ -375,9 +384,10 @@ public class ScheduleFragment extends Fragment {
                                         if (c.getTimeInMillis() > current.getTimeInMillis())
                                             c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
 
-                                        ScheduleNotification(new Date(c.getTimeInMillis()), title,
-                                                title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                iconUri);
+                                        if (forerunnerTime != 0)
+                                            ScheduleNotification(new Date(c.getTimeInMillis()), title,
+                                                    title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                    iconUri);
                                     }
                                 }
                             }
@@ -437,7 +447,10 @@ public class ScheduleFragment extends Fragment {
         if (mFirebaseUser != null)
             contentIntent.putExtra("id", ((String) ID));
         else contentIntent.putExtra("_ID", ((int) ID));
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(getContext());
+        stackBuilder.addParentStack(ScheduleDetailActivity.class);
+        stackBuilder.addNextIntent(contentIntent);
+        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, PendingIntent.FLAG_UPDATE_CURRENT);
 
         builder.setContentIntent(contentPendingIntent)
                 .setSmallIcon(R.drawable.ic_assignment)
@@ -459,6 +472,10 @@ public class ScheduleFragment extends Fragment {
 
         AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(dateTime.getTime());
+        Log.v(LOG_TAG, "Notification scheduled for " + c.get(Calendar.YEAR) + " " + c.get(Calendar.MONTH) + " "
+                + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE));
     }
 
     // Subclass for the Contextual Action Mode
@@ -588,9 +605,15 @@ public class ScheduleFragment extends Fragment {
                 // Delete the data from Firebase
                 classesRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes");
-                for (int i = CAMselectedItemsList.size() - 1; i > - 1; i--) {
-                    classesRef.child(mScheduleList.get(CAMselectedItemsList.get(i)).scheduleLesson).removeValue();
-                    mScheduleList.remove((int)CAMselectedItemsList.get(i));
+
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                    indexes.add(CAMselectedItemsList.get(i));
+
+                Collections.sort(indexes);
+                for (int i = indexes.size() - 1; i > -1; i--) {
+                    classesRef.child(mScheduleList.get(indexes.get(i)).scheduleLesson).removeValue();
+                    mScheduleList.remove((int)indexes.get(i));
                 }
 
                 // Set the splash text if there's no classes queried

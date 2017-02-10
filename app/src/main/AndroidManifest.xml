@@ -89,6 +89,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Intro"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ScheduleDetailActivity"
             android:parentActivityName=".MainActivity"

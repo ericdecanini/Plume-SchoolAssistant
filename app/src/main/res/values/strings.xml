@@ -60,14 +60,12 @@
     <!--
     INTRO STRINGS
     -->
-    <string name="aiSlide1Title">Thanks for signing in!</string>
-    <string name="aiSlide1Desc">We\'ll help you set up your profile so your peers can find you better.</string>
-    <string name="aiSlide2Title">Choose a Name</string>
-    <string name="aiSlide2Desc">How do your peers know you?</string>
-    <string name="aiSlide3Title">Pick a Profile Picture</string>
-    <string name="aiSlide3Desc">How do you want your peers to see you on Plume?</string>
+    <string name="aiSlide1Title">Your Digital Planner</string>
+    <string name="aiSlide1Desc">Manage your schedules and tasks all from your phone</string>
+    <string name="aiSlide2Title">Collaborate with Peers</string>
+    <string name="aiSlide2Desc">Share tasks and make working together even easier</string>
     <string name="aiSlide4Title">You\'re All Set!</string>
-    <string name="aiSlide4Desc">Click "Got It" to start collaborating with your peers.</string>
+    <string name="aiSlide4Desc">Click \"Done\" to open up your digital school planner</string>
 
     <!--
     MAIN ACTIVITY
@@ -354,9 +352,11 @@
 
     <string name="field_new_photo_dialog_title">Insert photo</string>
     <string-array name="field_new_photo_dialog_items">
-        <item>Take photo</item>
+        <item>Take a photo</item>
         <item>Select photo from gallery</item>
     </string-array>
+    <string name="take_photo">Take a photo</string>
+    <string name="select_gallery">Select a photo from gallery</string>
 
     <string name="field_existing_photo_dialog_title">Change photo</string>
     <string-array name="field_existing_photo_dialog_items">
@@ -395,8 +395,9 @@
     <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
 
     <string name="settings_class_notification_title">Class notifications</string>
-    <string name="settings_class_notification_subtitle">minutes before class</string>
+    <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
     <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
+    <string name="settings_class_notification_dialog_message">Set to 0 to disable class notifications</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
 
     <string name="settings_class_mute_title">Mute phone during classes</string>
@@ -483,7 +484,7 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.2 Beta</string>
+    <string name="Version">Version 0.3 Beta</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -498,7 +499,8 @@
     <string name="Testers">Alpha testers:</string>
     <string name="Connor" translatable="false">Connor Hutchings</string>
     <string name="Ryan" translatable="false">Ryan Hutchings</string>
-    <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">icons8</a></string>
+    <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
+        as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
 
     <!--
     PEOPLE ACTIVITY STRINGS

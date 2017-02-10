@@ -193,9 +193,10 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        FirebaseDatabase.getInstance().getReference()
-                .child("users").child(mUserId).child("tasks")
-                .removeEventListener(tasksListener);
+        if (tasksListener != null)
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("tasks")
+                    .removeEventListener(tasksListener);
         super.onStop();
     }
 

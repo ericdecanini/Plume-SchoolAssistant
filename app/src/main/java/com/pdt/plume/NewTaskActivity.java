@@ -26,6 +26,7 @@ import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
@@ -78,6 +79,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.pdt.plume.R.string.re;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_FILE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_CAPTURE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
@@ -120,7 +122,7 @@ public class NewTaskActivity extends AppCompatActivity
     float dueDateMillis;
 
     long reminderDateMillis;
-    float reminderTimeSeconds;
+    float reminderTimeMillis;
 
     // Theme Variables
     int mPrimaryColor;
@@ -359,6 +361,7 @@ public class NewTaskActivity extends AppCompatActivity
                         float dueDateMonth = c.get(Calendar.MONTH);
                         float dueDateDay = c.get(Calendar.DAY_OF_MONTH);
                         fieldDueDateTextView.setText(utility.formatDateString(this, ((int) dueDateYear), ((int) dueDateMonth), ((int) dueDateDay)));
+                        Log.v(LOG_TAG, "DueDate set from FLAG EDIT");
                         this.dueDateMillis = c.getTimeInMillis();
                     }
 
@@ -384,11 +387,18 @@ public class NewTaskActivity extends AppCompatActivity
                                         ((int) reminderDateMonth), ((int) reminderDateDay)));
                         }
                         this.reminderDateMillis = c.getTimeInMillis();
+                    } else {
+                        fieldSetReminderDateTextview.setText(getString(R.string.none));
+                        fieldSetReminderTime.setEnabled(false);
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
                     }
+
 
                     if (reminderTime != 0f) {
                         fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
-                        this.reminderTimeSeconds = reminderTime;
+                        this.reminderTimeMillis = reminderTime;
+                    } else {
+                        fieldSetReminderTimeTextview.setText(getString(R.string.none));
                     }
 
                     // ATTACHMENT WILL NOT BE INCLUDED IN BETA
@@ -415,7 +425,15 @@ public class NewTaskActivity extends AppCompatActivity
 
                 // Reminder Date and Time
                 fieldSetReminderDateTextview.setText(getString(R.string.none));
+                fieldSetReminderTime.setEnabled(false);
+                fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
                 fieldSetReminderTimeTextview.setText(getString(R.string.none));
+
+                // Dates
+                Calendar c = Calendar.getInstance();
+                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 7);
+                dueDateMillis = c.getTimeInMillis();
+                fieldDueDateTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
             }
         }
 
@@ -425,10 +443,11 @@ public class NewTaskActivity extends AppCompatActivity
         else {
             // Initialise the due date to be set for the next day
             Calendar c = Calendar.getInstance();
-            c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1, 0, 0);
+            c.set(c.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
             dueDateMillis = c.getTimeInMillis();
             fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
                     c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            Log.v(LOG_TAG, "DueDate text set at 1");
 
             // Initialise the reminder date and time
             c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
@@ -436,8 +455,8 @@ public class NewTaskActivity extends AppCompatActivity
             fieldSetReminderDateTextview.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
                     c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
             c = Calendar.getInstance();
-            reminderTimeSeconds = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
-            fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds));
+            reminderTimeMillis = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
+            fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeMillis));
 
             iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
                     "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
@@ -772,18 +791,23 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.none));
                         reminderDateMillis = 0;
                         fieldSetReminderTime.setEnabled(false);
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
                         break;
                     case R.id.dropdown_reminder_date_today:
                         c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
                         fieldSetReminderDateTextview.setText(getString(R.string.today));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        if (reminderTimeSeconds == 0) {
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
-                            int minute = toGetTime.get(Calendar.MINUTE) + 1;
-                            reminderTimeSeconds = utility.timeToMillis(hourOfDay, minute);
-                            fieldSetReminderTimeTextview.setText(utility.secondsToMinuteTime(reminderTimeSeconds));
+                            int minute = toGetTime.get(Calendar.MINUTE);
+                            reminderTimeMillis = utility.timeToMillis(hourOfDay, minute);
+                            if (minute < 10)
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":0" + minute);
+                            else
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":" + minute);
                         }
                         break;
                     case R.id.dropdown_reminder_date_tomorrow:
@@ -791,16 +815,21 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        if (reminderTimeSeconds == 0) {
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
-                            int minute = toGetTime.get(Calendar.MINUTE) + 1;
-                            reminderTimeSeconds = utility.timeToMillis(hourOfDay, minute);
-                            fieldSetReminderTimeTextview.setText(utility.secondsToMinuteTime(reminderTimeSeconds));
+                            int minute = toGetTime.get(Calendar.MINUTE);
+                            reminderTimeMillis = utility.timeToMillis(hourOfDay, minute) * 1000;
+                            if (minute < 10)
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":0" + minute);
+                            else
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":" + minute);
                         }
                         break;
                     case R.id.dropdown_reminder_date_setdate:
                         fieldSetReminderTime.setEnabled(true);
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
                         int year = c.get(Calendar.YEAR);
                         int month = c.get(Calendar.MONTH);
                         int day = c.get(Calendar.DAY_OF_MONTH) + 1;
@@ -826,23 +855,23 @@ public class NewTaskActivity extends AppCompatActivity
                 switch (item.getItemId()) {
                     case R.id.none:
                         fieldSetReminderTimeTextview.setText(getString(R.string.none));
-                        reminderTimeSeconds = 0;
+                        reminderTimeMillis = 0;
                         break;
                     case R.id.morning:
                         fieldSetReminderTimeTextview.setText(getString(R.string.morning));
-                        reminderTimeSeconds = utility.timeToMillis(9, 0);
+                        reminderTimeMillis = utility.timeToMillis(9, 0);
                         break;
                     case R.id.afternoon:
-                        fieldSetReminderDateTextview.setText(getString(R.string.afternoon));
-                        reminderTimeSeconds = utility.timeToMillis(14, 0);
+                        fieldSetReminderTimeTextview.setText(getString(R.string.afternoon));
+                        reminderTimeMillis = utility.timeToMillis(14, 0);
                         break;
                     case R.id.evening:
-                        fieldSetReminderDateTextview.setText(getString(R.string.evening));
-                        reminderTimeSeconds = utility.timeToMillis(18, 0);
+                        fieldSetReminderTimeTextview.setText(getString(R.string.evening));
+                        reminderTimeMillis = utility.timeToMillis(18, 0);
                         break;
-                    case R.id.dropdown_reminder_date_setdate:
-                        int hour = (int) (reminderTimeSeconds / 3600) / 1000;
-                        int minute = (int) (((reminderTimeSeconds / 1000) - (hour * 3600)) / 60);
+                    case R.id.custom:
+                        int hour = (int) (reminderTimeMillis / 1000) / 3600;
+                        int minute = (int) (((reminderTimeMillis / 1000) - (hour * 3600)) / 60);
                         TimePickerDialog timePickerFragment = new TimePickerDialog(NewTaskActivity.this, onTimeSetListener(), hour, minute, true);
                         timePickerFragment.show();
                         break;
@@ -951,6 +980,7 @@ public class NewTaskActivity extends AppCompatActivity
                 c.set(year, monthOfYear, dayOfMonth);
                 dueDateMillis = c.getTimeInMillis();
                 fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, year, monthOfYear, dayOfMonth));
+                Log.v(LOG_TAG, "DueDate text set at 2");
             }
         };
     }
@@ -985,8 +1015,8 @@ public class NewTaskActivity extends AppCompatActivity
         return new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                reminderTimeSeconds = utility.timeToMillis(hourOfDay, minute) / 1000;
-                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeSeconds * 1000));
+                reminderTimeMillis = utility.timeToMillis(hourOfDay, minute) / 1000;
+                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeMillis * 1000));
             }
         };
     }
@@ -1093,8 +1123,8 @@ public class NewTaskActivity extends AppCompatActivity
         // Set the alarm for the notification
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(reminderDateMillis);
-        int hour = (int) reminderTimeSeconds / 3600;
-        int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+        int hour = (int) reminderTimeMillis / 3600;
+        int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.MINUTE, minute);
         long notificationMillis = (c.getTimeInMillis());
@@ -1166,12 +1196,12 @@ public class NewTaskActivity extends AppCompatActivity
             if (FLAG_EDIT) {
                 // Update database row
                 if (dbHelper.updateTaskItem(editId, title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPathString, false))
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, mCurrentPhotoPathString, false))
                     return true;
             } else {
                 // Insert a new database row
                 if (dbHelper.insertTask(title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeSeconds, iconUriString, mCurrentPhotoPathString, false))
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, mCurrentPhotoPathString, false))
                     return true;
                 else Log.d(LOG_TAG, "Task not inserted");
             }
@@ -1234,7 +1264,11 @@ public class NewTaskActivity extends AppCompatActivity
 
         Intent contentIntent = new Intent(this, TasksDetailActivity.class);
         contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(TasksDetailActivity.class);
+        stackBuilder.addNextIntent(contentIntent);
+        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT,
+                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
             @Override

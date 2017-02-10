@@ -18,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
@@ -250,6 +251,9 @@ public class ClassesActivity extends AppCompatActivity {
 
                 Intent contentIntent = new Intent(ClassesActivity.this, TasksDetailActivity.class);
                 contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
+                stackBuilder.addParentStack(TasksDetailActivity.class);
+                stackBuilder.addNextIntent(contentIntent);
                 final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
@@ -318,6 +322,9 @@ public class ClassesActivity extends AppCompatActivity {
                     Intent contentIntent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                     if (mFirebaseUser != null)
                         contentIntent.putExtra("id", title);
+                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
+                    stackBuilder.addParentStack(ScheduleDetailActivity.class);
+                    stackBuilder.addNextIntent(contentIntent);
                     final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     builder.setContentIntent(contentPendingIntent)
@@ -382,6 +389,9 @@ public class ClassesActivity extends AppCompatActivity {
 
             Intent contentIntent = new Intent(ClassesActivity.this, TasksDetailActivity.class);
             contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
+            stackBuilder.addParentStack(TasksDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
                     (ClassesActivity.this, REQUEST_NOTIFICATION_INTENT,
                             contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -435,6 +445,9 @@ public class ClassesActivity extends AppCompatActivity {
 
             Intent contentIntent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
             contentIntent.putExtra("_ID", ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
+            stackBuilder.addParentStack(ScheduleDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT,
                     contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

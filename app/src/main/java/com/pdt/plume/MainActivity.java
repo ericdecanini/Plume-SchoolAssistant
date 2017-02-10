@@ -23,6 +23,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -58,6 +59,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.services.ScheduleNotificationService;
@@ -265,6 +267,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
 
+        if (id == R.id.intro) {
+            Intent intent = new Intent(this, Intro.class);
+            startActivity(intent);
+        }
+
         return false;
     }
 
@@ -350,8 +357,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Commit the preferences
         editor.apply();
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference();
+        Intent intent = new Intent(this, Intro.class);
+        startActivity(intent);
     }
 
     public void initTabs(){
@@ -586,6 +593,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
                 contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+                stackBuilder.addParentStack(TasksDetailActivity.class);
+                stackBuilder.addNextIntent(contentIntent);
                 final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
@@ -617,71 +627,73 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mFirebaseUser.getUid()).child("classes");
-        classesRef.addChildEventListener(new ChildEventListener() {
+        classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Get the key data
-                String title = dataSnapshot.getKey();
-                String icon = dataSnapshot.child("icon").getValue(String.class);
-                String message = getString(R.string.class_notification_message,
-                        Integer.toString(preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)));
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                    // Get the key data
+                    String title = classSnapshot.getKey();
+                    String icon = classSnapshot.child("icon").getValue(String.class);
+                    String message = getString(R.string.class_notification_message,
+                            Integer.toString(preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)));
 
-                // Get the listed data
-                ArrayList<Integer> timeins = new ArrayList<>();
-                if (weekNumber == 0)
-                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren())
-                        timeins.add(timeinSnapshot.getValue(int.class));
-                 else
-                    for (DataSnapshot timeinaltSnapshot : dataSnapshot.child("timeinalt").getChildren())
-                        timeins.add(timeinaltSnapshot.getValue(int.class));
+                    // Get the listed data
+                    ArrayList<Integer> timeins = new ArrayList<>();
+                    if (weekNumber == 0)
+                        for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
+                            timeins.add(timeinSnapshot.getValue(int.class));
+                    else
+                        for (DataSnapshot timeinaltSnapshot : classSnapshot.child("timeinalt").getChildren())
+                            timeins.add(timeinaltSnapshot.getValue(int.class));
 
 
-                Calendar c = Calendar.getInstance();
-                for (int i = 0; i < timeins.size(); i++) {
-                    // Rebuild the notification
-                    c.setTimeInMillis(((long) timeins.get(i)));
+                    Calendar c = Calendar.getInstance();
+                    for (int i = 0; i < timeins.size(); i++) {
+                        // Rebuild the notification
+                        c.setTimeInMillis(((long) timeins.get(i)));
 
-                    final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
-                    Bitmap largeIcon = null;
-                    try {
-                        largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
+                        Bitmap largeIcon = null;
+                        try {
+                            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                                .setBackground(largeIcon);
+
+                        Intent contentIntent = new Intent(MainActivity.this, ScheduleDetailActivity.class);
+                        if (mFirebaseUser != null)
+                            contentIntent.putExtra("id", title);
+                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+                        stackBuilder.addParentStack(ScheduleDetailActivity.class);
+                        stackBuilder.addNextIntent(contentIntent);
+                        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                        builder.setContentIntent(contentPendingIntent)
+                                .setSmallIcon(R.drawable.ic_assignment)
+                                .setColor(getResources().getColor(R.color.colorPrimary))
+                                .setContentTitle(title)
+                                .setContentText(message)
+                                .setAutoCancel(true)
+                                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                                .extend(wearableExtender)
+                                .setDefaults(Notification.DEFAULT_ALL);
+
+                        Notification notification = builder.build();
+
+                        Intent notificationIntent = new Intent(MainActivity.this, TaskNotificationPublisher.class);
+                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
+                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                        final PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_ALARM,
+                                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                        alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
                     }
-                    final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                            .setBackground(largeIcon);
-
-                    Intent contentIntent = new Intent(MainActivity.this, ScheduleDetailActivity.class);
-                    if (mFirebaseUser != null)
-                        contentIntent.putExtra("id", title);
-                    final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    builder.setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
-                            .setColor(getResources().getColor(R.color.colorPrimary))
-                            .setContentTitle(title)
-                            .setContentText(message)
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .extend(wearableExtender)
-                            .setDefaults(Notification.DEFAULT_ALL);
-
-                    Notification notification = builder.build();
-
-                    Intent notificationIntent = new Intent(MainActivity.this, TaskNotificationPublisher.class);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
                 }
-
             }
-            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
             @Override public void onCancelled(DatabaseError databaseError) {}
         });
 
@@ -718,6 +730,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
             contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+            stackBuilder.addParentStack(TasksDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
                     (MainActivity.this, REQUEST_NOTIFICATION_INTENT,
                             contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -771,6 +786,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             Intent contentIntent = new Intent(MainActivity.this, ScheduleDetailActivity.class);
             contentIntent.putExtra("_ID", ID);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+            stackBuilder.addParentStack(ScheduleDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT,
                     contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

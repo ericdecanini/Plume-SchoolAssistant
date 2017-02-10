@@ -221,7 +221,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         final ArrayList<String> timeoutalts = new ArrayList<>();
                         final ArrayList<String> periods = new ArrayList<>();
 
-                        classRef.child("occurrence").addValueEventListener(new ValueEventListener() {
+                        classRef.child("occurrence").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
@@ -231,10 +231,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
-                                    for (int i = 0; i < snapshotCount; i++)
+                                    for (int i = 0; i < snapshotCount; i++) {
                                         mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
+                                    }
 
                                 mPeriodsAdapter.notifyDataSetChanged();
                             }
@@ -244,12 +245,83 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             }
                         });
 
-                        classRef.child("timein").addValueEventListener(new ValueEventListener() {
+                        classRef.child("timein").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeins.add(occurrenceSnapshot.getKey());
+                                    timeins.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                }
+                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
+                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
+                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
+                                    for (int i = 0; i < snapshotCount; i++) {
+                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
+                                                periods.get(i), occurrences.get(i)));
+                                    }
+
+                                mPeriodsAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+
+                        classRef.child("timeout").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                long snapshotCount = dataSnapshot.getChildrenCount();
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
+                                    timeouts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                }
+                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
+                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
+                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
+                                    for (int i = 0; i < snapshotCount; i++) {
+                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
+                                                periods.get(i), occurrences.get(i)));
+                                    }
+
+                                mPeriodsAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+
+                        classRef.child("timeinalt").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                long snapshotCount = dataSnapshot.getChildrenCount();
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
+                                    timeinalts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                }
+                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
+                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
+                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
+                                    for (int i = 0; i < snapshotCount; i++) {
+                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
+                                                periods.get(i), occurrences.get(i)));
+                                    }
+
+                                mPeriodsAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+                        classRef.child("timeoutalt").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                long snapshotCount = dataSnapshot.getChildrenCount();
+                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
+                                    timeoutalts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
@@ -267,75 +339,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             }
                         });
 
-                        classRef.child("timeout").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeouts.add(occurrenceSnapshot.getKey());
-                                }
-                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
-                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
-                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
-                                    for (int i = 0; i < snapshotCount; i++)
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
-                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
-                                                periods.get(i), occurrences.get(i)));
-
-                                mPeriodsAdapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        });
-
-                        classRef.child("timeinalt").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeinalts.add(occurrenceSnapshot.getKey());
-                                }
-                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
-                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
-                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
-                                    for (int i = 0; i < snapshotCount; i++)
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
-                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
-                                                periods.get(i), occurrences.get(i)));
-
-                                mPeriodsAdapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        });
-                        classRef.child("timeoutalt").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                long snapshotCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeoutalts.add(occurrenceSnapshot.getKey());
-                                }
-                                if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
-                                        && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
-                                        && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
-                                    for (int i = 0; i < snapshotCount; i++)
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
-                                                timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
-                                                periods.get(i), occurrences.get(i)));
-
-                                mPeriodsAdapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        });
-
-                        classRef.child("periods").addValueEventListener(new ValueEventListener() {
+                        classRef.child("periods").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();

@@ -276,7 +276,6 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="8dp"
                         android:layout_marginRight="8dp"
-                        android:text="February 30, 2017"
                         android:textSize="16sp" />
 
                     <ImageView

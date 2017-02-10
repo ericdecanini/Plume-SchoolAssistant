@@ -64,7 +64,7 @@ public class TasksFragment extends Fragment {
     boolean isTablet;
 
     // List Variables
-    ArrayList<Task> mTasksList = new ArrayList<>();
+    ArrayList<Task> mTasksList;
     TaskAdapter mTasksAdapter;
 
     // Firebase Variables
@@ -88,6 +88,7 @@ public class TasksFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
 
         // Initialise Firebase and SQLite
+        mTasksList = new ArrayList<>();
         dbHelper = new DbHelper(getActivity());
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
@@ -127,7 +128,7 @@ public class TasksFragment extends Fragment {
                         Boolean completed = taskSnapshot.child("completed").getValue(Boolean.class);
                         if (completed == null)
                             completed = false;
-                        if (!completed) {
+                        if (!completed && duedate != null) {
                             mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f));
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
@@ -395,10 +396,9 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(indexes);
                 for (int i = indexes.size() - 1; i > -1; i--) {
-                    Log.v(LOG_TAG, "CAM size = " + CAMselectedItemsList.size() + ", i = " + i);
-                    tasksRef.child(FirebaseIdList.get(CAMselectedItemsList.get(i))).removeValue();
-                    FirebaseIdList.remove(((int) CAMselectedItemsList.get(i)));
-                    mTasksList.remove(((int) CAMselectedItemsList.get(i)));
+                    tasksRef.child(FirebaseIdList.get(indexes.get(i))).removeValue();
+                    FirebaseIdList.remove(((int) indexes.get(i)));
+                    mTasksList.remove(((int) indexes.get(i)));
                 }
 
                 // Refresh the list mScheduleAdapter
@@ -459,7 +459,7 @@ public class TasksFragment extends Fragment {
                     // Get the data from Firebase
                     final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("tasks").child(FirebaseIdList.get(CAMselectedItemsList.get(0)));
-                    taskRef.addValueEventListener(new ValueEventListener() {
+                    taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             String id = dataSnapshot.getKey();

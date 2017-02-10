@@ -133,7 +133,8 @@ public class SettingsActivity extends PreferenceActivity
             if (prefKey.equals(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION))) {
                 NumberPickerPreference numberPickerPreference = (NumberPickerPreference) preference;
                 editor.putInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), numberPickerPreference.getValue());
-                numberPickerPreference.setSummary(stringValue + " " + getString(R.string.settings_class_notification_subtitle));
+                numberPickerPreference.setSummary(getString(R.string.settings_class_notification_subtitle, stringValue));
+                numberPickerPreference.setDialogMessage(getString(R.string.settings_class_notification_dialog_message));
             }
 
             // If 'Mute phone during classes'
