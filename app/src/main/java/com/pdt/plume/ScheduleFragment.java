@@ -343,10 +343,6 @@ public class ScheduleFragment extends Fragment {
                                             timeInCalendar.setTimeInMillis(timeIn);
                                             c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
                                             c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
-                                            Log.v(LOG_TAG, "TimeInCalendar stats: " + timeInCalendar.get(Calendar.HOUR)
-                                                    + ":" + timeInCalendar.get(Calendar.MINUTE));
-                                            Log.v(LOG_TAG, "Calendar c stats: " + c.get(Calendar.YEAR) + " " + c.get(Calendar.MONTH) + " "
-                                                    + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE));
 
                                             Calendar current = Calendar.getInstance();
                                             if (c.getTimeInMillis() < current.getTimeInMillis())
@@ -375,13 +371,14 @@ public class ScheduleFragment extends Fragment {
                                         // Schedule the notification
                                         int timeIn = timeinalts.get(i);
 
+                                        c = Calendar.getInstance();
                                         Calendar timeInCalendar = Calendar.getInstance();
                                         timeInCalendar.setTimeInMillis(timeIn);
-                                        c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR));
+                                        c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
                                         c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
 
                                         Calendar current = Calendar.getInstance();
-                                        if (c.getTimeInMillis() > current.getTimeInMillis())
+                                        if (c.getTimeInMillis() < current.getTimeInMillis())
                                             c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
 
                                         if (forerunnerTime != 0)

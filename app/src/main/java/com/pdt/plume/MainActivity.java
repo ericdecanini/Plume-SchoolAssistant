@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -270,6 +271,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.intro) {
             Intent intent = new Intent(this, Intro.class);
             startActivity(intent);
+        }
+
+        if (id == R.id.notification) {
+            DbHelper dbHelper = new DbHelper(MainActivity.this);
+            Cursor tasksCursor = dbHelper.getTaskData();
+            tasksCursor.moveToFirst();
+            for (int i = 0; i < tasksCursor.getCount(); i++) {
+                // Get the data
+                tasksCursor.moveToPosition(i);
+                String title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+                String icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+                long reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+                long reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(reminderDateMillis);
+                int hour = (int) reminderTimeSeconds / 3600;
+                int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+                c.set(Calendar.HOUR_OF_DAY, hour);
+                c.set(Calendar.MINUTE, minute);
+                long notificationMillis = (c.getTimeInMillis());
+
+                // Rebuild the notification
+                final android.support.v4.app.NotificationCompat.Builder builder
+                        = new NotificationCompat.Builder(MainActivity.this);
+                Bitmap largeIcon = null;
+                try {
+                    largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender
+                        = new NotificationCompat.WearableExtender().setBackground(largeIcon);
+
+                Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
+                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+                stackBuilder.addParentStack(TasksDetailActivity.class);
+                stackBuilder.addNextIntent(contentIntent);
+                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
+                builder.setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_assignment)
+                        .setColor(getResources().getColor(R.color.colorPrimary))
+                        .setContentTitle(getString(R.string.notification_message_reminder))
+                        .setContentText(title)
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotificationManager.notify(REQUEST_NOTIFICATION_ALARM, builder.build());
+            }
         }
 
         return false;
@@ -596,8 +650,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
-                final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.setContentIntent(contentPendingIntent)
+                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);                builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
                         .setColor(getResources().getColor(R.color.colorPrimary))
                         .setContentTitle(getString(R.string.notification_message_reminder))
@@ -668,8 +721,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
                         stackBuilder.addParentStack(ScheduleDetailActivity.class);
                         stackBuilder.addNextIntent(contentIntent);
-                        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+                        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
                         builder.setContentIntent(contentPendingIntent)
                                 .setSmallIcon(R.drawable.ic_assignment)
                                 .setColor(getResources().getColor(R.color.colorPrimary))
@@ -689,7 +741,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                        alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                        alarmManager.cancel(pendingIntent);
                     }
                 }
             }
@@ -733,9 +785,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
             stackBuilder.addParentStack(TasksDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
-                    (MainActivity.this, REQUEST_NOTIFICATION_INTENT,
-                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
             builder.setContentIntent(contentPendingIntent)
                     .setSmallIcon(R.drawable.ic_assignment)
                     .setColor(getResources().getColor(R.color.colorPrimary))
@@ -763,17 +813,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Reschedule all SQLite based Class Notifications
         Cursor classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
-        final Calendar c = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
         final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
         for (int i = 0; i < classesCursor.getCount(); i++) {
             classesCursor.moveToPosition(i);
             final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
             String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
             int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+
             long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
-            c.setTimeInMillis(timeInValue);
+            c = Calendar.getInstance();
+            Calendar timeInCalendar = Calendar.getInstance();
+            timeInCalendar.setTimeInMillis(timeInValue);
+            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+            c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+            Calendar current = Calendar.getInstance();
+            if (c.getTimeInMillis() < current.getTimeInMillis())
+                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
             c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
 
+            // Build the notification
             final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
             Bitmap largeIcon = null;
             try {
@@ -789,9 +848,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
             stackBuilder.addParentStack(ScheduleDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_INTENT,
-                    contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
 
+            final Calendar finalC = c;
             Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
                 @Override
                 public void onGenerated(Palette palette) {
@@ -814,7 +873,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                    alarmManager.set(AlarmManager.RTC, finalC.getTimeInMillis(), pendingIntent);
                 }
             });
         }

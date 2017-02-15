@@ -168,9 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                                             TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
                                             stackBuilder.addParentStack(TasksDetailActivity.class);
                                             stackBuilder.addNextIntent(contentIntent);
-                                            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
-                                                    (LoginActivity.this, REQUEST_NOTIFICATION_INTENT,
-                                                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
                                             builder.setContentIntent(contentPendingIntent)
                                                     .setSmallIcon(R.drawable.ic_assignment)
                                                     .setColor(getResources().getColor(R.color.colorPrimary))
@@ -236,7 +234,7 @@ public class LoginActivity extends AppCompatActivity {
                                                         TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
                                                         stackBuilder.addParentStack(TasksDetailActivity.class);
                                                         stackBuilder.addNextIntent(contentIntent);
-                                                        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(LoginActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
                                                         builder.setContentIntent(contentPendingIntent)
                                                                 .setSmallIcon(R.drawable.ic_assignment)
                                                                 .setColor(getResources().getColor(R.color.colorPrimary))

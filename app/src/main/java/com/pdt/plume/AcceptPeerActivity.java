@@ -104,6 +104,7 @@ public class AcceptPeerActivity extends AppCompatActivity
         findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
         findViewById(R.id.accept).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
 
+        adapter = new ScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_schedule_with_checkbox, matchedClassesScheduleList);
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
@@ -314,6 +315,16 @@ public class AcceptPeerActivity extends AppCompatActivity
 
         // Add the class to the cloud and SQLite databases for every checked item
         ArrayList<Integer> positions = new ArrayList<>();
+            mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
+            mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
+            mUserPeersRef.child(requestingUserId).child("flavour").setValue(flavour);
+            // Requesting user's peers ref
+            requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
+            requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
+            requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
+        Log.v(LOG_TAG, "requestingUserId: " + requestingUserId);
+        Log.v(LOG_TAG, "mUserId: " + mUserId);
+
         for (int i = 0; i < adapter.getCount(); i++)
             if (((CheckBox) getViewByPosition(i, listView).findViewById(R.id.checkbox)).isChecked()) {
                 positions.add(i);
@@ -424,6 +435,7 @@ public class AcceptPeerActivity extends AppCompatActivity
                 }
 
                 classesRef.removeEventListener(this);
+                findViewById(R.id.progressBar).setVisibility(View.GONE);
             }
 
             @Override

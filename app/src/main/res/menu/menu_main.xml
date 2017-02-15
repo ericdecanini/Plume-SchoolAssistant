@@ -19,4 +19,10 @@
         android:title="Play Intro"
         app:showAsAction="never"
         android:visible="false"/>
+
+    <item
+        android:id="@+id/notification"
+        android:orderInCategory="25"
+        android:title="Push Notification"
+        app:showAsAction="never" />
 </menu>

@@ -254,7 +254,7 @@ public class ClassesActivity extends AppCompatActivity {
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
-                final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
                 builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
                         .setColor(getResources().getColor(R.color.colorPrimary))
@@ -325,8 +325,7 @@ public class ClassesActivity extends AppCompatActivity {
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
                     stackBuilder.addParentStack(ScheduleDetailActivity.class);
                     stackBuilder.addNextIntent(contentIntent);
-                    final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+                    final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
                     builder.setContentIntent(contentPendingIntent)
                             .setSmallIcon(R.drawable.ic_assignment)
                             .setColor(getResources().getColor(R.color.colorPrimary))
@@ -346,7 +345,7 @@ public class ClassesActivity extends AppCompatActivity {
                             notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                    alarmManager.cancel(pendingIntent);
                 }
 
             }
@@ -392,9 +391,7 @@ public class ClassesActivity extends AppCompatActivity {
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
             stackBuilder.addParentStack(TasksDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast
-                    (ClassesActivity.this, REQUEST_NOTIFICATION_INTENT,
-                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
             builder.setContentIntent(contentPendingIntent)
                     .setSmallIcon(R.drawable.ic_assignment)
                     .setColor(getResources().getColor(R.color.colorPrimary))
@@ -422,14 +419,25 @@ public class ClassesActivity extends AppCompatActivity {
 
         // Reschedule all SQLite based Class Notifications
         Cursor classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
-        final Calendar c = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
         final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
         for (int i = 0; i < classesCursor.getCount(); i++) {
             classesCursor.moveToPosition(i);
             final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
             String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
             int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+
             long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
+            c = Calendar.getInstance();
+            Calendar timeInCalendar = Calendar.getInstance();
+            timeInCalendar.setTimeInMillis(timeInValue);
+            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+            c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+            Calendar current = Calendar.getInstance();
+            if (c.getTimeInMillis() < current.getTimeInMillis())
+                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+            c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
+
             c.setTimeInMillis(timeInValue);
             c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
 
@@ -448,9 +456,9 @@ public class ClassesActivity extends AppCompatActivity {
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
             stackBuilder.addParentStack(ScheduleDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(ClassesActivity.this, REQUEST_NOTIFICATION_INTENT,
-                    contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
 
+            final Calendar finalC = c;
             Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
                 @Override
                 public void onGenerated(Palette palette) {
@@ -473,7 +481,7 @@ public class ClassesActivity extends AppCompatActivity {
                             notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, c.getTimeInMillis(), pendingIntent);
+                    alarmManager.set(AlarmManager.RTC, finalC.getTimeInMillis(), pendingIntent);
                 }
             });
         }
