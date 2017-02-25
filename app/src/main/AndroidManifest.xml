@@ -3,6 +3,7 @@
     package="com.pdt.plume">
 
     <compatible-screens>
+
         <!-- all small size screens -->
         <screen
             android:screenDensity="ldpi"
@@ -52,19 +53,21 @@
         android:required="true" />
 
     <application
-        android:allowBackup="true"
         android:name=".App"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-
-        <activity android:name="com.facebook.FacebookActivity"
+        <activity
+            android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:label="@string/app_name" />
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -77,8 +80,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -89,7 +90,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Intro"
+        <activity
+            android:name=".Intro"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ScheduleDetailActivity"
@@ -132,8 +134,8 @@
         <activity
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/nav_settings" />
@@ -146,8 +148,9 @@
             android:name=".AboutActivity"
             android:label="@string/about_activity_label"
             android:parentActivityName=".SettingsActivity" />
-        <activity android:name=".NoteActivity"
-            android:parentActivityName=".ScheduleDetailActivity"/>
+        <activity
+            android:name=".NoteActivity"
+            android:parentActivityName=".ScheduleDetailActivity" />
         <activity
             android:name=".CompletedTasksActivity"
             android:label="@string/activity_completedTasks_label"
@@ -175,42 +178,47 @@
             android:parentActivityName=".TasksDetailActivity"
             android:theme="@style/FullscreenTheme" />
 
-        <!--<receiver-->
-            <!--android:name=".ScheduleWidgetProvider"-->
-            <!--android:label="@string/schedule">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
-            <!--</intent-filter>-->
+        <!-- <receiver -->
+        <!-- android:name=".ScheduleWidgetProvider" -->
+        <!-- android:label="@string/schedule"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.appwidget.action.APPWIDGET_UPDATE" /> -->
+        <!-- </intent-filter> -->
 
-            <!--<meta-data-->
-                <!--android:name="android.appwidget.provider"-->
-                <!--android:resource="@xml/provider_widget_schedule" />-->
-        <!--</receiver>-->
 
-        <!--<service-->
-            <!--android:name=".services.ScheduleWidgetService"-->
-            <!--android:permission="android.permission.BIND_REMOTEVIEWS" />-->
+        <!-- <meta-data -->
+        <!-- android:name="android.appwidget.provider" -->
+        <!-- android:resource="@xml/provider_widget_schedule" /> -->
+        <!-- </receiver> -->
 
-        <!--<receiver-->
-            <!--android:name=".TasksWidgetProvider"-->
-            <!--android:label="@string/tasks">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
-            <!--</intent-filter>-->
 
-            <!--<meta-data-->
-                <!--android:name="android.appwidget.provider"-->
-                <!--android:resource="@xml/provider_widget_tasks" />-->
-        <!--</receiver>-->
+        <!-- <service -->
+        <!-- android:name=".services.ScheduleWidgetService" -->
+        <!-- android:permission="android.permission.BIND_REMOTEVIEWS" /> -->
 
-        <!--<service-->
-            <!--android:name=".services.TasksWidgetService"-->
-            <!--android:permission="android.permission.BIND_REMOTEVIEWS" />-->
+
+        <!-- <receiver -->
+        <!-- android:name=".TasksWidgetProvider" -->
+        <!-- android:label="@string/tasks"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.appwidget.action.APPWIDGET_UPDATE" /> -->
+        <!-- </intent-filter> -->
+
+
+        <!-- <meta-data -->
+        <!-- android:name="android.appwidget.provider" -->
+        <!-- android:resource="@xml/provider_widget_tasks" /> -->
+        <!-- </receiver> -->
+
+
+        <!-- <service -->
+        <!-- android:name=".services.TasksWidgetService" -->
+        <!-- android:permission="android.permission.BIND_REMOTEVIEWS" /> -->
 
         <activity
             android:name=".PeopleActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".PeersActivity"
             android:parentActivityName=".PeopleActivity" />
@@ -226,17 +234,19 @@
         <activity
             android:name=".UserSearchActivity"
             android:parentActivityName=".PeopleActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity
+            android:name=".AddPeerActivity"
+            android:parentActivityName=".UserSearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AddPeerActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".UserSearchActivity"/>
         <activity
             android:name=".AcceptPeerActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".RequestsActivity" />
-        <activity android:name=".PeerProfileActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".PeersActivity" />
+            android:parentActivityName=".RequestsActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".PeerProfileActivity"
+            android:parentActivityName=".PeersActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

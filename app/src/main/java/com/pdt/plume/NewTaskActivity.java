@@ -1120,17 +1120,6 @@ public class NewTaskActivity extends AppCompatActivity
 //            }
 //        }
 
-        // Set the alarm for the notification
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(reminderDateMillis);
-        int hour = (int) reminderTimeMillis / 3600;
-        int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
-        c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.MINUTE, minute);
-        long notificationMillis = (c.getTimeInMillis());
-        if (reminderDateMillis > 0)
-            ScheduleNotification(new Date(notificationMillis), editId, getString(R.string.notification_message_reminder), title);
-
         // Insert the data based on the user
         if (mFirebaseUser != null) {
             // Insert into Firebase
@@ -1151,6 +1140,19 @@ public class NewTaskActivity extends AppCompatActivity
             taskRef.child("description").setValue(description);
             taskRef.child("icon").setValue(iconUriString);
             taskRef.child("completed").setValue(false);
+
+            // Set the alarm for the notification
+            {
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(reminderDateMillis);
+                int hour = (int) reminderTimeMillis / 3600;
+                int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
+                c.set(Calendar.HOUR_OF_DAY, hour);
+                c.set(Calendar.MINUTE, minute);
+                long notificationMillis = (c.getTimeInMillis());
+                if (reminderDateMillis > 0)
+                    ScheduleNotification(new Date(notificationMillis), -1, taskRef.getKey(), getString(R.string.notification_message_reminder), title);
+            }
 
             // Share the task to peers if checked shared
             if (fieldShared.isChecked()) {
@@ -1193,6 +1195,7 @@ public class NewTaskActivity extends AppCompatActivity
         } else {
             // Insert into SQLite
             DbHelper dbHelper = new DbHelper(this);
+
             if (FLAG_EDIT) {
                 // Update database row
                 if (dbHelper.updateTaskItem(editId, title, classTitle, classType, description, attachedFileUriString,
@@ -1200,8 +1203,22 @@ public class NewTaskActivity extends AppCompatActivity
                     return true;
             } else {
                 // Insert a new database row
-                if (dbHelper.insertTask(title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, mCurrentPhotoPathString, false))
+                int id = (int) dbHelper.insertTask(title, classTitle, classType, description, attachedFileUriString,
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, mCurrentPhotoPathString, false);
+
+                {
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeInMillis(reminderDateMillis);
+                    int hour = (int) reminderTimeMillis / 3600;
+                    int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
+                    c.set(Calendar.HOUR_OF_DAY, hour);
+                    c.set(Calendar.MINUTE, minute);
+                    long notificationMillis = (c.getTimeInMillis());
+                    if (reminderDateMillis > 0)
+                        ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title);
+                }
+
+                if (id > -1)
                     return true;
                 else Log.d(LOG_TAG, "Task not inserted");
             }
@@ -1251,7 +1268,7 @@ public class NewTaskActivity extends AppCompatActivity
         }
     }
 
-    private void ScheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
+    private void ScheduleNotification(final Date dateTime, final int ID, final String firebaseID, final String title, final String message) {
         final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
@@ -1263,12 +1280,14 @@ public class NewTaskActivity extends AppCompatActivity
                 .setBackground(largeIcon);
 
         Intent contentIntent = new Intent(this, TasksDetailActivity.class);
-        contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+        if (ID > -1)
+            contentIntent.putExtra("_ID", ID);
+        else contentIntent.putExtra("id", firebaseID);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(TasksDetailActivity.class);
         stackBuilder.addNextIntent(contentIntent);
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT,
-                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent
+                (REQUEST_NOTIFICATION_INTENT, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
             @Override
@@ -1293,6 +1312,7 @@ public class NewTaskActivity extends AppCompatActivity
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+                Log.v(LOG_TAG, "Task ID: " + ID);
             }
         });
     }

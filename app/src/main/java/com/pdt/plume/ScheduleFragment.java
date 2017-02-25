@@ -32,6 +32,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -110,6 +111,8 @@ public class ScheduleFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
         mScheduleList = new ArrayList<>();
+
+
 
         // Get references to the views
         headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
@@ -234,6 +237,7 @@ public class ScheduleFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Get the data to pass on
                 String title = mScheduleList.get(position).scheduleLesson;
+                String icon = mScheduleList.get(position).scheduleIcon;
 
                 // If the used device is a tablet, replace the
                 // right-hand side fragment with a ScheduleDetailFragment
@@ -250,12 +254,14 @@ public class ScheduleFragment extends Fragment {
                 else {
                     Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
                     intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra("icon", icon);
 
                     // Add a transition if the device is Lollipop or above
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         // Shared element transition
-                        View icon = view.findViewById(R.id.schedule_icon);
-                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
+                        View iconView = view.findViewById(R.id.schedule_icon);
+                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                (getActivity(), iconView, iconView.getTransitionName()).toBundle();
                         startActivity(intent, bundle);
                     } else startActivity(intent);
                 }
@@ -429,7 +435,7 @@ public class ScheduleFragment extends Fragment {
         }
     }
 
-    private void ScheduleNotification(final Date dateTime, Object ID, final String title, final String message, String icon) {
+    private void ScheduleNotification(final Date dateTime, String classTitle, final String title, final String message, String icon) {
         final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext());
         Bitmap largeIcon = null;
         try {
@@ -442,8 +448,8 @@ public class ScheduleFragment extends Fragment {
 
         Intent contentIntent = new Intent(getContext(), ScheduleDetailActivity.class);
         if (mFirebaseUser != null)
-            contentIntent.putExtra("id", ((String) ID));
-        else contentIntent.putExtra("_ID", ((int) ID));
+            contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), classTitle);
+        else contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), classTitle);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(getContext());
         stackBuilder.addParentStack(ScheduleDetailActivity.class);
         stackBuilder.addNextIntent(contentIntent);

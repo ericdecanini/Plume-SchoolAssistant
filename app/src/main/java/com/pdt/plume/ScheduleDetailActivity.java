@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
@@ -11,15 +13,16 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.util.Log;
@@ -28,8 +31,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -58,6 +62,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     // Constantly used variables
     String LOG_TAG = ScheduleDetailActivity.class.getSimpleName();
     Utility utility = new Utility();
+    Handler handler = new Handler();
 
     // UI Variables
     private Menu mActionMenu;
@@ -91,23 +96,101 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     TaskAdapter mTasksAdapter;
     OccurrenceTimePeriodAdapter mPeriodsAdapter;
 
-    ShareActionProvider mShareActionProvider;
+    // Transition Utensils
+    private View mRevealView;
+    private View mRevealBackgroundView;
+    private View mRevealView2;
+    private View mRevealBackgroundView2;
+    private AppBarLayout mToolbar;
+
+    private void executeEnterTransition() {
+        mToolbar = (AppBarLayout) findViewById(R.id.appbar);
+        final ImageView tempView = (ImageView) findViewById(R.id.temp_icon);
+
+        // Explode the icon into the circle reveal
+        mRevealView2 = findViewById(R.id.reveal2);
+        mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+
+        Animator animator = ViewAnimationUtils.createCircularReveal(
+                mRevealView2,
+                tempView.getWidth() / 2,
+                tempView.getHeight() / 2, 0,
+                tempView.getWidth());
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRevealView2.setBackgroundColor(mPrimaryColor);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mRevealView2.setVisibility(View.GONE);
+                mRevealBackgroundView2.setVisibility(View.GONE);
+            }
+        });
+
+        if (mFirebaseUser == null)
+        animator.setStartDelay(290);
+        else animator.setStartDelay(0);
+        animator.setDuration(100);
+        animator.start();
+
+        // Play the animation for the rest of the toolbar
+        mRevealView = findViewById(R.id.reveal);
+        mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+        Animator animator2 = ViewAnimationUtils.createCircularReveal(
+                mRevealView,
+                tempView.getWidth() / 2 + ((int) tempView.getX()),
+                tempView.getHeight() / 2 + ((int) tempView.getY()), 0,
+                mToolbar.getWidth());
+
+        animator2.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRevealView.setBackgroundColor(mPrimaryColor);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                findViewById(R.id.collapsingToolbar).setBackgroundColor(mPrimaryColor);
+                mRevealView.setVisibility(View.GONE);
+                mRevealBackgroundView.setVisibility(View.GONE);
+            }
+        });
+
+        mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        if (mFirebaseUser == null)
+            animator2.setStartDelay(300);
+        else animator2.setStartDelay(0);
+        animator2.setDuration(300);
+        animator2.start();
+        mRevealView.setVisibility(View.VISIBLE);
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Set enter transition and window features
-        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-        getWindow().setEnterTransition(new Fade());
-        setContentView(R.layout.activity_schedule_detail);
-
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser != null)
             mUserId = mFirebaseUser.getUid();
+
+        // Set enter transition and window features
+        requestWindowFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        setContentView(R.layout.activity_schedule_detail);
+        final String icon = getIntent().getStringExtra("icon");
+        ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
 
         // Get references to the UI elements
         final TextView teacherTextview = (TextView) findViewById(R.id.teacher);
@@ -141,6 +224,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     if (mFirebaseUser != null)
                         intent.putExtra("id", taskFirebaseIDs.get(position));
                     else intent.putExtra("_ID", taskIDs.get(position));
+                    intent.putExtra("icon", mTasksList.get(position).taskIcon);
                     startActivity(intent);
                 }
             });
@@ -151,7 +235,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             periodListview.setAdapter(mPeriodsAdapter);
 
             if (mFirebaseUser != null) {
-                // Get the data from Firebase
+                // Get the key data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes").child(title);
                 classRef.addValueEventListener(new ValueEventListener() {
@@ -397,10 +481,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                             mainColour = Color.parseColor("#424242");
                                         else {
                                             // Set the action bar colour according to the theme
-                                            mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                                    getResources().getColor(R.color.colorPrimary))) ;
-                                            mainColour = palette.getVibrantColor(mPrimaryColor);
-                                            Log.v(LOG_TAG, "Primary colour set to " + String.format("#%06X", 0xFFFFFF & mPrimaryColor));
+                                            mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                                    getResources().getColor(R.color.colorPrimary)));
                                         }
 
                                         mPrimaryColor = mainColour;
@@ -412,6 +494,16 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
                                         collapsingToolbar.setBackgroundColor(mPrimaryColor);
+                                        ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
+                                        if (viewTreeObserver.isAlive()) {
+                                            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                                @Override
+                                                public void onGlobalLayout() {
+                                                    executeEnterTransition();
+                                                    collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                                }
+                                            });
+                                        }
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                             getWindow().setStatusBarColor(mDarkColor);
                                         }
@@ -527,11 +619,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 mainColour = Color.parseColor("#424242");
                             else {
                                 // Set the action bar colour according to the theme
-                                mPrimaryColor = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                        getResources().getColor(R.color.colorPrimary))) ;
-                                mainColour = palette.getVibrantColor(mPrimaryColor);
+                                mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                        getResources().getColor(R.color.colorPrimary)));
                             }
 
+                            mPrimaryColor = mainColour;
                             float[] hsv = new float[3];
                             int color = mainColour;
                             Color.colorToHSV(color, hsv);
@@ -540,6 +632,16 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
                             mDarkColor = Color.HSVToColor(hsv);
                             collapsingToolbar.setBackgroundColor(mPrimaryColor);
+                            ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
+                            if (viewTreeObserver.isAlive()) {
+                                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                    @Override
+                                    public void onGlobalLayout() {
+                                        executeEnterTransition();
+                                        collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                    }
+                                });
+                            }
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 getWindow().setStatusBarColor(mDarkColor);
                             }
@@ -562,13 +664,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         notesList = (ListView) findViewById(R.id.schedule_detail_notes_list);
         final ArrayList<String> notesArray = new ArrayList<>();
 
-        if (notesArray.size() != 0) {
-            mNotesAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notesArray);
-            notesList.setAdapter(mNotesAdapter);
-            notesList.setOnItemClickListener(addNoteItemClickListener());
-            notesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            notesList.setMultiChoiceModeListener(new NotesModeCallback());
-        }
+
+        mNotesAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notesArray);
+        notesList.setAdapter(mNotesAdapter);
+        notesList.setOnItemClickListener(addNoteItemClickListener());
+        notesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        notesList.setMultiChoiceModeListener(new NotesModeCallback());
+
 
         if (mFirebaseUser != null) {
             // Get the data from Firebase
@@ -577,7 +679,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             notesRef.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String classTitle = dataSnapshot.child("class").getValue(String.class);
+                    String classTitle = dataSnapshot.child("scheduletitle").getValue(String.class);
+                    Log.v(LOG_TAG, "ClassTitle: " + classTitle + " Title: " + title);
                     if (classTitle.equals(title)) {
                         notesArray.add(dataSnapshot.getKey());
                         mNotesAdapter.notifyDataSetChanged();

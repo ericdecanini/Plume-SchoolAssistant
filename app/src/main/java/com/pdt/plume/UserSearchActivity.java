@@ -97,6 +97,9 @@ public class UserSearchActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (charSequence.length() == 0) {
                     clearButton.setVisibility(View.GONE);
+                    searchResults.clear();
+                    searchResultIDs.clear();
+                    adapter.notifyDataSetChanged();
                 }
                 else {
                     clearButton.setVisibility(View.VISIBLE);
@@ -143,19 +146,19 @@ public class UserSearchActivity extends AppCompatActivity {
 
     }
 
-    private void ASyncUserSearch(String text)  {
+    private void ASyncUserSearch(final String text)  {
         // Query a list by the entered text as the nickname
         searchResults.clear();
         searchResultIDs.clear();
-        Query queryRef = mDatabase.child("users").orderByChild("nickname").equalTo(text);
+        Query queryRef = mDatabase.child("users").orderByChild("nickname").startAt(text);
         queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child: dataSnapshot.getChildren()) {
-
                     // Get the data and add them as a new list object
                     String nicknameResult = child.child("nickname").getValue(String.class);
                     String iconResultUri = child.child("icon").getValue(String.class);
+                    if (nicknameResult.toLowerCase().startsWith(text.toLowerCase()))
                     searchResults.add(new Peer(iconResultUri, nicknameResult));
                     searchResultIDs.add(child.getRef().getKey());
                 }

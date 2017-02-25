@@ -5,6 +5,11 @@
     <color name="colorAccent">#00C853</color>
     <color name="backgroundColor">#FAFAFA</color>
 
+    <color name="unreadBadgeColor1">#D32F2F</color>
+    <color name="unreadBadgeColor2">#C62828</color>
+    <color name="unreadBadgeColor3">#B71C1C</color>
+
+
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="gray_50">#FAFAFA</color>

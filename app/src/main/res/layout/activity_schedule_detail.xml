@@ -3,13 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/root_layout"
     android:background="@color/backgroundColor"
     tools:context="com.pdt.plume.ScheduleDetailFragment">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:transitionName="@string/transition_schedule"
         android:layout_height="192dp"
         android:fitsSystemWindows="true"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -22,6 +22,22 @@
             app:contentScrim="@color/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
+            <View
+                android:id="@+id/revealBackground"
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
+
+            <View
+                android:id="@+id/reveal"
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
+
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -31,6 +47,24 @@
         </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
+
+    <com.pdt.plume.CircularImageView
+        android:id="@+id/temp_icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginLeft="16dp"
+        android:transitionName="@string/transition_schedule"
+        android:minHeight="48dp"
+        android:minWidth="48dp" />
+
+    <View
+        android:id="@+id/reveal2"
+        android:layout_marginTop="48dp"
+        android:layout_marginLeft="16dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:paddingTop="56dp" />
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"

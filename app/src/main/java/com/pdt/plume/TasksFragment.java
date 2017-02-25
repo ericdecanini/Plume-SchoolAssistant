@@ -255,7 +255,7 @@ public class TasksFragment extends Fragment {
                     } else {
                         intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
                     }
-
+                    intent.putExtra("icon", mTasksList.get(position).taskIcon);
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         // Shared element transition

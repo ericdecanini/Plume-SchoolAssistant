@@ -1,5 +1,6 @@
 package com.pdt.plume;
 
+import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -505,9 +506,19 @@ public class ClassesActivity extends AppCompatActivity {
                 if (mFirebaseUser != null) {
                     // Query from Firebase
                     String title = mScheduleList.get(position).scheduleLesson;
+                    String icon = mScheduleList.get(position).scheduleIcon;
                     Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                     intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
-                    startActivity(intent);
+                    intent.putExtra("icon", icon);
+
+                    // Add a transition if the device is Lollipop or above
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        // Shared element transition
+                        View iconView = view.findViewById(R.id.schedule_icon);
+                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                (ClassesActivity.this, iconView, iconView.getTransitionName()).toBundle();
+                        startActivity(intent, bundle);
+                    } else startActivity(intent);
                 } else {
                     // Query from SQLite
                     DbHelper dbHelper = new DbHelper(ClassesActivity.this);
@@ -515,7 +526,16 @@ public class ClassesActivity extends AppCompatActivity {
                     if (cursor.moveToPosition(position)) {
                         Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                         intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
-                        startActivity(intent);
+                        intent.putExtra("icon", cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)));
+
+                        // Add a transition if the device is Lollipop or above
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                            // Shared element transition
+                            View iconView = view.findViewById(R.id.schedule_icon);
+                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                    (ClassesActivity.this, iconView, iconView.getTransitionName()).toBundle();
+                            startActivity(intent, bundle);
+                        } else startActivity(intent);
                     } else {
                         Log.w(LOG_TAG, "Error getting title of selected item");
                     }

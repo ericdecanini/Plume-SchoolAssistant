@@ -54,6 +54,16 @@ public class RequestsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_requests);
 
+        // Check if the user is logged in
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            return;
+        }
+
+
         // Initialise the progress bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
         spinner.setVisibility(View.VISIBLE);
@@ -65,6 +75,25 @@ public class RequestsActivity extends AppCompatActivity {
         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
@@ -73,10 +102,6 @@ public class RequestsActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-
-        // Initialise Firebase
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
         // Inflate the list
         setRequestsListAdapater();

@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -154,11 +155,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         // Initialise the Navigation View and set its ItemClickListener
+        // and then set its unread counter based on the number of Peer Requests
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (navigationView != null)
+        if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
 
-        float sw = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels) / getResources().getDisplayMetrics().density;
+            if (mFirebaseUser != null) {
+                DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mFirebaseUser.getUid()).child("requets");
+                requestsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        long childrenCount = dataSnapshot.getChildrenCount();
+                        setMenuCounter(R.id.nav_requests, ((int) childrenCount));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }
 
         // Start the class notification service
         if (!notificationServiceIsRunning) {
@@ -413,6 +431,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Intent intent = new Intent(this, Intro.class);
         startActivity(intent);
+    }
+
+    // Check for any  peer requests and set it in the navigation view
+    private void setMenuCounter(@IdRes int itemId, int count) {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        TextView view = (TextView) navigationView.getMenu().findItem(itemId).getActionView();
+        view.setText(count > 0 ? String.valueOf(count) : null);
+        if (count == 0)
+            view.setVisibility(View.GONE);
+        else view.setVisibility(View.VISIBLE);
     }
 
     public void initTabs(){

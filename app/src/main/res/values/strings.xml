@@ -76,6 +76,7 @@
     <string name="nav_classes">Classes</string>
     <string name="nav_completedTasks">Completed tasks</string>
     <string name="nav_people">People</string>
+    <string name="nav_requests">Requests</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
     <string name="nav_about">About Plume - Academy Assistant</string>
@@ -144,7 +145,7 @@
     <string name="schedule_detail_notes_title">Notes</string>
     <string name="schedule_detail_notes_add">Add note</string>
     <string name="schedule_detail_tasks_title">Tasks</string>
-    
+
     <string name="schedule_detail_add_task">Add task to %1%s</string>
     <string name="schedule_detail_add_note">Add a note</string>
 
@@ -484,7 +485,7 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.3.1 Beta</string>
+    <string name="Version">Version 0.3.2 Beta</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -528,6 +529,7 @@
     <string name="qrScanPrompt">Scan a peer\'s QR code</string>
     <string name="nice_try_title">Nice try</string>
     <string name="nice_try_message">If you devour yourself whole, will you grow twice as big or completely disappear?</string>
+    <string name="user_search">user_search</string>
 
     <!--
     PEER PROFILE ACTIVITY STRINGS

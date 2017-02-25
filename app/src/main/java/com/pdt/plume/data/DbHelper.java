@@ -728,7 +728,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public boolean insertTask(String title, String classTitle, String type,
+    public long insertTask(String title, String classTitle, String type,
                               String description, String attachment,
                               float dueDate, float reminderdate, float remindertime,
                               String icon, String picture, boolean completed) {
@@ -765,11 +765,10 @@ public class DbHelper extends SQLiteOpenHelper {
             contentValues.put(TasksEntry.COLUMN_ICON, icon);
             contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
             contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
-            long insertTask = db.insert(TasksEntry.TABLE_NAME, null, contentValues);
-            Log.v(LOG_TAG, "Insert Task Result: " + insertTask);
+            return db.insert(TasksEntry.TABLE_NAME, null, contentValues);
         }
 
-        return true;
+        return -1;
     }
 
     public boolean updateTaskItem(Integer id, String title, String classTitle, String type,

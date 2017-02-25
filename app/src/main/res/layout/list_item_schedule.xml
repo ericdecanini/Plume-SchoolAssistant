@@ -28,7 +28,7 @@
             android:textColor="@color/black_0.87"
             android:layout_marginLeft="8dp"
             android:layout_gravity="center_vertical"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
     </LinearLayout>
 
     <LinearLayout

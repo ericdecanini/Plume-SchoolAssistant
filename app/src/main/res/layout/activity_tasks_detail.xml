@@ -12,7 +12,6 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="192dp"
-        android:transitionName="@string/transition_task"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
@@ -23,6 +22,22 @@
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <View
+                android:id="@+id/revealBackground"
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
+
+            <View
+                android:id="@+id/reveal"
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
 
             <TextView
                 android:id="@+id/task_detail_timer"
@@ -43,7 +58,6 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
                 app:layout_collapseMode="pin" />
 
             <TextView
@@ -76,6 +90,24 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <com.pdt.plume.CircularImageView
+        android:id="@+id/temp_icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginLeft="16dp"
+        android:transitionName="@string/transition_task"
+        android:minHeight="48dp"
+        android:minWidth="48dp" />
+
+    <View
+        android:id="@+id/reveal2"
+        android:layout_marginTop="48dp"
+        android:layout_marginLeft="16dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:paddingTop="56dp" />
+
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -97,7 +129,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:textColor="@color/colorPrimary"
-                    android:text="@string/mark_as_undone"
+                    android:text="@string/mark_as_done"
                     android:textSize="14sp"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"/>
                 <View

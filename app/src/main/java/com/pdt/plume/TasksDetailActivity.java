@@ -1,5 +1,7 @@
 package com.pdt.plume;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -30,8 +33,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,6 +96,79 @@ public class TasksDetailActivity extends AppCompatActivity {
     FirebaseUser mFirebaseUser;
     String mUserId;
 
+    // Transition Utensils
+    private View mRevealView;
+    private View mRevealBackgroundView;
+    private View mRevealView2;
+    private View mRevealBackgroundView2;
+    private AppBarLayout mToolbar;
+
+    private void executeEnterTransition() {
+        mToolbar = (AppBarLayout) findViewById(R.id.appbar);
+        final ImageView tempView = (ImageView) findViewById(R.id.temp_icon);
+
+        // Explode the icon into the circle reveal
+        mRevealView2 = findViewById(R.id.reveal2);
+        mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+
+        Animator animator = ViewAnimationUtils.createCircularReveal(
+                mRevealView2,
+                tempView.getWidth() / 2,
+                tempView.getHeight() / 2, 0,
+                tempView.getWidth());
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRevealView2.setBackgroundColor(mPrimaryColor);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mRevealView2.setVisibility(View.GONE);
+                mRevealBackgroundView2.setVisibility(View.GONE);
+            }
+        });
+
+        animator.setStartDelay(290);
+        animator.setDuration(100);
+        animator.start();
+
+        // Play the animation for the rest of the toolbar
+        mRevealView = findViewById(R.id.reveal);
+        mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+        Animator animator2 = ViewAnimationUtils.createCircularReveal(
+                mRevealView,
+                tempView.getWidth() / 2 + ((int) tempView.getX()),
+                tempView.getHeight() / 2 + ((int) tempView.getY()), 0,
+                mToolbar.getWidth());
+
+        animator2.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRevealView.setBackgroundColor(mPrimaryColor);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                findViewById(R.id.collapsingToolbar).setBackgroundColor(mPrimaryColor);
+                mRevealView.setVisibility(View.GONE);
+                mRevealBackgroundView.setVisibility(View.GONE);
+            }
+        });
+
+        mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        animator2.setStartDelay(300);
+        animator2.setDuration(300);
+        animator2.start();
+        mRevealView.setVisibility(View.VISIBLE);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +177,8 @@ public class TasksDetailActivity extends AppCompatActivity {
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setEnterTransition(new AutoTransition());
         setContentView(R.layout.activity_tasks_detail);
+        String icon = getIntent().getStringExtra("icon");
+        ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -134,15 +215,16 @@ public class TasksDetailActivity extends AppCompatActivity {
                 Log.v(LOG_TAG, "FirebaseID: " + firebaseID);
                 final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks").child(firebaseID);
-                taskRef.addValueEventListener(new ValueEventListener() {
+                taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.v(LOG_TAG, "Data Snapshot: " + dataSnapshot.getKey());
                         title = dataSnapshot.child("title").getValue(String.class);
+                        iconUri = dataSnapshot.child("icon").getValue(String.class);
                         subtitle = getString(R.string.format_subtitle,
                                 dataSnapshot.child("class").getValue(String.class),
                                 dataSnapshot.child("type").getValue(String.class));
                         description = dataSnapshot.child("description").getValue(String.class);
-                        iconUri = dataSnapshot.child("icon").getValue(String.class);
                         Object duedatemillis = dataSnapshot.child("duedate").getValue();
 
                         // Format a string for the duedate
@@ -166,6 +248,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                 DbHelper dbHelper = new DbHelper(this);
                 Cursor cursor;
                 if (intent.hasExtra("_ID")) {
+                    Log.v(LOG_TAG, "Task ID result: " + intent.getIntExtra("_ID", -1));
                     cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
                 } else if (FLAG_TASK_COMPLETED) cursor = dbHelper.getTaskData();
                 else cursor = dbHelper.getUncompletedTaskData();
@@ -302,21 +385,33 @@ public class TasksDetailActivity extends AppCompatActivity {
                     mainColour = Color.parseColor("#424242");
                 else {
                     // Set the action bar colour according to the theme
-                    mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
                     mainColour = palette.getVibrantColor(mPrimaryColor);
                 }
 
-
+                mPrimaryColor = mainColour;
                 float[] hsv = new float[3];
                 int color = mainColour;
                 Color.colorToHSV(color, hsv);
                 hsv[2] *= 0.8f; // value component
                 mDarkColor = Color.HSVToColor(hsv);
-                actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
+
+                ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
+                if (viewTreeObserver.isAlive()) {
+                    viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            executeEnterTransition();
+                            collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                    });
+                }
+
+//                actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                } else
-                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+//                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                } else {
+//                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     getWindow().setStatusBarColor(mDarkColor);
                 }
