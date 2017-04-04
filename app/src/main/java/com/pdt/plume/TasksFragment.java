@@ -6,10 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,10 +24,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +38,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
@@ -39,9 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class TasksFragment extends Fragment {
     // Constantly used variables
     String LOG_TAG = TasksFragment.class.getSimpleName();
@@ -128,8 +134,49 @@ public class TasksFragment extends Fragment {
                         Boolean completed = taskSnapshot.child("completed").getValue(Boolean.class);
                         if (completed == null)
                             completed = false;
+                        final Bitmap[] bitmap = {null};
+
+                        // Check if the task uses a custom icon stored online
+                        if (title == null)
+                            return;
+                        if (icon.equals("storage")) {
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            StorageReference iconsRef = storageRef.child(mUserId + "/tasks/" + taskSnapshot.getKey());
+
+                            // Download the image
+                            final long ONE_MEGABYTE = 1024 * 1024;
+                            iconsRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    // Handle successful download
+                                    bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                                    // Requery the tasks
+                                    ArrayList<Task> tempTasksList = mTasksList;
+                                    mTasksList.clear();
+                                    for (int i = 0; i < tempTasksList.size(); i++) {
+                                        String icon = tempTasksList.get(i).taskIcon;
+                                        String title = tempTasksList.get(i).taskTitle;
+                                        String sharer = tempTasksList.get(i).taskShared;
+                                        String taskClass = tempTasksList.get(i).taskClass;
+                                        String taskType = tempTasksList.get(i).taskType;
+                                        String description = tempTasksList.get(i).taskDescription;
+                                        float duedate = tempTasksList.get(i).taskDueDate;
+                                        mTasksList.add(new Task(icon, title, sharer, taskClass, taskType, description, "",
+                                                duedate, -1f, bitmap[0]));
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Handle unsuccessful download
+                                }
+                            });
+                        }
+
                         if (!completed && duedate != null) {
-                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f));
+                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
                         }
@@ -173,7 +220,6 @@ public class TasksFragment extends Fragment {
             mTasksList = dbHelper.getUncompletedTaskArray();
             spinner.setVisibility(View.GONE);
         }
-
         mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, mTasksList);
 
         // The header text view will only be visible if there is no items in the task adapter
@@ -226,8 +272,8 @@ public class TasksFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        if (tasksRef != null)
-            tasksRef.removeEventListener(tasksListener);
+//        if (tasksRef != null)
+//            tasksRef.removeEventListener(tasksListener);
     }
 
     public AdapterView.OnItemClickListener ItemClickListener() {
@@ -251,15 +297,17 @@ public class TasksFragment extends Fragment {
                     final Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
                     if (mFirebaseUser != null) {
                         intent.putExtra("id", FirebaseIdList.get(position));
-                        tasksRef.removeEventListener(tasksListener);
+//                        tasksRef.removeEventListener(tasksListener);
                     } else {
                         intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
                     }
                     intent.putExtra("icon", mTasksList.get(position).taskIcon);
+                    View icon = view.findViewById(R.id.task_icon2);
+                    if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
 
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
+                            && ((String) icon.getTag()).contains("com.pdt.plume")) {
                         // Shared element transition
-                        View icon = view.findViewById(R.id.task_icon);
                         Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity(), icon, icon.getTransitionName()).toBundle();
                         startActivity(intent, bundle);
                     } else startActivity(intent);
@@ -448,8 +496,9 @@ public class TasksFragment extends Fragment {
                 final String[] classTitle = new String[1];
                 final String[] classType = new String[1];
                 final String[] description = new String[1];
-                final String[] photo = new String[1];
+                final String[] photos = new String[1];
                 final String[] attachment = new String[1];
+                final ArrayList<String> photoList = new ArrayList<>();
                 final float[] dueDate = new float[1];
                 final float[] reminderDate = new float[1];
                 final float[] reminderTime = new float[1];
@@ -468,7 +517,6 @@ public class TasksFragment extends Fragment {
                             classTitle[0] = dataSnapshot.child("class").getValue(String.class);
                             classType[0] = dataSnapshot.child("type").getValue(String.class);
                             description[0] = dataSnapshot.child("description").getValue(String.class);
-                            photo[0] = dataSnapshot.child("photo").getValue(String.class);
                             attachment[0] = dataSnapshot.child("attachment").getValue(String.class);
                             dueDate[0] = dataSnapshot.child("duedate").getValue(Float.class);
 
@@ -478,7 +526,6 @@ public class TasksFragment extends Fragment {
                             intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
                             intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
                             intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
-                            intent.putExtra("photo", photo[0]);
                             intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
                             intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
                             intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);
@@ -515,8 +562,8 @@ public class TasksFragment extends Fragment {
                         title[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                         classTitle[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
                         classType[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
+                        photos[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
                         description[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-                        photo[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
                         attachment[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
                         dueDate[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
                         reminderDate[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
@@ -528,8 +575,8 @@ public class TasksFragment extends Fragment {
                         intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title[0]);
                         intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
                         intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
+                        intent.putExtra("photo", photos[0]);
                         intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
-                        intent.putExtra("photo", photo[0]);
                         intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
                         intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
                         intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);

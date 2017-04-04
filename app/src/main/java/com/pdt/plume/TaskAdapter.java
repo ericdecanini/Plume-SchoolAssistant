@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.media.Image;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import java.util.Calendar;
 public class TaskAdapter extends ArrayAdapter {
 
     // Constantly used variables
+    String LOG_TAG = TaskAdapter.class.getSimpleName();
     Utility utility = new Utility();
 
     // Staple mScheduleAdapter variables
@@ -41,6 +44,9 @@ public class TaskAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder = null;
 
+        // Create a new list item using the data passed into the mScheduleAdapter
+        Task task = data.get(position);
+
         // If the row hasn't been used by the mScheduleAdapter before
         // create a new row
         if(row == null)
@@ -51,7 +57,10 @@ public class TaskAdapter extends ArrayAdapter {
             // Get references to the View Holder's views
             // by searching the row for the UI element
             holder = new ViewHolder();
-            holder.icon = (ImageView)row.findViewById(R.id.task_icon);
+            if (task.taskIcon.equals("storage") || !task.taskIcon.contains("/art_"))
+                holder.icon = (ImageView) row.findViewById(R.id.task_icon2);
+            else holder.icon = (ImageView)row.findViewById(R.id.task_icon);
+            holder.icon.setTag(task.taskIcon);
             holder.title = (TextView)row.findViewById(R.id.task_title);
             holder.taskClass = (TextView) row.findViewById(R.id.task_class);
             holder.taskType = (TextView) row.findViewById(R.id.task_type);
@@ -66,16 +75,16 @@ public class TaskAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
-        // Create a new list item using the data passed into the mScheduleAdapter
-        Task task = data.get(position);
-
         // Set the UI elements contained in the View Holder
         // using data constructed in the Task class object
         Bitmap setImageBitmap = null;
+        if (task.customIcon == null)
         try {
             setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(task.taskIcon));
         } catch (IOException e) {
             e.printStackTrace();
+        } else {
+            setImageBitmap = task.customIcon;
         }
         holder.icon.setImageBitmap(setImageBitmap);
         holder.title.setText(task.taskTitle);

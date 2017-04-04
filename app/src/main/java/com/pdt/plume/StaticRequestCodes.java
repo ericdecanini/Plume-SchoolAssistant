@@ -14,4 +14,10 @@ public class StaticRequestCodes {
     public static final int REQUEST_SCAN_QR_CODE = 8;
     public static final int REQUEST_NOTIFICATION_ID = 9;
 
+    // NewTaskActivity
+    public static final int REQUEST_NOTIFICATION_ALARM = 10;
+    public static final int REQUEST_NOTIFICATION_INTENT = 11;
+    public static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 12;
+    public static final int REQUEST_PERMISSION_CAMERA = 13;
+
 }

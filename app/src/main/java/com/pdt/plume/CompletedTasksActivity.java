@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -223,10 +224,16 @@ public class CompletedTasksActivity extends AppCompatActivity {
                 int remindertime = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
                 String icon = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
                 String picture = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
-                dbHelper.updateTaskItem(_ID, title, classTitle, classType,
+                String[] pictureString = picture.split("#seperate#");
+                ArrayList<Uri> pictureStringList = new ArrayList<>();
+                for (int i = 0; i < pictureString.length; i++) {
+                    pictureStringList.add(Uri.parse(pictureString[i]));
+                }
+
+                dbHelper.updateTaskItem(this, _ID, title, classTitle, classType,
                         description, attachment,
                         duedate, reminderdate, remindertime,
-                        icon, picture, false);
+                        icon, pictureStringList, false);
                 cursor.close();
         }
             // Refresh the mScheduleAdapter so the restored task is no longer displayed

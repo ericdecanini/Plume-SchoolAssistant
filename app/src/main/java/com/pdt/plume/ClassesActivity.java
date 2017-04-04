@@ -57,9 +57,9 @@ import java.util.List;
 
 import static android.R.attr.id;
 import static android.os.Build.ID;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class ClassesActivity extends AppCompatActivity {
     // Constantly used variables
@@ -568,7 +568,7 @@ public class ClassesActivity extends AppCompatActivity {
                     String room = dataSnapshot.child("room").getValue(String.class);
                     if (icon != null)
                         mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
-                                teacher, room, " ", " ", ""));
+                                teacher, room, " ", " ", "", null));
 
 
                     mScheduleAdapter.notifyDataSetChanged();

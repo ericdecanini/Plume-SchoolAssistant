@@ -1,6 +1,8 @@
 package com.pdt.plume;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 public class Schedule {
@@ -12,6 +14,7 @@ public class Schedule {
     public String scheduleRoom;
     public String scheduleTimeIn;
     public String scheduleTimeOut;
+    public Bitmap scheduleCustomIcon;
 
     public Object extra;
 
@@ -21,12 +24,14 @@ public class Schedule {
 
     // The global variables are accessed by the mScheduleAdapter
     // Set them using the input parameters
-    public Schedule(Context context, String icon, String lesson, String teacher, String room, String timeIn, String timeOut, String period) {
+    public Schedule(Context context, String icon, String lesson, String teacher, String room,
+                    String timeIn, String timeOut, String period, @Nullable Bitmap customIcon) {
         super();
         this.scheduleIcon = icon;
         this.scheduleLesson = lesson;
         this.scheduleTeacher = teacher;
         this.scheduleRoom = room;
+        this.scheduleCustomIcon = customIcon;
 
         // Find out the basis of the item based on the timeIn and period Strings
         // and set the in and out strings based on that

@@ -23,6 +23,14 @@
     <item
         android:id="@+id/notification"
         android:orderInCategory="25"
+        android:visible="false"
         android:title="Push Notification"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/storage"
+        android:orderInCategory="10"
+        android:visible="false"
+        android:title="Storage Test"
         app:showAsAction="never" />
 </menu>

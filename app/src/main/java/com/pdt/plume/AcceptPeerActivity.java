@@ -269,7 +269,7 @@ public class AcceptPeerActivity extends AppCompatActivity
                     // Inflate the listview
                     for (int i = 0; i < matchedClassesList.size(); i++) {
                         matchedClassesScheduleList.add(new Schedule(AcceptPeerActivity.this, matchedClassesList.get(i).getString("icon"),
-                                matchedClassesList.get(i).getString("title"), "", "", "", "", ""));
+                                matchedClassesList.get(i).getString("title"), "", "", "", "", "", null));
                     }
                     adapter = new ScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_schedule_with_checkbox, matchedClassesScheduleList);
                     listView.setAdapter(adapter);
@@ -294,11 +294,11 @@ public class AcceptPeerActivity extends AppCompatActivity
             if (matchedClasses.get(i).getString("title").equals("null")) {
                 matchedClass.putString("title", mismatchedClass.getString("title") + "%0513%" + "cross");
                 matchedClassesScheduleList.add(new Schedule(this, matchedClass.getString("icon"),
-                        matchedClass.getString("title"), "", "", "", "", ""));
+                        matchedClass.getString("title"), "", "", "", "", "", null));
             } else {
                 matchedClassesList.add(matchedClass);
                 matchedClassesScheduleList.add(new Schedule(this, matchedClass.getString("icon"), matchedClass.getString("title"),
-                        "", "", "", "", ""));
+                        "", "", "", "", "", null));
             }
         }
         adapter.notifyDataSetChanged();
@@ -421,7 +421,7 @@ public class AcceptPeerActivity extends AppCompatActivity
                                 matchedClassesList.get(i).getString("title"),
                                 matchedClassesList.get(i).getString("teacher"),
                                 matchedClassesList.get(i).getString("room"),
-                                "", "", ""));
+                                "", "", "", null));
                         adapter.notifyDataSetChanged();
                     }
                 }

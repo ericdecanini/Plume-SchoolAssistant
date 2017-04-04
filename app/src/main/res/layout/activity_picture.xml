@@ -1,48 +1,36 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:background="#000000"
-tools:context="com.pdt.plume.PictureActivity">
-
-<!-- The primary full-screen view. This can be replaced with whatever view
-     is needed to present your content, e.g. VideoView, SurfaceView,
-     TextureView, etc. -->
-    <ImageView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:transitionName="@string/transition_picture"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
-
-<!-- This FrameLayout insets its children based on system windows using
-     android:fitsSystemWindows. -->
-<FrameLayout
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/black_0.87"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:id="@+id/master_layout"
+    tools:context="com.pdt.plume.PictureActivity">
 
-    <LinearLayout
-        android:id="@+id/fullscreen_content_controls"
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
         android:visibility="gone"
-        style="?metaButtonBarStyle"
-        android:layout_width="match_parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:background="@color/black_overlay"
-        android:orientation="horizontal"
-        tools:ignore="UselessParent">
+        android:src="@drawable/ic_arrow_back_white"/>
 
-        <Button
-            android:id="@+id/dummy_button"
-            style="?metaButtonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dummy_button" />
+    <View
+        android:id="@+id/scrim"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@drawable/shape_scrim_top"
+        android:backgroundTint="@color/gray_900" />
 
-    </LinearLayout>
-</FrameLayout>
-
-</FrameLayout>
-
+    <com.pdt.plume.TouchImageView
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:transitionName="transition"
+        android:scaleType="center"/>
+    
+</RelativeLayout>

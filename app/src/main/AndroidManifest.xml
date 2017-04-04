@@ -34,15 +34,13 @@
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.pdt.plume.permission.C2D_MESSAGE" />
-    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.READ_DATABASE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
-    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <permission
         android:name="com.pdt.plume.permission.C2D_MESSAGE"
@@ -80,13 +78,21 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider
+            android:name=".ContentProvider"
+            android:authorities="de.pdt.plume"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:label="ContentProvider"
+            android:readPermission="de.pdt.plume.READ"
+            android:writePermission="de.pdt.plume.WRITE" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -125,9 +131,7 @@
             android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
-
                 <data android:mimeType="*/*" />
-
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
@@ -171,12 +175,6 @@
         <receiver android:name=".TaskNotificationPublisher" />
 
         <service android:name=".services.ScheduleNotificationService" />
-
-        <activity
-            android:name=".PictureActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:parentActivityName=".TasksDetailActivity"
-            android:theme="@style/FullscreenTheme" />
 
         <!-- <receiver -->
         <!-- android:name=".ScheduleWidgetProvider" -->
@@ -234,7 +232,7 @@
         <activity
             android:name=".UserSearchActivity"
             android:parentActivityName=".PeopleActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".AddPeerActivity"
             android:parentActivityName=".UserSearchActivity"
@@ -246,6 +244,20 @@
         <activity
             android:name=".PeerProfileActivity"
             android:parentActivityName=".PeersActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".PictureActivity"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
 

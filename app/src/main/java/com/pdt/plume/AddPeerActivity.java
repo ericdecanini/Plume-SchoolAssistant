@@ -318,7 +318,7 @@ public class AddPeerActivity extends AppCompatActivity {
                 String teacher = dataSnapshot.child("teacher").getValue(String.class);
                 String room = dataSnapshot.child("room").getValue(String.class);
 
-                mScheduleList.add(new Schedule(AddPeerActivity.this, icon, title, teacher, room, "", "", ""));
+                mScheduleList.add(new Schedule(AddPeerActivity.this, icon, title, teacher, room, "", "", "", null));
                 mScheduleAdapter.notifyDataSetChanged();
             }
             @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}

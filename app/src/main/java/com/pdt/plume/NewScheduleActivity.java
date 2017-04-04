@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +47,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -53,18 +56,26 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static android.app.Activity.RESULT_OK;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class NewScheduleActivity extends AppCompatActivity
         implements TimePickerDialog.OnTimeSetListener,
@@ -158,7 +169,6 @@ public class NewScheduleActivity extends AppCompatActivity
     // Intent Data
     boolean INTENT_FLAG_EDIT = false;
     public static boolean isEdited;
-    int editId = -1;
     boolean STARTED_BY_NEWTASKACTIVITY = false;
 
     // Interface Data
@@ -177,6 +187,7 @@ public class NewScheduleActivity extends AppCompatActivity
     // Flags
     boolean isTablet;
     boolean FLAG_EDIT;
+    boolean customIconUploaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -432,7 +443,11 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Perform Database/Firebase Insertion
                 if (mFirebaseUser != null)
                     insertScheduleDataIntoFirebase();
-                else insertScheduleDataIntoDatabase();
+                else try {
+                    insertScheduleDataIntoDatabase();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 // Update any widgets
                 Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
@@ -464,6 +479,8 @@ public class NewScheduleActivity extends AppCompatActivity
             Uri fullPhotoUri = data.getData();
             Bitmap setImageBitmap = null;
 
+            iconUri = fullPhotoUri.toString();
+
             try {
                 setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), fullPhotoUri);
             } catch (IOException e) {
@@ -471,6 +488,7 @@ public class NewScheduleActivity extends AppCompatActivity
             }
 
             fieldIcon.setImageBitmap(setImageBitmap);
+            customIconUploaded = true;
         }
     }
 
@@ -479,7 +497,7 @@ public class NewScheduleActivity extends AppCompatActivity
         return basis + ":" + weekType + ":" + classDays;
     }
 
-    private boolean insertScheduleDataIntoFirebase() {
+private boolean insertScheduleDataIntoFirebase() {
         // Get the input from the fields
         title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
@@ -490,7 +508,9 @@ public class NewScheduleActivity extends AppCompatActivity
                 .child("users").child(mUserId).child("classes").child(title);
         classRef.child("teacher").setValue(teacher);
         classRef.child("room").setValue(room);
-        classRef.child("icon").setValue(iconUri);
+        if (customIconUploaded)
+            classRef.child("icon").setValue("storage");
+        else classRef.child("icon").setValue(iconUri);
 
         // Set the listed values of the class
         if (occurrenceTimePeriodList.size() != 0) {
@@ -519,15 +539,72 @@ public class NewScheduleActivity extends AppCompatActivity
             classRef.child("periods").removeValue();
         }
 
+        // Upload the custom item to Firebase Storage if set
+        if (customIconUploaded) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            StorageReference iconRef = storageRef.child(mUserId + "/classes/" + title);
+
+            fieldIcon.setDrawingCacheEnabled(true);
+            fieldIcon.buildDrawingCache();
+            Bitmap bitmap = fieldIcon.getDrawingCache();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
+
+            UploadTask uploadTask = iconRef.putBytes(data);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // TODO: Handle unsuccessful uploads
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // TODO: Handle successful upload if any action is required
+                }
+            });
+        }
+
         return true;
     }
 
-    private boolean insertScheduleDataIntoDatabase() {
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
+    }
+
+    private boolean insertScheduleDataIntoDatabase() throws IOException {
         // Store data from UI input fields to variables to prepare them for insertion into the database
         String title = fieldTitle.getText().toString();
         this.title = title;
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
+
+        // Copy the icon into a seperate file if custom
+        // Copy the icon into a seperate file if custom
+        Uri imageUri = Uri.parse(iconUri);
+        InputStream inputStream = getContentResolver().openInputStream(imageUri);
+        String filename = imageUri.getLastPathSegment();
+        byte[] data = getBytes(inputStream);
+        File file = new File(getFilesDir(), filename);
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(data);
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        iconUri = Uri.fromFile(file).toString();
+        Log.v(LOG_TAG, "Icon Uri: " + iconUri);
 
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
@@ -898,6 +975,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
                         + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
                 iconUri = drawableUri.toString();
+                customIconUploaded = false;
                 dialog.dismiss();
             }
         });
@@ -1198,8 +1276,13 @@ public class NewScheduleActivity extends AppCompatActivity
                 showBuiltInIconsDialog();
                 break;
             case 1:
-                if (mFirebaseUser != null)
-                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                if (mFirebaseUser != null) {
+//                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    if (intent.resolveActivity(getPackageManager()) != null)
+                        startActivityForResult(intent, REQUEST_IMAGE_GET);
+                }
                 else {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");

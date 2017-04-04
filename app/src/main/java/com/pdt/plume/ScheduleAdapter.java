@@ -3,6 +3,7 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -49,6 +50,9 @@ public class ScheduleAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder = null;
 
+        // Create a new list item using the data passed into the mScheduleAdapter
+        final Schedule schedule = data.get(position);
+
         // If the row hasn't been used by the mScheduleAdapter before
         // create a new row
         if(row == null) {
@@ -58,7 +62,9 @@ public class ScheduleAdapter extends ArrayAdapter {
             // Get references to the View Holder's views
             // by searching the row for the UI element
             holder = new ViewHolder();
-            holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
+            if (schedule.scheduleCustomIcon != null || !schedule.scheduleIcon.contains("art_"))
+                holder.icon = (ImageView)row.findViewById(R.id.schedule_icon2);
+            else holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
             holder.lesson = (TextView)row.findViewById(R.id.schedule_lesson);
             holder.teacher = (TextView)row.findViewById(R.id.schedule_teacher);
             holder.room = (TextView)row.findViewById(R.id.schedule_room);
@@ -73,20 +79,14 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
-        // Create a new list item using the data passed into the mScheduleAdapter
-        final Schedule schedule = data.get(position);
-
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
-        Bitmap setImageBitmap = null;
-        Log.v(LOG_TAG, "Schedule Icon for " + schedule.scheduleLesson + ": " + schedule.scheduleIcon);
-        try {
-            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(schedule.scheduleIcon));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if (schedule.scheduleCustomIcon == null || !schedule.scheduleIcon.contains("com.pdt.plume")) {
+            Uri uri = Uri.parse(schedule.scheduleIcon);
+            Log.v(LOG_TAG, "Uri is " + uri);
+            holder.icon.setImageURI(uri);
+        } else holder.icon.setImageBitmap(schedule.scheduleCustomIcon);
         holder.lesson.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
-        holder.icon.setImageBitmap(setImageBitmap);
         if (schedule.scheduleLesson.contains("%0513%")) {
             if (schedule.scheduleLesson.split("%0513%")[1].equals("cross")) {
                 holder.lesson.setText(schedule.scheduleLesson.split("%0513%")[0]);

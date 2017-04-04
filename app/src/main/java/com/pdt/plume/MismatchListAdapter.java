@@ -85,7 +85,7 @@ public class MismatchListAdapter extends ArrayAdapter {
                         String icon = classSnapshot.child("icon").getValue(String.class);
                         String teacher = classSnapshot.child("teacher").getValue(String.class);
                         String room = classSnapshot.child("room").getValue(String.class);
-                        classesList.add(new Schedule(context, icon, title, teacher, room, "", "", ""));
+                        classesList.add(new Schedule(context, icon, title, teacher, room, "", "", "", null));
 
                         classTitles.add(title);
                         classIcons.add(icon);

@@ -143,7 +143,7 @@ public class PeerProfileActivity extends AppCompatActivity {
                 String title = dataSnapshot.getKey();
                 String iconUri = dataSnapshot.getValue(String.class);
                 Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,
-                        "", "", "", "", "");
+                        "", "", "", "", "", null);
                 schedule.addExtra(uid);
                 arrayList.add(schedule);
                 adapter.notifyDataSetChanged();

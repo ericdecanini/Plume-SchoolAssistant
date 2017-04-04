@@ -29,6 +29,7 @@
     <color name="tab_indicator_unselected">#B1C1CC</color>
 
     <color name="blue_600">#1E88E5</color>
+    <color name="facebook_blue">#3B5998</color>
 
     <color name="red_500">#F44336</color>
 
@@ -42,7 +43,7 @@
     <color name="black_overlay">#66000000</color>
 
     <color name="login_background">#1A74C9</color>
-    
+
     <!--
     Account intro
     -->

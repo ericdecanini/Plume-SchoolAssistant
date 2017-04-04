@@ -70,10 +70,10 @@ import java.util.Date;
 import java.util.List;
 
 import static android.os.Build.ID;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_MANAGE_DOCUMENTS;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_SCAN_QR_CODE;
 

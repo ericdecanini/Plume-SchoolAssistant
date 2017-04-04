@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,37 +12,57 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
+import android.transition.Transition;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -49,24 +70,38 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.journeyapps.barcodescanner.Util;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.services.RevisionTimerService;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+
+import static android.R.attr.bitmap;
+import static android.R.attr.radius;
+import static android.R.attr.width;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
     // Constantly used variables
-    String LOG_TAG = ScheduleDetailActivity.class.getSimpleName();
+    String LOG_TAG = TasksDetailActivity.class.getSimpleName();
     Utility utility = new Utility();
     ShareActionProvider mShareActionProvider;
+    private static boolean active = false;
 
     // Theme Variables
     int mPrimaryColor;
@@ -78,14 +113,16 @@ public class TasksDetailActivity extends AppCompatActivity {
     int id;
     String firebaseID;
     String title;
+    String classTitle;
+    String classType;
     String subtitle;
     String description;
+    long duedateValue;
     String duedate;
-    String attachment;
-    String photoPath;
-    Uri photoUri;
-    String attachmentPath;
     String iconUri;
+    ArrayList<Uri> photoUris = new ArrayList<>();
+
+
     TextView markAsDoneView;
 
     TextView fieldTimer;
@@ -103,9 +140,10 @@ public class TasksDetailActivity extends AppCompatActivity {
     private View mRevealBackgroundView2;
     private AppBarLayout mToolbar;
 
+    int i = 0;
+
     private void executeEnterTransition() {
         mToolbar = (AppBarLayout) findViewById(R.id.appbar);
-        final ImageView tempView = (ImageView) findViewById(R.id.temp_icon);
 
         // Explode the icon into the circle reveal
         mRevealView2 = findViewById(R.id.reveal2);
@@ -113,9 +151,9 @@ public class TasksDetailActivity extends AppCompatActivity {
 
         Animator animator = ViewAnimationUtils.createCircularReveal(
                 mRevealView2,
-                tempView.getWidth() / 2,
-                tempView.getHeight() / 2, 0,
-                tempView.getWidth());
+                mRevealBackgroundView2.getWidth() / 2,
+                mRevealBackgroundView2.getHeight() / 2, 0,
+                mRevealBackgroundView2.getWidth() / 3);
 
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -131,41 +169,45 @@ public class TasksDetailActivity extends AppCompatActivity {
             }
         });
 
-        animator.setStartDelay(290);
-        animator.setDuration(100);
+        animator.setDuration(123);
         animator.start();
 
         // Play the animation for the rest of the toolbar
         mRevealView = findViewById(R.id.reveal);
         mRevealBackgroundView = findViewById(R.id.revealBackground);
 
-        Animator animator2 = ViewAnimationUtils.createCircularReveal(
-                mRevealView,
-                tempView.getWidth() / 2 + ((int) tempView.getX()),
-                tempView.getHeight() / 2 + ((int) tempView.getY()), 0,
-                mToolbar.getWidth());
-
-        animator2.addListener(new AnimatorListenerAdapter() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
             @Override
-            public void onAnimationStart(Animator animation) {
-                mRevealView.setBackgroundColor(mPrimaryColor);
-            }
+            public void run() {
+                Animator animator2 = ViewAnimationUtils.createCircularReveal(
+                        mRevealView,
+                        mRevealBackgroundView2.getWidth() / 2 + ((int) mRevealBackgroundView2.getX()),
+                        mRevealBackgroundView2.getHeight() / 2 + ((int) mRevealBackgroundView2.getY()), 0,
+                        mToolbar.getWidth());
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
-                findViewById(R.id.collapsingToolbar).setBackgroundColor(mPrimaryColor);
-                mRevealView.setVisibility(View.GONE);
-                mRevealBackgroundView.setVisibility(View.GONE);
-            }
-        });
+                animator2.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mRevealView.setBackgroundColor(mPrimaryColor);
+                    }
 
-        mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-        animator2.setStartDelay(300);
-        animator2.setDuration(300);
-        animator2.start();
-        mRevealView.setVisibility(View.VISIBLE);
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                        findViewById(R.id.collapsingToolbar).setBackgroundColor(mPrimaryColor);
+                        mRevealView.setVisibility(View.GONE);
+                        mRevealBackgroundView.setVisibility(View.GONE);
+                    }
+                });
+
+                mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                animator2.setDuration(450);
+                animator2.start();
+                mRevealView.setVisibility(View.VISIBLE);
+            }
+        }, 0);
 
     }
 
@@ -177,8 +219,35 @@ public class TasksDetailActivity extends AppCompatActivity {
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         getWindow().setEnterTransition(new AutoTransition());
         setContentView(R.layout.activity_tasks_detail);
-        String icon = getIntent().getStringExtra("icon");
-        ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
+
+        // Add a listener to the shared transition
+        Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
+        sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                executeEnterTransition();
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(Transition transition) {
+
+            }
+        });
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -191,6 +260,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         final CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbar);
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle(getString(R.string.TASK));
         collapsingToolbar.setTitle("");
 
         // Set the mark as done button
@@ -212,29 +282,117 @@ public class TasksDetailActivity extends AppCompatActivity {
             if (mFirebaseUser != null) {
                 // Get the data from Firebase
                 firebaseID = intent.getStringExtra("id");
-                Log.v(LOG_TAG, "FirebaseID: " + firebaseID);
                 final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks").child(firebaseID);
                 taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.v(LOG_TAG, "Data Snapshot: " + dataSnapshot.getKey());
                         title = dataSnapshot.child("title").getValue(String.class);
                         iconUri = dataSnapshot.child("icon").getValue(String.class);
+                        classTitle = dataSnapshot.child("class").getValue(String.class);
+                        classType = dataSnapshot.child("type").getValue(String.class);
                         subtitle = getString(R.string.format_subtitle,
-                                dataSnapshot.child("class").getValue(String.class),
-                                dataSnapshot.child("type").getValue(String.class));
+                                classTitle, classType);
                         description = dataSnapshot.child("description").getValue(String.class);
                         Object duedatemillis = dataSnapshot.child("duedate").getValue();
+                        duedateValue = ((long) duedatemillis);
 
                         // Format a string for the duedate
                         Calendar c = Calendar.getInstance();
-//                        c.setTimeInMillis((long)duedatemillis);
+                        c.setTimeInMillis((long) duedatemillis);
                         duedate = utility.formatDateString(TasksDetailActivity.this, c.get(Calendar.YEAR),
                                 c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
+                        // Get the photo data
+                        long photoCount = dataSnapshot.child("photos").child("local").getChildrenCount();
+                        for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").child("local").getChildren()) {
+                            photoUris.add(Uri.parse(photoSnapshot.getValue(String.class)));
+                        }
+                        if (photoCount > 0) {
+                            // Add in the views for the photos
+                            for (int i = 0; i < photoUris.size(); i++) {
+                                int wh = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics()));
+                                LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+
+                                final CardView cardView = new CardView(TasksDetailActivity.this);
+                                cardView.setLayoutParams(new LinearLayout.LayoutParams(wh, wh));
+                                cardView.setElevation(24f);
+                                photosLayout.addView(cardView);
+
+                                final ImageView photo = new ImageView(TasksDetailActivity.this);
+                                photo.setImageURI(photoUris.get(i));
+
+                                photo.setLayoutParams(new CardView.LayoutParams
+                                        (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                                photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                photo.setId(Utility.generateViewId());
+                                cardView.addView(photo);
+
+                                photosLayout.setVisibility(View.VISIBLE);
+
+                                // Add the listener
+                                final int finalI = i;
+                                cardView.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        Intent pictureIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
+                                        pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(finalI).toString());
+                                        photo.setTransitionName("transition");
+                                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                                (TasksDetailActivity.this, photo, photo.getTransitionName()).toBundle();
+                                        startActivity(pictureIntent, bundle);
+                                    }
+                                });
+                            }
+                        } else {
+                            // Download the photo data
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            i = 0;
+                            for (final DataSnapshot photoUriSnapshot : dataSnapshot.child("photos").child("cloud").getChildren()) {
+                                StorageReference photosRef = storageRef.child(photoUriSnapshot.getValue(String.class));
+                                final long ONE_MEGABYTE = 1024 * 1024;
+                                photosRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                    @Override
+                                    public void onSuccess(byte[] bytes) {
+                                        // Save the file locally
+                                        File file = new File(photoUris.get(i).toString());
+                                        try {
+                                            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+                                            bos.write(bytes);
+                                            bos.flush();
+                                            bos.close();
+                                        } catch (FileNotFoundException e) {
+                                            e.printStackTrace();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        // Add the view
+                                        if (!active) return;
+                                        photoUris.add(Uri.fromFile(file));
+                                        LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+                                        ImageView photo = new ImageView(TasksDetailActivity.this);
+                                        photo.setImageURI(Uri.fromFile(file));
+                                        int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
+                                        photo.setLayoutParams(new LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
+                                        photo.setPadding(4, 0, 4, 0);
+                                        photo.setId(Utility.generateViewId());
+                                        photosLayout.addView(photo);
+                                        photosLayout.setVisibility(View.VISIBLE);
+
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // TODO: Handle Unsuccessful Download
+                                    }
+                                });
+                                i++;
+                            }
+                        }
+
                         applyDataToUI();
-                        taskRef.removeEventListener(this);
                     }
 
                     @Override
@@ -248,7 +406,6 @@ public class TasksDetailActivity extends AppCompatActivity {
                 DbHelper dbHelper = new DbHelper(this);
                 Cursor cursor;
                 if (intent.hasExtra("_ID")) {
-                    Log.v(LOG_TAG, "Task ID result: " + intent.getIntExtra("_ID", -1));
                     cursor = dbHelper.getTaskById(intent.getIntExtra("_ID", 0));
                 } else if (FLAG_TASK_COMPLETED) cursor = dbHelper.getTaskData();
                 else cursor = dbHelper.getUncompletedTaskData();
@@ -256,13 +413,15 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                 // Get the data from the cursor
                 if (cursor.moveToPosition(id)) {
-                    this.id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID));
-                    title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-                    subtitle = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS))
-                            + " " + cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-                    description = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
-                    photoPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
-                    iconUri = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+                    this.id = cursor.getInt(cursor.getColumnIndex(TasksEntry._ID));
+                    title = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                    classTitle = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                    classType = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                    subtitle = getString(R.string.format_subtitle, classTitle, classType);
+                    description = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                    iconUri = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON));
+                    String photoLine = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_PICTURE));
+                    final String[] photos = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_PICTURE)).split("#seperate#");
 
                     // Process the data for the duedate to a string
                     Calendar c = Calendar.getInstance();
@@ -286,6 +445,46 @@ public class TasksDetailActivity extends AppCompatActivity {
 //                } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
 
                     // Set the photo field data
+                    LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+                    for (int i = 0; i < photos.length; i++) {
+                        if (photos[i].length() > 1) {
+                            final Uri photoUri = Uri.parse(photos[i]);
+                            photoUris.add(photoUri);
+
+                            // Add in the views for the photos
+                            int wh = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics()));
+
+                            final CardView cardView = new CardView(TasksDetailActivity.this);
+                            cardView.setLayoutParams(new LinearLayout.LayoutParams(wh, wh));
+                            cardView.setElevation(24f);
+                            photosLayout.addView(cardView);
+
+                            final ImageView photo = new ImageView(TasksDetailActivity.this);
+                            photo.setImageURI(photoUri);
+
+                            photo.setLayoutParams(new CardView.LayoutParams
+                                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                            photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                            photo.setId(Utility.generateViewId());
+                            cardView.addView(photo);
+
+                            photosLayout.setVisibility(View.VISIBLE);
+
+                            // Add the listener
+                            cardView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent pictureIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
+                                    pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUri.toString());
+                                    photo.setTransitionName("transition");
+                                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                            (TasksDetailActivity.this, photo, photo.getTransitionName()).toBundle();
+                                    startActivity(pictureIntent, bundle);
+                                }
+                            });
+                        }
+                    }
+
                     // PHOTOS DISABLED FOR THE BETA
 //                if (!photoPath.equals("")) {
 //                    photoUri = Uri.parse(photoPath);
@@ -320,6 +519,32 @@ public class TasksDetailActivity extends AppCompatActivity {
         }
     }
 
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        active = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        active = false;
+    }
+
     private void applyDataToUI() {
         // Get references to the UI elements
         final ActionBar actionBar = getSupportActionBar();
@@ -334,6 +559,10 @@ public class TasksDetailActivity extends AppCompatActivity {
         collapsingToolbarSubtitle.setText(subtitle);
         duedateTextview.setText(getString(R.string.due, duedate));
         descriptionTextview.setText(description);
+
+        if (description.length() == 0)
+            findViewById(R.id.description_layout).setVisibility(View.GONE);
+        else findViewById(R.id.description_layout).setVisibility(View.VISIBLE);
 
         final Uri ParsedIconUri = Uri.parse(iconUri);
         Bitmap iconBitmap = null;
@@ -352,7 +581,6 @@ public class TasksDetailActivity extends AppCompatActivity {
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-
 
         Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
             @Override
@@ -387,7 +615,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                     // Set the action bar colour according to the theme
                     mainColour = palette.getVibrantColor(mPrimaryColor);
                 }
-
+                if (mainColour == mPrimaryColor) findViewById(R.id.temp_icon).setVisibility(View.GONE);
                 mPrimaryColor = mainColour;
                 float[] hsv = new float[3];
                 int color = mainColour;
@@ -395,16 +623,8 @@ public class TasksDetailActivity extends AppCompatActivity {
                 hsv[2] *= 0.8f; // value component
                 mDarkColor = Color.HSVToColor(hsv);
 
-                ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
-                if (viewTreeObserver.isAlive()) {
-                    viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            executeEnterTransition();
-                            collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        }
-                    });
-                }
+                String icon = getIntent().getStringExtra("icon");
+                ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
 
 //                actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -437,7 +657,6 @@ public class TasksDetailActivity extends AppCompatActivity {
         File targetFile = new File(filePath.toString());
         OutputStream outputStream = new FileOutputStream(targetFile);
         outputStream.write(buffer);
-        Log.v(LOG_TAG, "File Uri: " + targetFile.getAbsolutePath());
         return Uri.parse(targetFile.getAbsolutePath());
     }
 
@@ -473,9 +692,15 @@ public class TasksDetailActivity extends AppCompatActivity {
                                     int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
                                     String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
                                     String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
-                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
+                                    String[] pictureString = picture.split("#seperate#");
+                                    ArrayList<Uri> pictureStringList = new ArrayList<>();
+                                    for (int i = 0; i < pictureString.length; i++) {
+                                        pictureStringList.add(Uri.parse(pictureString[i]));
+                                    }
+
+                                    dbHelper.updateTaskItem(TasksDetailActivity.this, TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
                                             duedate, reminderdate, remindertime,
-                                            icon, picture, false);
+                                            icon, pictureStringList, false);
                                 }
 
                                 cursorTasks.close();
@@ -516,9 +741,15 @@ public class TasksDetailActivity extends AppCompatActivity {
                                     int remindertime = cursorTasks.getInt(cursorTasks.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME));
                                     String icon = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_ICON));
                                     String picture = cursorTasks.getString(cursorTasks.getColumnIndex(TasksEntry.COLUMN_PICTURE));
-                                    dbHelper.updateTaskItem(TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
+                                    String[] pictureString = picture.split("#seperate#");
+                                    ArrayList<Uri> pictureStringList = new ArrayList<>();
+                                    for (int i = 0; i < pictureString.length; i++) {
+                                        pictureStringList.add(Uri.parse(pictureString[i]));
+                                    }
+
+                                    dbHelper.updateTaskItem(TasksDetailActivity.this, TasksDetailActivity.this.id, title, classTitle, classType, description, attachment,
                                             duedate, reminderdate, remindertime,
-                                            icon, picture, true);
+                                            icon, pictureStringList, true);
                                 }
 
                                 cursorTasks.close();
@@ -617,7 +848,23 @@ public class TasksDetailActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    // Pass on data that will be read from SQLite
+                    // Pass on data through an intent
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < photoUris.size(); i++) {
+                        builder.append(photoUris.get(i));
+                        if (i < photoUris.size() - 1)
+                            builder.append("#seperate#");
+                    }
+
+                    intent.putExtra("id", id);
+                    intent.putExtra("icon", iconUri);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
+                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
+                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
+                    intent.putExtra("photo", builder.toString());
+//                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
+                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), duedateValue);
                     intent.putExtra(getString(R.string.TASKS_EXTRA_ID), id);
                     intent.putExtra(getString(R.string.TASKS_FLAG_EDIT), true);
                     startActivity(intent);

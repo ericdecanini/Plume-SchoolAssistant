@@ -1,5 +1,6 @@
 package com.pdt.plume.data;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -39,13 +40,18 @@ import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.data.DbContract.NotesEntry;
 import com.pdt.plume.data.DbContract.PeersEntry;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.NewTaskActivity.REQUEST_NOTIFICATION_INTENT;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static java.security.AccessController.getContext;
 
 
@@ -240,7 +246,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                                ""
+                                "", null
                         ));
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
@@ -271,7 +277,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                     utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
                                     utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                                    periodList.get(ii)));
+                                    periodList.get(ii), null));
                         }
                     }
                 }
@@ -293,7 +299,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
-                                ""
+                                "", null
                         ));
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
@@ -316,7 +322,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                     utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
                                     utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
-                                    periodList.get(ii)));
+                                    periodList.get(ii), null));
                         }
                     }
                 }
@@ -398,7 +404,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
                             " ",
                             " ",
-                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))
+                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
+                            null
                     ));
 
                     usedTitles.add(title);
@@ -457,22 +464,6 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(ScheduleEntry.COLUMN_PERIODS, periods);
         contentValues.put(ScheduleEntry.COLUMN_ICON, icon);
         db.insert(ScheduleEntry.TABLE_NAME, null, contentValues);
-
-        // Insert to the Cloud
-        if (firebaseUser != null) {
-            String uID = firebaseUser.getUid();
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference classRef = ref.child("users").child(uID).child("classes").child(title);
-            classRef.child("teacher").setValue(teacher);
-            classRef.child("room").setValue(room);
-            classRef.child("occurrence").setValue(occurrence);
-            classRef.child("timein").setValue(timein);
-            classRef.child("timeout").setValue(timeout);
-            classRef.child("timeinalt").setValue(timeinalt);
-            classRef.child("timeoutalt").setValue(timeoutalt);
-            classRef.child("periods").setValue(periods);
-            classRef.child("icon").setValue(icon);
-        }
 
         return true;
     }
@@ -657,7 +648,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
-                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE)),
+                        null
                 ));
             }
         }
@@ -689,7 +681,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
-                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE)),
+                        null
                 ));
             }
         }
@@ -721,37 +714,61 @@ public class DbHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
                         cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
-                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE))
+                        cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE)),
+                        null
                 ));
             }
         }
         return arrayList;
     }
 
-    public long insertTask(String title, String classTitle, String type,
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
+    }
+
+    public long insertTask(Context context, String title, String classTitle, String type,
                               String description, String attachment,
                               float dueDate, float reminderdate, float remindertime,
-                              String icon, String picture, boolean completed) {
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                              String icon, ArrayList<Uri> picture, boolean completed) {
+            StringBuilder pictureString = new StringBuilder();
+            for (int i = 0; i < picture.size(); i++) {
+                Uri imageUri = picture.get(i);
+                InputStream inputStream = null;
+                try {
+                    inputStream = context.getContentResolver().openInputStream(imageUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String filename = imageUri.getLastPathSegment();
+                byte[] data = new byte[0];
+                try {
+                    data = getBytes(inputStream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                File file = new File(context.getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-        // Insert to the Cloud
-        if (firebaseUser != null) {
-            String uID = firebaseUser.getUid();
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference classRef = ref.child("users").child(uID).child("tasks").child(title);
-            classRef.child("class").setValue(classTitle);
-            classRef.child("type").setValue(type);
-            classRef.child("description").setValue(description);
-            classRef.child("attachment").setValue(attachment);
-            classRef.child("duedate").setValue(dueDate);
-            classRef.child("reminderdate").setValue(reminderdate);
-            classRef.child("remindertime").setValue(remindertime);
-            classRef.child("icon").setValue(icon);
-            classRef.child("picture").setValue(picture);
-            classRef.child("completed").setValue(completed);
-        } else {
-            // Insert locally into SQLite
+                pictureString.append(Uri.fromFile(file).toString());
+                if (i != picture.size())
+                    pictureString.append("#seperate#");
+            }
+
             SQLiteDatabase db = this.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
             contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -763,21 +780,48 @@ public class DbHelper extends SQLiteOpenHelper {
             contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
             contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
             contentValues.put(TasksEntry.COLUMN_ICON, icon);
-            contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
+            contentValues.put(TasksEntry.COLUMN_PICTURE, pictureString.toString());
             contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
             return db.insert(TasksEntry.TABLE_NAME, null, contentValues);
-        }
-
-        return -1;
     }
 
-    public boolean updateTaskItem(Integer id, String title, String classTitle, String type,
+    public boolean updateTaskItem(Context context, Integer id, String title, String classTitle, String type,
                                   String description, String attachment,
                                   float dueDate, float reminderdate, float remindertime,
-                                  String icon, String picture, boolean completed) {
+                                  String icon, ArrayList<Uri> picture, boolean completed) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
+        StringBuilder pictureString = new StringBuilder();
+        for (int i = 0; i < picture.size(); i++) {
+            Uri imageUri = picture.get(i);
+            InputStream inputStream = null;
+            try {
+                inputStream = context.getContentResolver().openInputStream(imageUri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            String filename = imageUri.getLastPathSegment();
+            byte[] data = new byte[0];
+            try {
+                data = getBytes(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            File file = new File(context.getFilesDir(), filename);
+            FileOutputStream outputStream;
+            try {
+                outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(data);
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            pictureString.append(Uri.fromFile(file).toString());
+            if (i != picture.size())
+                pictureString.append("#seperate#");
+        }
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(TasksEntry.COLUMN_TITLE, title);
@@ -789,7 +833,7 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(TasksEntry.COLUMN_REMINDER_DATE, reminderdate);
         contentValues.put(TasksEntry.COLUMN_REMINDER_TIME, remindertime);
         contentValues.put(TasksEntry.COLUMN_ICON, icon);
-        contentValues.put(TasksEntry.COLUMN_PICTURE, picture);
+        contentValues.put(TasksEntry.COLUMN_PICTURE, pictureString.toString());
         contentValues.put(TasksEntry.COLUMN_COMPLETED, completed);
         db.update(TasksEntry.TABLE_NAME, contentValues, "_ID = ?", new String[]{Integer.toString(id)});
 

@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
+import android.transition.Transition;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -83,6 +84,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
+    // Child listeners
+    ChildEventListener childListener1;
+    ChildEventListener childListener2;
 
     // List Arrays
     ArrayList<Integer> taskIDs = new ArrayList<>();
@@ -105,7 +109,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
     private void executeEnterTransition() {
         mToolbar = (AppBarLayout) findViewById(R.id.appbar);
-        final ImageView tempView = (ImageView) findViewById(R.id.temp_icon);
 
         // Explode the icon into the circle reveal
         mRevealView2 = findViewById(R.id.reveal2);
@@ -113,9 +116,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
         Animator animator = ViewAnimationUtils.createCircularReveal(
                 mRevealView2,
-                tempView.getWidth() / 2,
-                tempView.getHeight() / 2, 0,
-                tempView.getWidth());
+                mRevealBackgroundView2.getWidth() / 2,
+                mRevealBackgroundView2.getHeight() / 2, 0,
+                mRevealBackgroundView2.getWidth());
 
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -131,10 +134,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             }
         });
 
-        if (mFirebaseUser == null)
-        animator.setStartDelay(290);
-        else animator.setStartDelay(0);
-        animator.setDuration(100);
+        animator.setDuration(123);
         animator.start();
 
         // Play the animation for the rest of the toolbar
@@ -143,8 +143,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
         Animator animator2 = ViewAnimationUtils.createCircularReveal(
                 mRevealView,
-                tempView.getWidth() / 2 + ((int) tempView.getX()),
-                tempView.getHeight() / 2 + ((int) tempView.getY()), 0,
+                mRevealBackgroundView2.getWidth() / 2 + ((int) mRevealBackgroundView2.getX()),
+                mRevealBackgroundView2.getHeight() / 2 + ((int) mRevealBackgroundView2.getY()), 0,
                 mToolbar.getWidth());
 
         animator2.addListener(new AnimatorListenerAdapter() {
@@ -164,10 +164,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         });
 
         mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-        if (mFirebaseUser == null)
-            animator2.setStartDelay(300);
-        else animator2.setStartDelay(0);
-        animator2.setDuration(300);
+        animator2.setDuration(450);
         animator2.start();
         mRevealView.setVisibility(View.VISIBLE);
 
@@ -191,6 +188,35 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_schedule_detail);
         final String icon = getIntent().getStringExtra("icon");
         ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
+
+        // Add a listener to the shared transition
+        Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
+        sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                executeEnterTransition();
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(Transition transition) {
+
+            }
+        });
 
         // Get references to the UI elements
         final TextView teacherTextview = (TextView) findViewById(R.id.teacher);
@@ -256,7 +282,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                                 .child("users").child(mUserId).child("tasks");
                         findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.GONE);
-                        tasksRef.addChildEventListener(new ChildEventListener() {
+                        childListener1 = new ChildEventListener() {
                             @Override
                             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                                 findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.VISIBLE);
@@ -272,7 +298,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     float duedate = dataSnapshot.child("duedate").getValue(float.class);
 
                                     taskFirebaseIDs.add(id);
-                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1));
+                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
                                     ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
                                 }
                             }
@@ -292,7 +318,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
                             }
-                        });
+                        };
+                        tasksRef.addChildEventListener(childListener1);
 
                         // Initialise the periods list
                         final DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
@@ -494,16 +521,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
                                         collapsingToolbar.setBackgroundColor(mPrimaryColor);
-                                        ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
-                                        if (viewTreeObserver.isAlive()) {
-                                            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                                                @Override
-                                                public void onGlobalLayout() {
-                                                    executeEnterTransition();
-                                                    collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                                }
-                                            });
-                                        }
+
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                             getWindow().setStatusBarColor(mDarkColor);
                                         }
@@ -558,7 +576,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT)),
                                     tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)),
                                     tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE))
-                                            + tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME))
+                                            + tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME)),
+                                    null
                             ));
                             taskIDs.add(tasksCursor.getInt(tasksCursor.getColumnIndex(DbContract.TasksEntry._ID)));
                             tasksCursor.moveToNext();
@@ -632,16 +651,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
                             mDarkColor = Color.HSVToColor(hsv);
                             collapsingToolbar.setBackgroundColor(mPrimaryColor);
-                            ViewTreeObserver viewTreeObserver = collapsingToolbar.getViewTreeObserver();
-                            if (viewTreeObserver.isAlive()) {
-                                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                                    @Override
-                                    public void onGlobalLayout() {
-                                        executeEnterTransition();
-                                        collapsingToolbar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                    }
-                                });
-                            }
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 getWindow().setStatusBarColor(mDarkColor);
                             }
@@ -676,7 +685,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             // Get the data from Firebase
             DatabaseReference notesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("notes");
-            notesRef.addChildEventListener(new ChildEventListener() {
+            childListener2 = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     String classTitle = dataSnapshot.child("scheduletitle").getValue(String.class);
@@ -702,7 +711,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                 }
-            });
+            };
+            notesRef.addChildEventListener(childListener2);
         } else {
             // Get the data from SQLite
             DbHelper dbHelper = new DbHelper(this);
@@ -780,6 +790,18 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mUserId == null) return;
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId);
+        if (childListener1 != null)
+            rootRef.child("tasks").removeEventListener(childListener1);
+        if (childListener2 != null)
+            rootRef.child("notes").removeEventListener(childListener2);
     }
 
     private View.OnClickListener addNoteListener() {
