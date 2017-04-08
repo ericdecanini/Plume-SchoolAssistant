@@ -267,27 +267,29 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 classRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.v(LOG_TAG, "Snapshot key in detail: " + dataSnapshot.getKey());
                         teacher = dataSnapshot.child("teacher").getValue(String.class);
                         room = dataSnapshot.child("room").getValue(String.class);
-                        Log.v(LOG_TAG, "Parsing Icon " + dataSnapshot.child("icon").getValue(String.class));
                         iconUri = Uri.parse(dataSnapshot.child("icon").getValue(String.class));
 
                         // Apply data to the UI
                         collapsingToolbar.setTitle(title);
                         teacherTextview.setText(teacher);
                         roomTextview.setText(room);
+                        if ((teacher == null || teacher.equals("")) && (room == null || room.equals("")))
+                            findViewById(R.id.schedule_detail_keys_layout).setVisibility(View.GONE);
 
                         // Intialise the tasks list
+                        final View tasksLayout = findViewById(R.id.schedule_detail_tasks_layout);
                         DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                                 .child("users").child(mUserId).child("tasks");
-                        findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.GONE);
+                        tasksLayout.setVisibility(View.GONE);
+
                         childListener1 = new ChildEventListener() {
                             @Override
                             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                                findViewById(R.id.schedule_detail_tasks_layout).setVisibility(View.VISIBLE);
                                 String classTitle = dataSnapshot.child("class").getValue(String.class);
                                 if (classTitle.equals(title)) {
+                                    tasksLayout.setVisibility(View.VISIBLE);
                                     String id = dataSnapshot.getKey();
                                     String icon = dataSnapshot.child("icon").getValue(String.class);
                                     String title = dataSnapshot.child("title").getValue(String.class);
@@ -560,6 +562,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     collapsingToolbar.setTitle(title);
                     teacherTextview.setText(teacher);
                     roomTextview.setText(room);
+
+                    if ((teacher == null || teacher.equals("")) && (room == null || room.equals("")))
+                        findViewById(R.id.schedule_detail_keys_layout).setVisibility(View.GONE);
 
                     // Initialise the Tasks List
                     Cursor tasksCursor = dbHelper.getTaskDataByClass(title);

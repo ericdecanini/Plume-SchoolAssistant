@@ -56,6 +56,10 @@
             android:title="@string/settings_about_plume_title"
             android:key="@string/KEY_SETTINGS_ABOUT_PLUME" />
 
+        <Preference
+            android:title="@string/settings_changelog"
+            android:key="@string/KEY_SETTINGS_CHANGELOG" />
+
     </com.pdt.plume.ColouredPreferenceCategory>
 
 

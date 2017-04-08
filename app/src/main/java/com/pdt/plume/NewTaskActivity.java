@@ -17,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -507,82 +508,85 @@ public class NewTaskActivity extends AppCompatActivity
                     }
 
                     // Photo data from SQLite
-                    String[] photos = intent.getStringExtra("photo").split("#seperate#");
-                    // Add in the views for the photos
-                    for (int i = 0; i < photos.length; i++) {
-                        // Add the photo as a new image view
-                        final Uri photoUri = Uri.parse(photos[i]);
-                        photoUriList.add(photoUri);
-                        final RelativeLayout relativeLayout = new RelativeLayout(NewTaskActivity.this);
-                        relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    String photoString = intent.getStringExtra("photo");
+                    if (photoString != null) {
+                        String[] photos = photoString.split("#seperate#");
+                        // Add in the views for the photos
+                        for (int i = 0; i < photos.length; i++) {
+                            // Add the photo as a new image view
+                            final Uri photoUri = Uri.parse(photos[i]);
+                            photoUriList.add(photoUri);
+                            final RelativeLayout relativeLayout = new RelativeLayout(NewTaskActivity.this);
+                            relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-                        ImageView photo = new ImageView(NewTaskActivity.this);
-                        photo.setImageURI(photoUri);
-                        int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
-                        photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-                        photo.setPadding(4, 0, 4, 0);
-                        photo.setId(Utility.generateViewId());
+                            ImageView photo = new ImageView(NewTaskActivity.this);
+                            photo.setImageURI(photoUri);
+                            int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
+                            photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
+                            photo.setPadding(4, 0, 4, 0);
+                            photo.setId(Utility.generateViewId());
 
-                        final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-                        photosLayout.setVisibility(View.VISIBLE);
-                        photosLayout.addView(relativeLayout);
-                        relativeLayout.addView(photo);
+                            final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+                            photosLayout.setVisibility(View.VISIBLE);
+                            photosLayout.addView(relativeLayout);
+                            relativeLayout.addView(photo);
 
-                        // Add the cancel button to remove the photo
-                        final ImageView cancel = new ImageView(NewTaskActivity.this);
-                        cancel.setImageResource(R.drawable.ic_cancel);
-                        int wh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wh, wh);
-                        params.addRule(RelativeLayout.ALIGN_END, photo.getId());
-                        params.addRule(RelativeLayout.ALIGN_RIGHT, photo.getId());
-                        params.addRule(RelativeLayout.ALIGN_TOP, photo.getId());
-                        cancel.setLayoutParams(params);
-                        relativeLayout.addView(cancel);
-                        cancel.setVisibility(View.GONE);
-                        final int finalI = i;
-                        cancel.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                photosLayout.removeView(relativeLayout);
-                                photoUriList.remove(photoUri);
-                            }
-                        });
+                            // Add the cancel button to remove the photo
+                            final ImageView cancel = new ImageView(NewTaskActivity.this);
+                            cancel.setImageResource(R.drawable.ic_cancel);
+                            int wh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wh, wh);
+                            params.addRule(RelativeLayout.ALIGN_END, photo.getId());
+                            params.addRule(RelativeLayout.ALIGN_RIGHT, photo.getId());
+                            params.addRule(RelativeLayout.ALIGN_TOP, photo.getId());
+                            cancel.setLayoutParams(params);
+                            relativeLayout.addView(cancel);
+                            cancel.setVisibility(View.GONE);
+                            final int finalI = i;
+                            cancel.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    photosLayout.removeView(relativeLayout);
+                                    photoUriList.remove(photoUri);
+                                }
+                            });
 
-                        // Add the click listener of the photo
-                        cancel.setTag("null");
-                        final Runnable runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                cancel.setTag("null");
-                                cancel.setVisibility(View.GONE);
-                            }
-                        };
-                        photo.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (cancel.getTag().equals("cancelVisible")) {
+                            // Add the click listener of the photo
+                            cancel.setTag("null");
+                            final Runnable runnable = new Runnable() {
+                                @Override
+                                public void run() {
                                     cancel.setTag("null");
                                     cancel.setVisibility(View.GONE);
-                                    handler.removeCallbacks(runnable);
-                                } else {
-                                    cancel.setVisibility(View.VISIBLE);
-                                    Runnable runnable1 = new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            View otherCancels = photosLayout.findViewWithTag("cancelVisible");
-                                            if (otherCancels != null) {
-                                                otherCancels.setVisibility(View.GONE);
-                                                otherCancels.setTag("null");
-                                                handler.post(this);
-                                            } else cancel.setTag("cancelVisible");
-                                        }
-                                    };
-
-                                    handler.post(runnable1);
-                                    handler.postDelayed(runnable, 2000);
                                 }
-                            }
-                        });
+                            };
+                            photo.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    if (cancel.getTag().equals("cancelVisible")) {
+                                        cancel.setTag("null");
+                                        cancel.setVisibility(View.GONE);
+                                        handler.removeCallbacks(runnable);
+                                    } else {
+                                        cancel.setVisibility(View.VISIBLE);
+                                        Runnable runnable1 = new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                View otherCancels = photosLayout.findViewWithTag("cancelVisible");
+                                                if (otherCancels != null) {
+                                                    otherCancels.setVisibility(View.GONE);
+                                                    otherCancels.setTag("null");
+                                                    handler.post(this);
+                                                } else cancel.setTag("cancelVisible");
+                                            }
+                                        };
+
+                                        handler.post(runnable1);
+                                        handler.postDelayed(runnable, 2000);
+                                    }
+                                }
+                            });
+                        }
                     }
 
                     // Set the current state of the dropdown text views
@@ -986,8 +990,7 @@ public class NewTaskActivity extends AppCompatActivity
             Uri dataUri = data.getData();
             Bitmap setImageBitmap = null;
 
-            if (mFirebaseUser == null)
-                iconUriString = dataUri.toString();
+            iconUriString = dataUri.toString();
 
             try {
                 setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
@@ -1462,8 +1465,38 @@ public class NewTaskActivity extends AppCompatActivity
             taskRef.child("completed").setValue(false);
 
             if (customIconUploaded) {
-                taskRef.child("icon").setValue("storage");
-            } else taskRef.child("icon").setValue(iconUriString);
+                // Copy the file to the app's directory
+                Uri imageUri = Uri.parse(iconUriString);
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                String filename = imageUri.getLastPathSegment();
+                byte[] data = getBytes(inputStream);
+                File file = new File(getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // Image compression
+                Bitmap decodedBitmap = decodeFile(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] bitmapData = baos.toByteArray();
+                file.delete();
+                File file1 = new File(getFilesDir(), filename);
+                FileOutputStream fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+
+                // Get the uri of the file so it can be saved
+                iconUriString = Uri.fromFile(file1).toString();
+            }
+
+            taskRef.child("icon").setValue(iconUriString);
 
             // Upload the custom icon and photos
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -1586,21 +1619,36 @@ public class NewTaskActivity extends AppCompatActivity
             return true;
         } else {
             // Copy the icon into a seperate file if custom
-            Uri imageUri = Uri.parse(iconUriString);
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            String filename = imageUri.getLastPathSegment();
-            byte[] data = getBytes(inputStream);
-            File file = new File(getFilesDir(), filename);
-            FileOutputStream outputStream;
-            try {
-                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                outputStream.write(data);
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (customIconUploaded) {
+                Uri imageUri = Uri.parse(iconUriString);
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                String filename = imageUri.getLastPathSegment();
+                byte[] data = getBytes(inputStream);
+                File file = new File(getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // Image compression
+                Bitmap decodedBitmap = decodeFile(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] bitmapData = baos.toByteArray();
+                file.delete();
+                File file1 = new File(getFilesDir(), filename);
+                FileOutputStream fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+
+                // Get the uri of the file so it can be saved
+                iconUriString = Uri.fromFile(file1).toString();
             }
-            iconUriString = Uri.fromFile(file).toString();
-            Log.v(LOG_TAG, "Icon Uri: " + iconUriString);
 
             // Insert into SQLite
             DbHelper dbHelper = new DbHelper(this);
@@ -1635,6 +1683,31 @@ public class NewTaskActivity extends AppCompatActivity
 
             return false;
         }
+    }
+
+    private Bitmap decodeFile(File f) {
+        try {
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE=300;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+            while(o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            // Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+        } catch (FileNotFoundException e) {}
+        return null;
     }
 
 

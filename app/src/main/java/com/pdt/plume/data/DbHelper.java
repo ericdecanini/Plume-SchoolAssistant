@@ -795,32 +795,34 @@ public class DbHelper extends SQLiteOpenHelper {
         StringBuilder pictureString = new StringBuilder();
         for (int i = 0; i < picture.size(); i++) {
             Uri imageUri = picture.get(i);
-            InputStream inputStream = null;
-            try {
-                inputStream = context.getContentResolver().openInputStream(imageUri);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            String filename = imageUri.getLastPathSegment();
-            byte[] data = new byte[0];
-            try {
-                data = getBytes(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            File file = new File(context.getFilesDir(), filename);
-            FileOutputStream outputStream;
-            try {
-                outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                outputStream.write(data);
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            if (imageUri.toString().length() > 2) {
+                InputStream inputStream = null;
+                try {
+                    inputStream = context.getContentResolver().openInputStream(imageUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String filename = imageUri.getLastPathSegment();
+                byte[] data = new byte[0];
+                try {
+                    data = getBytes(inputStream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                File file = new File(context.getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-            pictureString.append(Uri.fromFile(file).toString());
-            if (i != picture.size())
-                pictureString.append("#seperate#");
+                pictureString.append(Uri.fromFile(file).toString());
+                if (i != picture.size())
+                    pictureString.append("#seperate#");
+            }
         }
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();

@@ -230,13 +230,6 @@ public class ScheduleFragment extends Fragment {
             init();
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (classesRef != null)
-            classesRef.removeEventListener(classesRefListener);
-    }
-
     public AdapterView.OnItemClickListener ItemClickListener() {
         return new AdapterView.OnItemClickListener() {
 
@@ -300,247 +293,238 @@ public class ScheduleFragment extends Fragment {
             String userId = firebaseUser.getUid();
             classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
-            classesRefListener = new ChildEventListener() {
+            classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    final String title = dataSnapshot.getKey();
-                    final String teacher = dataSnapshot.child("teacher").getValue(String.class);
-                    final String room = dataSnapshot.child("room").getValue(String.class);
-                    final String iconUri = dataSnapshot.child("icon").getValue(String.class);
-                    final Bitmap[] bitmap = {null};
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    long n = 0;
+                    long snapshotCount = dataSnapshot.getChildrenCount();
+                    for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                        // Hide the progress bar if the query is done
+                        n++;
+                        if (n == snapshotCount) spinner.setVisibility(View.GONE);
 
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
-                    final Calendar[] c = {Calendar.getInstance()};
+                        final String title = classSnapshot.getKey();
+                        final String teacher = classSnapshot.child("teacher").getValue(String.class);
+                        final String room = classSnapshot.child("room").getValue(String.class);
+                        final String iconUri = classSnapshot.child("icon").getValue(String.class);
+                        final Bitmap[] bitmap = {null};
 
-                    final ArrayList<String> occurrences = new ArrayList<>();
-                    for (DataSnapshot occurrenceSnapshot : dataSnapshot.child("occurrence").getChildren())
-                        occurrences.add(occurrenceSnapshot.getKey());
-                    final ArrayList<Integer> timeins = new ArrayList<>();
-                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren())
-                        timeins.add(timeinSnapshot.getValue(int.class));
-                    final ArrayList<Integer> timeouts = new ArrayList<>();
-                    for (DataSnapshot timeoutSnapshot : dataSnapshot.child("timeout").getChildren())
-                        timeouts.add(timeoutSnapshot.getValue(int.class));
-                    final ArrayList<Integer> timeinalts = new ArrayList<>();
-                    for (DataSnapshot timeinaltSnapshot : dataSnapshot.child("timeinalt").getChildren())
-                        timeinalts.add(timeinaltSnapshot.getValue(int.class));
-                    final ArrayList<Integer> timeoutalts = new ArrayList<>();
-                    for (DataSnapshot timeoutaltSnapshot : dataSnapshot.child("timeoutalt").getChildren())
-                        timeoutalts.add(timeoutaltSnapshot.getValue(int.class));
-                    final ArrayList<String> periods = new ArrayList<>();
-                    for (DataSnapshot periodsSnapshot : dataSnapshot.child("periods").getChildren())
-                        periods.add(periodsSnapshot.getKey());
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                        final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
+                        final Calendar[] c = {Calendar.getInstance()};
 
-                    // Check if the iconUri is custom uploaded or not
-                    if (iconUri.equals("storage")) {
-                        FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference storageRef = storage.getReference();
-                        StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
+                        final ArrayList<String> occurrences = new ArrayList<>();
+                        for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren())
+                            occurrences.add(occurrenceSnapshot.getKey());
+                        final ArrayList<Integer> timeins = new ArrayList<>();
+                        for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
+                            timeins.add(timeinSnapshot.getValue(int.class));
+                        final ArrayList<Integer> timeouts = new ArrayList<>();
+                        for (DataSnapshot timeoutSnapshot : classSnapshot.child("timeout").getChildren())
+                            timeouts.add(timeoutSnapshot.getValue(int.class));
+                        final ArrayList<Integer> timeinalts = new ArrayList<>();
+                        for (DataSnapshot timeinaltSnapshot : classSnapshot.child("timeinalt").getChildren())
+                            timeinalts.add(timeinaltSnapshot.getValue(int.class));
+                        final ArrayList<Integer> timeoutalts = new ArrayList<>();
+                        for (DataSnapshot timeoutaltSnapshot : classSnapshot.child("timeoutalt").getChildren())
+                            timeoutalts.add(timeoutaltSnapshot.getValue(int.class));
+                        final ArrayList<String> periods = new ArrayList<>();
+                        for (DataSnapshot periodsSnapshot : classSnapshot.child("periods").getChildren())
+                            periods.add(periodsSnapshot.getKey());
 
-                        // Download the image
-                        final long ONE_MEGABYTE = 1024 * 1024;
-                        iconsRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                            @Override
-                            public void onSuccess(byte[] bytes) {
-                                bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        // Check if the iconUri is custom uploaded or not
+                        if (iconUri == null) return;
 
-                                // Requery the classes
-                                for (int i = 0; i < occurrences.size(); i++) {
-                                    if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
-                                        // Check if occurrence matches, then proceed if true
-                                        if (weekNumber.equals("0")) {
-                                            if (!periods.get(i).equals("")) {
-                                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                                for (int l = 0; l < periodList.size(); l++) {
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                            room, "",
-                                                            "", periodList.get(l), bitmap[0]));
+                        if (iconUri.equals("storage")) {
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
+
+                            // Download the image
+                            final long ONE_MEGABYTE = 1024 * 1024;
+                            iconsRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                                    // Requery the classes
+                                    for (int i = 0; i < occurrences.size(); i++) {
+                                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
+                                            // Check if occurrence matches, then proceed if true
+                                            if (weekNumber.equals("0")) {
+                                                if (!periods.get(i).equals("")) {
+                                                    ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                                    for (int l = 0; l < periodList.size(); l++) {
+                                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                                room, "",
+                                                                "", periodList.get(l), bitmap[0]));
+                                                    }
+
+                                                    if (timeins.get(i) > -1) {
+                                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                                room, utility.millisToHourTime(timeins.get(i)),
+                                                                utility.millisToHourTime(timeouts.get(i)), "", bitmap[0]));
+                                                        // Schedule the notification
+                                                        int timeIn = timeins.get(i);
+                                                        Log.v(LOG_TAG, "Time in: " + utility.millisToHourTime(timeIn));
+
+                                                        c[0] = Calendar.getInstance();
+                                                        Calendar timeInCalendar = Calendar.getInstance();
+                                                        timeInCalendar.setTimeInMillis(timeIn);
+                                                        c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+                                                        c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                                                        Calendar current = Calendar.getInstance();
+                                                        if (c[0].getTimeInMillis() < current.getTimeInMillis())
+                                                            c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
+
+                                                        if (forerunnerTime != 0)
+                                                            ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
+                                                                    title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                                    iconUri);
+                                                    }
                                                 }
+                                            } else {
+                                                // Alternate week data
+                                                if (!periods.get(i).equals("")) {
+                                                    ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                                    for (int l = 0; l < periodList.size(); l++) {
+                                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                                room, "",
+                                                                "", periodList.get(l), bitmap[0]));
+                                                    }
 
-                                                if (timeins.get(i) > -1) {
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                            room, utility.millisToHourTime(timeins.get(i)),
-                                                            utility.millisToHourTime(timeouts.get(i)), "", bitmap[0]));
-                                                    // Schedule the notification
-                                                    int timeIn = timeins.get(i);
-                                                    Log.v(LOG_TAG, "Time in: " + utility.millisToHourTime(timeIn));
+                                                    if (timeinalts.get(i) > -1) {
+                                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                                room, utility.millisToHourTime(timeinalts.get(i)),
+                                                                utility.millisToHourTime(timeoutalts.get(i)), "", null));
+                                                        // Schedule the notification
+                                                        int timeIn = timeinalts.get(i);
 
-                                                    c[0] = Calendar.getInstance();
-                                                    Calendar timeInCalendar = Calendar.getInstance();
-                                                    timeInCalendar.setTimeInMillis(timeIn);
-                                                    c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-                                                    c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+                                                        c[0] = Calendar.getInstance();
+                                                        Calendar timeInCalendar = Calendar.getInstance();
+                                                        timeInCalendar.setTimeInMillis(timeIn);
+                                                        c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+                                                        c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
 
-                                                    Calendar current = Calendar.getInstance();
-                                                    if (c[0].getTimeInMillis() < current.getTimeInMillis())
-                                                        c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
+                                                        Calendar current = Calendar.getInstance();
+                                                        if (c[0].getTimeInMillis() < current.getTimeInMillis())
+                                                            c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
 
-                                                    if (forerunnerTime != 0)
-                                                        ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
-                                                                title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                                iconUri);
+                                                        if (forerunnerTime != 0)
+                                                            ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
+                                                                    title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                                    iconUri);
+                                                    }
                                                 }
                                             }
-                                        } else {
-                                            // Alternate week data
-                                            if (!periods.get(i).equals("")) {
-                                                ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                                for (int l = 0; l < periodList.size(); l++) {
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                            room, "",
-                                                            "", periodList.get(l), bitmap[0]));
-                                                }
+                                        }
+                                    }
 
-                                                if (timeinalts.get(i) > -1) {
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                            room, utility.millisToHourTime(timeinalts.get(i)),
-                                                            utility.millisToHourTime(timeoutalts.get(i)), "", null));
-                                                    // Schedule the notification
-                                                    int timeIn = timeinalts.get(i);
+                                    Collections.sort(mScheduleList, new ScheduleComparator());
+                                    mScheduleAdapter.notifyDataSetChanged();
+                                    spinner.setVisibility(View.GONE);
 
-                                                    c[0] = Calendar.getInstance();
-                                                    Calendar timeInCalendar = Calendar.getInstance();
-                                                    timeInCalendar.setTimeInMillis(timeIn);
-                                                    c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-                                                    c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+                                    // Set the splash text if there's no classes queried
+                                    if (mScheduleAdapter.getCount() == 0)
+                                        headerTextView.setVisibility(View.VISIBLE);
+                                    else headerTextView.setVisibility(View.GONE);
+                                }
+                            });
+                        } else {
+                            for (int i = 0; i < occurrences.size(); i++) {
+                                if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
+                                    // Check if occurrence matches, then proceed if true
+                                    if (weekNumber.equals("0")) {
+                                        if (!periods.get(i).equals("")) {
+                                            ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                            for (int l = 0; l < periodList.size(); l++) {
+                                                mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                        room, "",
+                                                        "", periodList.get(l), bitmap[0]));
+                                            }
 
-                                                    Calendar current = Calendar.getInstance();
-                                                    if (c[0].getTimeInMillis() < current.getTimeInMillis())
-                                                        c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
+                                            if (timeins.get(i) > -1) {
+                                                mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                        room, utility.millisToHourTime(timeins.get(i)),
+                                                        utility.millisToHourTime(timeouts.get(i)), "", bitmap[0]));
+                                                // Schedule the notification
+                                                int timeIn = timeins.get(i);
+                                                Log.v(LOG_TAG, "Time in: " + utility.millisToHourTime(timeIn));
 
-                                                    if (forerunnerTime != 0)
-                                                        ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
-                                                                title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                                iconUri);
-                                                }
+                                                c[0] = Calendar.getInstance();
+                                                Calendar timeInCalendar = Calendar.getInstance();
+                                                timeInCalendar.setTimeInMillis(timeIn);
+                                                c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+                                                c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                                                Calendar current = Calendar.getInstance();
+                                                if (c[0].getTimeInMillis() < current.getTimeInMillis())
+                                                    c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
+
+                                                if (forerunnerTime != 0)
+                                                    ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
+                                                            title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                            iconUri);
+                                            }
+                                        }
+                                    } else {
+                                        // Alternate week data
+                                        if (!periods.get(i).equals("")) {
+                                            ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
+                                            for (int l = 0; l < periodList.size(); l++) {
+                                                mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                        room, "",
+                                                        "", periodList.get(l), bitmap[0]));
+                                            }
+
+                                            if (timeinalts.get(i) > -1) {
+                                                mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
+                                                        room, utility.millisToHourTime(timeinalts.get(i)),
+                                                        utility.millisToHourTime(timeoutalts.get(i)), "", null));
+                                                // Schedule the notification
+                                                int timeIn = timeinalts.get(i);
+
+                                                c[0] = Calendar.getInstance();
+                                                Calendar timeInCalendar = Calendar.getInstance();
+                                                timeInCalendar.setTimeInMillis(timeIn);
+                                                c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+                                                c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+
+                                                Calendar current = Calendar.getInstance();
+                                                if (c[0].getTimeInMillis() < current.getTimeInMillis())
+                                                    c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
+
+                                                if (forerunnerTime != 0)
+                                                    ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
+                                                            title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
+                                                            iconUri);
                                             }
                                         }
                                     }
                                 }
-
-                                Collections.sort(mScheduleList, new ScheduleComparator());
-                                mScheduleAdapter.notifyDataSetChanged();
-                                spinner.setVisibility(View.GONE);
-
-                                // Set the splash text if there's no classes queried
-                                if (mScheduleAdapter.getCount() == 0)
-                                    headerTextView.setVisibility(View.VISIBLE);
-                                else headerTextView.setVisibility(View.GONE);
                             }
-                        });
-                    } else {
-                        for (int i = 0; i < occurrences.size(); i++) {
-                            if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
-                                // Check if occurrence matches, then proceed if true
-                                if (weekNumber.equals("0")) {
-                                    if (!periods.get(i).equals("")) {
-                                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                        for (int l = 0; l < periodList.size(); l++) {
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                    room, "",
-                                                    "", periodList.get(l), bitmap[0]));
-                                        }
 
-                                        if (timeins.get(i) > -1) {
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                    room, utility.millisToHourTime(timeins.get(i)),
-                                                    utility.millisToHourTime(timeouts.get(i)), "", bitmap[0]));
-                                            // Schedule the notification
-                                            int timeIn = timeins.get(i);
-                                            Log.v(LOG_TAG, "Time in: " + utility.millisToHourTime(timeIn));
+                            Collections.sort(mScheduleList, new ScheduleComparator());
+                            mScheduleAdapter.notifyDataSetChanged();
+                            spinner.setVisibility(View.GONE);
 
-                                            c[0] = Calendar.getInstance();
-                                            Calendar timeInCalendar = Calendar.getInstance();
-                                            timeInCalendar.setTimeInMillis(timeIn);
-                                            c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-                                            c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
-
-                                            Calendar current = Calendar.getInstance();
-                                            if (c[0].getTimeInMillis() < current.getTimeInMillis())
-                                                c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
-
-                                            if (forerunnerTime != 0)
-                                                ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
-                                                        title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                        iconUri);
-                                        }
-                                    }
-                                } else {
-                                    // Alternate week data
-                                    if (!periods.get(i).equals("")) {
-                                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods.get(i), weekNumber);
-                                        for (int l = 0; l < periodList.size(); l++) {
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                    room, "",
-                                                    "", periodList.get(l), bitmap[0]));
-                                        }
-
-                                        if (timeinalts.get(i) > -1) {
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher,
-                                                    room, utility.millisToHourTime(timeinalts.get(i)),
-                                                    utility.millisToHourTime(timeoutalts.get(i)), "", null));
-                                            // Schedule the notification
-                                            int timeIn = timeinalts.get(i);
-
-                                            c[0] = Calendar.getInstance();
-                                            Calendar timeInCalendar = Calendar.getInstance();
-                                            timeInCalendar.setTimeInMillis(timeIn);
-                                            c[0].set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-                                            c[0].set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
-
-                                            Calendar current = Calendar.getInstance();
-                                            if (c[0].getTimeInMillis() < current.getTimeInMillis())
-                                                c[0].set(Calendar.DAY_OF_MONTH, c[0].get(Calendar.DAY_OF_MONTH) + 1);
-
-                                            if (forerunnerTime != 0)
-                                                ScheduleNotification(new Date(c[0].getTimeInMillis()), title,
-                                                        title, getString(R.string.class_notification_message, Integer.toString(forerunnerTime)),
-                                                        iconUri);
-                                        }
-                                    }
-                                }
-                            }
+                            // Set the splash text if there's no classes queried
+                            if (mScheduleAdapter.getCount() == 0)
+                                headerTextView.setVisibility(View.VISIBLE);
+                            else headerTextView.setVisibility(View.GONE);
                         }
-
-                        Collections.sort(mScheduleList, new ScheduleComparator());
-                        mScheduleAdapter.notifyDataSetChanged();
-                        spinner.setVisibility(View.GONE);
-
-                        // Set the splash text if there's no classes queried
-                        if (mScheduleAdapter.getCount() == 0)
-                            headerTextView.setVisibility(View.VISIBLE);
-                        else headerTextView.setVisibility(View.GONE);
                     }
                 }
 
                 @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-                }
-
-                @Override
                 public void onCancelled(DatabaseError databaseError) {
-                        spinner.setVisibility(View.GONE);
-                        headerTextView.setVisibility(View.VISIBLE);
-                        headerTextView.setText(getString(R.string.check_internet));
+                    spinner.setVisibility(View.GONE);
+                    headerTextView.setVisibility(View.VISIBLE);
+                    headerTextView.setText(getString(R.string.check_internet));
                 }
-            }
+            });
 
-            ;
-
-            if (classesRef != null)
-                classesRef.addChildEventListener(classesRefListener);
         }
     }
 

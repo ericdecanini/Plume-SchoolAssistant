@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -54,6 +55,7 @@ public class SettingsActivity extends PreferenceActivity
         // For other preferences, simply an OnClickListener is needed
         findPreference(getString(R.string.KEY_SETTINGS_THEME)).setOnPreferenceClickListener(onPreferenceClickListener());
         findPreference(getString(R.string.KEY_SETTINGS_ABOUT_PLUME)).setOnPreferenceClickListener(onPreferenceClickListener());
+        findPreference(getString(R.string.KEY_SETTINGS_CHANGELOG)).setOnPreferenceClickListener(onPreferenceClickListener());
     }
 
     @Override
@@ -175,6 +177,16 @@ public class SettingsActivity extends PreferenceActivity
                     Intent intent = new Intent(SettingsActivity.this, AboutActivity.class);
                     startActivity(intent);
                     return true;
+                }
+                else if (prefKey.equals(getString(R.string.KEY_SETTINGS_CHANGELOG))) {
+                    new AlertDialog.Builder(preference.getContext())
+                            .setTitle("Version 0.4 Changelog")
+                            .setMessage("+ You can now log in with Facebook\n\n" +
+                                    "+ You can now upload your own icons for your classes and tasks\n\n" +
+                                    "+ See how many peer requests you have with an unseen request counter in the side menu\n\n" +
+                                    "+ You can now add photos with your tasks\n")
+                            .setPositiveButton(getString(R.string.ok), null)
+                            .show();
                 }
                 return false;
             }

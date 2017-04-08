@@ -55,6 +55,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static android.R.attr.data;
 import static android.R.attr.id;
 import static android.os.Build.ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
@@ -122,7 +123,12 @@ public class ClassesActivity extends AppCompatActivity {
                     ImageView icon = (ImageView) findViewById(R.id.icon);
                     String iconUri = dataSnapshot.child("icon").getValue(String.class);
                     icon.setVisibility(View.VISIBLE);
+                    if (iconUri != null)
                     icon.setImageURI(Uri.parse(iconUri));
+                    else icon.setImageResource(R.drawable.art_profile_default);
+                    String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("icon").setValue(defaultIconUri);
                 }
 
                 @Override
@@ -557,41 +563,34 @@ public class ClassesActivity extends AppCompatActivity {
                 findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
             DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("classes");
-            classesRef.addChildEventListener(new ChildEventListener() {
+            classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String title = dataSnapshot.getKey();
-                    String icon = dataSnapshot.child("icon").getValue(String.class);
-                    Log.v(LOG_TAG, "Icon: " + icon);
-                    Log.v(LOG_TAG, "Title: " + title);
-                    String teacher = dataSnapshot.child("teacher").getValue(String.class);
-                    String room = dataSnapshot.child("room").getValue(String.class);
-                    if (icon != null)
-                        mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
-                                teacher, room, " ", " ", "", null));
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    long snapshotCount = dataSnapshot.getChildrenCount();
+                    long i = 0;
+                    if (snapshotCount == 0) spinner.setVisibility(View.GONE);
+                    for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                        // Hide progress bar when query is done
+                        i++;
+                        if (i == snapshotCount)
+                            spinner.setVisibility(View.GONE);
+
+                        String title = classSnapshot.getKey();
+                        String icon = classSnapshot.child("icon").getValue(String.class);
+                        String teacher = classSnapshot.child("teacher").getValue(String.class);
+                        String room = classSnapshot.child("room").getValue(String.class);
+                        if (icon != null)
+                            mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
+                                    teacher, room, " ", " ", "", null));
 
 
-                    mScheduleAdapter.notifyDataSetChanged();
-                    spinner.setVisibility(View.GONE);
+                        mScheduleAdapter.notifyDataSetChanged();
+                        spinner.setVisibility(View.GONE);
 
-                    if (mScheduleAdapter.getCount() == 0)
-                        findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-                    else findViewById(R.id.header_textview).setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+                        if (mScheduleAdapter.getCount() == 0)
+                            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                        else findViewById(R.id.header_textview).setVisibility(View.GONE);
+                    }
                 }
 
                 @Override

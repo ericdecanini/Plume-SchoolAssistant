@@ -169,7 +169,7 @@ public class TasksDetailActivity extends AppCompatActivity {
             }
         });
 
-        animator.setDuration(123);
+        animator.setDuration(50);
         animator.start();
 
         // Play the animation for the rest of the toolbar

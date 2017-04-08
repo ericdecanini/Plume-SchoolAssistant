@@ -16,6 +16,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -64,6 +65,8 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -234,6 +237,7 @@ public class NewScheduleActivity extends AppCompatActivity
         Intent intent = getIntent();
         // If the intent is not null the activity should have been started from an edit action
         if (intent != null) {
+            if (mFirebaseUser != null) FLAG_EDIT = true;
             Bundle extras = intent.getExtras();
             // Get the title and edit flag sent through the intent
             if (extras != null) {
@@ -265,27 +269,27 @@ public class NewScheduleActivity extends AppCompatActivity
 
                         // Get listed values
                         DataSnapshot occurrences = dataSnapshot.child("occurrence");
-                        for (DataSnapshot occurrenceSnapshot: occurrences.getChildren()) {
+                        for (DataSnapshot occurrenceSnapshot : occurrences.getChildren()) {
                             occurrenceList.add(occurrenceSnapshot.getKey());
                         }
                         DataSnapshot timeins = dataSnapshot.child("timein");
-                        for (DataSnapshot timeinSnapshot: timeins.getChildren()) {
+                        for (DataSnapshot timeinSnapshot : timeins.getChildren()) {
                             timeInList.add(timeinSnapshot.getValue(Integer.class));
                         }
                         DataSnapshot timeouts = dataSnapshot.child("timeout");
-                        for (DataSnapshot timeoutSnapshot: timeouts.getChildren()) {
+                        for (DataSnapshot timeoutSnapshot : timeouts.getChildren()) {
                             timeOutList.add(timeoutSnapshot.getValue(Integer.class));
                         }
                         DataSnapshot timeinsalt = dataSnapshot.child("timeinalt");
-                        for (DataSnapshot timeinaltSnapshot: timeinsalt.getChildren()) {
+                        for (DataSnapshot timeinaltSnapshot : timeinsalt.getChildren()) {
                             timeInAltList.add(timeinaltSnapshot.getValue(Integer.class));
                         }
                         DataSnapshot timeoutsalt = dataSnapshot.child("timeoutalt");
-                        for (DataSnapshot timeoutaltSnapshot: timeoutsalt.getChildren()) {
+                        for (DataSnapshot timeoutaltSnapshot : timeoutsalt.getChildren()) {
                             timeOutAltList.add(timeoutaltSnapshot.getValue(Integer.class));
                         }
                         DataSnapshot periods = dataSnapshot.child("periods");
-                        for (DataSnapshot periodsSnapshot: periods .getChildren()) {
+                        for (DataSnapshot periodsSnapshot : periods.getChildren()) {
                             periodsList.add(periodsSnapshot.getKey());
                         }
 
@@ -303,7 +307,7 @@ public class NewScheduleActivity extends AppCompatActivity
                                         periodsList.get(i), occurrence
                                 ));
                             }
-                    }
+                        }
 
                         // Apply the data to the views
                         fieldTitle.setText(title);
@@ -324,8 +328,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
                     }
                 });
-            }
-            else {
+            } else {
                 // Get the data from SQLite
                 DbHelper dbHelper = new DbHelper(this);
                 Cursor cursor;
@@ -457,7 +460,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 sendBroadcast(widgetUpdate);
 
                 // Make the toast
-                if (!FLAG_EDIT)
+                if (!INTENT_FLAG_EDIT)
                     Toast.makeText(NewScheduleActivity.this, title + " "
                             + getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
 
@@ -474,6 +477,7 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
             Bitmap thumbnail = data.getParcelableExtra("data");
             Uri fullPhotoUri = data.getData();
@@ -497,7 +501,7 @@ public class NewScheduleActivity extends AppCompatActivity
         return basis + ":" + weekType + ":" + classDays;
     }
 
-private boolean insertScheduleDataIntoFirebase() {
+    private boolean insertScheduleDataIntoFirebase() {
         // Get the input from the fields
         title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
@@ -508,9 +512,6 @@ private boolean insertScheduleDataIntoFirebase() {
                 .child("users").child(mUserId).child("classes").child(title);
         classRef.child("teacher").setValue(teacher);
         classRef.child("room").setValue(room);
-        if (customIconUploaded)
-            classRef.child("icon").setValue("storage");
-        else classRef.child("icon").setValue(iconUri);
 
         // Set the listed values of the class
         if (occurrenceTimePeriodList.size() != 0) {
@@ -540,7 +541,44 @@ private boolean insertScheduleDataIntoFirebase() {
         }
 
         // Upload the custom item to Firebase Storage if set
+        // and copy it into the app's local directory
         if (customIconUploaded) {
+            // Copy function
+            try {
+                Uri imageUri = Uri.parse(iconUri);
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                String filename = imageUri.getLastPathSegment();
+                byte[] data = getBytes(inputStream);
+                File file = new File(getFilesDir(), filename);
+                FileOutputStream outputStream;
+                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(data);
+                outputStream.close();
+
+                // Image compression
+                Bitmap decodedBitmap = decodeFile(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] bitmapData = baos.toByteArray();
+                file.delete();
+                File file1 = new File(getFilesDir(), filename);
+                FileOutputStream fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+
+                // Get the uri of the file so it can be saved
+                iconUri = Uri.fromFile(file1).toString();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Upload the URI into the cloud database
+            classRef.child("icon").setValue(iconUri);
+
+            // Upload function
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             StorageReference iconRef = storageRef.child(mUserId + "/classes/" + title);
@@ -564,6 +602,8 @@ private boolean insertScheduleDataIntoFirebase() {
                     // TODO: Handle successful upload if any action is required
                 }
             });
+        } else {
+            classRef.child("icon").setValue(iconUri);
         }
 
         return true;
@@ -603,8 +643,21 @@ private boolean insertScheduleDataIntoFirebase() {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        iconUri = Uri.fromFile(file).toString();
-        Log.v(LOG_TAG, "Icon Uri: " + iconUri);
+
+        // Image compression
+        Bitmap decodedBitmap = decodeFile(file);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+        byte[] bitmapData = baos.toByteArray();
+        file.delete();
+        File file1 = new File(getFilesDir(), filename);
+        FileOutputStream fos = new FileOutputStream(file1);
+        fos.write(bitmapData);
+        fos.flush();
+        fos.close();
+
+        // Get the path of the file so it can be saved
+        iconUri = Uri.fromFile(file1).toString();
 
         DbHelper dbHelper = new DbHelper(this);
         // If the activity was started by an edit action, update the database row, else, insert a new row
@@ -1277,20 +1330,44 @@ private boolean insertScheduleDataIntoFirebase() {
                 break;
             case 1:
                 if (mFirebaseUser != null) {
-//                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    if (intent.resolveActivity(getPackageManager()) != null)
+                        startActivityForResult(intent, REQUEST_IMAGE_GET);
+                } else {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     if (intent.resolveActivity(getPackageManager()) != null)
                         startActivityForResult(intent, REQUEST_IMAGE_GET);
                 }
-                else {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivityForResult(intent, REQUEST_IMAGE_GET);
-                }
                 break;
         }
+    }
+
+    private Bitmap decodeFile(File f) {
+        try {
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 300;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+            while (o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            // Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+        } catch (FileNotFoundException e) {
+        }
+        return null;
     }
 
     // Subclass for the Contextual Action Mode

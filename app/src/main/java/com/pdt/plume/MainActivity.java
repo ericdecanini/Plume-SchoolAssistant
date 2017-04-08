@@ -175,8 +175,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getSupportActionBar().setTitle("");
         mAppbar = (AppBarLayout) findViewById(R.id.appbar);
 
-        // If it's the first time running the app, launch this method
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true))
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+
+        // If it's the first time launching this version, perform this function
+        if (!FIRST_LAUNCH && preferences.getBoolean(getString(R.string.Version), true)) {
+            // Show the changelog dialog
+            preferences.edit()
+                    .putBoolean(getString(R.string.Version), false)
+                    .apply();
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Version 0.4 Changelog")
+                    .setMessage("+ You can now log in with Facebook\n\n" +
+                            "+ You can now upload your own icons for your classes and tasks\n\n" +
+                            "+ See how many peer requests you have with an unseen request counter in the side menu\n\n" +
+                            "+ You can now add photos with your tasks\n\n" +
+                            "+ Several bug fixes\n")
+                    .setPositiveButton(getString(R.string.ok), null)
+                    .show();
+        }
+
+        // If it's the first time running the app, perform this function
+        if (FIRST_LAUNCH)
             init();
 
         // Check if the device is a phone or tablet, then

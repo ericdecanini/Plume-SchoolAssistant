@@ -478,6 +478,9 @@
     <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
     <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
 
+    <string name="settings_changelog">Changelog</string>
+    <string name="KEY_SETTINGS_CHANGELOG" translatable="false">KEY_SETTINGS_CHANGELOG</string>
+
     <string name="settings_theme_primary_title">Primary Colour</string>
     <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
 
@@ -492,7 +495,7 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.3.2 Beta</string>
+    <string name="Version">Version 0.4 Beta</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>

@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -136,10 +137,18 @@ public class TasksFragment extends Fragment {
                             completed = false;
                         final Bitmap[] bitmap = {null};
 
-                        // Check if the task uses a custom icon stored online
+                        // Debug function
                         if (title == null)
                             return;
-                        if (icon.equals("storage")) {
+
+                        // Check if icon URI is valid
+                        Uri iconUri = Uri.parse(icon);
+                        Log.v(LOG_TAG, "Icon Uri: " + iconUri);
+                        ImageView imageView = new ImageView(getContext());
+                        imageView.setImageURI(iconUri);
+
+                        if (imageView.getDrawable() == null) {
+                            // Perform download function
                             FirebaseStorage storage = FirebaseStorage.getInstance();
                             StorageReference storageRef = storage.getReference();
                             StorageReference iconsRef = storageRef.child(mUserId + "/tasks/" + taskSnapshot.getKey());

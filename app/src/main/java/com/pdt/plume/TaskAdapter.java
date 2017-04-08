@@ -3,6 +3,7 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.media.Image;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -80,7 +82,10 @@ public class TaskAdapter extends ArrayAdapter {
         Bitmap setImageBitmap = null;
         if (task.customIcon == null)
         try {
-            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(task.taskIcon));
+            Uri uri = Uri.parse(task.taskIcon);
+            File file = new File(uri.getPath());
+            Log.v(LOG_TAG, "File size: " + file.length());
+            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
         } catch (IOException e) {
             e.printStackTrace();
         } else {
