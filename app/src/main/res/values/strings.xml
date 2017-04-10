@@ -1,21 +1,17 @@
 <resources>
     <string name="app_name">Plume - Academy Assistant</string>
-    <string name="action_settings">Settings</string>
-
-    <!-- Facebook Strings -->
-    <string name="facebook_app_id">1232139486864891</string>
-    <string name="fb_login_protocol_scheme">fb1232139486864891</string>
+    <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
     <string name="fb_already_authenticated">An account using this email already exists. Please log in with your email instead.</string>
+    <string name="fb_login_protocol_scheme">fb1232139486864891</string>
+    <string name="facebook_app_id">1232139486864891</string>
 
-    <!-- Lorem Ipsum strings -->
-    <string name="lorem_ipsum_paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-    </string>
-    <string name="lorem_ipsum_sentence">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-    </string>
-
-    <!-- General Strings -->
-    <string name="none">None</string>
-    <string name="coming_soon">Coming soon&#8230;</string>
+    <string name="nav_classes">Classes</string>
+    <string name="nav_completedTasks">Completed tasks</string>
+    <string name="nav_people">People</string>
+    <string name="nav_requests">Requests</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_help">Help</string>
+    <string name="nav_about">About Plume - Academy Assistant</string>
 
     <string name="one">1</string>
     <string name="two">2</string>
@@ -26,207 +22,18 @@
     <string name="seven">7</string>
     <string name="eight">8</string>
 
-    <!-- Common keys -->
-    <string name="INTENT_EXTRA_TITLE" translatable="false">INTENT_EXTRA_TITLE</string>
-    <string name="INTENT_EXTRA_PATH" translatable="false">INTENT_EXTRA_PATH</string>
-
-    <!-- Menu Actions -->
-    <string name="add">Add</string>
-    <string name="delete">Delete</string>
-    <string name="remove_class">Remove class</string>
-    <string name="remove_peer">Remove peer</string>
-    <string name="SAVE">SAVE</string>
-    <string name="save">Save</string>
-    <string name="share">Share</string>
-    <string name="edit">Edit</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
-    <string name="restore">Restore</string>
-    <string name="done">Done</string>
-    <string name="NEXT">NEXT</string>
-    <string name="SKIP">SKIP</string>
-    <string name="GOT_IT">GOT IT</string>
-    <string name="Search">Search</string>
-    <string name="timeTask">Setup a timer</string>
-    <string name="select">Select</string>
-
-    <string name="schedule">Schedule</string>
-    <string name="tasks">Tasks</string>
-
-    <!--
-    PERMISSION CHECK DIALOGS
-    -->
-    <string name="deny">Deny</string>
-    <string name="allow">Allow</string>
-    <string name="storage_title">Allow Plume to access your storage?</string>
-    <string name="storage_message">This will allow Plume to sync your data online.</string>
-
-    <!--
-    INTRO STRINGS
-    -->
-    <string name="aiSlide1Title">Your Digital Planner</string>
-    <string name="aiSlide1Desc">Manage your schedules and tasks all from your phone</string>
-    <string name="aiSlide2Title">Collaborate with Peers</string>
-    <string name="aiSlide2Desc">Share tasks and make working together even easier</string>
-    <string name="aiSlide4Title">You\'re All Set!</string>
-    <string name="aiSlide4Desc">Click \"Done\" to open up your digital school planner</string>
-
-    <!--
-    MAIN ACTIVITY
-    -->
-    <string name="KEY_FIRST_LAUNCH">KEY_FIRST_LAUNCH</string>
-
-    <!-- Navigation Drawer -->
-    <string name="nav_classes">Classes</string>
-    <string name="nav_completedTasks">Completed tasks</string>
-    <string name="nav_people">People</string>
-    <string name="nav_requests">Requests</string>
-    <string name="nav_settings">Settings</string>
-    <string name="nav_help">Help</string>
-    <string name="nav_about">About Plume - Academy Assistant</string>
-
-    <!-- Contextual Action Mode -->
-    <string name="select_items">Select Items</string>
-
-    <!-- Strings for tabbed layout -->
-    <string name="tab_one">Schedule</string>
-    <string name="tab_two">Tasks</string>
-
-    <!-- Strings for navigation drawer -->
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <!-- Strings for theme -->
-    <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
-    <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
-
-    <!-- Strings for week number -->
-    <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
-    <string name="KEY_WEEK_NUMBER_SETTING" translatable="false">KEY_WEEK_NUMBER_SETTING</string>
-
-    <!--
-    MAIN ACTIVITY END
-    -->
-
-    <!-- Strings for Database -->
-    <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
-
-    <!-- Strings for ClassesActivity -->
-    <string name="activity_classes_label">Classes</string>
-    <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
-
-    <string name="all_classes">All Classes</string>
-
-    <string name="STARTED_FROM_CLASSES_ACTIVITY" translatable="false">STARTED_FROM_CLASSES_ACTIVITY</string>
-
-    <!-- Strings for CompletedTasksActivity -->
-    <string name="activity_completedTasks_label">Completed Tasks</string>
-    <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
-    <string name="FLAG_TASK_COMPLETED" translatable="false">FLAG_TASK_COMPLETED</string>
-
-    <string name="activity_completedTasks_dialog_title">Delete all items?</string>
-    <string name="activity_tasksDetail_restore_dialog_title">Restore task?</string>
-
-    <!--
-    SCHEDULE STRINGS
-    -->
-
-    <!-- Strings for ScheduleFragment -->
-    <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
-    <string name="check_internet">Please check your network connection.</string>
-    <string name="format_time">%1$s - %2$s</string>
-    <string name="format_period">%1$s period</string>
-    <string name="class_notification_message">In %1$s minutes</string>
-
-    <!-- Strings for NotificationService -->
-    <string name="schedule_notification_message">Class starts in</string>
-    <string name="KEY_SCHEDULE_MUTE_CURRENT_VOLUME" translatable="false">KEY_SCHEDULE_MUTE_CURRENT_VOLUME</string>
-
-    <!-- Strings for ScheduleDetailActivity -->
-    <string name="CLASS">Class</string>
-    <string name="schedule_detail_teacher_subtitle">Teacher</string>
-    <string name="schedule_detail_room_subtitle">Room</string>
-    <string name="schedule_detail_periods_title">Periods</string>
-    <string name="schedule_detail_notes_title">Notes</string>
-    <string name="schedule_detail_notes_add">Add note</string>
-    <string name="schedule_detail_tasks_title">Tasks</string>
-
-    <string name="schedule_detail_add_task">Add task to %1%s</string>
-    <string name="schedule_detail_add_note">Add a note</string>
-
-    <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
-
-    <string name="KEY_SCHEDULE_DETAIL_TITLE">KEY_SCHEDULE_DETAIL_TITLE</string>
-
-    <!-- Strings for NewScheduleActivity -->
-    <string name="activity_new_schedule_label">New Class</string>
-
-    <!-- Actions and Toasts -->
-    <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
-    <string name="new_schedule_toast_validation_no_days_selected">Please select at least one day</string>
-    <string name="new_schedule_toast_validation_no_period_selected">Please select at least one period</string>
-    <string name="new_schedule_toast_class_inserted"> added to Classes</string>
-
-    <!-- Main UI -->
-    <string name="new_schedule_hint">Enter a title</string>
-    <string name="new_schedule_add_class_time">Add a Period for this Class</string>
-    <string name="new_schedule_time_in">From</string>
-    <string name="new_schedule_time_out">To</string>
-    <string name="new_schedule_teacher">Teacher</string>
-    <string name="new_schedule_room">Room</string>
-
-    <!-- Icon Dialog List -->
-    <string name="new_schedule_icon_list_title">Change photo</string>
-    <string name="new_schedule_icon_list_builtin">Built-in icons</string>
-    <string name="new_schedule_icon_list_upload">Upload from gallery</string>
-    <string-array name="new_schedule_icon_list_array">
-        <item>@string/new_schedule_icon_list_builtin</item>
-        <item>@string/new_schedule_icon_list_upload</item>
-    </string-array>
-
-    <!-- Built in icons dialog -->
-    <string name="new_schedule_icon_builtin_title">Choose an icon</string>
-
-    <!-- Class Time List -->
-    <string name="class_time_list_header_substring_and">and</string>
-    <string name="class_time_list_header_substring_period">period</string>
-    <string name="class_time_list_header_substring_periods">periods</string>
-
-    <!-- UI for Add Class Time Fragment One -->
-    <string name="class_time_one_title">How does your schedule work?</string>
-    <string name="class_time_one_timebased">Time based</string>
-    <string name="class_time_one_periodbased">Period based</string>
-    <string name="class_time_one_blockbased">Block based</string>
-    <string name="timebased_description">Class periods are scheduled by time.</string>
-    <string name="periodbased_description">Class periods are numbered by period.</string>
-    <string name="blockbased_description">Class periods alternate every day each with up to 4 classes.</string>
-    <string name="timebased_exmaple">Maths - 9:00&#8211;10:00am</string>
-    <string name="periodbased_example">Maths - 1st Period</string>
-    <string name="blockbased_example">Day A - Maths 1st Period</string>
-
-    <!-- UI for Add Class Time Fragment Two -->
-    <string name="class_time_two_sameweek">Same schedule every week</string>
-    <string name="class_time_two_altweeks">Alternating weeks</string>
-    <string name="sameweek_description">Classes are at the same time every week.</string>
-    <string name="altweek_decription">Schedule changes every week</string>
-    <string name="sameweek_example">Maths on Mon, 9:00 Every Week</string>
-    <string name="altweek_example">Week A - Maths on Monday, 9:00\nWeek B - Maths on Tue, 11:00</string>
-
-    <!-- Add Class Time Fragment Three -->
-    <string name="class_time_three_select_days">Select when your class takes place</string>
-    <string name="select_periods">Choose periods</string>
-
-    <!-- Days and Week Number -->
-    <string name="class_three_everyweek">Every week</string>
-    <string name="class_three_weekone">Week 1</string>
-    <string name="class_three_weektwo">Week 2</string>
-    <string name="class_three_sunday">Sunday</string>
-    <string name="class_three_monday">Monday</string>
-    <string name="class_three_tuesday">Tuesday</string>
-    <string name="class_three_wednesday">Wednesday</string>
-    <string name="class_three_thursday">Thursday</string>
-    <string name="class_three_friday">Friday</string>
-    <string name="class_three_saturday">Saturday</string>
+    <string name="first">1st</string>
+    <string name="second">2nd</string>
+    <string name="third">3rd</string>
+    <string name="fourth">4th</string>
+    <string name="fifth">5th</string>
+    <string name="sixth">6th</string>
+    <string name="seventh">7th</string>
+    <string name="eighth">8th</string>
+    <string name="ninth">9th</string>
+    <string name="tent">10th</string>
+    <string name="eleventh">11th</string>
+    <string name="twelfth">12th</string>
 
     <string name="sunday_initial">S</string>
     <string name="monday_initial">M</string>
@@ -236,262 +43,247 @@
     <string name="friday_initial">F</string>
     <string name="saturday_initial">S</string>
 
-    <string name="class_three_sunday_abr">Sun</string>
-    <string name="class_three_monday_abr">Mon</string>
-    <string name="class_three_tuesday_abr">Tue</string>
-    <string name="class_three_wednesday_abr">Wed</string>
-    <string name="class_three_thursday_abr">Thu</string>
-    <string name="class_three_friday_abr">Fri</string>
-    <string name="class_three_saturday_abr">Sat</string>
+    <string name="sunday_abr">Sun</string>
+    <string name="monday_abr">Mon</string>
+    <string name="tuesday_abr">Tue</string>
+    <string name="wednesday_abr">Wed</string>
+    <string name="thursday_abr">Thu</string>
+    <string name="friday_abr">Fri</string>
+    <string name="saturday_abr">Sat</string>
 
-    <!-- Periods -->
-    <string name="class_time_period_one">1st</string>
-    <string name="class_time_period_two">2nd</string>
-    <string name="class_time_period_three">3rd</string>
-    <string name="class_time_period_four">4th</string>
-    <string name="class_time_period_five">5th</string>
-    <string name="class_time_period_six">6th</string>
-    <string name="class_time_period_seven">7th</string>
-    <string name="class_time_period_eight">8th</string>
-    <string name="class_time_period_nine">9th</string>
-    <string name="class_time_period_ten">10th</string>
-    <string name="class_time_period_eleven">11th</string>
-    <string name="class_time_period_twelve">12th</string>
-
-    <!-- Block Days -->
-    <string name="class_time_block_day_a">A Day</string>
-    <string name="class_time_block_day_b">B Day</string>
-
-    <!-- NOTES ACTIVITY -->
-    <string name="notes_title_hint">Title</string>
-    <string name="notes_note_hint">Note</string>
-    <string name="NOTES_EXTRA_ID">NOTES_EXTRA_ID</string>
-
-
-    <!-- Intent extras to check if the activity was started by an intent from one of its fragments or from an edit action -->
-    <string name="SCHEDULE_EXTRA_ID" translatable="false">SCHEDULE_EXTRA_ID</string>
-    <string name="SCHEDULE_EXTRA_TITLE" translatable="false">SCHEDULE_EXTRA_TITLE</string>
-    <string name="SCHEDULE_FLAG_EDIT" translatable="false">SCHEDULE_FLAG_EDIT</string>
-
-    <!-- Keys used in saving to SharedPreferences -->
-    <string name="SCHEDULE_PREFERENCE_BASIS_KEY" translatable="false">SCHEDULE_PREFERENCE_BASIS_KEY</string>
-    <string name="SCHEDULE_PREFERENCE_WEEKTYPE_KEY" translatable="false">SCHEDULE_BASIS_WEEKTYPE_KEY</string>
-
-    <!--
-    SCHEDULE STRINGS END
-    -->
-
-    <!--
-    TASKS STRINGS
-    -->
-
-    <!-- Strings for TasksFragment -->
-    <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done.</string>
-
-    <!-- Strings for TasksDetailActivity -->
-    <string name="TASK">Task</string>
-    <string name="task_detail_dialog_delete_confirm">Are you sure you want to delete this task?</string>
-    <string name="task_detail_dialog_completed_confirm">Completed task?</string>
-    <string name="due">Due %1$s</string>
-    <!-- Formats as shown: Maths Homework, change the order of the %n$s to proper translated style
-     e.g. French: %1$s pour %2$s = Des Devoirs pour Math -->
-    <string name="format_subtitle">%1$s %2$s</string>
-    <string name="mark_as_done">Mark as Done</string>
-    <string name="mark_as_undone">Mark as Undone</string>
-
-    <string name="completed_task">Completed task</string>
-    <string name="set_timer">Set timer</string>
-    <string name="toast_timer_set">Timer set for</string>
-    <string name="minute">minute</string>
-    <string name="minutes">minutes</string>
-
-    <string name="minute_left">less than a minute left.</string>
-    <string name="minutes_left">minutes left.</string>
-    <string name="timer_end">Countdown reached.</string>
-
-    <string name="KEY_TASKS_EXTRA_ID">KEY_TASKS_EXTRA_ID</string>
-    <string name="KEY_TASKS_EXTRA_REVISION_TIME">KEY_TASKS_EXTRA_REVISION_TIME</string>
-
-    <!-- Strings for NewTaskActivity -->
-    <string name="new_task_hint">Enter Task Title&#8230;</string>
-    <string name="notification_message_reminder">Touch for more details.</string>
-    <string name="activity_new_task_label">New Task</string>
-    <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
-    <string name="share_task">Share task with peers</string>
-    <string name="link_to_class">Link to Class</string>
-    <string name="task_type">Task type</string>
-
-    <!-- Actions and Toasts -->
-    <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
-
-    <!-- Main UI -->
-    <string name="field_dropdown_class">Class</string>
-    <string name="field_dropdown_type">Type</string>
-    <string name="field_hint_description">Description</string>
-    <string name="enter_text_hint">Enter text here&#8230;</string>
-    <string name="field_due_date">Due date:</string>
-    <string name="field_attach_file">Attach file</string>
-    <string name="field_take_photo">Take photo</string>
-    <string name="field_set_reminder">Set reminder</string>
-
-
-    <!-- Dropdown Menu Items -->
-    <string name="add_new_class">Add a new class</string>
-    <string name="field_dropdown_type_menu_item_homework">Homework</string>
-    <string name="field_dropdown_type_menu_item_test">Test</string>
-    <string name="field_dropdown_type_menu_item_revision">Revision</string>
-    <string name="field_dropdown_type_menu_item_project">Project</string>
-    <string name="field_dropdown_type_menu_item_presentation">Presentation</string>
-    <string name="field_dropdown_type_menu_item_detention">Detention</string>
-    <string name="field_dropdown_type_menu_item_other">Other</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="set_date">Set date</string>
+
+    <string name="morning">Morning</string>
+    <string name="afternoon">Afternoon</string>
+    <string name="evening">Evening</string>
 
     <string name="morning_time">Morning (9:00am)</string>
     <string name="afternoon_time">Afternoon (2:00pm)</string>
     <string name="evening_time">Evening (6:00pm)</string>
     <string name="set_time">Set time</string>
 
-    <string name="morning">Morning</string>
-    <string name="afternoon">Afternoon</string>
-    <string name="evening">Evening</string>
+    <string name="a_day">A Day</string>
+    <string name="b_day">B Day</string>
 
-    <string name="field_new_photo_dialog_title">Insert photo</string>
-    <string-array name="field_new_photo_dialog_items">
-        <item>Take a photo</item>
-        <item>Select photo from gallery</item>
-    </string-array>
-    <string name="take_photo">Take a photo</string>
-    <string name="select_gallery">Select a photo from gallery</string>
+    <string name="name_hint">Name</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="email_hint">Email</string>
+    <string name="sign_up_button_label">Sign Up</string>
+    <string name="signup_error_message">Please make sure you fill in all the fields!</string>
+    <string name="signup_error_title">Error!</string>
+    <string name="signup_error_message_no_confirm">Please confirm your password</string>
+    <string name="signup_error_message_wrong_confirm">Passwords don՚t match. Please try again.</string>
+    <string name="signup_success">Account successfully created! You can now Login.</string>
+    <string name="add_item">Add New Item</string>
+    <string name="login_error_message">Email or password is invalid</string>
+    <string name="login_error_title">Error!</string>
+    <string name="login_button_label">Log in</string>
+    <string name="sign_up_text">New here? Sign Up!</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="login_button_facebook">Sign in with Facebook</string>
+    <string name="action_login">Log in</string>
+    <string name="action_logout">Log out</string>
 
-    <string name="field_existing_photo_dialog_title">Change photo</string>
-    <string-array name="field_existing_photo_dialog_items">
-        <item>Take a new photo</item>
-        <item>Select new photo</item>
-        <item>Clear photo</item>
-    </string-array>
-
-
-    <!-- Strings for Task List Items -->
-    <string name="due_date">Due date:</string>
-
-    <!-- Intent extras to check if the activity was started from an edit action -->
-    <string name="TASKS_EXTRA_ID" translatable="false">TASKS_EXTRA_ID</string>
-    <string name="TASKS_EXTRA_TITLE" translatable="false">TASKS_EXTRA_TITLE</string>
-    <string name="TASKS_EXTRA_CLASS" translatable="false">TASKS_EXTRA_CLASS</string>
-    <string name="TASKS_EXTRA_TYPE" translatable="false">TASKS_EXTRA_TYPE</string>
-    <string name="TASKS_EXTRA_SHARER" translatable="false">TASKS_EXTRA_SHARER</string>
-    <string name="TASKS_EXTRA_DESCRIPTION" translatable="false">TASKS_EXTRA_DESCRIPTION</string>
-    <string name="TASKS_EXTRA_ATTACHMENT" translatable="false">TASKS_EXTRA_ATTACHMENT</string>
-    <string name="TASKS_EXTRA_DUEDATE" translatable="false">TASKS_EXTRA_DUEDATE</string>
-    <string name="TASKS_EXTRA_REMINDERDATE" translatable="false">TASKS_EXTRA_REMINDERDATE</string>
-    <string name="TASKS_EXTRA_REMINDERTIME" translatable="false">TASKS_EXTRA_REMINDERTIME</string>
-    <string name="TASKS_FLAG_EDIT" translatable="false">TASKS_FLAG_EDIT</string>
-    <string name="EXTRA_TEXT_RETURN_TO_TASKS" translatable="false">EXTRA_TEXT_RETURN_TO_TASKS</string>
-
-    <!--
-    TASKS STRINGS END
-    -->
-
-    <!--
-    PREFERENCE STRINGS
-    -->
-
-    <string name="preference_category_general">General settings</string>
-    <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
-
-    <string name="settings_class_notification_title">Class notifications</string>
-    <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
-    <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
-    <string name="settings_class_notification_dialog_message">Set to 0 to disable class notifications</string>
-    <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
-
-    <string name="settings_class_mute_title">Mute phone during classes</string>
-    <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>
-
-    <string name="settings_week_number_title">Week number</string>
-    <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>
-    <string-array name="settings_week_number_entries">
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string-array name="settings_week_number_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
-    <string name="preference_category_appearance">Appearance settings</string>
-    <string name="KEY_SETTINGS_CATEGORY_APPEARANCE" translatable="false">KEY_SETTINGS_CATEGORY_APPEARANCE</string>
-
-    <string name="settings_theme_title">Theme</string>
-    <string name="KEY_SETTINGS_THEME" translatable="false">KEY_SETTINGS_THEME</string>
-
-    <string name="settings_date_format_title">Date format</string>
-    <string name="KEY_SETTINGS_DATE_FORMAT" translatable="false">KEY_SETTINGS_DATE_FORMAT</string>
-    <string-array name="settings_date_format_entries">
-        <item>Mon, January 5, 2000</item>
-        <item>Monday, January 5, 2000</item>
-        <item>Mon 5 January 2000</item>
-        <item>Monday 5 January 2000</item>
-        <item>Mon 5th January 2000</item>
-        <item>Monday 5th January 2000</item>
-        <item>01/05/00</item>
-        <item>05/01/00</item>
-    </string-array>
-    <string-array name="settings_date_format_values">
-        <item>EEE, MMMM d, yyyy</item>
-        <item>EEEE, MMMM d, yyyy</item>
-        <item>EEE d MMMM yyyy</item>
-        <item>EEEE d MMMM yyyy</item>
-        <item>EEE :d: MMMM yyyy</item>
-        <item>EEEE :d: MMMM yyyy</item>
-        <item>MM/dd/yy</item>
-        <item>dd/MM/yy</item>
-    </string-array>
-
-    <string name="settings_block_format_title">Block format</string>
-    <string name="KEY_SETTINGS_BLOCK_FORMAT" translatable="false">KEY_SETTINGS_BLOCK_FORMAT</string>
-    <string-array name="settings_block_format_entries">
-        <item>Day A</item>
-        <item>A Day</item>
-        <item>Day 1</item>
-        <item>1 Day</item>
-    </string-array>
-    <string-array name="settings_block_format_values">
-        <item>d:l</item>
-        <item>l:d</item>
-        <item>d:n</item>
-        <item>n:d</item>
-    </string-array>
-    <string-array name="settings_block_format_entries_b">
-        <item>Day B</item>
-        <item>B Day</item>
-        <item>Day 2</item>
-        <item>2 Day</item>
-    </string-array>
-
+    <string name="accept">Accept</string>
+    <string name="acceptPeerHeader">%1$s wants to add you in these classes</string>
+    <string name="activity_classes_label">Classes</string>
+    <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
+    <string name="activity_completedTasks_dialog_title">Delete all items?</string>
+    <string name="activity_completedTasks_label">Completed Tasks</string>
+    <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
+    <string name="activity_new_schedule_label">New Class</string>
+    <string name="activity_new_task_label">New Task</string>
+    <string name="activity_tasksDetail_restore_dialog_title">Restore task?</string>
+    <string name="add">Add</string>
+    <string name="add_new_class">Add a new class</string>
+    <string name="add_peer">Add a new Peer</string>
+    <string name="AddByUsername">Add by Username</string>
+    <string name="addPeers">Add Peers</string>
+    <string name="aiSlide1Desc">Manage your schedules and tasks all from your phone</string>
+    <string name="aiSlide1Title">Your Digital Planner</string>
+    <string name="aiSlide2Desc">Share tasks and make working together even easier</string>
+    <string name="aiSlide2Title">Collaborate with Peers</string>
+    <string name="aiSlide4Desc">Click \"Done\" to open up your digital school planner</string>
+    <string name="aiSlide4Title">You\'re All Set!</string>
+    <string name="all_classes">All Classes</string>
+    <string name="allow">Allow</string>
+    <string name="cancel">Cancel</string>
     <string name="category_other_settings_title">Other settings</string>
-    <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
-
-    <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
-    <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
-
-    <string name="settings_changelog">Changelog</string>
-    <string name="KEY_SETTINGS_CHANGELOG" translatable="false">KEY_SETTINGS_CHANGELOG</string>
-
-    <string name="settings_theme_primary_title">Primary Colour</string>
-    <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
-
-    <string name="settings_theme_secondary_title">Secondary Colour</string>
-    <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
-
+    <string name="check_internet">Please check your network connection.</string>
+    <string name="Class">Class</string>
+    <string name="class_notification_message">In %1$s minutes</string>
+    <string name="class_time_list_header_substring_and">and</string>
+    <string name="class_time_list_header_substring_period">period</string>
+    <string name="class_time_list_header_substring_periods">periods</string>
+    <string name="class_time_one_blockbased">Block based</string>
+    <string name="class_time_one_periodbased">Period based</string>
+    <string name="class_time_one_timebased">Time based</string>
+    <string name="class_time_one_title">How does your schedule work?</string>
+    <string name="class_time_three_select_days">Select when your class takes place</string>
+    <string name="class_time_two_altweeks">Alternating weeks</string>
+    <string name="class_time_two_sameweek">Same schedule every week</string>
+    <string name="classes_you_share">Classes you share</string>
     <string name="color_dialog_title">Select colour</string>
+    <string name="coming_soon">Coming soon&#8230;</string>
+    <string name="completed_task">Completed task</string>
+    <string name="delete">Delete</string>
+    <string name="deny">Deny</string>
+    <string name="dialog_description_altweek">Schedule changes every week</string>
+    <string name="dialog_description_blockbased">Class periods alternate every day each with up to 4 classes.</string>
+    <string name="dialog_description_periodbased">Class periods are numbered by period.</string>
+    <string name="dialog_description_sameweek">Classes are at the same time every week.</string>
+    <string name="dialog_description_timebased">Class periods are scheduled by time.</string>
+    <string name="dialog_example_altweek">Week A - Maths on Monday, 9:00\nWeek B - Maths on Tue, 11:00</string>
+    <string name="dialog_example_blockbased">Day A - Maths 1st Period</string>
+    <string name="dialog_example_periodbased">Maths - 1st Period</string>
+    <string name="dialog_example_sameweek">Maths on Mon, 9:00 Every Week</string>
+    <string name="dialog_example_timebased">Maths - 9:00&#8211;10:00am</string>
+    <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
+    <string name="dialog_remove_class">Do you want to remove %1$s from %2$s and stop sharing tasks?</string>
+    <string name="dialog_remove_peer">Do you want to remove %1$s from being your peer?</string>
+    <string name="done">Done</string>
+    <string name="due">Due %1$s</string>
+    <string name="due_date">Due date:</string>
+    <string name="edit">Edit</string>
+    <string name="editName">Edit Name</string>
+    <string name="editNameHint">Your Name</string>
+    <string name="editNameMessage">How do you want your peers to see you?</string>
+    <string name="enter_text_hint">Enter text here&#8230;</string>
+    <string name="field_attach_file">Attach file</string>
+    <string name="field_dropdown_class">Class</string>
+    <string name="field_dropdown_type">Type</string>
+    <string name="field_dropdown_type_menu_item_detention">Detention</string>
+    <string name="field_dropdown_type_menu_item_homework">Homework</string>
+    <string name="field_dropdown_type_menu_item_other">Other</string>
+    <string name="field_dropdown_type_menu_item_presentation">Presentation</string>
+    <string name="field_dropdown_type_menu_item_project">Project</string>
+    <string name="field_dropdown_type_menu_item_revision">Revision</string>
+    <string name="field_dropdown_type_menu_item_test">Test</string>
+    <string name="field_due_date">Due date:</string>
+    <string name="field_hint_description">Description</string>
+    <string name="field_new_photo_dialog_title">Insert photo</string>
+    <string name="field_set_reminder">Set reminder</string>
+    <string name="field_take_photo">Take photo</string>
+    <string name="flavourTitle">Enter a Message</string>
+    <string name="format_period">%1$s period</string>
+    <string name="format_subtitle">%1$s %2$s</string>
+    <string name="format_time">%1$s - %2$s</string>
+    <string name="got_it">got it</string>
+    <string name="here">Here</string>
+    <string name="ignore">Ignore</string>
+    <string name="link_to_class">Link to Class</string>
+    <string name="mark_as_done">Mark as Done</string>
+    <string name="mark_as_undone">Mark as Undone</string>
+    <string name="minute">minute</string>
+    <string name="minute_left">less than a minute left.</string>
+    <string name="minutes">minutes</string>
+    <string name="minutes_left">minutes left.</string>
+    <string name="mismatchDialogHeader">Did you name these classes differently?</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="new_schedule_add_class_time">Add a Period for this Class</string>
+    <string name="new_schedule_hint">Enter a title</string>
+    <string name="new_schedule_icon_builtin_title">Choose an icon</string>
+    <string name="new_schedule_icon_list_builtin">Built-in icons</string>
+    <string name="new_schedule_icon_list_title">Change photo</string>
+    <string name="new_schedule_icon_list_upload">Upload from gallery</string>
+    <string name="new_schedule_room">Room</string>
+    <string name="new_schedule_teacher">Teacher</string>
+    <string name="new_schedule_time_in">From</string>
+    <string name="new_schedule_time_out">To</string>
+    <string name="new_schedule_toast_class_inserted">%1$s added to Classes</string>
+    <string name="new_schedule_toast_validation_no_days_selected">Please select at least one day</string>
+    <string name="new_schedule_toast_validation_no_period_selected">Please select at least one period</string>
+    <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
+    <string name="new_task_hint">Enter Task Title&#8230;</string>
+    <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
+    <string name="nice_try_message">Are you that lonely?</string>
+    <string name="nice_try_title">Nice try</string>
+    <string name="none">None</string>
+    <string name="notes_note_hint">Note</string>
+    <string name="notes_title_hint">Title</string>
+    <string name="notification_message_reminder">Touch for more details.</string>
+    <string name="ok">OK</string>
+    <string name="preference_category_appearance">Appearance settings</string>
+    <string name="preference_category_general">General settings</string>
+    <string name="qrScanPrompt">Scan a peer\'s QR code</string>
+    <string name="remove_class">Remove class</string>
+    <string name="remove_peer">Remove peer</string>
+    <string name="requestSent">Request sent to %1$s</string>
+    <string name="restore">Restore</string>
+    <string name="save">Save</string>
+    <string name="scan">Scan</string>
+    <string name="ScanQRCode">Scan QR Code</string>
+    <string name="schedule">Schedule</string>
+    <string name="schedule_detail_add_note">Add a note</string>
+    <string name="schedule_detail_add_task">Add task to %1%s</string>
+    <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
+    <string name="schedule_detail_notes_add">Add note</string>
+    <string name="schedule_detail_notes_title">Notes</string>
+    <string name="schedule_detail_periods_title">Periods</string>
+    <string name="schedule_detail_room_subtitle">Room</string>
+    <string name="schedule_detail_tasks_title">Tasks</string>
+    <string name="schedule_detail_teacher_subtitle">Teacher</string>
+    <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
+    <string name="schedule_notification_message">Class starts in</string>
+    <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done.</string>
+    <string name="search">Search</string>
+    <string name="select">Select</string>
+    <string name="select_class">Select class</string>
+    <string name="select_gallery">Select a photo from gallery</string>
+    <string name="select_items">Select Items</string>
+    <string name="select_periods">Choose periods</string>
+    <string name="sendPeerRequest">Send Request</string>
+    <string name="set_timer">Set timer</string>
+    <string name="settings">Settings</string>
+    <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
+    <string name="settings_block_format_title">Block format</string>
+    <string name="settings_changelog">Changelog</string>
+    <string name="settings_class_mute_title">Mute phone during classes</string>
+    <string name="settings_class_notification_dialog_message">Set to 0 to disable class notifications</string>
+    <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
+    <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
+    <string name="settings_class_notification_title">Class notifications</string>
+    <string name="settings_date_format_title">Date format</string>
+    <string name="settings_theme_primary_title">Primary Colour</string>
+    <string name="settings_theme_secondary_title">Secondary Colour</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="share">Share</string>
+    <string name="share_task">Share task with peers</string>
+    <string name="splash_no_request">You have no Peer Requests</string>
+    <string name="storage_message">This will allow Plume to sync your data online.</string>
+    <string name="storage_title">Allow Plume to access your storage?</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="task">Task</string>
+    <string name="tasks">Tasks</string>
+    <string name="task_detail_dialog_completed_confirm">Completed task?</string>
+    <string name="task_detail_dialog_delete_confirm">Are you sure you want to delete this task?</string>
+    <string name="task_type">Task type</string>
+    <string name="timer_end">Countdown reached.</string>
+    <string name="timeTask">Setup a timer</string>
+    <string name="toast_timer_set">Timer set for</string>
+    <string name="user_search">user_search</string>
+    <string name="viewPeers">View Peers</string>
+    <string name="week_every">Every week</string>
+    <string name="week_number">Week number</string>
+    <string name="week_one">Week 1</string>
+    <string name="week_two">Week 2</string>
+    <string name="whats_up">What՚s up??</string>
+    <string name="whichClasses">Which of your classes is %1$s in?</string>
+    <string name="your_peers">Your Peers</string>
+    <string name="yourNameHere">Your Name Here</string>
 
-    <!--
-    ABOUT ACTIVITY STRINGS
-    -->
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
@@ -513,95 +305,77 @@
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
         as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
 
-    <!--
-    PEOPLE ACTIVITY STRINGS
-    -->
-    <string name="KEY_PREFERENCES_SELF_USERNAME" translatable="false">KEY_PREFERENCES_SELF_USERNAME</string>
-    <string name="KEY_PREFERENCES_SELF_NAME" translatable="false">KEY_PREFERENCES_SELF_NAME</string>
-    <string name="KEY_PREFERENCES_FLAVOUR" translatable="false">KEY_PREFERENCES_FLAVOUR</string>
-    <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>
 
+    <string-array name="new_schedule_icon_list_array">
+        <item>@string/new_schedule_icon_list_builtin</item>
+        <item>@string/new_schedule_icon_list_upload</item>
+    </string-array>
 
-    <string name="your_peers">Your Peers</string>
-    <string name="add_peer">Add a new Peer</string>
-    <string name="yourNameHere">Your Name Here</string>
-    <string name="whats_up">What՚s up??</string>
-    <string name="addPeers">Add Peers</string>
-    <string name="viewPeers">View Peers</string>
-    <string name="editName">Edit Name</string>
-    <string name="editNameMessage">How do you want your peers to see you?</string>
-    <string name="editNameHint">Your Name</string>
-    <string name="flavourTitle">Enter a Message</string>
-    <string name="scan">Scan</string>
-    <string name="here">Here</string>
+    <string-array name="field_new_photo_dialog_items">
+        <item>Take a photo</item>
+        <item>Select photo from gallery</item>
+    </string-array>
 
-    <string name="added">added</string>
-    <string name="qrScanPrompt">Scan a peer\'s QR code</string>
-    <string name="nice_try_title">Nice try</string>
-    <string name="nice_try_message">If you devour yourself whole, will you grow twice as big or completely disappear?</string>
-    <string name="user_search">user_search</string>
+    <string name="field_existing_photo_dialog_title">Change photo</string>
+    <string-array name="field_existing_photo_dialog_items">
+        <item>Take a new photo</item>
+        <item>Select new photo</item>
+        <item>Clear photo</item>
+    </string-array>
 
-    <!--
-    PEER PROFILE ACTIVITY STRINGS
-    -->
-    <string name="sendPeerRequest">Send Request</string>
-    <string name="whichClasses">Which of your classes is %1$s in?</string>
-    <string name="in">&#160;in</string>
-    <string name="classes_you_share">Classes you share</string>
+    <string-array name="settings_week_number_entries">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 
-    <!--
-    ACCEPT PEER ACTIVITY STRINGS
-    -->
-    <string name="acceptPeerHeader">%1$s wants to add you in these classes</string>
-    <string name="mismatchDialogHeader">Did you name these classes differently?</string>
-    <string name="select_class">Select class</string>
-    <string name="accept">Accept</string>
-    <string name="ignore">Ignore</string>
+    <string-array name="settings_week_number_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
 
-    <!--
-    LOGIN ACTIVITY STRINGS
-    -->
-    <string name="nickname_hint">Name</string>
-    <string name="password_hint">Password</string>
-    <string name="confirm_password_hint">Confirm Password</string>
-    <string name="email_hint">Email</string>
-    <string name="sign_up_button_label">Sign Up</string>
-    <string name="signup_error_message">Please make sure you fill in all the fields!</string>
-    <string name="signup_error_title">Error!</string>
-    <string name="signup_error_message_no_confirm">Please confirm your password</string>
-    <string name="signup_error_message_wrong_confirm">Passwords don՚t match. Please try again.</string>
-    <string name="signup_success">Account successfully created! You can now Login.</string>
-    <string name="login_error_message">Email or password is invalid</string>
-    <string name="login_error_title">Error!</string>
-    <string name="login_button_label">Log in</string>
-    <string name="login_button_facebook">Sign in with Facebook</string>
-    <string name="sign_up_text">New here? Sign Up!</string>
-    <string name="title_activity_login">Sign in</string>
-    <string name="add_item">Add New Item</string>
-    <string name="action_login">Log in</string>
-    <string name="action_logout">Log out</string>
+    <string-array name="settings_date_format_entries">
+        <item>Mon, January 5, 2000</item>
+        <item>Monday, January 5, 2000</item>
+        <item>Mon 5 January 2000</item>
+        <item>Monday 5 January 2000</item>
+        <item>Mon 5th January 2000</item>
+        <item>Monday 5th January 2000</item>
+        <item>01/05/00</item>
+        <item>05/01/00</item>
+    </string-array>
 
-    <!--
-    PEOPLE ACTIVITY STRINGS
-    -->
-    <string name="AddByUsername">Add by Username</string>
-    <string name="ScanQRCode">Scan QR Code</string>
+    <string-array name="settings_date_format_values">
+        <item>EEE, MMMM d, yyyy</item>
+        <item>EEEE, MMMM d, yyyy</item>
+        <item>EEE d MMMM yyyy</item>
+        <item>EEEE d MMMM yyyy</item>
+        <item>EEE :d: MMMM yyyy</item>
+        <item>EEEE :d: MMMM yyyy</item>
+        <item>MM/dd/yy</item>
+        <item>dd/MM/yy</item>
+    </string-array>
 
-    <!--
-    PEER PROFILE STRINGS
-    -->
-    <string name="requestSent">Request sent to %1$s</string>
-    <string name="dialog_remove_peer">Do you want to remove %1$s from being your peer?</string>
-    <string name="dialog_remove_class">Do you want to remove %1$s from %2$s and stop sharing tasks?</string>
+    <string-array name="settings_block_format_entries">
+        <item>Day A</item>
+        <item>A Day</item>
+        <item>Day 1</item>
+        <item>1 Day</item>
+    </string-array>
 
-    <!--
-    REQUEST ACTIVITY STRINGS
-    -->
-    <string name="splash_no_request">You have no Peer Requests</string>
+    <string-array name="settings_block_format_values">
+        <item>d:l</item>
+        <item>l:d</item>
+        <item>d:n</item>
+        <item>n:d</item>
+    </string-array>
 
-    <!--
-    ARRAY STRINGS
-    -->
+    <string-array name="settings_block_format_entries_b">
+        <item>Day B</item>
+        <item>B Day</item>
+        <item>Day 2</item>
+        <item>2 Day</item>
+    </string-array>
+
     <string name="maths">Maths</string>
     <string name="science">Science</string>
     <string name="biology">Biology</string>
@@ -631,21 +405,57 @@
     <string name="resistant_materials">Resistant Materials</string>
     <string name="woodwork">Woodwork</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- KEYS -->
+    <string name="KEY_PREFERENCE_BASIS" translatable="false">KEY_PREFERENCE_BASIS</string>
+    <string name="KEY_PREFERENCE_KEY" translatable="false">KEY_PREFERENCE_KEY</string>
+    <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
+    <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
+    <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
+    <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
+    <string name="KEY_WEEK_NUMBER_SETTING" translatable="false">KEY_WEEK_NUMBER_SETTING</string>
+    <string name="KEY_FIRST_LAUNCH" translatable="false">KEY_FIRST_LAUNCH</string>
 
-    <string name="title_activity_fullscreen">FullscreenActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
+    <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
+    <string name="KEY_SETTINGS_BLOCK_FORMAT" translatable="false">KEY_SETTINGS_BLOCK_FORMAT</string>
+    <string name="KEY_SETTINGS_CATEGORY_APPEARANCE" translatable="false">KEY_SETTINGS_CATEGORY_APPEARANCE</string>
+    <string name="KEY_SETTINGS_CHANGELOG" translatable="false">KEY_SETTINGS_CHANGELOG</string>
+    <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>
+    <string name="KEY_SETTINGS_DATE_FORMAT" translatable="false">KEY_SETTINGS_DATE_FORMAT</string>
+    <string name="KEY_SETTINGS_THEME" translatable="false">KEY_SETTINGS_THEME</string>
+    <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
+    <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
+    <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>
+    <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
 
-    <!-- TRANSITION STRINGS -->
-    <string name="transition_schedule" translatable="false">TRANSITION_SCHEDULE</string>
-    <string name="transition_task" translatable="false">TRANSITION_TASK</string>
-    <string name="transition_picture" translatable="false">TRANSITION_PICTURE</string>
+    <string name="KEY_PREFERENCES_FLAVOUR" translatable="false">KEY_PREFERENCES_FLAVOUR</string>
+    <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>
+    <string name="KEY_PREFERENCES_SELF_NAME" translatable="false">KEY_PREFERENCES_SELF_NAME</string>
+    <string name="KEY_PREFERENCES_SELF_USERNAME" translatable="false">KEY_PREFERENCES_SELF_USERNAME</string>
 
-    <string name="title_activity_temp_fullscreen">tempFullscreenActivity</string>
+    <!-- INTENT EXTRAS -->
+    <string name="INTENT_EXTRA_ALARM_DATE" translatable="false">INTENT_EXTRA_ALARM_DATE</string>
+    <string name="INTENT_EXTRA_ALARM_TIME" translatable="false">INTENT_EXTRA_ALARM_TIME</string>
+    <string name="INTENT_EXTRA_ATTACHMENT" translatable="false">INTENT_EXTRA_ATTACHMENT</string>
+    <string name="INTENT_EXTRA_CLASS" translatable="false">INTENT_EXTRA_CLASS</string>
+    <string name="INTENT_EXTRA_DESCRIPTION" translatable="false">INTENT_EXTRA_DESCRIPTION</string>
+    <string name="INTENT_EXTRA_DUEDATE" translatable="false">INTENT_EXTRA_DUEDATE</string>
+    <string name="INTENT_EXTRA_DURATION" translatable="false">INTENT_EXTRA_DURATION</string>
+    <string name="INTENT_EXTRA_ID" translatable="false">INTENT_EXTRA_ID</string>
+    <string name="INTENT_EXTRA_MUTE" translatable="false">INTENT_EXTRA_MUTE</string>
+    <string name="INTENT_EXTRA_PATH" translatable="false">INTENT_EXTRA_PATH</string>
+    <string name="INTENT_EXTRA_SHARER" translatable="false">INTENT_EXTRA_SHARER</string>
+    <string name="INTENT_EXTRA_TITLE" translatable="false">INTENT_EXTRA_TITLE</string>
+    <string name="INTENT_EXTRA_TRANSITION" translatable="false">INTENT_EXTRA_TRANSITION</string>
+    <string name="INTENT_EXTRA_TYPE" translatable="false">INTENT_EXTRA_TYPE</string>
+
+    <!-- FLAGS -->
+    <string name="INTENT_FLAG_COMPLETED" translatable="false">INTENT_FLAG_COMPLETED</string>
+    <string name="INTENT_FLAG_RETURN_TO_TASKS" translatable="false">INTENT_FLAG_RETURN_TO_TASKS</string>
+    <string name="INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY" translatable="false">INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY</string>
+    <string name="INTENT_FLAG_EDIT" translatable="false">INTENT_FLAG_EDIT</string>
 
     <!-- MISC -->
-    <string name="PREFERENCE_UNIQUE_ID_COUNT">PREFERENCE_UNIQUE_UD_COUNT</string>
+    <string name="PREFERENCE_UNIQUE_ID_COUNT" translatable="false">PREFERENCE_UNIQUE_ID_COUNT</string>
 
 </resources>

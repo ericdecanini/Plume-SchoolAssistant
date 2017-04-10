@@ -24,13 +24,13 @@
             <ImageView
                 android:id="@+id/task_icon"
                 android:layout_gravity="center_vertical"
-                android:transitionName="@string/transition_task"
+                android:transitionName="@string/INTENT_EXTRA_TRANSITION"
                 android:layout_width="64dp"
                 android:layout_height="64dp" />
             <com.pdt.plume.CircularImageView
                 android:id="@+id/task_icon2"
                 android:layout_gravity="center_vertical"
-                android:transitionName="@string/transition_task"
+                android:transitionName="@string/INTENT_EXTRA_TRANSITION"
                 android:layout_width="64dp"
                 android:layout_height="64dp" />
         </FrameLayout>

@@ -1,8 +1,6 @@
 package com.pdt.plume;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Notification;
@@ -38,7 +36,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.util.TypedValue;
@@ -56,7 +53,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -86,7 +82,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,12 +90,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.R.attr.bitmap;
-import static android.R.attr.data;
-import static com.pdt.plume.R.id.fab;
-import static com.pdt.plume.R.id.frameLayout;
-import static com.pdt.plume.R.id.view;
-import static com.pdt.plume.R.string.re;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_FILE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_CAPTURE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
@@ -108,7 +97,6 @@ import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_PHOTO;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_CAMERA;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_MANAGE_DOCUMENTS;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE;
 
 public class NewTaskActivity extends AppCompatActivity
@@ -332,23 +320,23 @@ public class NewTaskActivity extends AppCompatActivity
             if (extras != null) {
                 // Get the task data sent through the intent
                 String icon = extras.getString("icon");
-                String title = extras.getString(getString(R.string.TASKS_EXTRA_TITLE));
-                String classTitle = extras.getString(getString(R.string.TASKS_EXTRA_CLASS));
-                String classType = extras.getString(getString(R.string.TASKS_EXTRA_TYPE));
-                String description = extras.getString(getString(R.string.TASKS_EXTRA_DESCRIPTION));
+                String title = extras.getString(getString(R.string.INTENT_EXTRA_TITLE));
+                String classTitle = extras.getString(getString(R.string.INTENT_EXTRA_CLASS));
+                String classType = extras.getString(getString(R.string.INTENT_EXTRA_TYPE));
+                String description = extras.getString(getString(R.string.INTENT_EXTRA_DESCRIPTION));
                 String attachment = "";
-                float dueDate = extras.getFloat(getString(R.string.TASKS_EXTRA_DUEDATE));
-                float reminderDate = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERDATE));
-                float reminderTime = extras.getFloat(getString(R.string.TASKS_EXTRA_REMINDERTIME));
+                float dueDate = extras.getFloat(getString(R.string.INTENT_EXTRA_DUEDATE));
+                float reminderDate = extras.getFloat(getString(R.string.INTENT_EXTRA_ALARM_DATE));
+                float reminderTime = extras.getFloat(getString(R.string.INTENT_EXTRA_ALARM_TIME));
 
                 int position = extras.getInt("position");
-                FLAG_EDIT = extras.getBoolean(getString(R.string.TASKS_FLAG_EDIT));
+                FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT));
 
                 if (FLAG_EDIT) {
                     // Get the id depending on where the data came from
                     if (mFirebaseUser != null)
                         firebaseEditId = intent.getStringExtra("id");
-                    else editId = intent.getIntExtra(getString(R.string.TASKS_EXTRA_ID), -1);
+                    else editId = intent.getIntExtra(getString(R.string.INTENT_EXTRA_ID), -1);
 
                     fieldIcon.setImageURI(Uri.parse(icon));
                     fieldTitle.setText(title);
@@ -795,7 +783,7 @@ public class NewTaskActivity extends AppCompatActivity
                     return false;
                 }
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
+                intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
                 try {
                     if (insertTaskDataIntoDatabase()) {
                         // Upload the icon to the cloud if applicable

@@ -44,7 +44,7 @@
             android:textColor="@color/white"
             android:textColorHint="@color/gray_100"
             android:layout_gravity="center_vertical"
-            android:hint="@string/Search" />
+            android:hint="@string/search" />
 
         <ImageView
             android:id="@+id/clear"

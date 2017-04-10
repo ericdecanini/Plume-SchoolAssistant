@@ -75,7 +75,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static android.app.Activity.RESULT_OK;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
@@ -241,8 +240,8 @@ public class NewScheduleActivity extends AppCompatActivity
             Bundle extras = intent.getExtras();
             // Get the title and edit flag sent through the intent
             if (extras != null) {
-                title = extras.getString(getString(R.string.SCHEDULE_EXTRA_TITLE));
-                INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.SCHEDULE_FLAG_EDIT));
+                title = extras.getString(getString(R.string.INTENT_EXTRA_TITLE));
+                INTENT_FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.INTENT_FLAG_EDIT));
                 STARTED_BY_NEWTASKACTIVITY = extras.getBoolean("STARTED_BY_NEWTASKACTIVITY", false);
             }
         }
@@ -785,7 +784,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 .setBackground(largeIcon);
 
         Intent contentIntent = new Intent(this, ScheduleDetailActivity.class);
-        contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+        contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
         final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
@@ -901,8 +900,8 @@ public class NewScheduleActivity extends AppCompatActivity
 
                 // Get the stored preference
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewScheduleActivity.this);
-                basis = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), "-1");
-                weekType = preferences.getString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), "-1");
+                basis = preferences.getString(getString(R.string.KEY_PREFERENCE_BASIS), "-1");
+                weekType = preferences.getString(getString(R.string.KEY_PREFERENCE_KEY), "-1");
                 Log.v(LOG_TAG, "Basis: " + basis);
                 Log.v(LOG_TAG, "Weektype: " + weekType);
 
@@ -1222,8 +1221,8 @@ public class NewScheduleActivity extends AppCompatActivity
         // Store the shared preferences for "basis" and "weekType"
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(getString(R.string.SCHEDULE_PREFERENCE_BASIS_KEY), basis)
-                .putString(getString(R.string.SCHEDULE_PREFERENCE_WEEKTYPE_KEY), weekType)
+        editor.putString(getString(R.string.KEY_PREFERENCE_BASIS), basis)
+                .putString(getString(R.string.KEY_PREFERENCE_KEY), weekType)
                 .apply();
     }
 

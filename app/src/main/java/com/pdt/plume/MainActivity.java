@@ -1,13 +1,10 @@
 package com.pdt.plume;
 
-import android.*;
-import android.Manifest;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -28,9 +25,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -56,7 +51,6 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -67,8 +61,6 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -77,14 +69,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.services.ScheduleNotificationService;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,10 +84,7 @@ import static com.pdt.plume.ScheduleFragment.showBlockHeaderB;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_CAMERA;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION;
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -414,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         = new NotificationCompat.WearableExtender().setBackground(largeIcon);
 
                 Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
-                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
@@ -565,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Check if the activity was started from the NewTaskActivity
         // and automatically direct the tab to Tasks if it has
         Intent intent = getIntent();
-        if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
+        if (intent.hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS))){
             mViewPager.setCurrentItem(1);
         }
 
@@ -586,8 +571,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             spinner.setAdapter(new mSpinnerAdapter(
                     mToolbar.getContext(),
                     new String[]{
-                            getResources().getString(R.string.tab_one),
-                            getResources().getString(R.string.tab_two),
+                            getResources().getString(R.string.schedule),
+                            getResources().getString(R.string.tasks),
                     }));
 
             // Set the Listener of the spinner
@@ -596,7 +581,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     // When the given dropdown item is selected, show its contents in the
                     // container view.
-                    switch (position){
+                    switch (position) {
                         case 0:
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.container, new ScheduleFragment())
@@ -617,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Check if the activity was started from the tasks activity
             // and automatically switch back to tasks if it did
             Intent intent = getIntent();
-            if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS)))
+            if (intent.hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS)))
                 spinner.setSelection(Utility.getIndex(spinner, spinner.getItemAtPosition(1).toString()));
         }
     }
@@ -654,9 +639,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getResources().getString(R.string.tab_one);
+                    return getResources().getString(R.string.schedule);
                 case 1:
-                    return getResources().getString(R.string.tab_two);
+                    return getResources().getString(R.string.task);
                 default:
                     Log.e(LOG_TAG, "Error setting tab name at getPageTitle");
                     return null;
@@ -765,7 +750,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .setBackground(largeIcon);
 
                 Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
-                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
@@ -900,7 +885,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     = new NotificationCompat.WearableExtender().setBackground(largeIcon);
 
             Intent contentIntent = new Intent(MainActivity.this, TasksDetailActivity.class);
-            contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
             stackBuilder.addParentStack(TasksDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);

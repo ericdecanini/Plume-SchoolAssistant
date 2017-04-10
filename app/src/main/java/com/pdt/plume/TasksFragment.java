@@ -308,7 +308,7 @@ public class TasksFragment extends Fragment {
                         intent.putExtra("id", FirebaseIdList.get(position));
 //                        tasksRef.removeEventListener(tasksListener);
                     } else {
-                        intent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), position);
+                        intent.putExtra(getString(R.string.INTENT_EXTRA_ID), position);
                     }
                     intent.putExtra("icon", mTasksList.get(position).taskIcon);
                     View icon = view.findViewById(R.id.task_icon2);
@@ -531,19 +531,19 @@ public class TasksFragment extends Fragment {
 
                             intent.putExtra("id", id);
                             intent.putExtra("icon", icon[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title[0]);
-                            intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
-                            intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title[0]);
+                            intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle[0]);
+                            intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_DATE), reminderDate[0]);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime[0]);
 
                             // Create an intent to NewScheduleActivity and include the selected
                             // item's id, title, and an edit flag as extras
                             intent.putExtra("position", position);
-                            intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                            intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
                             // Clear the selected items list, exit the CAM and launch the activity
                             CAMselectedItemsList.clear();
@@ -579,22 +579,22 @@ public class TasksFragment extends Fragment {
                         reminderTime[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
                         cursor.close();
 
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ID), id);
                         intent.putExtra("icon", icon[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title[0]);
-                        intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle[0]);
-                        intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title[0]);
+                        intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle[0]);
+                        intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType[0]);
                         intent.putExtra("photo", photos[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate[0]);
-                        intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_DATE), reminderDate[0]);
+                        intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime[0]);
 
                         // Create an intent to NewScheduleActivity and include the selected
                         // item's id, title, and an edit flag as extras
                         intent.putExtra("position", position);
-                        intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                        intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
                         // Clear the selected items list, exit the CAM and launch the activity
                         CAMselectedItemsList.clear();

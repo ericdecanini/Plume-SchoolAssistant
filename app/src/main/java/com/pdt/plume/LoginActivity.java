@@ -24,7 +24,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -203,7 +202,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     = new NotificationCompat.WearableExtender().setBackground(largeIcon);
 
                                             Intent contentIntent = new Intent(LoginActivity.this, TasksDetailActivity.class);
-                                            contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                                            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                                             TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
                                             stackBuilder.addParentStack(TasksDetailActivity.class);
                                             stackBuilder.addNextIntent(contentIntent);
@@ -269,7 +268,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                 .setBackground(largeIcon);
 
                                                         Intent contentIntent = new Intent(LoginActivity.this, TasksDetailActivity.class);
-                                                        contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                                                        contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                                                         TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
                                                         stackBuilder.addParentStack(TasksDetailActivity.class);
                                                         stackBuilder.addNextIntent(contentIntent);

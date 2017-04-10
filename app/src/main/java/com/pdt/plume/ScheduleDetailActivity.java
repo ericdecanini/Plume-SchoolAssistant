@@ -24,7 +24,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.transition.Fade;
 import android.transition.Transition;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,7 +32,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -235,7 +233,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         // Also inflate the tasks list
         Intent intent = getIntent();
         if (intent != null) {
-            title = intent.getStringExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE));
+            title = intent.getStringExtra(getString(R.string.INTENT_EXTRA_CLASS));
 
             // Initialise the tasks list
             listView = (ListView) findViewById(R.id.schedule_detail_tasks_list);
@@ -786,8 +784,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             case R.id.action_edit:
                 Intent intent = new Intent(this, NewScheduleActivity.class);
-                intent.putExtra(getString(R.string.SCHEDULE_EXTRA_TITLE), title);
-                intent.putExtra(getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                intent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
+                intent.putExtra(getString(R.string.INTENT_FLAG_EDIT), true);
                 startActivity(intent);
                 break;
             case android.R.id.home:
@@ -814,7 +812,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ScheduleDetailActivity.this, NoteActivity.class);
-                intent.putExtra(getString(R.string.SCHEDULE_EXTRA_TITLE), title);
+                intent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
                 startActivity(intent);
             }
         };
@@ -829,8 +827,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 if (cursor.moveToPosition(i)) {
                     int _ID = cursor.getInt(cursor.getColumnIndex(DbContract.NotesEntry._ID));
                     Intent intent = new Intent(ScheduleDetailActivity.this, NoteActivity.class);
-                    intent.putExtra(getString(R.string.NOTES_EXTRA_ID), _ID);
-                    intent.putExtra(getString(R.string.SCHEDULE_EXTRA_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_ID), _ID);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
                     startActivity(intent);
                 }
             }
@@ -1055,17 +1053,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     // Create an intent to NewScheduleActivity and include the selected
                     // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ID), id);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_DATE), reminderDate);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime);
                     intent.putExtra("position", position);
-                    intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                    intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
                     // Clear the selected items list, exit the CAM and launch the activity
                     CAMselectedItemsList.clear();
@@ -1296,17 +1294,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     // Create an intent to NewScheduleActivity and include the selected
                     // item's id, title, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERDATE), reminderDate);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_REMINDERTIME), reminderTime);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ID), id);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_DATE), reminderDate);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime);
                     intent.putExtra("position", position);
-                    intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                    intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
                     // Clear the selected items list, exit the CAM and launch the activity
                     CAMselectedItemsList.clear();

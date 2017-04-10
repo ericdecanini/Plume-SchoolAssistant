@@ -96,7 +96,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="28dp"
         android:layout_marginLeft="16dp"
-        android:transitionName="@string/transition_task"
+        android:transitionName="@string/INTENT_EXTRA_TRANSITION"
         android:minHeight="48dp"
         android:minWidth="48dp" />
 

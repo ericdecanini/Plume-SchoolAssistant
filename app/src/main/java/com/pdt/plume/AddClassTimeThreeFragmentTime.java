@@ -211,7 +211,7 @@ public class AddClassTimeThreeFragmentTime extends DialogFragment{
             }
             else {
                 weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
-                header.setText(getString(R.string.class_three_weekone));
+                header.setText(getString(R.string.week_one));
             }
 
             // Check if the fragment was launched from the OnTimeSet override method in NewScheduleActivity

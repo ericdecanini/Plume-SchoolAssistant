@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -17,8 +16,6 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -55,8 +52,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static android.R.attr.data;
-import static android.R.attr.id;
 import static android.os.Build.ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
@@ -257,7 +252,7 @@ public class ClassesActivity extends AppCompatActivity {
                         .setBackground(largeIcon);
 
                 Intent contentIntent = new Intent(ClassesActivity.this, TasksDetailActivity.class);
-                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
@@ -394,7 +389,7 @@ public class ClassesActivity extends AppCompatActivity {
                     = new NotificationCompat.WearableExtender().setBackground(largeIcon);
 
             Intent contentIntent = new Intent(ClassesActivity.this, TasksDetailActivity.class);
-            contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(ClassesActivity.this);
             stackBuilder.addParentStack(TasksDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
@@ -514,7 +509,7 @@ public class ClassesActivity extends AppCompatActivity {
                     String title = mScheduleList.get(position).scheduleLesson;
                     String icon = mScheduleList.get(position).scheduleIcon;
                     Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
                     intent.putExtra("icon", icon);
 
                     // Add a transition if the device is Lollipop or above
@@ -531,7 +526,7 @@ public class ClassesActivity extends AppCompatActivity {
                     Cursor cursor = dbHelper.getAllClassesData();
                     if (cursor.moveToPosition(position)) {
                         Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
-                        intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
+                        intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
                         intent.putExtra("icon", cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)));
 
                         // Add a transition if the device is Lollipop or above
@@ -763,9 +758,9 @@ public class ClassesActivity extends AppCompatActivity {
 
                 // Add the data to the intent for NewScheduleActivity to identify the class by.
 //                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
-                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE),title);
-                intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
-                intent.putExtra(getResources().getString(R.string.STARTED_FROM_CLASSES_ACTIVITY), true);
+                intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE),title);
+                intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
+                intent.putExtra(getResources().getString(R.string.INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY), true);
 
                 // Clear the selected items list, exit the CAM and launch the activity
                 CAMselectedItemsList.clear();

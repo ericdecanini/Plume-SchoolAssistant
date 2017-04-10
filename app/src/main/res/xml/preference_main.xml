@@ -18,7 +18,7 @@
 
         <ListPreference
             android:key="@string/KEY_WEEK_NUMBER_SETTING"
-            android:title="@string/settings_week_number_title"
+            android:title="@string/week_number"
             android:entries="@array/settings_week_number_entries"
             android:entryValues="@array/settings_week_number_values"
             android:defaultValue="0" />

@@ -35,7 +35,7 @@ public class MuteAlarmReceiver extends BroadcastReceiver {
         long unmuteTime = (long) intent.getIntExtra("UNMUTE_TIME", -1);
         Log.v(LOG_TAG, "Unmute time: " + unmuteTime);
         Intent unmuteIntent = new Intent(context, UnmuteAlarmReceiver.class);
-        unmuteIntent.putExtra(context.getString(R.string.KEY_SCHEDULE_MUTE_CURRENT_VOLUME), currentVolume);
+        unmuteIntent.putExtra(context.getString(R.string.INTENT_EXTRA_MUTE), currentVolume);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_UNMUTE_ALARM, unmuteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

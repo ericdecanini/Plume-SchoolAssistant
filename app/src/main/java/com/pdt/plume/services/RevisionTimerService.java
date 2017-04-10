@@ -53,15 +53,15 @@ public class RevisionTimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        title = intent.getStringExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE));
-        countdown = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_REVISION_TIME), 1);
+        title = intent.getStringExtra(getString(R.string.INTENT_EXTRA_CLASS));
+        countdown = intent.getIntExtra(getString(R.string.INTENT_EXTRA_DURATION), 1);
         seconds = countdown * 60;
         Log.v(LOG_TAG, "Seconds at start: " + seconds);
 
         // Create the notification that will be updated each minute
         if (countdown == 1) {
             Intent toBePendingIntent = new Intent(RevisionTimerService.this, TasksDetailActivity.class);
-            intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+            intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
             PendingIntent pendingIntent = PendingIntent.getActivity(RevisionTimerService.this, REQUEST_TIMER_NOTIFICATION, toBePendingIntent, 0);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(RevisionTimerService.this)
                     .setSmallIcon(R.drawable.ic_access_alarm_white_24dp)
@@ -74,7 +74,7 @@ public class RevisionTimerService extends Service {
         }
         else {
             Intent toBePendingIntent = new Intent(RevisionTimerService.this, TasksDetailActivity.class);
-            intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+            intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
             PendingIntent pendingIntent = PendingIntent.getActivity(RevisionTimerService.this, REQUEST_TIMER_NOTIFICATION, toBePendingIntent, 0);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(RevisionTimerService.this)
                     .setSmallIcon(R.drawable.ic_access_alarm_white_24dp)
@@ -102,7 +102,7 @@ public class RevisionTimerService extends Service {
                 if (countdown == 0) {
                     // TIMER END
                     Intent intent = new Intent(RevisionTimerService.this, TasksDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
                     PendingIntent pendingIntent = PendingIntent.getActivity(RevisionTimerService.this, REQUEST_TIMER_NOTIFICATION, intent, 0);
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(RevisionTimerService.this)
                             .setSmallIcon(R.drawable.ic_access_alarm_white_24dp)
@@ -120,7 +120,7 @@ public class RevisionTimerService extends Service {
                 else if (countdown == 1) {
                     // Update the notification
                     Intent intent = new Intent(RevisionTimerService.this, TasksDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
                     PendingIntent pendingIntent = PendingIntent.getActivity(RevisionTimerService.this, REQUEST_TIMER_NOTIFICATION, intent, 0);
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(RevisionTimerService.this)
                             .setSmallIcon(R.drawable.ic_access_alarm_white_24dp)
@@ -134,7 +134,7 @@ public class RevisionTimerService extends Service {
                 else {
                     // Update the notification
                     Intent intent = new Intent(RevisionTimerService.this, TasksDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
                     PendingIntent pendingIntent = PendingIntent.getActivity(RevisionTimerService.this, REQUEST_TIMER_NOTIFICATION, intent, 0);
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(RevisionTimerService.this)
                             .setSmallIcon(R.drawable.ic_access_alarm_white_24dp)

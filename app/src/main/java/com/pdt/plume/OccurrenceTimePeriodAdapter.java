@@ -80,8 +80,8 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
 
         // If the week type is the same each week, remove the week one label
         if (occurrenceTimePeriod.weekType.equals("0"))
-            ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_three_everyweek));
-        else ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_three_weekone));
+            ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.week_every));
+        else ((TextView)row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.week_one));
 
         // If the item's basis is Time or Period based, highlight the background colour
         // Of the day buttons corresponding to the activated day binary code
@@ -218,8 +218,8 @@ public class OccurrenceTimePeriodAdapter extends ArrayAdapter {
         // and hide the row of day buttons
         else {
             holder.period_alt.setText(occurrenceTimePeriod.time_period_alt);
-            ((TextView) row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.class_time_block_day_a));
-            ((TextView) row.findViewById(R.id.list_item_time_period_week_alt)).setText(context.getString(R.string.class_time_block_day_b));
+            ((TextView) row.findViewById(R.id.list_item_time_period_week)).setText(context.getString(R.string.a_day));
+            ((TextView) row.findViewById(R.id.list_item_time_period_week_alt)).setText(context.getString(R.string.b_day));
             row.findViewById(R.id.list_item_time_period_days).setVisibility(View.GONE);
             row.findViewById(R.id.list_item_time_period_days_alt).setVisibility(View.GONE);
         }

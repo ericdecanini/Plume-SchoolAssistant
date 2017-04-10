@@ -1,6 +1,5 @@
 package com.pdt.plume;
 
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +15,7 @@ public class UnmuteAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        int returnVolume = intent.getIntExtra(context.getString(R.string.KEY_SCHEDULE_MUTE_CURRENT_VOLUME),
+        int returnVolume = intent.getIntExtra(context.getString(R.string.INTENT_EXTRA_MUTE),
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION));
 
 

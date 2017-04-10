@@ -14,7 +14,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,10 +36,6 @@ import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.os.Build.ID;
-import static com.pdt.plume.R.id.fab;
-import static com.pdt.plume.R.id.listView;
 
 public class CompletedTasksActivity extends AppCompatActivity {
 
@@ -109,7 +104,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     intent.putExtra("_ID", ID);
                 }
 
-                intent.putExtra(getString(R.string.FLAG_TASK_COMPLETED), true);
+                intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
                 startActivity(intent);
             }
         });
@@ -146,6 +141,8 @@ public class CompletedTasksActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+
+        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
 
     }
 

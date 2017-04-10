@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.pdt.plume.services.ScheduleWidgetService;
 import com.pdt.plume.services.TasksWidgetService;
 
 
@@ -30,7 +29,7 @@ public class TasksWidgetProvider extends AppWidgetProvider {
         final int N = appWidgetIds.length;
         for (int i = 0; i < N; ++i) {
             Intent intent = new Intent(context, MainActivity.class);
-            intent.putExtra(context.getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), context.getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
+            intent.putExtra(context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
             RemoteViews remoteViews = updateWidgetListView(context, appWidgetIds[i]);

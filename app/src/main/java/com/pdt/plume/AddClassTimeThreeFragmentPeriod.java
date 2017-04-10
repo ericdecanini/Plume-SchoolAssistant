@@ -223,7 +223,7 @@ public class AddClassTimeThreeFragmentPeriod extends DialogFragment {
                 weekTypeTextView.setText(getString(R.string.class_time_two_sameweek));
             } else {
                 weekTypeTextView.setText(getString(R.string.class_time_two_altweeks));
-                header.setText(getString(R.string.class_three_weekone));
+                header.setText(getString(R.string.week_one));
             }
             weekTypeTextView.setTextColor(getResources().getColor(R.color.gray_200));
 

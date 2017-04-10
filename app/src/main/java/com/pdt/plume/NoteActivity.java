@@ -56,7 +56,7 @@ public class NoteActivity extends AppCompatActivity {
 
         // Auto-fill the fields if note is being edited
         Intent intent = getIntent();
-        edit_ID = intent.getIntExtra(getString(R.string.NOTES_EXTRA_ID), -1);
+        edit_ID = intent.getIntExtra(getString(R.string.INTENT_EXTRA_ID), -1);
         if (edit_ID != -1) {
             // Get a cursor with the note's ID
             DbHelper dbHelper = new DbHelper(this);
@@ -108,7 +108,7 @@ public class NoteActivity extends AppCompatActivity {
         String note = fieldNote.getText().toString();
 
         // Get the intent data which should contain the title of the class
-        String classTitle = getIntent().getStringExtra(getString(R.string.SCHEDULE_EXTRA_TITLE));
+        String classTitle = getIntent().getStringExtra(getString(R.string.INTENT_EXTRA_TITLE));
 
         // Then query a cursor with all of the rows of that title
         DbHelper dbHelper = new DbHelper(this);

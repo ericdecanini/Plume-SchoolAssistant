@@ -21,7 +21,7 @@
         android:layout_marginLeft="4dp"
         android:ems="10"
         android:background="@android:color/transparent"
-        android:hint="@string/nickname_hint" />
+        android:hint="@string/name_hint" />
     <View
         android:layout_width="match_parent"
         android:layout_marginTop="12dp"

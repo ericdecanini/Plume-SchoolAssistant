@@ -119,7 +119,7 @@ public class ScheduleNotificationService extends Service {
                     .setBackground(largeIcon);
 
             Intent contentIntent = new Intent(this, ScheduleDetailActivity.class);
-            contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
             final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {

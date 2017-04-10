@@ -1,8 +1,6 @@
 package com.pdt.plume;
 
 
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -20,12 +18,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,25 +30,20 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.api.model.StringList;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -67,8 +58,6 @@ import java.util.Date;
 import java.util.List;
 
 import static android.media.CamcorderProfile.get;
-import static com.pdt.plume.R.bool.isTablet;
-import static com.pdt.plume.R.id.storage;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
@@ -253,7 +242,7 @@ public class ScheduleFragment extends Fragment {
                 // passing the data of the clicked row to the fragment
                 else {
                     Intent intent = new Intent(getActivity(), ScheduleDetailActivity.class);
-                    intent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
                     intent.putExtra("icon", icon);
 
                     // Add a transition if the device is Lollipop or above
@@ -541,8 +530,8 @@ public class ScheduleFragment extends Fragment {
 
         Intent contentIntent = new Intent(getContext(), ScheduleDetailActivity.class);
         if (mFirebaseUser != null)
-            contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), classTitle);
-        else contentIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), classTitle);
+            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
+        else contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(getContext());
         stackBuilder.addParentStack(ScheduleDetailActivity.class);
         stackBuilder.addNextIntent(contentIntent);
@@ -782,8 +771,8 @@ public class ScheduleFragment extends Fragment {
 
                 // Create an intent to NewScheduleActivity and include the selected
                 // item's id, title, and an edit flag as extras
-                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_TITLE), title);
-                intent.putExtra(getResources().getString(R.string.SCHEDULE_FLAG_EDIT), true);
+                intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
+                intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
                 // Clear the selected items list, exit the CAM and launch the activity
                 CAMselectedItemsList.clear();

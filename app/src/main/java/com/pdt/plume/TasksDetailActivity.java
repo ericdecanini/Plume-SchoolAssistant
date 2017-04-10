@@ -12,13 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Shader;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -29,7 +23,6 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -41,7 +34,6 @@ import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.Transition;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -49,20 +41,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -72,14 +60,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.journeyapps.barcodescanner.Util;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.services.RevisionTimerService;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -90,10 +76,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
-import static android.R.attr.bitmap;
-import static android.R.attr.radius;
-import static android.R.attr.width;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
@@ -260,7 +242,7 @@ public class TasksDetailActivity extends AppCompatActivity {
         final CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbar);
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle(getString(R.string.TASK));
+        actionBar.setTitle(getString(R.string.task));
         collapsingToolbar.setTitle("");
 
         // Set the mark as done button
@@ -276,8 +258,8 @@ public class TasksDetailActivity extends AppCompatActivity {
         // An ID is passed by the intent so we query using that
         Intent intent = getIntent();
         if (intent != null) {
-            FLAG_TASK_COMPLETED = intent.getBooleanExtra(getString(R.string.FLAG_TASK_COMPLETED), false);
-            int id = intent.getIntExtra(getString(R.string.KEY_TASKS_EXTRA_ID), 0);
+            FLAG_TASK_COMPLETED = intent.getBooleanExtra(getString(R.string.INTENT_FLAG_COMPLETED), false);
+            int id = intent.getIntExtra(getString(R.string.INTENT_EXTRA_ID), 0);
 
             if (mFirebaseUser != null) {
                 // Get the data from Firebase
@@ -758,7 +740,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                             Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                            intent.putExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS), getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS));
+                            intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
                             startActivity(intent);
                         }
                     })
@@ -827,17 +809,17 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                             intent.putExtra("id", id);
                             intent.putExtra("icon", icon);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
-                            intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
-                            intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
+                            intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
+                            intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description);
                             intent.putExtra("photo", photo);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                            intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), dueDate);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment);
+                            intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
 
                             // Create an intent to NewScheduleActivity and include the selected
                             // item's id, title, and an edit flag as extras
-                            intent.putExtra(getResources().getString(R.string.TASKS_FLAG_EDIT), true);
+                            intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
                             taskRef.removeEventListener(this);
                             startActivity(intent);
                         }
@@ -858,15 +840,15 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                     intent.putExtra("id", id);
                     intent.putExtra("icon", iconUri);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_TITLE), title);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_CLASS), classTitle);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_TYPE), classType);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DESCRIPTION), description);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description);
                     intent.putExtra("photo", builder.toString());
 //                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_DUEDATE), duedateValue);
-                    intent.putExtra(getString(R.string.TASKS_EXTRA_ID), id);
-                    intent.putExtra(getString(R.string.TASKS_FLAG_EDIT), true);
+                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), duedateValue);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_ID), id);
+                    intent.putExtra(getString(R.string.INTENT_FLAG_EDIT), true);
                     startActivity(intent);
                 }
                 return true;
@@ -898,8 +880,8 @@ public class TasksDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 int countdown = picker.getValue();
                 serviceIntent = new Intent(TasksDetailActivity.this, RevisionTimerService.class);
-                serviceIntent.putExtra(getString(R.string.KEY_SCHEDULE_DETAIL_TITLE), title);
-                serviceIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_REVISION_TIME), countdown);
+                serviceIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
+                serviceIntent.putExtra(getString(R.string.INTENT_EXTRA_DURATION), countdown);
                 fieldTimer.setVisibility(View.VISIBLE);
                 fieldTimer.setText(utility.secondsToMinuteTime(countdown * 60));
                 startService(serviceIntent);

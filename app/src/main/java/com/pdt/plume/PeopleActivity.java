@@ -586,7 +586,7 @@ public class PeopleActivity extends AppCompatActivity
                         .setBackground(largeIcon);
 
                 Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
-                contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
@@ -724,7 +724,7 @@ public class PeopleActivity extends AppCompatActivity
                     = new NotificationCompat.WearableExtender().setBackground(largeIcon);
 
             Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
-            contentIntent.putExtra(getString(R.string.KEY_TASKS_EXTRA_ID), ID);
+            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
             stackBuilder.addParentStack(TasksDetailActivity.class);
             stackBuilder.addNextIntent(contentIntent);
