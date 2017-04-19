@@ -143,8 +143,9 @@ public class DbHelper extends SQLiteOpenHelper {
     public Cursor getCurrentDayScheduleDataFromSQLite(Context context) {
         SQLiteDatabase db = this.getReadableDatabase();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String weekNumber = "0";
+        String weekNumber = preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
         Cursor cursor;
+        // Start by querying the whole table
         if (weekNumber.equals("0"))
             cursor = db.query(DbContract.ScheduleEntry.TABLE_NAME,
                     null,
@@ -161,22 +162,29 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 ScheduleEntry.COLUMN_TIMEIN_ALT);
 
+        // Next, match each class against their occurrences
         ArrayList<String> returningRowIDs = new ArrayList<>();
         Calendar c = Calendar.getInstance();
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
-
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
                 String title = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE));
                 String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
                 String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
                 if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
-                    returningRowIDs.add("" + cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID)));
+                    Log.v(LOG_TAG, "Adding " + title + " with occurrence " + occurrence);
+                    returningRowIDs.add(String.valueOf(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID))));
                 }
             }
         }
-
         cursor.close();
+
+        // If no classes were matched, return null
+        if (returningRowIDs.size() == 0) {
+            return null;
+        }
+
+        // Every item will be an argument for another cursor to search
         String[] selectionArgs = returningRowIDs.toArray(new String[0]);
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < selectionArgs.length; i++) {
@@ -185,9 +193,9 @@ public class DbHelper extends SQLiteOpenHelper {
             builder.append(ScheduleEntry._ID);
             builder.append("=?");
         }
-
         String selection = builder.toString();
 
+        // Query the new table with the new arguments
         Cursor currentDayCursor;
         if (weekNumber.equals("0"))
             currentDayCursor = db.query(ScheduleEntry.TABLE_NAME,
@@ -215,15 +223,15 @@ public class DbHelper extends SQLiteOpenHelper {
         String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
 
-        // Get data from SQLite
-        // Query the cursor, calendar, initialise the Array List
-        // and get the preference for the week number
+        // Query the cursor
         Cursor cursor = getCurrentDayScheduleDataFromSQLite(context);
         ArrayList<Schedule> arrayList = new ArrayList<>();
 
-        // Run through the cursor's items
-        // 1ST CHECK = WEEK NUMBER
-        // 2ND CHECK = CLASS TYPE
+        // If no classes were matched, return a blank array list
+        if (cursor == null)
+            return arrayList;
+
+        // Decide whether to add in time/period items and basic or alternate items
         for (int i = 0; i < cursor.getCount(); i++) {
             // Check for week 1 or week 2 and add into the array list based on that
             if (cursor.moveToPosition(i)) {
@@ -265,8 +273,10 @@ public class DbHelper extends SQLiteOpenHelper {
                         ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
                                 context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
+
                     // Add the period/block based list item
                     else if (!periods.equals("-1")) {
+                        Log.v(LOG_TAG, "Adding in " + title);
                         ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "0");
                         for (int ii = 0; ii < periodList.size(); ii++) {
                             arrayList.add(new Schedule(
@@ -290,7 +300,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
                     // Add the time based list item
                     if (!timeIn.equals("")) {
-                        // Changed from arrayList.add(i, new Schedule);
                         arrayList.add(new Schedule(
                                 context,
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
@@ -301,6 +310,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 "", null
                         ));
+
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                         String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
@@ -310,6 +320,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
                                 context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
+
                     // Add the period/block based list item
                     else {
                         ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "1");
@@ -326,7 +337,6 @@ public class DbHelper extends SQLiteOpenHelper {
                         }
                     }
                 }
-
             }
         }
 
@@ -448,9 +458,6 @@ public class DbHelper extends SQLiteOpenHelper {
     public boolean insertSchedule(String title, String teacher, String room, String occurrence,
                                   int timein, int timeout, int timeinalt, int timeoutalt,
                                   String periods, String icon) {
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ScheduleEntry.COLUMN_TITLE, title);

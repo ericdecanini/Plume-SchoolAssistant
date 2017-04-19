@@ -14,6 +14,7 @@
     <color name="black">#000000</color>
     <color name="gray_50">#FAFAFA</color>
     <color name="gray_100">#F5F5F5</color>
+    <color name="gray_150">#EFEFEF</color>
     <color name="gray_200">#E0E0E0</color>
     <color name="gray_300">#E0E0E0</color>
     <color name="gray_400">#BDBDBD</color>

@@ -143,6 +143,7 @@
 
                     <TextView
                         android:id="@+id/add_task"
+                        android:text="@string/schedule_detail_add_task"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
@@ -176,7 +177,6 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:background="@color/gray_50">
 
                 <TextView

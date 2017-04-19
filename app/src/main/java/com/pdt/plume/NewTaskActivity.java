@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -48,7 +49,6 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -108,30 +108,32 @@ public class NewTaskActivity extends AppCompatActivity
     Handler handler = new Handler();
     int i = 0;
     boolean active = true;
+    boolean isTablet = false;
 
     // UI Elements
     EditText fieldTitle;
-    CheckBox fieldShared;
+    View fieldShared;
+    CheckBox fieldSharedCheckbox;
     EditText fieldDescription;
     ImageView fieldIcon;
 
-    LinearLayout fieldClassDropdown;
+    View fieldClassDropdown;
     TextView fieldClassTextview;
-    LinearLayout fieldTypeDropdown;
+    View fieldTypeDropdown;
     TextView fieldTypeTextview;
 
     TextView fieldTakePhotoText;
     ImageView fieldTakePhotoIcon;
-    FrameLayout fieldDueDate;
+    View fieldDueDate;
     TextView fieldDueDateTextView;
     TextView fieldAttachFile;
-    LinearLayout fieldSetReminderDate;
+    View fieldSetReminderDate;
     TextView fieldSetReminderDateTextview;
-    LinearLayout fieldSetReminderTime;
+    View fieldSetReminderTime;
     TextView fieldSetReminderTimeTextview;
 
     // UI Data
-    String iconUriString;
+    String iconUriString = "android.resource://com.pdt.plume/drawable/art_task_64dp";
     ArrayList<String> classTitleArray = new ArrayList<>();
     ArrayList<String> classTypeArray = new ArrayList<>();
     String classTitle = "None";
@@ -202,6 +204,9 @@ public class NewTaskActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_task);
         getSupportActionBar().setElevation(0f);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+        int minHeight = getWindowManager().getDefaultDisplay().getHeight();
+        if (isTablet) findViewById(R.id.master_layout).setMinimumHeight(minHeight);
 
         // Initialise Firebase and SQLite
         DbHelper dbHelper = new DbHelper(this);
@@ -226,23 +231,35 @@ public class NewTaskActivity extends AppCompatActivity
         // Get references to the UI elements
         fieldTitle = (EditText) findViewById(R.id.field_new_task_title);
         fieldIcon = (ImageView) findViewById(R.id.field_new_task_icon);
-        fieldClassDropdown = (LinearLayout) findViewById(R.id.field_class_dropdown);
+        fieldClassDropdown = findViewById(R.id.field_class_dropdown);
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
-        fieldShared = (CheckBox) findViewById(R.id.field_shared);
-        fieldTypeDropdown = (LinearLayout) findViewById(R.id.field_type_dropdown);
+        fieldShared = findViewById(R.id.field_shared_layout);
+        fieldSharedCheckbox = (CheckBox) findViewById(R.id.field_shared_checkbox);
+        fieldTypeDropdown = findViewById(R.id.field_type_dropdown);
         fieldTypeTextview = (TextView) findViewById(R.id.field_type_textview);
         fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
         fieldTakePhotoText = (TextView) findViewById(R.id.take_photo_text);
         fieldTakePhotoIcon = (ImageView) findViewById(R.id.take_photo_icon);
-        fieldDueDate = (FrameLayout) findViewById(R.id.field_new_task_duedate);
+        if (!isTablet) fieldDueDate = findViewById(R.id.field_new_task_duedate);
+        else fieldDueDate = findViewById(R.id.field_new_task_duedate_textview);
         fieldDueDateTextView = (TextView) findViewById(R.id.field_new_task_duedate_textview);
-        fieldSetReminderDate = (LinearLayout) findViewById(R.id.field_new_task_reminder_date);
+        if (!isTablet) fieldSetReminderDate = findViewById(R.id.field_new_task_reminder_date);
+        else fieldSetReminderDate = findViewById(R.id.field_new_task_reminder_date_textview);
         fieldSetReminderDateTextview = (TextView) findViewById(R.id.field_new_task_reminder_date_textview);
-        fieldSetReminderTime = (LinearLayout) findViewById(R.id.field_new_task_reminder_time);
+        if (!isTablet) fieldSetReminderTime = findViewById(R.id.field_new_task_reminder_time);
+        else fieldSetReminderTime = findViewById(R.id.field_new_task_reminder_time_textview);
         fieldSetReminderTimeTextview = (TextView) findViewById(R.id.field_new_task_reminder_time_textview);
 
         if (mFirebaseUser == null)
-            fieldShared.setVisibility(View.GONE);
+            if (!isTablet) fieldSharedCheckbox.setVisibility(View.GONE);
+            else fieldShared.setVisibility(View.GONE);
+        if (isTablet)
+            fieldShared.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    fieldSharedCheckbox.toggle();
+                }
+            });
 
         // Initialise the dropdown box default data
         classTitle = getString(R.string.none);
@@ -253,6 +270,7 @@ public class NewTaskActivity extends AppCompatActivity
         fieldClassDropdown.setOnClickListener(listener());
         fieldTypeDropdown.setOnClickListener(listener());
         fieldTakePhotoText.setOnClickListener(listener());
+        if (fieldTakePhotoIcon != null)
         fieldTakePhotoIcon.setOnClickListener(listener());
 //        fieldAttachFile.setOnClickListener(listener());
         fieldSetReminderDate.setOnClickListener(listener());
@@ -330,7 +348,7 @@ public class NewTaskActivity extends AppCompatActivity
                 float reminderTime = extras.getFloat(getString(R.string.INTENT_EXTRA_ALARM_TIME));
 
                 int position = extras.getInt("position");
-                FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT));
+                FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT), false);
 
                 if (FLAG_EDIT) {
                     // Get the id depending on where the data came from
@@ -649,55 +667,43 @@ public class NewTaskActivity extends AppCompatActivity
 //                            this.attachedFileUriString = filePathUri.toString();
 //                        }
 //                    }
+                } else {
+                    setDefaultData();
+                    // Check if there is any data sent through the intent
+                    classTitle = intent.getStringExtra(getString(R.string.INTENT_EXTRA_CLASS));
+                    if (classTitle != null) {
+                        this.classTitle = classTitle;
+                        fieldClassTextview.setText(classTitle);
+                        fieldTitle.setText(classTitle);
+                        fieldTitle.setSelection(0, classTitle.length());
+                    }
                 }
-            } else {
-                // Set any default data
-                Resources resources = getResources();
-                int resId = R.drawable.art_task_64dp;
-                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
-                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
-                iconUriString = drawableUri.toString();
+            } else setDefaultData();
+        } else setDefaultData();
+    }
 
-                // Reminder Date and Time
-                fieldSetReminderDateTextview.setText(getString(R.string.none));
-                fieldSetReminderTime.setEnabled(false);
-                fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
-                fieldSetReminderTimeTextview.setText(getString(R.string.none));
+    private void setDefaultData() {
+        // Set any default data
+        Resources resources = getResources();
+        int resId = R.drawable.art_task_64dp;
+        Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
+        iconUriString = drawableUri.toString();
 
-                // Dates
-                Calendar c = Calendar.getInstance();
-                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 7);
-                dueDateMillis = c.getTimeInMillis();
-                fieldDueDateTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-            }
-        }
+        // Reminder Date and Time
+        fieldSetReminderDateTextview.setText(getString(R.string.none));
+        if (!isTablet)
+        fieldSetReminderTime.setEnabled(false);
+        else fieldSetReminderTimeTextview.setEnabled(false);
+        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
+        fieldSetReminderTimeTextview.setText(getString(R.string.none));
 
-
-        // Set the default state of each field if the activity
-        // was not started by an edit action
-        else {
-            // Initialise the due date to be set for the next day
-            Calendar c = Calendar.getInstance();
-            c.set(c.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
-            dueDateMillis = c.getTimeInMillis();
-            fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
-                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-            Log.v(LOG_TAG, "DueDate text set at 1");
-
-            // Initialise the reminder date and time
-            c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0);
-            reminderDateMillis = c.getTimeInMillis();
-            fieldSetReminderDateTextview.setText(utility.formatDateString(NewTaskActivity.this, c.get(Calendar.YEAR),
-                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
-            c = Calendar.getInstance();
-            reminderTimeMillis = utility.timeToMillis(c.get(Calendar.HOUR_OF_DAY) + 1, 0);
-            fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeMillis));
-
-            iconUriString = ContentResolver.SCHEME_ANDROID_RESOURCE +
-                    "://" + getResources().getResourcePackageName(R.drawable.art_task_64dp)
-                    + '/' + getResources().getResourceTypeName(R.drawable.art_task_64dp) + '/' + getResources().getResourceEntryName(R.drawable.art_task_64dp);
-        }
-
+        // Dates
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 7);
+        dueDateMillis = c.getTimeInMillis();
+        fieldDueDateTextView.setText(utility.formatDateString(this,
+                c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
     }
 
 
@@ -719,7 +725,9 @@ public class NewTaskActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-        fieldTitle.setBackgroundColor(mPrimaryColor);
+        if (!isTablet)
+            fieldTitle.setBackgroundColor(mPrimaryColor);
+        else fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
 
         if (LAUNCHED_NEW_CLASS) {
             DbHelper dbHelper = new DbHelper(this);
@@ -783,7 +791,13 @@ public class NewTaskActivity extends AppCompatActivity
                     return false;
                 }
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
+
+                // Determine where the NewTaskActivity was started from and return to the corresponding activity
+                if (getIntent().hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE))) {
+                    intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE), getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE));
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_POSITION),
+                            getIntent().getIntExtra(getString(R.string.INTENT_EXTRA_POSITION), 0));
+                } else intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
                 try {
                     if (insertTaskDataIntoDatabase()) {
                         // Upload the icon to the cloud if applicable
@@ -1123,7 +1137,8 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.today));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
@@ -1140,7 +1155,8 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
@@ -1154,7 +1170,8 @@ public class NewTaskActivity extends AppCompatActivity
                         break;
                     case R.id.dropdown_reminder_date_setdate:
                         fieldSetReminderTime.setEnabled(true);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         int year = c.get(Calendar.YEAR);
                         int month = c.get(Calendar.MONTH);
                         int day = c.get(Calendar.DAY_OF_MONTH) + 1;
@@ -1219,6 +1236,7 @@ public class NewTaskActivity extends AppCompatActivity
                         showTypeDropdownMenu();
                         break;
                     case R.id.field_new_task_duedate:
+                    case R.id.field_new_task_duedate_textview:
                         Calendar c_duedate = Calendar.getInstance();
                         Date date_duedate = new Date();
                         c_duedate.setTime(date_duedate);
@@ -1287,8 +1305,10 @@ public class NewTaskActivity extends AppCompatActivity
                                 }).show();
                         break;
                     case R.id.field_new_task_reminder_date:
+                    case R.id.field_new_task_reminder_date_textview:
                         showReminderDateDropdownMenu();
                         break;
+                    case R.id.field_new_task_reminder_time_textview:
                     case R.id.field_new_task_reminder_time:
                         showReminderTimeDropdownMenu();
                         break;
@@ -1568,7 +1588,7 @@ public class NewTaskActivity extends AppCompatActivity
             }
 
             // Share the task to peers if checked shared
-            if (fieldShared.isChecked()) {
+            if (fieldSharedCheckbox.isChecked()) {
                 final ArrayList<String> peerUIDs = new ArrayList<>();
                 DatabaseReference classPeersRef;
                 if (classTitle.equals(""))

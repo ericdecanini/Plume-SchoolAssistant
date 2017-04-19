@@ -13,6 +13,8 @@
     <string name="nav_help">Help</string>
     <string name="nav_about">About Plume - Academy Assistant</string>
 
+    <string name="hyphen">&#45;</string>
+
     <string name="one">1</string>
     <string name="two">2</string>
     <string name="three">3</string>
@@ -129,7 +131,7 @@
     <string name="class_time_one_blockbased">Block based</string>
     <string name="class_time_one_periodbased">Period based</string>
     <string name="class_time_one_timebased">Time based</string>
-    <string name="class_time_one_title">How does your schedule work?</string>
+    <string name="class_time_one_title">Schedule type</string>
     <string name="class_time_three_select_days">Select when your class takes place</string>
     <string name="class_time_two_altweeks">Alternating weeks</string>
     <string name="class_time_two_sameweek">Same schedule every week</string>
@@ -137,6 +139,7 @@
     <string name="color_dialog_title">Select colour</string>
     <string name="coming_soon">Coming soon&#8230;</string>
     <string name="completed_task">Completed task</string>
+    <string name="days">Days</string>
     <string name="delete">Delete</string>
     <string name="deny">Deny</string>
     <string name="dialog_description_altweek">Schedule changes every week</string>
@@ -160,6 +163,7 @@
     <string name="editNameHint">Your Name</string>
     <string name="editNameMessage">How do you want your peers to see you?</string>
     <string name="enter_text_hint">Enter text here&#8230;</string>
+    <string name="everyday">Everyday</string>
     <string name="field_attach_file">Attach file</string>
     <string name="field_dropdown_class">Class</string>
     <string name="field_dropdown_type">Type</string>
@@ -170,7 +174,8 @@
     <string name="field_dropdown_type_menu_item_project">Project</string>
     <string name="field_dropdown_type_menu_item_revision">Revision</string>
     <string name="field_dropdown_type_menu_item_test">Test</string>
-    <string name="field_due_date">Due date:</string>
+    <string name="field_due_date_colon">Due date:</string>
+    <string name="field_due_date">Due date</string>
     <string name="field_hint_description">Description</string>
     <string name="field_new_photo_dialog_title">Insert photo</string>
     <string name="field_set_reminder">Set reminder</string>
@@ -192,7 +197,7 @@
     <string name="mismatchDialogHeader">Did you name these classes differently?</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="new_schedule_add_class_time">Add a Period for this Class</string>
+    <string name="new_schedule_add_class_time">&#43; New period</string>
     <string name="new_schedule_hint">Enter a title</string>
     <string name="new_schedule_icon_builtin_title">Choose an icon</string>
     <string name="new_schedule_icon_list_builtin">Built-in icons</string>
@@ -227,23 +232,25 @@
     <string name="ScanQRCode">Scan QR Code</string>
     <string name="schedule">Schedule</string>
     <string name="schedule_detail_add_note">Add a note</string>
-    <string name="schedule_detail_add_task">Add task to %1%s</string>
+    <string name="schedule_detail_add_task">Add a new task</string>
     <string name="schedule_detail_dialog_delete_confirm">Are you sure you want to delete this class?</string>
     <string name="schedule_detail_notes_add">Add note</string>
     <string name="schedule_detail_notes_title">Notes</string>
     <string name="schedule_detail_periods_title">Periods</string>
     <string name="schedule_detail_room_subtitle">Room</string>
+    <string name="schedule_detail_splash_no_periods">You have no periods for this class. Add one?</string>
     <string name="schedule_detail_tasks_title">Tasks</string>
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
     <string name="schedule_notification_message">Class starts in</string>
     <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done.</string>
+    <string name="schedule_type">Schedule type</string>
     <string name="search">Search</string>
     <string name="select">Select</string>
     <string name="select_class">Select class</string>
     <string name="select_gallery">Select a photo from gallery</string>
     <string name="select_items">Select Items</string>
-    <string name="select_periods">Choose periods</string>
+    <string name="select_periods">Periods</string>
     <string name="sendPeerRequest">Send Request</string>
     <string name="set_timer">Set timer</string>
     <string name="settings">Settings</string>
@@ -272,9 +279,14 @@
     <string name="task_type">Task type</string>
     <string name="timer_end">Countdown reached.</string>
     <string name="timeTask">Setup a timer</string>
+    <string name="time_start">Start</string>
+    <string name="time_end">End</string>
+    <string name="title">Title</string>
     <string name="toast_timer_set">Timer set for</string>
     <string name="user_search">user_search</string>
     <string name="viewPeers">View Peers</string>
+    <string name="weekends">Weekends</string>
+    <string name="weekdays">Weekdays</string>
     <string name="week_every">Every week</string>
     <string name="week_number">Week number</string>
     <string name="week_one">Week 1</string>
@@ -407,7 +419,7 @@
 
     <!-- KEYS -->
     <string name="KEY_PREFERENCE_BASIS" translatable="false">KEY_PREFERENCE_BASIS</string>
-    <string name="KEY_PREFERENCE_KEY" translatable="false">KEY_PREFERENCE_KEY</string>
+    <string name="KEY_PREFERENCE_WEEKTYPE" translatable="false">KEY_PREFERENCE_KEY</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
     <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
     <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
@@ -444,18 +456,28 @@
     <string name="INTENT_EXTRA_ID" translatable="false">INTENT_EXTRA_ID</string>
     <string name="INTENT_EXTRA_MUTE" translatable="false">INTENT_EXTRA_MUTE</string>
     <string name="INTENT_EXTRA_PATH" translatable="false">INTENT_EXTRA_PATH</string>
+    <string name="INTENT_EXTRA_POSITION" translatable="false">INTENT_EXTRA_POSITION</string>
     <string name="INTENT_EXTRA_SHARER" translatable="false">INTENT_EXTRA_SHARER</string>
     <string name="INTENT_EXTRA_TITLE" translatable="false">INTENT_EXTRA_TITLE</string>
     <string name="INTENT_EXTRA_TRANSITION" translatable="false">INTENT_EXTRA_TRANSITION</string>
     <string name="INTENT_EXTRA_TYPE" translatable="false">INTENT_EXTRA_TYPE</string>
 
+    <string name="ARGUMENT_ALTERNATE" translatable="false">ARGUMENT_ALTERNATE</string>
+    <string name="ARGUMENT_DAYS" translatable="false">ARGUMENT_DAYS</string>
+    <string name="ARGUMENT_POSITION" translatable="false">ARGUMENT_POSITION</string>
+    <string name="ARGUMENT_ACTIVATED" translatable="false">ARGUMENT_ACTIVATED</string>
+
     <!-- FLAGS -->
     <string name="INTENT_FLAG_COMPLETED" translatable="false">INTENT_FLAG_COMPLETED</string>
+    <string name="INTENT_FLAG_RETURN_TO_SCHEDULE" translatable="false">INTENT_FLAG_RETURN_TO_SCHEDULE</string>
     <string name="INTENT_FLAG_RETURN_TO_TASKS" translatable="false">INTENT_FLAG_RETURN_TO_TASKS</string>
-    <string name="INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY" translatable="false">INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY</string>
+    <string name="INTENT_FLAG_RETURN_TO_CLASSES" translatable="false">INTENT_FLAG_RETURN_TO_CLASSES</string>
     <string name="INTENT_FLAG_EDIT" translatable="false">INTENT_FLAG_EDIT</string>
 
     <!-- MISC -->
     <string name="PREFERENCE_UNIQUE_ID_COUNT" translatable="false">PREFERENCE_UNIQUE_ID_COUNT</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

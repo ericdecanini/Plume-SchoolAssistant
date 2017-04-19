@@ -83,7 +83,6 @@ public class ScheduleAdapter extends ArrayAdapter {
         // using data constructed in the Schedule class object
         if (schedule.scheduleCustomIcon == null || !schedule.scheduleIcon.contains("com.pdt.plume")) {
             Uri uri = Uri.parse(schedule.scheduleIcon);
-            Log.v(LOG_TAG, "Uri is " + uri);
             holder.icon.setImageURI(uri);
         } else holder.icon.setImageBitmap(schedule.scheduleCustomIcon);
         holder.lesson.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
@@ -102,11 +101,15 @@ public class ScheduleAdapter extends ArrayAdapter {
         // If the teacher view returns null, an alternate layout is being used
         if (holder.teacher != null) {
             holder.teacher.setText(schedule.scheduleTeacher);
+            holder.room.setText(schedule.scheduleRoom);
+
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,
                         schedule.scheduleTimeIn));
-            } else {
+            } else if (schedule.scheduleTimeIn.equals(" "))
+                holder.timeIn.setText("");
+            else {
                 // Time based format
                 holder.timeIn.setText(context.getString(R.string.format_time,
                         schedule.scheduleTimeIn, schedule.scheduleTimeOut));

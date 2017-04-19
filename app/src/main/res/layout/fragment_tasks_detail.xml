@@ -1,14 +1,142 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="#888888"
+    android:background="@color/gray_100"
     android:layout_height="match_parent"
+    android:paddingLeft="64dp"
+    android:paddingStart="64dp"
+    android:paddingRight="64dp"
+    android:paddingEnd="64dp"
     tools:context="com.pdt.plume.TasksDetailFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Tasks Detail Fragment" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="24dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-</FrameLayout>
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/icon"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:minHeight="80dp"
+                    android:minWidth="80dp"
+                    android:src="@drawable/art_maths_64dp" />
+
+                <com.pdt.plume.CircularImageView
+                    android:id="@+id/icon2"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:minHeight="80dp"
+                    android:minWidth="80dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toLeftOf="@+id/title"
+                    android:layout_toStartOf="@+id/title" />
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/icon"
+                    android:layout_toEndOf="@id/icon"
+                    android:layout_toRightOf="@id/icon"
+                    android:paddingBottom="24dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="22dp"
+                    android:text="Maths Homework"
+                    android:textColor="@color/gray_900"
+                    android:textSize="28sp" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Maths Homework"
+                android:textColor="@color/gray_700"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/task_detail_duedate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="Due Thu, April 20, 2017"
+                android:textColor="@color/gray_700"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/mark_as_done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="@string/mark_as_done"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/task_detail_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="40dp"
+                android:paddingTop="20dp"
+                android:text="Lorem ipsum dolor sit amet consectetuer adipiscing elit"
+                android:textColor="@color/gray_700"
+                android:textSize="18sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/dividerColor" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:id="@+id/task_detail_photo_layout">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/dividerColor" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_photo_camera_black_32dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:tint="@color/gray_700" />
+
+                    <!--<ImageView-->
+                    <!--android:id="@+id/task_detail_photo"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:adjustViewBounds="true"-->
+                    <!--android:layout_gravity="center_horizontal"/>-->
+
+                </FrameLayout>
+
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+</ScrollView>

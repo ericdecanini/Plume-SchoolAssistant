@@ -24,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -68,7 +69,7 @@ public class TasksFragment extends Fragment {
     int mSecondaryColor;
 
     // Flags
-    boolean isTablet;
+    boolean isTablet = false;
 
     // List Variables
     ArrayList<Task> mTasksList;
@@ -111,6 +112,7 @@ public class TasksFragment extends Fragment {
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (isTablet) fab.setAlpha(1f);
 
         // Get a reference to the list view and create its mScheduleAdapter
         // using the current day schedule data
@@ -237,15 +239,21 @@ public class TasksFragment extends Fragment {
 
         // Set the mScheduleAdapter and listeners of the listview
         if (listView != null) {
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             listView.setAdapter(mTasksAdapter);
             listView.setOnItemClickListener(ItemClickListener());
-            listView.setMultiChoiceModeListener(new ModeCallback());
-            if (getResources().getBoolean(R.bool.isTablet))
+            if (!isTablet) {
+                listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+                listView.setMultiChoiceModeListener(new ModeCallback());
+            } else listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+
+            if (isTablet && mTasksList.size() > 0)
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
 
-            if (isTablet)
-                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+            if (isTablet && mTasksList.size() == 0)
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.detail_container, new BlankFragment())
+                        .commit();
+
         }
 
         // Set the action of the FAB
@@ -295,6 +303,15 @@ public class TasksFragment extends Fragment {
                 // passing the data of the clicked row to the fragment
                 if (isTablet) {
                     TasksDetailFragment fragment = new TasksDetailFragment();
+                    Bundle args = new Bundle();
+                    if (mFirebaseUser != null) {
+                        args.putString("id", FirebaseIdList.get(position));
+                    } else {
+                        args.putInt(getString(R.string.INTENT_EXTRA_ID), position);
+                    }
+                    args.putString("icon", mTasksList.get(position).taskIcon);
+                    args.putInt(getString(R.string.INTENT_EXTRA_POSITION), position);
+                    fragment.setArguments(args);
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.detail_container, fragment)
                             .commit();

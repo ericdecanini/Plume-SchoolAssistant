@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:id="@+id/master_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="64dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dp"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:id="@+id/field_new_task_icon"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/art_arts_64dp" />
+
+            <AutoCompleteTextView
+                android:id="@+id/field_new_task_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:hint="@string/title"
+                android:paddingTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_classroom_black"
+                android:tint="@color/gray_700" />
+
+            <FrameLayout
+                android:id="@+id/field_class_dropdown"
+                android:layout_width="156dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp">
+
+                <TextView
+                    android:id="@+id/field_class_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:maxLines="1"
+                    android:maxWidth="126dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="4dp"
+                    android:paddingStart="4dp"
+                    android:text="@string/field_dropdown_class"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginRight="12dp"
+                    android:src="@drawable/ic_dropdown_black"
+                    android:tint="@color/gray_700" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@color/gray_500" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/field_type_dropdown"
+            android:layout_width="156dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="144dp"
+            android:layout_marginStart="144dp"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/field_type_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:maxLines="1"
+                android:maxWidth="126dp"
+                android:paddingBottom="4dp"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp"
+                android:text="@string/field_dropdown_type"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="12dp"
+                android:src="@drawable/ic_dropdown_black"
+                android:tint="@color/gray_700" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:layout_marginEnd="16dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginStart="4dp"
+                android:background="@color/gray_500" />
+        </FrameLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="40dp"
+            android:background="@color/dividerColor" />
+
+        <LinearLayout
+            android:id="@+id/field_shared_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/field_shared"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal"
+                android:paddingEnd="64dp"
+                android:paddingLeft="64dp"
+                android:paddingRight="64dp"
+                android:paddingStart="64dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_group_black_24dp"
+                    android:tint="@color/gray_700" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginStart="32dp"
+                    android:text="@string/share_task"
+                    android:textColor="@color/gray_900"
+                    android:textSize="18sp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <CheckBox
+                    android:id="@+id/field_shared_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="24dp"
+                android:background="@color/dividerColor" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_time_black_32dp"
+                android:tint="@color/gray_700" />
+
+            <TextView
+                android:id="@+id/field_new_task_duedate_textview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:maxLines="1"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp"
+                android:text="Sun, May 18 2017"
+                android:textColor="@color/gray_900"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:orientation="horizontal"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_edit_white"
+                android:tint="@color/gray_700" />
+
+            <EditText
+                android:id="@+id/field_new_task_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:background="@android:color/transparent"
+                android:hint="@string/field_hint_description"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="32dp"
+            android:background="@color/dividerColor" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_access_alarm_white_24dp"
+                android:tint="@color/gray_700" />
+
+            <TextView
+                android:id="@+id/field_new_task_reminder_date_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:background="@android:color/transparent"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp"
+                android:text="Thu, April 27, 2017"
+                android:textColor="@color/gray_900"
+                android:textSize="18sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/field_new_task_reminder_time_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="32dp"
+                android:layout_marginRight="32dp"
+                android:background="@android:color/transparent"
+                android:maxLines="1"
+                android:text="12:30"
+                android:textColor="@color/gray_900"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="@color/dividerColor" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:paddingEnd="64dp"
+            android:paddingLeft="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="64dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_photo_camera_black_32dp"
+                android:tint="@color/gray_700" />
+
+            <TextView
+                android:id="@+id/take_photo_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:background="@android:color/transparent"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp"
+                android:text="@string/take_photo"
+                android:textColor="@color/gray_700"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="64dp"
+            android:layout_marginRight="64dp"
+            android:layout_marginTop="24dp">
+
+            <LinearLayout
+                android:id="@+id/photos_layout"
+                android:layout_width="wrap_content"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -2,34 +2,22 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.os.Build;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
-import android.view.View;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,6 +52,38 @@ public class Utility {
                 return result;
             }
         }
+    }
+
+    public static String getReadablePeriodsString(String periods) {
+        StringBuilder builder = new StringBuilder();
+        String[] periodsArray = periods.split(":");
+        for (int i = 0; i < periodsArray.length; i++) {
+            if (periodsArray[i].equals("1")) {
+                if (!builder.toString().equals(""))
+                    builder.append(", ");
+                builder.append(String.valueOf(i + 1));
+                if (i == 0) builder.append("st");
+                else if (i == 1) builder.append("nd");
+                else if (i == 2) builder.append("rd");
+                else builder.append("th");
+            }
+        }
+        return builder.toString();
+    }
+
+    public static String getReadableDaysString(String days) {
+        String[] dayInitials = {"S", "M", "T", "W", "T", "F", "S"};
+
+        StringBuilder builder = new StringBuilder();
+        String[] daysArray = days.split(":");
+        for (int i = 0; i < daysArray.length; i++) {
+            if (daysArray[i].equals("1")) {
+                if (!builder.toString().equals(""))
+                    builder.append(", ");
+                builder.append(dayInitials[i]);
+            }
+        }
+        return builder.toString();
     }
 
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap) {
@@ -223,15 +243,15 @@ public class Utility {
         return newArrayList;
     }
 
-    // Helper method to update an OccurrenceTimePeriod Array List item at position
-    public ArrayList<OccurrenceTimePeriod> updateOccurrenceTimePeriodArrayListItemAtPosition
-    (ArrayList<OccurrenceTimePeriod> arrayList, int position, OccurrenceTimePeriod newObject) {
+    // Helper method to update an PeriodItem Array List item at position
+    public ArrayList<PeriodItem> updateOccurrenceTimePeriodArrayListItemAtPosition
+    (ArrayList<PeriodItem> arrayList, int position, PeriodItem newObject) {
         // If the sent array list is empty, return an empty array list
         if (arrayList.size() == 0)
             return new ArrayList<>();
 
         // Create a new instance of an Array List
-        ArrayList<OccurrenceTimePeriod> newArrayList = new ArrayList<>();
+        ArrayList<PeriodItem> newArrayList = new ArrayList<>();
         // Add all the previous items below position of the
         // old Array List into the new one
         for (int i = 0; i < position; i++)
@@ -281,6 +301,24 @@ public class Utility {
                 if (splitPeriods[11].equals("1") || splitPeriods[11].equals("3"))
                     periodList.add("12th");
             }
+            if (splitPeriods.length == 8) {
+                if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
+                    periodList.add("1st");
+                if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
+                    periodList.add("2nd");
+                if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
+                    periodList.add("3rd");
+                if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
+                    periodList.add("4th");
+                if (splitPeriods[4].equals("1") || splitPeriods[4].equals("3"))
+                    periodList.add("5th");
+                if (splitPeriods[5].equals("1") || splitPeriods[5].equals("3"))
+                    periodList.add("6th");
+                if (splitPeriods[6].equals("1") || splitPeriods[6].equals("3"))
+                    periodList.add("7th");
+                if (splitPeriods[7].equals("1") || splitPeriods[7].equals("3"))
+                    periodList.add("8th");
+            }
 
             // This will be called if the row is block based
             if (splitPeriods.length == 4) {
@@ -323,6 +361,24 @@ public class Utility {
                 if (splitPeriods[11].equals("2") || splitPeriods[11].equals("3"))
                     periodList.add("12th");
             }
+            if (splitPeriods.length == 8) {
+                if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
+                    periodList.add("1st");
+                if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
+                    periodList.add("2nd");
+                if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
+                    periodList.add("3rd");
+                if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
+                    periodList.add("4th");
+                if (splitPeriods[4].equals("2") || splitPeriods[4].equals("3"))
+                    periodList.add("5th");
+                if (splitPeriods[5].equals("2") || splitPeriods[5].equals("3"))
+                    periodList.add("6th");
+                if (splitPeriods[6].equals("2") || splitPeriods[6].equals("3"))
+                    periodList.add("7th");
+                if (splitPeriods[7].equals("2") || splitPeriods[7].equals("3"))
+                    periodList.add("8th");
+            }
 
             // This will be called if the row is block based
             if (splitPeriods.length == 4) {
@@ -343,6 +399,7 @@ public class Utility {
 
     // Helper method to check if occurrence matches current day
     public boolean occurrenceMatchesCurrentDay(Context context, String occurrence, String periods, String weekNumber, int dayOfWeek) {
+        Log.v(LOG_TAG, "Occurrence " + occurrence + " matches");
         // In this case, no class time would have been set
         if (occurrence.equals("-1"))
             return false;

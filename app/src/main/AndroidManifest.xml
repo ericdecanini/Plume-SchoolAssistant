@@ -2,36 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdt.plume">
 
-    <compatible-screens>
-
-        <!-- all small size screens -->
-        <screen
-            android:screenDensity="ldpi"
-            android:screenSize="small" />
-        <screen
-            android:screenDensity="mdpi"
-            android:screenSize="small" />
-        <screen
-            android:screenDensity="hdpi"
-            android:screenSize="small" />
-        <screen
-            android:screenDensity="xhdpi"
-            android:screenSize="small" />
-        <!-- all normal size screens -->
-        <screen
-            android:screenDensity="ldpi"
-            android:screenSize="normal" />
-        <screen
-            android:screenDensity="mdpi"
-            android:screenSize="normal" />
-        <screen
-            android:screenDensity="hdpi"
-            android:screenSize="normal" />
-        <screen
-            android:screenDensity="xhdpi"
-            android:screenSize="normal" />
-    </compatible-screens>
-
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.pdt.plume.permission.C2D_MESSAGE" />
@@ -77,7 +47,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
         <provider
             android:name=".ContentProvider"
             android:authorities="de.pdt.plume"
@@ -93,6 +62,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -131,7 +101,9 @@
             android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
+
                 <data android:mimeType="*/*" />
+
                 <category android:name="android.intent.category.OPENABLE" />
             </intent-filter>
         </activity>
@@ -257,8 +229,13 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".PictureActivity"
+        <activity
+            android:name=".PictureActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".NewPeriodOneActivity" />
+        <activity android:name=".NewPeriodTwoActivity" />
+        <activity android:name=".NewPeriodThreeTimeActivity" />
+        <activity android:name=".NewPeriodActivity"></activity>
     </application>
 
 </manifest>

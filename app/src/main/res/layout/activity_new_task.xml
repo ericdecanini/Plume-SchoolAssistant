@@ -3,13 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/backgroundColor"
     android:orientation="vertical"
     tools:context="com.pdt.plume.NewTaskActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <EditText
@@ -27,12 +28,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingBottom="20dp"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin">
+            android:paddingTop="32dp">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -46,6 +46,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
                     android:text="@string/link_to_class"
                     android:textColor="@color/black_0.54"
                     android:textSize="18sp" />
@@ -75,15 +76,10 @@
                     android:layout_marginStart="4dp"
                     android:orientation="vertical">
 
-                    <LinearLayout
-                        android:id="@+id/field_class_dropdown"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-
                         <FrameLayout
-                            android:layout_width="wrap_content"
+                            android:id="@+id/field_class_dropdown"
+                            android:layout_width="156dp"
                             android:layout_height="wrap_content">
-
                             <TextView
                                 android:id="@+id/field_class_textview"
                                 android:layout_width="wrap_content"
@@ -91,8 +87,9 @@
                                 android:layout_gravity="center_vertical"
                                 android:paddingLeft="5dp"
                                 android:paddingStart="5dp"
+                                android:maxWidth="126dp"
+                                android:maxLines="1"
                                 android:text="@string/field_dropdown_class" />
-
                             <ImageView
                                 android:id="@+id/imageView"
                                 android:layout_width="wrap_content"
@@ -101,7 +98,6 @@
                                 android:layout_marginRight="12dp"
                                 android:src="@drawable/ic_dropdown_black"
                                 android:tint="@color/gray_700" />
-
                             <View
                                 android:layout_width="match_parent"
                                 android:layout_height="1dp"
@@ -110,18 +106,12 @@
                                 android:layout_marginRight="16dp"
                                 android:background="@color/gray_500" />
                         </FrameLayout>
-                    </LinearLayout>
-
-
-                    <LinearLayout
-                        android:id="@+id/field_type_dropdown"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp">
 
                         <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
+                            android:id="@+id/field_type_dropdown"
+                            android:layout_width="156dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp">
 
                             <TextView
                                 android:id="@+id/field_type_textview"
@@ -130,6 +120,8 @@
                                 android:layout_gravity="center_vertical"
                                 android:paddingLeft="5dp"
                                 android:paddingStart="5dp"
+                                android:maxWidth="126dp"
+                                android:maxLines="1"
                                 android:text="@string/field_dropdown_type" />
 
                             <ImageView
@@ -148,7 +140,6 @@
                                 android:layout_marginRight="16dp"
                                 android:background="@color/gray_500" />
                         </FrameLayout>
-                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -172,13 +163,14 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/field_shared"
+            android:id="@+id/field_shared_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:paddingLeft="8dp"
+            android:paddingStart="8dp"
             android:text="@string/share_task"
             android:textColor="@color/gray_700"
             android:textSize="16sp" />
@@ -255,7 +247,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="8dp"
                 android:gravity="center_vertical"
-                android:text="@string/field_due_date"
+                android:text="@string/field_due_date_colon"
                 android:textColor="@color/black_0.54"
                 android:textSize="16sp" />
 
@@ -500,15 +492,19 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/photos_layout"
-                android:visibility="gone"
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
                 android:paddingBottom="8dp"
                 android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingRight="16dp">
+            <LinearLayout
+                android:id="@+id/photos_layout"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
                 android:orientation="horizontal" />
+            </HorizontalScrollView>
 
         </LinearLayout>
 

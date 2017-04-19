@@ -84,7 +84,6 @@ public class TaskAdapter extends ArrayAdapter {
         try {
             Uri uri = Uri.parse(task.taskIcon);
             File file = new File(uri.getPath());
-            Log.v(LOG_TAG, "File size: " + file.length());
             setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
         } catch (IOException e) {
             e.printStackTrace();
@@ -95,13 +94,16 @@ public class TaskAdapter extends ArrayAdapter {
         holder.title.setText(task.taskTitle);
         holder.title.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
 
-        holder.taskClass.setText(task.taskClass);
-        holder.taskType.setText(task.taskType);
+        // If this returns null, list_item_task2 is being used which only has icon and title
+        if (holder.taskClass != null) {
+            holder.taskClass.setText(task.taskClass);
+            holder.taskType.setText(task.taskType);
 
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(((long)task.taskDueDate));
-        holder.date.setText(context.getString(R.string.due_date) + " "
-                + utility.formatDateString(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(((long) task.taskDueDate));
+            holder.date.setText(context.getString(R.string.due_date) + " "
+                    + utility.formatDateString(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        }
 
         return row;
     }

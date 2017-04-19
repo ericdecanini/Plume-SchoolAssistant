@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
@@ -61,7 +60,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     // Constantly used variables
     String LOG_TAG = ScheduleDetailActivity.class.getSimpleName();
     Utility utility = new Utility();
-    Handler handler = new Handler();
 
     // UI Variables
     private Menu mActionMenu;
@@ -91,12 +89,12 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     ArrayList<String> taskFirebaseIDs = new ArrayList<>();
     ArrayList<Integer> notesIDs = new ArrayList<>();
     ArrayList<Task> mTasksList = new ArrayList<>();
-    ArrayList<OccurrenceTimePeriod> mPeriodsList = new ArrayList<>();
+    ArrayList<PeriodItem> mPeriodsList = new ArrayList<>();
 
 
     ArrayAdapter<String> mNotesAdapter;
     TaskAdapter mTasksAdapter;
-    OccurrenceTimePeriodAdapter mPeriodsAdapter;
+    PeriodAdapter mPeriodsAdapter;
 
     // Transition Utensils
     private View mRevealView;
@@ -254,7 +252,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             });
 
             // Initialise the periods list
-            mPeriodsAdapter = new OccurrenceTimePeriodAdapter(this, R.layout.list_item_occurrence_time_period, mPeriodsList);
+            mPeriodsAdapter = new PeriodAdapter(this, R.layout.list_item_new_period, mPeriodsList);
             ListView periodListview = (ListView) findViewById(R.id.schedule_detail_periods_list);
             periodListview.setAdapter(mPeriodsAdapter);
 
@@ -326,10 +324,10 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 .child("users").child(mUserId).child("classes")
                                 .child(title);
                         final ArrayList<String> occurrences = new ArrayList<>();
-                        final ArrayList<String> timeins = new ArrayList<>();
-                        final ArrayList<String> timeouts = new ArrayList<>();
-                        final ArrayList<String> timeinalts = new ArrayList<>();
-                        final ArrayList<String> timeoutalts = new ArrayList<>();
+                        final ArrayList<Integer> timeins = new ArrayList<>();
+                        final ArrayList<Integer> timeouts = new ArrayList<>();
+                        final ArrayList<Integer> timeinalts = new ArrayList<>();
+                        final ArrayList<Integer> timeoutalts = new ArrayList<>();
                         final ArrayList<String> periods = new ArrayList<>();
 
                         classRef.child("occurrence").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -343,7 +341,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++) {
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
                                     }
@@ -361,13 +359,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeins.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                    timeins.add(occurrenceSnapshot.getValue(int.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++) {
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
                                     }
@@ -385,13 +383,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeouts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                    timeouts.add(occurrenceSnapshot.getValue(int.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++) {
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
                                     }
@@ -409,13 +407,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeinalts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                    timeinalts.add(occurrenceSnapshot.getValue(int.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++) {
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
                                     }
@@ -432,13 +430,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    timeoutalts.add(utility.millisToHourTime(occurrenceSnapshot.getValue(float.class)));
+                                    timeoutalts.add(occurrenceSnapshot.getValue(int.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++)
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
 
@@ -461,7 +459,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
                                         && timeoutalts.size() >= snapshotCount && periods.size() >= snapshotCount)
                                     for (int i = 0; i < snapshotCount; i++)
-                                        mPeriodsList.add(new OccurrenceTimePeriod(ScheduleDetailActivity.this,
+                                        mPeriodsList.add(new PeriodItem(ScheduleDetailActivity.this,
                                                 timeins.get(i), timeouts.get(i), timeinalts.get(i), timeoutalts.get(i),
                                                 periods.get(i), occurrences.get(i)));
 
@@ -573,8 +571,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)),
                                     "",
-                                    cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS)),
-                                    cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE)),
+                                    tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS)),
+                                    tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT)),
                                     tasksCursor.getFloat(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)),
@@ -593,11 +591,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     for (int i = 0; i < cursor.getCount(); i++) {
                         String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
                         if (!occurrence.equals("-1"))
-                            mPeriodsList.add(new OccurrenceTimePeriod(this,
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT))),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                            mPeriodsList.add(new PeriodItem(this,
+                                    cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN)),
+                                    cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT)),
+                                    cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT)),
+                                    cursor.getInt(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT)),
                                     cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_PERIODS)),
                                     cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE))));
                         cursor.moveToNext();
@@ -767,20 +765,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         .setNegativeButton(getString(R.string.cancel), null)
                         .show();
                 break;
-
-//            case R.id.action_share:
-//                String shareString = title
-//                        + "\n" + getString(R.string.new_schedule_teacher) + ": " + teacher
-//                        + "\n" + getString(R.string.new_schedule_room) + ": " + room;
-//                Intent shareIntent = new Intent();
-//                shareIntent.setAction(Intent.ACTION_SEND);
-//                shareIntent.putExtra(Intent.EXTRA_TEXT, shareString);
-//                shareIntent.setType("text/plain");
-//                if (mShareActionProvider != null) {
-//                    mShareActionProvider.setShareIntent(shareIntent);
-//                }
-//                startActivity(shareIntent);
-//                break;
 
             case R.id.action_edit:
                 Intent intent = new Intent(this, NewScheduleActivity.class);

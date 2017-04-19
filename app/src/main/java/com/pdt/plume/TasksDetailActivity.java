@@ -467,52 +467,10 @@ public class TasksDetailActivity extends AppCompatActivity {
                         }
                     }
 
-                    // PHOTOS DISABLED FOR THE BETA
-//                if (!photoPath.equals("")) {
-//                    photoUri = Uri.parse(photoPath);
-//                    try {
-//                        float scale = getResources().getDisplayMetrics().density;
-//                        final Bitmap photoBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
-
-//                        final ImageView photo = (ImageView) findViewById(R.id.task_detail_photo);
-//                        photo.setMaxWidth(((int) (getWindowManager().getDefaultDisplay().getWidth() - (140 * scale))));
-//                        photo.setImageBitmap(Bitmap.createScaledBitmap(photoBitmap, ((int) (photoBitmap.getWidth() / 2.5)), ((int) (photoBitmap.getHeight() / 2.5)), false));
-//                        photo.setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                Intent photoIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
-//                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_TITLE), title);
-//                                photoIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoPath);
-//                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(TasksDetailActivity.this,
-//                                        photo, photo.getTransitionName()).toBundle();
-//                                startActivity(photoIntent, bundle);
-//                            }
-//                        });
-//
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                } else findViewById(R.id.task_detail_photo_layout).setVisibility(View.GONE);
-
-
                 }
 
             }
         }
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        return image;
     }
 
     @Override
@@ -629,17 +587,6 @@ public class TasksDetailActivity extends AppCompatActivity {
 
         // TODO: Bring back the revision timer
         fieldTimer = (TextView) findViewById(R.id.task_detail_timer);
-    }
-
-    private Uri getFileAbsolutePath(Uri filePath) throws IOException {
-        InputStream inputStream = getContentResolver().openInputStream(filePath);
-        byte[] buffer = new byte[inputStream.available()];
-        inputStream.read(buffer);
-
-        File targetFile = new File(filePath.toString());
-        OutputStream outputStream = new FileOutputStream(targetFile);
-        outputStream.write(buffer);
-        return Uri.parse(targetFile.getAbsolutePath());
     }
 
     private void promptCompleteTask() {
@@ -759,8 +706,6 @@ public class TasksDetailActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
-
             case R.id.action_delete:
                 new AlertDialog.Builder(this)
                         .setMessage(getString(R.string.task_detail_dialog_delete_confirm))

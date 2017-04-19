@@ -110,6 +110,7 @@ public class ClassesActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser != null) {
+            loggedIn = true;
             mUserId = mFirebaseUser.getUid();
             FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).addValueEventListener(new ValueEventListener() {
@@ -141,8 +142,9 @@ public class ClassesActivity extends AppCompatActivity {
         isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Set the mScheduleAdapter and listeners of the list view
+        queryClasses();
         mScheduleAdapter = new ScheduleAdapter(this, R.layout.list_item_schedule, mScheduleList);
-        refreshClassesList();
+
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -206,15 +208,6 @@ public class ClassesActivity extends AppCompatActivity {
             if (loggedIn)
                 logOut();
             else {
-                // Request for the permission WRITE SETTINGS
-                // TODO: Test if app can function normally without this permission
-//                boolean permissionCheck = Settings.System.canWrite(this);
-//                if (!permissionCheck) {
-//                    Intent intent = new Intent();
-//                    intent.setAction("android.settings.action.MANAGE_WRITE_SETTINGS");
-//                    intent.setData(Uri.parse("package:" + getPackageName()));
-//                    startActivity(intent);
-//                } else
                 loadLogInView();
 
             }
@@ -545,17 +538,11 @@ public class ClassesActivity extends AppCompatActivity {
         };
     }
 
-    private void refreshClassesList() {
-        if (mScheduleAdapter != null)
-            mScheduleAdapter.clear();
-
-        mScheduleAdapter.clear();
-        // Inflate the listview
+    private void queryClasses() {
+        spinner.setVisibility(View.VISIBLE);
         if (mFirebaseUser != null) {
             // Get data from Firebase
-            loggedIn = true;
-            if (mScheduleAdapter.getCount() == 0)
-                findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+            mScheduleList.clear();
             DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("classes");
             classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -578,13 +565,14 @@ public class ClassesActivity extends AppCompatActivity {
                             mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
                                     teacher, room, " ", " ", "", null));
 
-
-                        mScheduleAdapter.notifyDataSetChanged();
+                        if (mScheduleAdapter != null)
+                            mScheduleAdapter.notifyDataSetChanged();
                         spinner.setVisibility(View.GONE);
 
-                        if (mScheduleAdapter.getCount() == 0)
+                        if (mScheduleList.size() == 0)
                             findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
                         else findViewById(R.id.header_textview).setVisibility(View.GONE);
+
                     }
                 }
 
@@ -600,17 +588,15 @@ public class ClassesActivity extends AppCompatActivity {
             // Get data from SQLite
             DbHelper dbHelper = new DbHelper(this);
             mScheduleList = dbHelper.getAllClassesArray(this);
-            spinner.setVisibility(View.GONE);
-
-            mScheduleAdapter = new ScheduleAdapter(this,
-                    R.layout.list_item_schedule, mScheduleList);
+            if (mScheduleAdapter != null)
+                mScheduleAdapter.notifyDataSetChanged();
 
             // Only show the header if there are no items in the class mScheduleAdapter
-            if (mScheduleAdapter.getCount() == 0)
+            spinner.setVisibility(View.GONE);
+            if (mScheduleList.size() == 0)
                 findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
             else findViewById(R.id.header_textview).setVisibility(View.GONE);
         }
-
     }
 
     // Subclass for the Contextual Action Mode
@@ -717,6 +703,7 @@ public class ClassesActivity extends AppCompatActivity {
         }
 
         private void deleteSelectedItems() {
+            ArrayList<Schedule> scheduleList = new ArrayList<>();
             if (mFirebaseUser != null) {
                 // Delete from Firebase
                 for (int i = 0; i < CAMselectedItemsList.size(); i++) {
@@ -725,6 +712,7 @@ public class ClassesActivity extends AppCompatActivity {
                     FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("classes")
                             .child(schedule.scheduleLesson).removeValue();
+                    scheduleList.add(schedule);
                 }
             } else {
                 // Delete from SQLite
@@ -735,11 +723,12 @@ public class ClassesActivity extends AppCompatActivity {
                     int position = CAMselectedItemsList.get(i);
                     Schedule schedule = mScheduleList.get(position);
                     db.deleteScheduleItemByTitle(schedule.scheduleLesson);
+                    scheduleList.add(schedule);
                 }
             }
 
-            // Refresh the class list mScheduleAdapter
-            refreshClassesList();
+            mScheduleList.removeAll(scheduleList);
+            mScheduleAdapter.notifyDataSetChanged();
 
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
@@ -760,7 +749,7 @@ public class ClassesActivity extends AppCompatActivity {
 //                intent.putExtra(getResources().getString(R.string.SCHEDULE_EXTRA_ID), id);
                 intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE),title);
                 intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
-                intent.putExtra(getResources().getString(R.string.INTENT_FLAG_STARTED_FROM_CLASSES_ACTIVITY), true);
+                intent.putExtra(getResources().getString(R.string.INTENT_FLAG_RETURN_TO_CLASSES), true);
 
                 // Clear the selected items list, exit the CAM and launch the activity
                 CAMselectedItemsList.clear();

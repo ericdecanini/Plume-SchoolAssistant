@@ -74,6 +74,7 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.services.ScheduleNotificationService;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -85,12 +86,16 @@ import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION;
+import com.pdt.plume.data.DbContract.TasksEntry;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        TasksDetailFragment.OnTaskCompleteListener, TasksDetailFragment.OnTaskDeleteListener,
+        ScheduleDetailFragment.OnClassDeleteListener{
 
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
     Utility utility = new Utility();
+    boolean isTablet = false;
 
     // UI Elements
     Toolbar mToolbar;
@@ -149,8 +154,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (mFirebaseUser == null) {
             loggedIn = false;
-        }
-        else {
+        } else {
             loggedIn = true;
         }
 
@@ -187,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Check if the device is a phone or tablet, then
         // initialise the tab layout based on that
-        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
         if (isTablet)
             initSpinner();
         else
@@ -237,8 +241,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
-        Log.v(LOG_TAG, "onStart");
-        mSectionsPagerAdapter.notifyDataSetChanged();
+
+        if (mSectionsPagerAdapter != null)
+            mSectionsPagerAdapter.notifyDataSetChanged();
 
         Intent intent = getIntent();
 //        if (intent.hasExtra(getString(R.string.EXTRA_TEXT_RETURN_TO_TASKS))){
@@ -248,22 +253,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateWeekNumber();
 
         // Set the header date
-        Calendar c = Calendar.getInstance();
-        TextView headerTextView = (TextView) findViewById(R.id.header);
-        if (showBlockHeaderA) {
-            String blockString = utility.formatBlockString(this, 0);
-            headerTextView.setText(blockString);
-        } else if (showBlockHeaderB) {
-            String blockString = utility.formatBlockString(this, 1);
-            headerTextView.setText(blockString);
-        } else {
-            headerTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
-                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+        if (!isTablet) {
+            Calendar c = Calendar.getInstance();
+            TextView headerTextView = (TextView) findViewById(R.id.header);
+            if (showBlockHeaderA) {
+                String blockString = utility.formatBlockString(this, 0);
+                headerTextView.setText(blockString);
+            } else if (showBlockHeaderB) {
+                String blockString = utility.formatBlockString(this, 1);
+                headerTextView.setText(blockString);
+            } else {
+                headerTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
+                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            }
         }
 
         // Set the action bar colour according to the theme
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
                 .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
         float[] hsv = new float[3];
@@ -281,12 +288,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Initialise the tab layout theme
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        if (tabLayout!= null) {
+        if (tabLayout != null) {
             tabLayout.setSelectedTabIndicatorColor(mPrimaryColor);
         }
 
         // Initialise the fab
-        fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        if (fab != null)
+            fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
     }
 
     @Override
@@ -442,8 +450,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer != null)
             if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START);
-            }
-            else {
+            } else {
                 super.onBackPressed();
             }
     }
@@ -454,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         Log.v(LOG_TAG, "ItemTitle: " + item.getTitle());
         // Handle navigation view item clicks here.
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.nav_classes:
                 startActivity(new Intent
                         (this, ClassesActivity.class));
@@ -519,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else view.setVisibility(View.VISIBLE);
     }
 
-    public void initTabs(){
+    public void initTabs() {
         // Create the mScheduleAdapter that will return a fragment for each of the two
         // primary sections of the activity.
         mSectionsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
@@ -531,14 +538,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Initialise the tab layout and set it up with the pager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        if (tabLayout!= null) {
+        if (tabLayout != null) {
             tabLayout.setupWithViewPager(mViewPager);
             mSecondaryColor = PreferenceManager.getDefaultSharedPreferences(this)
                     .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
             tabLayout.setSelectedTabIndicatorColor(mPrimaryColor);
 
             // Set the custom view of the tabs
-            LinearLayout linearLayout = (LinearLayout)tabLayout.getChildAt(0);
+            LinearLayout linearLayout = (LinearLayout) tabLayout.getChildAt(0);
             linearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
             GradientDrawable drawable = new GradientDrawable();
             drawable.setColor(Color.GRAY);
@@ -550,13 +557,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Check if the activity was started from the NewTaskActivity
         // and automatically direct the tab to Tasks if it has
         Intent intent = getIntent();
-        if (intent.hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS))){
+        if (intent.hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS))) {
             mViewPager.setCurrentItem(1);
         }
 
     }
 
-    public void initSpinner(){
+    public void initSpinner() {
         // Get a reference to the action bar and
         // disable its title display
         ActionBar actionBar = getSupportActionBar();
@@ -583,8 +590,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // container view.
                     switch (position) {
                         case 0:
+                            ScheduleFragment scheduleFragment = new ScheduleFragment();
+                            Intent intent = getIntent();
+                            String RETURN_TO_SCHEDULE = intent.getStringExtra(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE));
+                            if (RETURN_TO_SCHEDULE != null && RETURN_TO_SCHEDULE
+                                    .equals(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE))) {
+                                intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE), "");
+                                Bundle args = new Bundle();
+                                args.putString(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE), RETURN_TO_SCHEDULE);
+                                args.putInt(getString(R.string.INTENT_EXTRA_POSITION),
+                                        intent.getIntExtra(getString(R.string.INTENT_EXTRA_POSITION), -1));
+                                scheduleFragment.setArguments(args);
+                            }
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.container, new ScheduleFragment())
+                                    .replace(R.id.container, scheduleFragment)
                                     .commit();
                             break;
                         case 1:
@@ -596,7 +615,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 @Override
-                public void onNothingSelected(AdapterView<?> parent) {}
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
             });
 
             // Check if the activity was started from the tasks activity
@@ -605,6 +625,77 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (intent.hasExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS)))
                 spinner.setSelection(Utility.getIndex(spinner, spinner.getItemAtPosition(1).toString()));
         }
+    }
+
+    @Override
+    public void OnTaskComplete(int ID, String fID) {
+        if (mFirebaseUser != null) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid())
+                    .child("tasks").child(fID).child("completed")
+                    .setValue(true);
+        } else {
+            DbHelper dbHelper = new DbHelper(this);
+            Cursor cursor = dbHelper.getTaskById(ID);
+            cursor.moveToFirst();
+            String[] pictureArray = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_PICTURE)).split("#seperate#");
+            ArrayList<Uri> pictureList = new ArrayList<>();
+            for (int i = 0; i > pictureArray.length; i++) {
+                pictureList.add(Uri.parse(pictureArray[i]));
+            }
+
+            dbHelper.updateTaskItem(this, ID,
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS)),
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE)),
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION)),
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ATTACHMENT)),
+                    cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE)),
+                    cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_DATE)),
+                    cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_REMINDER_TIME)),
+                    cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
+                    pictureList,
+                    true);
+        }
+
+        TasksFragment fragment = new TasksFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
+    }
+
+    @Override
+    public void OnClassDelete(String title) {
+        if (mFirebaseUser != null) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid())
+                    .child("classes").child(title).removeValue();
+        } else {
+            DbHelper dbHelper = new DbHelper(this);
+            dbHelper.deleteScheduleItemByTitle(title);
+        }
+
+        ScheduleFragment fragment = new ScheduleFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
+    }
+
+    @Override
+    public void OnTaskDelete(int ID, String fID) {
+        if (mFirebaseUser != null) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid())
+                    .child("tasks").child(fID).removeValue();
+        } else {
+            DbHelper dbHelper = new DbHelper(this);
+            dbHelper.deleteTaskItem(ID);
+        }
+
+        TasksFragment fragment = new TasksFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
     }
 
     public class TabsPagerAdapter extends FragmentPagerAdapter {
@@ -618,7 +709,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // and return the corresponding fragment.
         @Override
         public Fragment getItem(int position) {
-            switch (position){
+            switch (position) {
                 case 0:
                     return new ScheduleFragment();
                 case 1:
@@ -754,7 +845,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
                 stackBuilder.addParentStack(TasksDetailActivity.class);
                 stackBuilder.addNextIntent(contentIntent);
-                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);                builder.setContentIntent(contentPendingIntent)
+                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
+                builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
                         .setColor(getResources().getColor(R.color.colorPrimary))
                         .setContentTitle(getString(R.string.notification_message_reminder))
@@ -775,10 +867,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
             }
-            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         // CANCEL CLASS NOTIFICATIONS
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -787,7 +892,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
                     // Get the key data
                     String title = classSnapshot.getKey();
                     String icon = classSnapshot.child("icon").getValue(String.class);
@@ -850,7 +955,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             }
 
-            @Override public void onCancelled(DatabaseError databaseError) {}
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
         });
 
         // Reschedule all SQLite based Task Notifications

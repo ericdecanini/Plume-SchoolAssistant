@@ -51,6 +51,7 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -83,7 +84,7 @@ public class ScheduleFragment extends Fragment {
 
     // UI Data
     ScheduleAdapter mScheduleAdapter;
-    ArrayList<Schedule> mScheduleList;
+    ArrayList<Schedule> mScheduleList = new ArrayList<>();
 
     // Flags
     boolean isTablet;
@@ -95,7 +96,6 @@ public class ScheduleFragment extends Fragment {
     FirebaseUser mFirebaseUser;
     String mUserId;
     DatabaseReference classesRef;
-    ChildEventListener classesRefListener;
 
     // Required empty public constructor
     public ScheduleFragment() {
@@ -107,7 +107,13 @@ public class ScheduleFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-        mScheduleList = new ArrayList<>();
+
+        // If it's the first time running the app, launch this method
+        boolean firstLaunch = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+        if (firstLaunch) {
+            init();
+            return rootView;
+        }
 
 
         // Get references to the views
@@ -118,51 +124,17 @@ public class ScheduleFragment extends Fragment {
         spinner.setVisibility(View.GONE);
 
         // Check if the used device is a tablet
-        // Currently this does nothing, but will later on be used
-        // to transfer the code to a tablet layout when possible
         isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (isTablet) fab.setAlpha(1f);
 
-        // Inflate the listview
-        // First check if the user is logged into an account
+        // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser != null)
             mUserId = mFirebaseUser.getUid();
 
-        if (mFirebaseUser != null) {
-            // Get the schedule data from Firebase
-            getCurrentDayScheduleFromFirebase();
-        } else {
-            // Get the schedule data from SQLite
-            DbHelper dbHelper = new DbHelper(getContext());
-            try {
-                mScheduleList = dbHelper.getCurrentDayScheduleArray(getContext());
-                spinner.setVisibility(View.GONE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Check if the tasks ref doesn't exist
-        if (mFirebaseUser != null) {
-            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(mUserId);
-            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.child("classes").getChildrenCount() == 0) {
-                        spinner.setVisibility(View.GONE);
-                        headerTextView.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            });
-        }
-
         // Apply the list data to the listview mScheduleAdapter
+        querySchedule();
         mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, mScheduleList);
 
@@ -170,11 +142,28 @@ public class ScheduleFragment extends Fragment {
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            listView.setMultiChoiceModeListener(new ModeCallback());
+            if (!isTablet) {
+                listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+                listView.setMultiChoiceModeListener(new ModeCallback());
+            }
+            else listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-            if (isTablet)
+            if (isTablet && mScheduleList.size() > 0)
                 listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+
+            if (isTablet && mScheduleList.size() == 0)
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.detail_container, new BlankFragment())
+                        .commit();
+
+            if (getArguments() != null) {
+                int position = getArguments().getInt(getString(R.string.INTENT_EXTRA_POSITION), 0);
+                String RETURN_TO_SCHEDULE = getArguments().getString(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE));
+                if (isTablet && RETURN_TO_SCHEDULE != null && position > -1) {
+                    listView.performItemClick(listView.getChildAt(position), position, listView.getItemIdAtPosition(position));
+                }
+            }
+
         }
 
         // Set the action for the FAB
@@ -190,16 +179,54 @@ public class ScheduleFragment extends Fragment {
         return rootView;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    void querySchedule() {
+        if (mFirebaseUser != null) {
+            getCurrentDayScheduleFromFirebase();
+            // Check if the classes ref doesn't exist
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId);
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child("classes").getChildrenCount() == 0) {
+                        spinner.setVisibility(View.GONE);
+                        headerTextView.setVisibility(View.VISIBLE);
+                    }
+                }
 
-        // Set the splash text if there's no classes queried
-        if (mScheduleAdapter.getCount() == 0)
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        } else {
+            // Get the schedule data from SQLite
+            DbHelper dbHelper = new DbHelper(getContext());
+            try {
+                ArrayList<Schedule> newSchedules = dbHelper.getCurrentDayScheduleArray(getContext());
+                mScheduleList.clear();
+                mScheduleList.addAll(newSchedules);
+                spinner.setVisibility(View.GONE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Set the splash text if there's no classes queried and update the Adapter
+        if (mScheduleList.size() == 0)
             headerTextView.setVisibility(View.VISIBLE);
         else headerTextView.setVisibility(View.GONE);
 
-        mScheduleAdapter.notifyDataSetChanged();
+        if (mScheduleAdapter != null) {
+            mScheduleAdapter.notifyDataSetChanged();
+        }
+
+        Log.v(LOG_TAG, "List count: " + mScheduleList.size());
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        querySchedule();
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -212,11 +239,6 @@ public class ScheduleFragment extends Fragment {
 
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
         fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
-
-        // If it's the first time running the app, launch this method
-        boolean firstLaunch = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
-        if (firstLaunch)
-            init();
     }
 
     public AdapterView.OnItemClickListener ItemClickListener() {
@@ -232,7 +254,13 @@ public class ScheduleFragment extends Fragment {
                 // right-hand side fragment with a ScheduleDetailFragment
                 // passing the data of the clicked row to the fragment
                 if (isTablet) {
+                    Bundle args = new Bundle();
+                    args.putString(getString(R.string.INTENT_EXTRA_CLASS), title);
+                    args.putString("icon", icon);
+                    args.putInt(getString(R.string.INTENT_EXTRA_POSITION), position);
+
                     ScheduleDetailFragment fragment = new ScheduleDetailFragment();
+                    fragment.setArguments(args);
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.detail_container, fragment)
                             .commit();
@@ -269,6 +297,7 @@ public class ScheduleFragment extends Fragment {
 
     private void getCurrentDayScheduleFromFirebase() {
         // Get the calendar data for the week number
+        mScheduleList.clear();
         Calendar c = Calendar.getInstance();
         final String weekNumber = PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -685,7 +714,6 @@ public class ScheduleFragment extends Fragment {
         }
 
         private void deleteSelectedItems() throws IOException {
-
             if (mFirebaseUser != null) {
                 // Delete the data from Firebase
                 classesRef = FirebaseDatabase.getInstance().getReference()
@@ -702,9 +730,11 @@ public class ScheduleFragment extends Fragment {
                 }
 
                 // Set the splash text if there's no classes queried
-                if (mScheduleAdapter.getCount() == 0)
+                if (mScheduleList.size() == 0)
                     headerTextView.setVisibility(View.VISIBLE);
                 else headerTextView.setVisibility(View.GONE);
+                mScheduleAdapter.notifyDataSetChanged();
+
             } else {
                 // Delete the data from SQLite
                 DbHelper db = new DbHelper(getActivity());
@@ -719,23 +749,9 @@ public class ScheduleFragment extends Fragment {
                 }
 
                 cursor.close();
-
-                // Requery the current day schedule
-                mScheduleList.clear();
-                mScheduleList.addAll(db.getCurrentDayScheduleArray(getContext()));
-                mScheduleAdapter.notifyDataSetChanged();
-
-                // Set the splash text if there's no classes queried
-                if (mScheduleAdapter.getCount() == 0)
-                    headerTextView.setVisibility(View.VISIBLE);
-                else headerTextView.setVisibility(View.GONE);
             }
 
-
-            if (mScheduleAdapter.getCount() == 0) {
-                headerTextView.setVisibility(View.VISIBLE);
-            } else headerTextView.setVisibility(View.GONE);
-
+            querySchedule();
             // Then clear the selected items array list and emulate
             // a back button press to exit the Action Mode
             CAMselectedItemsList.clear();
