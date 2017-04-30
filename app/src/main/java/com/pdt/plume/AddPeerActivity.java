@@ -69,6 +69,12 @@ public class AddPeerActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+
+        if (isTablet) {
+            int height = getWindowManager().getDefaultDisplay().getHeight();
+            findViewById(R.id.master_layout).setMinimumHeight(height);
+        }
 
         // Initialise the Progress Bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);

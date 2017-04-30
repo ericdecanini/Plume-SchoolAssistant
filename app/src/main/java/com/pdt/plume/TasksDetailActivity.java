@@ -34,6 +34,7 @@ import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.Transition;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -99,7 +100,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     String classType;
     String subtitle;
     String description;
-    long duedateValue;
+    float duedateValue;
     String duedate;
     String iconUri;
     ArrayList<Uri> photoUris = new ArrayList<>();
@@ -407,7 +408,8 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                     // Process the data for the duedate to a string
                     Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis((long) cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE)));
+                    duedateValue = (long) cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+                    c.setTimeInMillis((long)duedateValue);
                     duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                     applyDataToUI();
@@ -739,7 +741,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                     // Get the data from Firebase
                     final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("tasks").child(firebaseID);
-                    taskRef.addValueEventListener(new ValueEventListener() {
+                    taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             String id = dataSnapshot.getKey();
@@ -789,9 +791,9 @@ public class TasksDetailActivity extends AppCompatActivity {
                     intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
                     intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType);
                     intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description);
+                    intent.putExtra(getString(R.string.INTENT_EXTRA_DUEDATE), duedateValue);
                     intent.putExtra("photo", builder.toString());
 //                    intent.putExtra(getResources().getString(R.string.TASKS_EXTRA_ATTACHMENT), attachment);
-                    intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), duedateValue);
                     intent.putExtra(getString(R.string.INTENT_EXTRA_ID), id);
                     intent.putExtra(getString(R.string.INTENT_FLAG_EDIT), true);
                     startActivity(intent);

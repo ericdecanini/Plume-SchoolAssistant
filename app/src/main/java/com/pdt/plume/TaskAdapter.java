@@ -27,7 +27,7 @@ public class TaskAdapter extends ArrayAdapter {
     String LOG_TAG = TaskAdapter.class.getSimpleName();
     Utility utility = new Utility();
 
-    // Staple mScheduleAdapter variables
+    // Staple mTasksAdapter variables
     Context context;
     int layoutResourceId;
     ArrayList<Task> data = null;
@@ -46,10 +46,10 @@ public class TaskAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder = null;
 
-        // Create a new list item using the data passed into the mScheduleAdapter
+        // Create a new list item using the data passed into the mTasksAdapter
         Task task = data.get(position);
 
-        // If the row hasn't been used by the mScheduleAdapter before
+        // If the row hasn't been used by the mTasksAdapter before
         // create a new row
         if(row == null)
         {

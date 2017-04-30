@@ -64,6 +64,7 @@ import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class ScheduleFragment extends Fragment {
+
     // Constantly used variables
     String LOG_TAG = ScheduleFragment.class.getSimpleName();
     Utility utility = new Utility();
@@ -133,12 +134,11 @@ public class ScheduleFragment extends Fragment {
         if (mFirebaseUser != null)
             mUserId = mFirebaseUser.getUid();
 
-        // Apply the list data to the listview mScheduleAdapter
-        querySchedule();
+        // Apply the list data to the listview mTasksAdapter
         mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, mScheduleList);
 
-        // Set the mScheduleAdapter and listeners of the list view
+        // Set the mTasksAdapter and listeners of the list view
         if (listView != null) {
             listView.setAdapter(mScheduleAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -205,22 +205,24 @@ public class ScheduleFragment extends Fragment {
                 ArrayList<Schedule> newSchedules = dbHelper.getCurrentDayScheduleArray(getContext());
                 mScheduleList.clear();
                 mScheduleList.addAll(newSchedules);
-                spinner.setVisibility(View.GONE);
+                if (spinner != null)
+                    spinner.setVisibility(View.GONE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
         // Set the splash text if there's no classes queried and update the Adapter
-        if (mScheduleList.size() == 0)
-            headerTextView.setVisibility(View.VISIBLE);
-        else headerTextView.setVisibility(View.GONE);
+        if (headerTextView != null) {
+            if (mScheduleList.size() == 0)
+                headerTextView.setVisibility(View.VISIBLE);
+            else headerTextView.setVisibility(View.GONE);
+        }
 
         if (mScheduleAdapter != null) {
             mScheduleAdapter.notifyDataSetChanged();
         }
 
-        Log.v(LOG_TAG, "List count: " + mScheduleList.size());
     }
 
     @Override
@@ -238,7 +240,8 @@ public class ScheduleFragment extends Fragment {
         mDarkColor = Color.HSVToColor(hsv);
 
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+        if (fab != null)
+            fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
     public AdapterView.OnItemClickListener ItemClickListener() {
@@ -288,11 +291,10 @@ public class ScheduleFragment extends Fragment {
 
     // This method is called when the app has been launched for the first time
     private void init() {
-        headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
-        headerTextView.setVisibility(View.VISIBLE);
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
+        if (headerTextView != null) {
+            headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
+            headerTextView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void getCurrentDayScheduleFromFirebase() {
@@ -450,6 +452,7 @@ public class ScheduleFragment extends Fragment {
                                 }
                             });
                         } else {
+                            Log.v(LOG_TAG, "Occurrences: " + occurrences.size() + " Periods: " + periods.size());
                             for (int i = 0; i < occurrences.size(); i++) {
                                 if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i), periods.get(i), weekNumber, dayOfWeek)) {
                                     // Check if occurrence matches, then proceed if true

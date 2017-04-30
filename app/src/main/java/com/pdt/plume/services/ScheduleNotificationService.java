@@ -68,7 +68,7 @@ public class ScheduleNotificationService extends Service {
         if (notificationAdvance != 0) {
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     if (cursor.moveToPosition(i)) {
                         int timeIn;
@@ -165,7 +165,7 @@ public class ScheduleNotificationService extends Service {
         if (muteIsChecked) {
             DbHelper dbHelper = new DbHelper(this);
             Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     if (cursor.moveToPosition(i)) {
                         int timeIn;

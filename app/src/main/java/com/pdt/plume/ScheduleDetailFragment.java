@@ -190,9 +190,10 @@ public class ScheduleDetailFragment extends Fragment {
             // Initialise the tasks list
             listView = (ListView) rootview.findViewById(R.id.schedule_detail_tasks_list);
             mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task2, mTasksList);
+            TextView addTaskTextview = (TextView) rootview.findViewById(R.id.add_task);
+            addTaskTextview.setTextColor(mPrimaryColor);
+
             listView.setAdapter(mTasksAdapter);
-//            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-//            listView.setMultiChoiceModeListener(new OccurrenceModeCallback());
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -204,7 +205,7 @@ public class ScheduleDetailFragment extends Fragment {
                     startActivity(intent);
                 }
             });
-            rootview.findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
+            addTaskTextview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), NewTaskActivity.class);
@@ -216,6 +217,11 @@ public class ScheduleDetailFragment extends Fragment {
             });
 
             // Initialise the periods list
+            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+            boolean isLandscape = getResources().getBoolean(R.bool.isLandscape);
+            if (isTablet && isLandscape)
+            mPeriodsAdapter = new PeriodAdapter(getContext(), R.layout.list_item_new_period2, mPeriodsList);
+            else
             mPeriodsAdapter = new PeriodAdapter(getContext(), R.layout.list_item_new_period, mPeriodsList);
             ListView periodListview = (ListView) rootview.findViewById(R.id.schedule_detail_periods_list);
             periodListview.setAdapter(mPeriodsAdapter);
@@ -224,7 +230,7 @@ public class ScheduleDetailFragment extends Fragment {
                 // Get the key data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes").child(title);
-                classRef.addValueEventListener(new ValueEventListener() {
+                classRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         teacher = dataSnapshot.child("teacher").getValue(String.class);

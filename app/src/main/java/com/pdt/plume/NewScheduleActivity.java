@@ -20,6 +20,7 @@ import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -40,6 +41,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,6 +82,7 @@ public class NewScheduleActivity extends AppCompatActivity
     // Constantly Used Variables
     String LOG_TAG = NewScheduleActivity.class.getSimpleName();
     Utility utility = new Utility();
+    int mPeriodListSize;
 
     // UI Elements
     AutoCompleteTextView fieldTitle;
@@ -201,7 +204,7 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldIcon.setOnClickListener(showIconDialogListener());
         fieldAddClassTime.setOnClickListener(addPeriodListener());
 
-        // Set the mScheduleAdapter for the title auto-complete text view
+        // Set the mTasksAdapter for the title auto-complete text view
         String[] subjects = getResources().getStringArray(R.array.subjects);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, subjects);
         fieldTitle.setAdapter(autoCompleteAdapter);
@@ -220,7 +223,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Get the data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes").child(title);
-                classRef.addValueEventListener(new ValueEventListener() {
+                classRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get key values
@@ -352,14 +355,15 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Add one item at init (if not edited)
         if (!FLAG_EDIT) {
-            int timein;
-            int timeout;
+            long timein;
+            long timeout;
             if (basis.equals("0")) {
                 Calendar c = Calendar.getInstance();
-                Calendar c1 = Calendar.getInstance();
-                c1.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY) + 1);
-                timein = ((int) c.getTimeInMillis());
-                timeout = ((int) c1.getTimeInMillis());
+                int hour = c.get(Calendar.HOUR_OF_DAY);
+                int minute = c.get(Calendar.MINUTE);
+                timein =  utility.timeToMillis(hour, minute);
+                hour += 1;
+                timeout =  utility.timeToMillis(hour, minute);
             } else {
                 timein = -1;
                 timeout = -1;
@@ -393,11 +397,14 @@ public class NewScheduleActivity extends AppCompatActivity
             getWindow().setStatusBarColor(mDarkColor);
         }
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
-        fieldAddClassTime.setTextColor(mPrimaryColor);
+        if (fieldAddClassTime != null)
+            fieldAddClassTime.setTextColor(mPrimaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (isTablet)
                 fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+            if (fieldTeacher != null)
             fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+            if (fieldTeacher != null)
             fieldRoom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
         }
     }
@@ -427,6 +434,7 @@ public class NewScheduleActivity extends AppCompatActivity
                     return false;
                 }
 
+                Log.v(LOG_TAG, "OnOptionsItemSelected periodListSize: " + mPeriodsList.size());
                 for (int i = 0; i < mPeriodsList.size(); i++) {
                     String[] occurrenceArray = mPeriodsList.get(i).occurrence.split(":");
                     ArrayList<String> daysList = new ArrayList<>();
@@ -438,7 +446,14 @@ public class NewScheduleActivity extends AppCompatActivity
                                 Toast.LENGTH_SHORT).show();
                         return false;
                     }
-
+                    String[] daysArray = mPeriodsList.get(i).days.split(":");
+                    String[] daysAltArray = mPeriodsList.get(i).days_alt.split(":");
+                    ArrayList<String> dayList = new ArrayList<>();
+                    ArrayList<String> dayAltList = new ArrayList<>();
+                    for (int l = 0; l < daysAltArray.length; l++) {
+                        dayList.add(daysArray[l]);
+                        dayAltList.add(daysAltArray[l]);
+                    }
                     boolean[] periodsArray = mPeriodsList.get(i).period;
                     boolean[] periodsAltArray = mPeriodsList.get(i).periodAlt;
                     ArrayList<Boolean> periodsList = new ArrayList<>();
@@ -447,6 +462,11 @@ public class NewScheduleActivity extends AppCompatActivity
                         periodsList.add(periodsArray[l]);
                         periodsAltList.add(periodsAltArray[l]);
                     }
+                    if (!occurrenceArray[0].equals("2") && !dayList.contains("1") && !dayAltList.contains("1")) {
+                        Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_no_days_selected),
+                                Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                     if (!occurrenceArray[0].equals("0") && !periodsList.contains(true) && !periodsAltList.contains(true)) {
                         Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_no_period_selected),
                                 Toast.LENGTH_SHORT).show();
@@ -454,6 +474,8 @@ public class NewScheduleActivity extends AppCompatActivity
                     }
                 }
                 // Perform Database/Firebase Insertion
+                Log.v(LOG_TAG, "InsertScheduleDataIntoFirebase executing");
+                mPeriodListSize = 0;
                 if (mFirebaseUser != null)
                     insertScheduleDataIntoFirebase();
                 else try {
@@ -513,6 +535,9 @@ public class NewScheduleActivity extends AppCompatActivity
 
     private boolean insertScheduleDataIntoFirebase() {
         // Get the input from the fields
+        mPeriodListSize++;
+        if (mPeriodListSize > mPeriodsList.size())
+            return true;
         title = fieldTitle.getText().toString();
         String teacher = fieldTeacher.getText().toString();
         String room = fieldRoom.getText().toString();
@@ -525,15 +550,17 @@ public class NewScheduleActivity extends AppCompatActivity
 
         // Set the listed values of the class
         if (mPeriodsList.size() != 0) {
+            Log.v(LOG_TAG, "mPeriodsList size: " + mPeriodsList.size());
             for (int i = 0; i < mPeriodsList.size(); i++) {
                 // Gather the data to set the values on the cloud
                 PeriodItem item = ((PeriodItem) periodAdapter.getItem(i));
                 String occurrence = item.occurrence;
-                int timeIn = item.timeinValue;
-                int timeOut = item.timeoutValue;
-                int timeInAlt = item.timeinaltValue;
-                int timeOutAlt = item.timeoutaltValue;
+                long timeIn = item.timeinValue;
+                long timeOut = item.timeoutValue;
+                long timeInAlt = item.timeinaltValue;
+                long timeOutAlt = item.timeoutaltValue;
                 String periods = getItemPeriods(i);
+                Log.v(LOG_TAG, "Adding: " + occurrence + ", " + periods);
 
                 classRef.child("occurrence").child(occurrence).setValue("");
                 classRef.child("timein").child(String.valueOf(i)).setValue(timeIn);
@@ -688,10 +715,10 @@ public class NewScheduleActivity extends AppCompatActivity
                     // Initialise occurrence, time, and period strings
                     PeriodItem item = ((PeriodItem) periodAdapter.getItem(i));
                     String occurrence = item.occurrence;
-                    int timeIn = item.timeinValue;
-                    int timeOut = item.timeoutValue;
-                    int timeInAlt = item.timeinaltValue;
-                    int timeOutAlt = item.timeoutaltValue;
+                    long timeIn = item.timeinValue;
+                    long timeOut = item.timeoutValue;
+                    long timeInAlt = item.timeinaltValue;
+                    long timeOutAlt = item.timeoutaltValue;
                     String periods = getItemPeriods(i);
 
 
@@ -725,10 +752,10 @@ public class NewScheduleActivity extends AppCompatActivity
                     PeriodItem item = ((PeriodItem) periodAdapter.getItem(i));
                     String occurrence = item.occurrence;
                     Log.v(LOG_TAG, "Item occurrence: " + occurrence);
-                    int timeIn = item.timeinValue;
-                    int timeOut = item.timeoutValue;
-                    int timeInAlt = item.timeinaltValue;
-                    int timeOutAlt = item.timeoutaltValue;
+                    long timeIn = item.timeinValue;
+                    long timeOut = item.timeoutValue;
+                    long timeInAlt = item.timeinaltValue;
+                    long timeOutAlt = item.timeoutaltValue;
                     String periods = getItemPeriods(i);
 
                     // TODO: Check this function against alarms from ScheduleFragment
@@ -915,6 +942,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
     @Override
     public void OnDaysSelected(boolean alternate, int position, String days) {
+        Log.v(LOG_TAG, "OnDaysSelected: " + alternate + ", " + position + ", " + days);
         PeriodItem item = mPeriodsList.get(position);
         if (!alternate) item.days = days;
         else item.days_alt = days;
@@ -951,6 +979,17 @@ public class NewScheduleActivity extends AppCompatActivity
 
         Log.v(LOG_TAG, "New occurrence: " + builder.toString());
         item.occurrence = builder.toString();
+
+        if (!item.days.contains("1"))
+            for (int i = 0; i < item.period.length; i++) {
+                item.period[i] = false;
+            }
+
+        if (!item.days_alt.contains("1"))
+            for (int i = 0; i < item.periodAlt.length; i++) {
+                item.periodAlt[i] = false;
+            }
+
     }
 
     private String getItemPeriods(int position) {

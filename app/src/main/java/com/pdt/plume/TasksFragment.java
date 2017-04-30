@@ -109,24 +109,26 @@ public class TasksFragment extends Fragment {
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        spinner.setVisibility(View.GONE);
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
         if (isTablet) fab.setAlpha(1f);
 
-        // Get a reference to the list view and create its mScheduleAdapter
+        // Get a reference to the list view and create its mTasksAdapter
         // using the current day schedule data
         if (mFirebaseUser != null) {
             // Get the data from Firebase
             spinner.setVisibility(View.VISIBLE);
             tasksRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks");
+            // Check if the reference exists
             tasksListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     long snapshotCount = dataSnapshot.getChildrenCount();
+                    spinner.setVisibility(View.GONE);
                     for (DataSnapshot taskSnapshot: dataSnapshot.getChildren()) {
-                        FirebaseIdList.add(taskSnapshot.getKey());
                         String icon = taskSnapshot.child("icon").getValue(String.class);
                         String title = taskSnapshot.child("title").getValue(String.class);
                         String sharer = taskSnapshot.child("sharer").getValue(String.class);
@@ -145,7 +147,6 @@ public class TasksFragment extends Fragment {
 
                         // Check if icon URI is valid
                         Uri iconUri = Uri.parse(icon);
-                        Log.v(LOG_TAG, "Icon Uri: " + iconUri);
                         ImageView imageView = new ImageView(getContext());
                         imageView.setImageURI(iconUri);
 
@@ -188,6 +189,7 @@ public class TasksFragment extends Fragment {
 
                         if (!completed && duedate != null) {
                             mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
+                            FirebaseIdList.add(taskSnapshot.getKey());
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
                         }
@@ -237,7 +239,7 @@ public class TasksFragment extends Fragment {
         if (mTasksAdapter.getCount() == 0)
             headerTextView.setVisibility(View.VISIBLE);
 
-        // Set the mScheduleAdapter and listeners of the listview
+        // Set the mTasksAdapter and listeners of the listview
         if (listView != null) {
             listView.setAdapter(mTasksAdapter);
             listView.setOnItemClickListener(ItemClickListener());
@@ -475,7 +477,7 @@ public class TasksFragment extends Fragment {
                     mTasksList.remove(((int) indexes.get(i)));
                 }
 
-                // Refresh the list mScheduleAdapter
+                // Refresh the list mTasksAdapter
                 mTasksAdapter.notifyDataSetChanged();
                 if (mTasksAdapter.getCount() == 0)
                     headerTextView.setVisibility(View.VISIBLE);
@@ -498,7 +500,7 @@ public class TasksFragment extends Fragment {
                 mTasksList.clear();
                 mTasksList.addAll(db.getTaskDataArray());
 
-                // Refresh the mScheduleAdapter
+                // Refresh the mTasksAdapter
                 mTasksAdapter.notifyDataSetChanged();
                 if (mTasksAdapter.getCount() == 0)
                     headerTextView.setVisibility(View.VISIBLE);

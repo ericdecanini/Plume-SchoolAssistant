@@ -30,6 +30,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import static android.R.attr.editable;
+
 public class UserSearchActivity extends AppCompatActivity {
 
     // General Variables
@@ -53,6 +55,9 @@ public class UserSearchActivity extends AppCompatActivity {
     // Arrays
     ArrayList<Peer> searchResults = new ArrayList<>();
     ArrayList<String> searchResultIDs = new ArrayList<>();
+    ArrayList<String> userNames = new ArrayList<>();
+    ArrayList<Peer> userList = new ArrayList<>();
+    ArrayList<String> userIDs = new ArrayList<>();
 
     // Theme Variables
     int mPrimaryColor, mDarkColor, mSecondaryColor;
@@ -92,10 +97,21 @@ public class UserSearchActivity extends AppCompatActivity {
         // This listener sets the behavior of the clear button's visibility
         textWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                if (charSequence.toString().length() == 0) {
+//                    clearButton.setVisibility(View.GONE);
+//                    searchResults.clear();
+//                    searchResultIDs.clear();
+//                    adapter.notifyDataSetChanged();
+//                }
+//                else {
+//                    clearButton.setVisibility(View.VISIBLE);
+//                    ASyncUserSearch(charSequence.toString());
+//                }
+            }
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.length() == 0) {
+                if (charSequence.toString().length() == 0) {
                     clearButton.setVisibility(View.GONE);
                     searchResults.clear();
                     searchResultIDs.clear();
@@ -103,12 +119,22 @@ public class UserSearchActivity extends AppCompatActivity {
                 }
                 else {
                     clearButton.setVisibility(View.VISIBLE);
-                    spinner.setVisibility(View.VISIBLE);
                     ASyncUserSearch(charSequence.toString());
                 }
             }
             @Override
-            public void afterTextChanged(Editable editable) {}
+            public void afterTextChanged(Editable editable) {
+//                if (editable.toString().length() == 0) {
+//                    clearButton.setVisibility(View.GONE);
+//                    searchResults.clear();
+//                    searchResultIDs.clear();
+//                    adapter.notifyDataSetChanged();
+//                }
+//                else {
+//                    clearButton.setVisibility(View.VISIBLE);
+//                    ASyncUserSearch(editable.toString());
+//                }
+            }
         };
         searchBar.addTextChangedListener(textWatcher);
 
@@ -126,6 +152,27 @@ public class UserSearchActivity extends AppCompatActivity {
         if (mFirebaseUser != null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             mUserId = mFirebaseUser.getUid();
+
+            // Store the nicknames of all users
+            FirebaseDatabase.getInstance().getReference().child("users")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                String name = userSnapshot.child("nickname").getValue(String.class);
+                                String icon = userSnapshot.child("icon").getValue(String.class);
+                                userNames.add(name);
+                                userList.add(new Peer(icon, name));
+                                userIDs.add(userSnapshot.getKey());
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+
         } else loadLogInView();
 
         // Initialise the theme variables
@@ -147,30 +194,63 @@ public class UserSearchActivity extends AppCompatActivity {
     }
 
     private void ASyncUserSearch(final String text)  {
-        // Query a list by the entered text as the nickname
         searchResults.clear();
         searchResultIDs.clear();
-        Query queryRef = mDatabase.child("users").orderByChild("nickname").startAt(text);
-        queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot child: dataSnapshot.getChildren()) {
-                    // Get the data and add them as a new list object
-                    String nicknameResult = child.child("nickname").getValue(String.class);
-                    String iconResultUri = child.child("icon").getValue(String.class);
-                    if (nicknameResult.toLowerCase().startsWith(text.toLowerCase()))
-                    searchResults.add(new Peer(iconResultUri, nicknameResult));
-                    searchResultIDs.add(child.getRef().getKey());
-                }
-                adapter.notifyDataSetChanged();
-                spinner.setVisibility(View.GONE);
+        for (int i = 0; i < userNames.size(); i++) {
+            if (searchResultApproved(userNames.get(i), text, 0)) {
+                searchResults.add(userList.get(i));
+                searchResultIDs.add(userIDs.get(i));
             }
+        }
+        for (int i = 0; i < userNames.size(); i++) {
+            if (searchResultApproved(userNames.get(i), text, 1) && !searchResultIDs.contains(userIDs.get(i))) {
+                searchResults.add(userList.get(i));
+                searchResultIDs.add(userIDs.get(i));
+            }
+        }
+        for (int i = 0; i < userNames.size(); i++) {
+            if (searchResultApproved(userNames.get(i), text, 2) && !searchResultIDs.contains(userIDs.get(i))) {
+                searchResults.add(userList.get(i));
+                searchResultIDs.add(userIDs.get(i));
+            }
+        }
+        for (int i = 0; i < userNames.size(); i++) {
+            if (searchResultApproved(userNames.get(i), text, 3) && !searchResultIDs.contains(userIDs.get(i))) {
+                searchResults.add(userList.get(i));
+                searchResultIDs.add(userIDs.get(i));
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                spinner.setVisibility(View.GONE);
+    boolean searchResultApproved(String nickname, String text, int l) {
+        String n = nickname.toLowerCase();
+        String t = text.toLowerCase();
+        if (n.equals(t) && l == 0) {
+            Log.v(LOG_TAG, "returning 1");
+            return true;
+        }
+        if (n.startsWith(t) && l == 1) {
+            Log.v(LOG_TAG, "returning 2, n = " + n + ", t = " + t);
+            return true;
+        }
+
+        String[] splitN = n.split(" ");
+        String[] splitT = t.split(" ");
+        for (int i = 0; i < splitN.length; i++) {
+            for (int i1 = 0; i1 < splitT.length; i1++) {
+                if (splitN[i].equals(splitT[i1]) && l == 2) {
+                    Log.v(LOG_TAG, "returning 3");
+                    return true;
+                }
+                if (splitN[i].startsWith(splitT[i1]) && l == 3) {
+                    Log.v(LOG_TAG, "returning 4");
+                    return true;
+                }
             }
-        });
+        }
+
+        return false;
     }
 
     private void loadLogInView() {

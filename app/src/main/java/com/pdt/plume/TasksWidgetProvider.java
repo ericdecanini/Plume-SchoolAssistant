@@ -46,7 +46,7 @@ public class TasksWidgetProvider extends AppWidgetProvider {
         RemoteViews remoteViews = new RemoteViews(
                 context.getPackageName(),R.layout.widget_tasks);
 
-        //RemoteViews Service needed to provide mScheduleAdapter for ListView
+        //RemoteViews Service needed to provide mTasksAdapter for ListView
         Intent svcIntent = new Intent(context, TasksWidgetService.class);
         //passing app widget id to that RemoteViews Service
         svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -54,7 +54,7 @@ public class TasksWidgetProvider extends AppWidgetProvider {
         //don't know its purpose to me right now
         svcIntent.setData(Uri.parse(
                 svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        //setting mScheduleAdapter to listview of the widget
+        //setting mTasksAdapter to listview of the widget
         remoteViews.setRemoteAdapter(appWidgetId, R.id.tasks_list,
                 svcIntent);
         //setting an empty view in case of no data

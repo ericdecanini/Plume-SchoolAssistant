@@ -16,6 +16,7 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -57,7 +59,8 @@ import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
-public class ClassesActivity extends AppCompatActivity {
+public class ClassesActivity extends AppCompatActivity
+    implements ScheduleDetailFragment.OnClassDeleteListener {
     // Constantly used variables
     String LOG_TAG = ClassesActivity.class.getSimpleName();
     View rootView;
@@ -95,16 +98,17 @@ public class ClassesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_classes);
         rootView = findViewById(R.id.container);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
 
-        // Initialise the toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        appbar = (AppBarLayout) findViewById(R.id.appbar);
-
-        // Initialise the ProgressBar
-        spinner = (ProgressBar) findViewById(R.id.progressBar);
-        spinner.setVisibility(View.VISIBLE);
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -112,6 +116,25 @@ public class ClassesActivity extends AppCompatActivity {
         if (mFirebaseUser != null) {
             loggedIn = true;
             mUserId = mFirebaseUser.getUid();
+        }
+
+        // Set the mTasksAdapter and listeners of the list view
+        queryClasses();
+        mScheduleAdapter = new ScheduleAdapter(this, R.layout.list_item_schedule, mScheduleList);
+
+        if (!isTablet) initPhone();
+        else initTablet();
+    }
+
+    void initPhone() {
+        // Initialise the toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        appbar = (AppBarLayout) findViewById(R.id.appbar);
+
+        // Set the picture on top of the activity
+        if (mFirebaseUser != null) {
             FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -120,7 +143,7 @@ public class ClassesActivity extends AppCompatActivity {
                     String iconUri = dataSnapshot.child("icon").getValue(String.class);
                     icon.setVisibility(View.VISIBLE);
                     if (iconUri != null)
-                    icon.setImageURI(Uri.parse(iconUri));
+                        icon.setImageURI(Uri.parse(iconUri));
                     else icon.setImageResource(R.drawable.art_profile_default);
                     String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
                     FirebaseDatabase.getInstance().getReference()
@@ -134,26 +157,13 @@ public class ClassesActivity extends AppCompatActivity {
             });
         }
 
-        // Get references to the views
+
+
+        // Initialise the ProgressBar
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+
         listView = (ListView) findViewById(R.id.schedule_list);
         TextView newClassTextView = (TextView) findViewById(R.id.new_class);
-
-        // Check if the used device is a tablet
-        isTablet = getResources().getBoolean(R.bool.isTablet);
-
-        // Set the mScheduleAdapter and listeners of the list view
-        queryClasses();
-        mScheduleAdapter = new ScheduleAdapter(this, R.layout.list_item_schedule, mScheduleList);
-
-        if (listView != null) {
-            listView.setAdapter(mScheduleAdapter);
-            listView.setOnItemClickListener(ItemClickListener());
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            listView.setMultiChoiceModeListener(new ModeCallback());
-
-            if (isTablet)
-                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
-        }
 
         // Set the action of the new class
         if (newClassTextView != null)
@@ -165,22 +175,34 @@ public class ClassesActivity extends AppCompatActivity {
                 }
             });
 
-        // Initialise the theme variables
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
-        float[] hsv = new float[3];
-        int tempColor = mPrimaryColor;
-        Color.colorToHSV(tempColor, hsv);
-        hsv[2] *= 0.8f; // value component
-        mDarkColor = Color.HSVToColor(hsv);
-        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
-
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
         appbar.setBackgroundColor(mPrimaryColor);
         newClassTextView.setTextColor(mPrimaryColor);
+
+        // Initialise the listview
+        if (listView != null) {
+            listView.setAdapter(mScheduleAdapter);
+            listView.setOnItemClickListener(ItemClickListener());
+            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            listView.setMultiChoiceModeListener(new ModeCallback());
+
+            if (isTablet)
+                listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+        }
+
+    }
+
+    void initTablet() {
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        getWindow().setStatusBarColor(mDarkColor);
+
+        Fragment fragment = new ClassFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
     }
 
     @Override
@@ -523,7 +545,7 @@ public class ClassesActivity extends AppCompatActivity {
                         intent.putExtra("icon", cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)));
 
                         // Add a transition if the device is Lollipop or above
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && !isTablet) {
                             // Shared element transition
                             View iconView = view.findViewById(R.id.schedule_icon);
                             Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
@@ -539,22 +561,41 @@ public class ClassesActivity extends AppCompatActivity {
     }
 
     private void queryClasses() {
-        spinner.setVisibility(View.VISIBLE);
+        if (spinner != null)
+            spinner.setVisibility(View.VISIBLE);
         if (mFirebaseUser != null) {
+            // Check if the classes ref doesn't exist
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId);
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child("classes").getChildrenCount() == 0) {
+                        spinner.setVisibility(View.GONE);
+                        findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                    } else spinner.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+
             // Get data from Firebase
             mScheduleList.clear();
             DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("classes");
+
             classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     long snapshotCount = dataSnapshot.getChildrenCount();
                     long i = 0;
-                    if (snapshotCount == 0) spinner.setVisibility(View.GONE);
+                    if (snapshotCount == 0 && !isTablet) spinner.setVisibility(View.GONE);
                     for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
                         // Hide progress bar when query is done
                         i++;
-                        if (i == snapshotCount)
+                        if (i == snapshotCount && !isTablet)
                             spinner.setVisibility(View.GONE);
 
                         String title = classSnapshot.getKey();
@@ -567,17 +608,22 @@ public class ClassesActivity extends AppCompatActivity {
 
                         if (mScheduleAdapter != null)
                             mScheduleAdapter.notifyDataSetChanged();
-                        spinner.setVisibility(View.GONE);
 
-                        if (mScheduleList.size() == 0)
-                            findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-                        else findViewById(R.id.header_textview).setVisibility(View.GONE);
+                        if (!isTablet) {
+                            if (mScheduleList.size() == 0)
+                                findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                            else {
+                                findViewById(R.id.header_textview).setVisibility(View.GONE);
+                                spinner.setVisibility(View.GONE);
+                            }
+                        }
 
                     }
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
+                    if (isTablet) return;
                     spinner.setVisibility(View.GONE);
                     TextView headerTextView = (TextView) findViewById(R.id.header_textview);
                     headerTextView.setVisibility(View.VISIBLE);
@@ -591,12 +637,32 @@ public class ClassesActivity extends AppCompatActivity {
             if (mScheduleAdapter != null)
                 mScheduleAdapter.notifyDataSetChanged();
 
-            // Only show the header if there are no items in the class mScheduleAdapter
-            spinner.setVisibility(View.GONE);
-            if (mScheduleList.size() == 0)
-                findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
-            else findViewById(R.id.header_textview).setVisibility(View.GONE);
+            // Only show the header if there are no items in the class mTasksAdapter
+            if (spinner != null)
+                spinner.setVisibility(View.GONE);
+            if (!isTablet) {
+                if (mScheduleList.size() == 0)
+                    findViewById(R.id.header_textview).setVisibility(View.VISIBLE);
+                else findViewById(R.id.header_textview).setVisibility(View.GONE);
+            }
         }
+    }
+
+    @Override
+    public void OnClassDelete(String title) {
+        if (mFirebaseUser != null) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid())
+                    .child("classes").child(title).removeValue();
+        } else {
+            DbHelper dbHelper = new DbHelper(this);
+            dbHelper.deleteScheduleItemByTitle(title);
+        }
+
+        ScheduleFragment fragment = new ScheduleFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
     }
 
     // Subclass for the Contextual Action Mode

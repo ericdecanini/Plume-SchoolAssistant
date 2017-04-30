@@ -22,7 +22,7 @@ public class Schedule {
         super();
     }
 
-    // The global variables are accessed by the mScheduleAdapter
+    // The global variables are accessed by the mTasksAdapter
     // Set them using the input parameters
     public Schedule(Context context, String icon, String lesson, String teacher, String room,
                     String timeIn, String timeOut, String period, @Nullable Bitmap customIcon) {

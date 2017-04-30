@@ -47,11 +47,6 @@
                 android:text="@string/all_classes"
                 android:textColor="@color/black_0.54"
                 android:textSize="20sp"/>
-            <View
-                android:layout_width="32dp"
-                android:layout_height="3dp"
-                android:layout_marginTop="4dp"
-                android:background="@color/gray_500" />
 
         </LinearLayout>
 
@@ -62,8 +57,12 @@
             android:text="@string/add_new_class"
             android:layout_gravity="end"
             android:background="@color/white"
-            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingRight="8dp"
+            android:paddingLeft="8dp"
             android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginLeft="12dp"
             android:textColor="@color/colorPrimary" />
 
         <View
@@ -80,7 +79,7 @@
         <TextView
             android:id="@+id/header_textview"
             android:visibility="gone"
-            android:gravity="center_horizontal"
+            android:gravity="center"
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="40dp"
             android:layout_marginStart="40dp"
@@ -89,7 +88,11 @@
             android:text="@string/activity_classes_splash_no_classes"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="8dp"
-            android:textSize="15sp"
+            android:drawableLeft="@drawable/ic_error_outline_black_24dp"
+            android:drawableStart="@drawable/ic_error_outline_black_24dp"
+            android:drawablePadding="4dp"
+            android:textSize="16sp"
+            android:textColor="@color/gray_900"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <ProgressBar
@@ -97,6 +100,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/progressBar"
+            android:visibility="gone"
             android:progressDrawable="@drawable/circular_progress_bar"
             android:layout_gravity="center"
             android:layout_marginTop="32dp"/>
@@ -105,7 +109,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

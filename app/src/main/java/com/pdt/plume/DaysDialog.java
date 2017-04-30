@@ -121,11 +121,6 @@ public class DaysDialog extends DialogFragment {
                         if (checkbox[i].isChecked()) builder.append("1");
                         else builder.append("0");
                     }
-                    if (builder.toString().equals("0:0:0:0:0:0:0")) {
-                        Toast.makeText(getContext(), getString(R.string.new_schedule_toast_validation_no_days_selected),
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    }
                     onDaysSelectedListener.OnDaysSelected(alternate, position , builder.toString());
                     dismiss();
                     break;

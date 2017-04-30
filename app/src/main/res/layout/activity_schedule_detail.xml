@@ -54,6 +54,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="48dp"
         android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:transitionName="@string/INTENT_EXTRA_TRANSITION"
         android:minHeight="48dp"
         android:minWidth="48dp" />
@@ -82,16 +83,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingBottom="32dp"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin">
 
                 <TextView
                     android:id="@+id/room"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Room 204"
                     android:layout_marginTop="8dp"
+                    android:text="Room 204"
                     android:textColor="@color/black_0.54"
                     android:textSize="20sp" />
 
@@ -122,9 +123,11 @@
 
                 <FrameLayout
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_height="wrap_content">
+                    android:paddingTop="4dp">
+
                     <View
                         android:layout_width="36dp"
                         android:layout_height="3dp"
@@ -132,24 +135,24 @@
                         android:background="@color/gray_500" />
 
                     <TextView
+                        android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="20sp"
-                        android:layout_marginTop="16dp"
                         android:layout_marginBottom="6dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/schedule_detail_tasks_title"
                         android:textColor="@color/black_0.54"
-                        android:id="@+id/textView2" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/add_task"
-                        android:text="@string/schedule_detail_add_task"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:background="@color/white"
                         android:paddingRight="@dimen/activity_horizontal_margin"
                         android:paddingTop="8dp"
+                        android:text="@string/schedule_detail_add_task"
                         android:textColor="@color/colorPrimary" />
                 </FrameLayout>
 
@@ -159,7 +162,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="16dp"
+                    android:paddingBottom="4dp" />
             </LinearLayout>
 
             <!-- NOTES -->
@@ -177,35 +181,36 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/gray_50">
+                    android:background="@color/gray_50"
+                    android:paddingTop="4dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="6dp"
-                    android:textSize="20sp"
-                    android:text="@string/schedule_detail_notes_title"
-                    android:textColor="@color/black_0.54" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/schedule_detail_notes_title"
+                        android:textColor="@color/black_0.54"
+                        android:textSize="20sp" />
 
-                <View
-                    android:layout_width="36dp"
-                    android:layout_height="3dp"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:layout_gravity="bottom"
-                    android:background="@color/gray_500" />
+                    <View
+                        android:layout_width="36dp"
+                        android:layout_height="3dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:background="@color/gray_500" />
 
-                <TextView
-                    android:id="@+id/schedule_detail_notes_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/schedule_detail_add_note"
-                    android:layout_gravity="end"
-                    android:paddingRight="@dimen/activity_horizontal_margin"
-                    android:paddingTop="8dp"
-                    android:textColor="@color/colorPrimary" />
+                    <TextView
+                        android:id="@+id/schedule_detail_notes_textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="8dp"
+                        android:text="@string/schedule_detail_add_note"
+                        android:textColor="@color/colorPrimary" />
 
                 </FrameLayout>
 
@@ -215,7 +220,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="4dp"
+                    android:paddingBottom="16dp" />
 
                 <View
                     android:layout_width="match_parent"
@@ -236,16 +242,16 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:layout_marginTop="16dp"
-                    android:textSize="20sp"
                     android:text="@string/schedule_detail_periods_title"
-                    android:textColor="@color/black_0.54" />
+                    android:textColor="@color/black_0.54"
+                    android:textSize="20sp" />
 
                 <View
                     android:layout_width="48dp"
                     android:layout_height="3dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:layout_gravity="bottom"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="4dp"
                     android:background="@color/gray_500" />
 
                 <com.pdt.plume.NonScrollListView

@@ -27,196 +27,230 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <ImageView
                     android:id="@+id/about_appicon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/art_appicon" />
+
                 <TextView
                     android:id="@+id/about_plume"
-                    android:layout_marginTop="4dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/Plume"
-                    android:layout_toRightOf="@id/about_appicon"
-                    android:layout_toEndOf="@id/about_appicon"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_toEndOf="@id/about_appicon"
+                    android:layout_toRightOf="@id/about_appicon"
+                    android:text="@string/Plume"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
                 <TextView
                     android:id="@+id/about_assistant"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/Assistant"
-                    android:textColor="@color/black"
-                    android:layout_toRightOf="@id/about_appicon"
-                    android:layout_toEndOf="@id/about_appicon"
                     android:layout_below="@id/about_plume"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/about_appicon"
+                    android:layout_toRightOf="@id/about_appicon"
+                    android:text="@string/Assistant"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/black" />
             </RelativeLayout>
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/Version"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/Version"
                 android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/Weblink"
-                android:layout_marginLeft="8dp"
-                android:linksClickable="true"
-                android:textColorLink="@color/hyperlink"
+                android:layout_marginStart="8dp"
                 android:autoLink="web"
-                android:layout_marginStart="8dp"/>
+                android:linksClickable="true"
+                android:text="@string/Weblink"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColorLink="@color/hyperlink" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/gray_500"
+                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"/>
+                android:background="@color/gray_500" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="@string/Contact"
                 android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                android:text="@string/Contact"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="@color/black"
-                    android:text="@string/Email"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="8dp"
+                    android:text="@string/Email"
+                    android:textColor="@color/black"
+                    android:textSize="12sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColorLink="@color/hyperlink"
-                    android:linksClickable="true"
                     android:autoLink="email"
-                    android:text="@string/Plume_Email"/>
+                    android:linksClickable="true"
+                    android:text="@string/Plume_Email"
+                    android:textColorLink="@color/hyperlink"
+                    android:textSize="12sp" />
             </LinearLayout>
 
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/gray_500"
+                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"/>
+                android:background="@color/gray_500" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/Developed"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/PDT"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
 
             <TextView
-                android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/Coding"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/Eric"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
 
             <TextView
-                android:layout_marginTop="6dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="6dp"
+                android:text="@string/Security"
                 android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/Ben"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="6dp"
                 android:text="@string/Graphics"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/Reiss"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/Michael"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="6dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/black"
                 android:text="@string/Testers"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@color/black"
-                android:text="@string/Connor"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
-                android:text="@string/Ryan"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:textSize="16sp" />
 
             <TextView
-                android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/Icons8"
-                android:linksClickable="true"
-                android:autoLink="web"
-                android:textColorLink="@color/hyperlink"
                 android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                android:text="@string/Connor"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/Ryan"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:autoLink="web"
+                android:linksClickable="true"
+                android:text="@string/Icons8"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColorLink="@color/hyperlink" />
 
         </LinearLayout>
 

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/backgroundColor"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.pdt.plume.NoteActivity"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingStart="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingEnd="@dimen/activity_horizontal_margin"
+    android:paddingTop="24dp">
+
+    <EditText
+        android:id="@+id/notes_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/notes_title_hint"
+        android:textStyle="bold"
+        android:background="@android:color/transparent"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="22sp" />
+
+    <EditText
+        android:id="@+id/notes_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/notes_note_hint"
+        android:layout_marginTop="16dp"
+        android:fontFamily="serif"
+        android:background="@android:color/transparent" />
+
+</LinearLayout>

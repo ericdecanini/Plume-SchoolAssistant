@@ -179,7 +179,7 @@ public class TasksDetailFragment extends Fragment {
                     // Get the data from Firebase
                     final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("tasks").child(firebaseID);
-                    taskRef.addValueEventListener(new ValueEventListener() {
+                    taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             String id = dataSnapshot.getKey();

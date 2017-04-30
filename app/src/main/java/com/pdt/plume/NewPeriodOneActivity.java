@@ -47,9 +47,15 @@ public class NewPeriodOneActivity extends AppCompatActivity {
             public void onClick(View view) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewPeriodOneActivity.this);
                 preferences.edit()
-                        .putString(getString(R.string.KEY_PREFERENCE_BASIS), "2")
+                        .putString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "2")
                         .apply();
-                Intent intent = new Intent(NewPeriodOneActivity.this, NewScheduleActivity.class);
+                boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+
+                Intent intent;
+                if (FIRST_LAUNCH) intent = new Intent(NewPeriodOneActivity.this, MainActivity.class);
+                else intent = new Intent(NewPeriodOneActivity.this, NewScheduleActivity.class);
+
+                preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
                 startActivity(intent);
             }
         });

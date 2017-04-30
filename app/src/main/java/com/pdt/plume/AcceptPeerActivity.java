@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -75,6 +76,7 @@ public class AcceptPeerActivity extends AppCompatActivity
     ArrayList<Bundle> matchedClassesList = new ArrayList<>();
     ArrayList<Schedule> matchedClassesScheduleList = new ArrayList<>();
     ArrayList<Bundle> mismatchedClassesList = new ArrayList<>();
+    ArrayList<Schedule> mismatchedClassObjects = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,12 @@ public class AcceptPeerActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+
+        if (isTablet) {
+            int height = getWindowManager().getDefaultDisplay().getHeight();
+            findViewById(R.id.master_layout).setMinimumHeight(height);
+        }
 
         // Initialise the Progress Bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
@@ -90,7 +98,7 @@ public class AcceptPeerActivity extends AppCompatActivity
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrimaryColor  = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
@@ -119,21 +127,33 @@ public class AcceptPeerActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfName = dataSnapshot.getValue(String.class);
             }
-            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         selfRef.child("icon").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfIcon = dataSnapshot.getValue(String.class);
             }
-            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         selfRef.child("flavour").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 selfFlavour = dataSnapshot.getValue(String.class);
             }
-            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         // Get references to the views
         ImageView iconView = (ImageView) findViewById(R.id.icon);
@@ -271,6 +291,7 @@ public class AcceptPeerActivity extends AppCompatActivity
                         matchedClassesScheduleList.add(new Schedule(AcceptPeerActivity.this, matchedClassesList.get(i).getString("icon"),
                                 matchedClassesList.get(i).getString("title"), "", "", "", "", "", null));
                     }
+
                     adapter = new ScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_schedule_with_checkbox, matchedClassesScheduleList);
                     listView.setAdapter(adapter);
                     spinner.setVisibility(View.GONE);
@@ -288,6 +309,9 @@ public class AcceptPeerActivity extends AppCompatActivity
 
     @Override
     public void OnClassesMatchedListener(ArrayList<Bundle> matchedClasses) {
+        matchedClassesScheduleList.removeAll(mismatchedClassObjects);
+        mismatchedClassObjects.clear();
+
         for (int i = 0; i < matchedClasses.size(); i++) {
             Bundle matchedClass = matchedClasses.get(i);
             Bundle mismatchedClass = mismatchedClassesList.get(i);
@@ -315,13 +339,13 @@ public class AcceptPeerActivity extends AppCompatActivity
 
         // Add the class to the cloud and SQLite databases for every checked item
         ArrayList<Integer> positions = new ArrayList<>();
-            mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
-            mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
-            mUserPeersRef.child(requestingUserId).child("flavour").setValue(flavour);
-            // Requesting user's peers ref
-            requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
-            requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
-            requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
+        mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
+        mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
+        mUserPeersRef.child(requestingUserId).child("flavour").setValue(flavour);
+        // Requesting user's peers ref
+        requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
+        requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
+        requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
         Log.v(LOG_TAG, "requestingUserId: " + requestingUserId);
         Log.v(LOG_TAG, "mUserId: " + mUserId);
 
@@ -358,7 +382,7 @@ public class AcceptPeerActivity extends AppCompatActivity
         classesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
                     // Get all the class data from the snapshot
                     Bundle bundle = new Bundle();
                     bundle.putString("title", classSnapshot.getKey());
@@ -367,27 +391,27 @@ public class AcceptPeerActivity extends AppCompatActivity
                     bundle.putString("room", classSnapshot.child("room").getValue(String.class));
 
                     ArrayList<String> occurrenceList = new ArrayList<>();
-                    for (DataSnapshot occurrenceSnapshot: dataSnapshot.child("occurrence").getChildren()) {
+                    for (DataSnapshot occurrenceSnapshot : dataSnapshot.child("occurrence").getChildren()) {
                         occurrenceList.add(occurrenceSnapshot.getKey());
                     }
                     ArrayList<Integer> timeInList = new ArrayList<>();
-                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timein").getChildren()) {
+                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren()) {
                         timeInList.add(timeinSnapshot.getValue(int.class));
                     }
                     ArrayList<Integer> timeOutList = new ArrayList<>();
-                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeout").getChildren()) {
+                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timeout").getChildren()) {
                         timeOutList.add(timeinSnapshot.getValue(int.class));
                     }
                     ArrayList<Integer> timeInAltList = new ArrayList<>();
-                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeinalt").getChildren()) {
+                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timeinalt").getChildren()) {
                         timeInAltList.add(timeinSnapshot.getValue(int.class));
                     }
                     ArrayList<Integer> timeOutAltList = new ArrayList<>();
-                    for (DataSnapshot timeinSnapshot: dataSnapshot.child("timeoutalt").getChildren()) {
+                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timeoutalt").getChildren()) {
                         timeOutAltList.add(timeinSnapshot.getValue(int.class));
                     }
                     ArrayList<String> periodsList = new ArrayList<>();
-                    for (DataSnapshot periodSnapshot: dataSnapshot.child("periods").getChildren()) {
+                    for (DataSnapshot periodSnapshot : dataSnapshot.child("periods").getChildren()) {
                         periodsList.add(periodSnapshot.getKey());
                     }
 
@@ -407,13 +431,20 @@ public class AcceptPeerActivity extends AppCompatActivity
                         String userClassTitle = usersClassesList.get(ii).getString("title");
                         String requestClassTitle = requestClassesList.get(i).getString("title");
                         if (userClassTitle.equals(requestClassTitle)) {
-                            Log.v(LOG_TAG, usersClassesList.get(ii).getString("title") + " == " + requestClassesList.get(i).getString("title"));
                             matchedClassesList.add(usersClassesList.get(ii));
                             matched = true;
-                        } else Log.v(LOG_TAG, usersClassesList.get(ii).getString("title") + " != " + requestClassesList.get(i).getString("title"));
+                        }
                     }
                     if (!matched) {
                         mismatchedClassesList.add(requestClassesList.get(i));
+                        matchedClassesScheduleList.add(new Schedule(AcceptPeerActivity.this,
+                                mismatchedClassesList.get(i).getString("icon"),
+                                mismatchedClassesList.get(i).getString("title") + "%0513%" + "cross",
+                                mismatchedClassesList.get(i).getString("teacher"),
+                                mismatchedClassesList.get(i).getString("room"),
+                                "", "", "", null));
+                        mismatchedClassObjects.add(matchedClassesScheduleList.get(matchedClassesScheduleList.size() - 1));
+                        adapter.notifyDataSetChanged();
                     } else {
                         matchedClassesList.add(requestClassesList.get(i));
                         matchedClassesScheduleList.add(new Schedule(AcceptPeerActivity.this,

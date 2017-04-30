@@ -7,7 +7,7 @@
 
     <string name="nav_classes">Classes</string>
     <string name="nav_completedTasks">Completed tasks</string>
-    <string name="nav_people">People</string>
+    <string name="nav_people">Peers</string>
     <string name="nav_requests">Requests</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
@@ -100,7 +100,7 @@
     <string name="accept">Accept</string>
     <string name="acceptPeerHeader">%1$s wants to add you in these classes</string>
     <string name="activity_classes_label">Classes</string>
-    <string name="activity_classes_splash_no_classes">You have no classes. Click the plus button below to add one.</string>
+    <string name="activity_classes_splash_no_classes">You have no classes.</string>
     <string name="activity_completedTasks_dialog_title">Delete all items?</string>
     <string name="activity_completedTasks_label">Completed Tasks</string>
     <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
@@ -153,8 +153,8 @@
     <string name="dialog_example_sameweek">Maths on Mon, 9:00 Every Week</string>
     <string name="dialog_example_timebased">Maths - 9:00&#8211;10:00am</string>
     <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
-    <string name="dialog_remove_class">Do you want to remove %1$s from %2$s and stop sharing tasks?</string>
-    <string name="dialog_remove_peer">Do you want to remove %1$s from being your peer?</string>
+    <string name="dialog_remove_class">Remove %1$s from %2$s and stop sharing tasks?</string>
+    <string name="dialog_remove_peer">Remove %1$s from being your peer?</string>
     <string name="done">Done</string>
     <string name="due">Due %1$s</string>
     <string name="due_date">Due date:</string>
@@ -162,7 +162,9 @@
     <string name="editName">Edit Name</string>
     <string name="editNameHint">Your Name</string>
     <string name="editNameMessage">How do you want your peers to see you?</string>
+    <string name="editSharedClasses">Edit shared classes</string>
     <string name="enter_text_hint">Enter text here&#8230;</string>
+    <string name="error">Error</string>
     <string name="everyday">Everyday</string>
     <string name="field_attach_file">Attach file</string>
     <string name="field_dropdown_class">Class</string>
@@ -184,9 +186,11 @@
     <string name="format_period">%1$s period</string>
     <string name="format_subtitle">%1$s %2$s</string>
     <string name="format_time">%1$s - %2$s</string>
+    <string name="get_started">Get Started</string>
     <string name="got_it">got it</string>
     <string name="here">Here</string>
     <string name="ignore">Ignore</string>
+    <string name="invalid_qr_message">Please scan a valid user\'s QR code</string>
     <string name="link_to_class">Link to Class</string>
     <string name="mark_as_done">Mark as Done</string>
     <string name="mark_as_undone">Mark as Undone</string>
@@ -243,7 +247,7 @@
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
     <string name="schedule_notification_message">Class starts in</string>
-    <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done.</string>
+    <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done</string>
     <string name="schedule_type">Schedule type</string>
     <string name="search">Search</string>
     <string name="select">Select</string>
@@ -288,6 +292,7 @@
     <string name="weekends">Weekends</string>
     <string name="weekdays">Weekdays</string>
     <string name="week_every">Every week</string>
+    <string name="week_alt">Alternating week schedule</string>
     <string name="week_number">Week number</string>
     <string name="week_one">Week 1</string>
     <string name="week_two">Week 2</string>
@@ -299,21 +304,23 @@
     <string name="about_activity_label">About Plume</string>
     <string name="Plume" translatable="false">Plume</string>
     <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 0.4 Beta</string>
+    <string name="Version">Version 1.0.0</string>
     <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
     <string name="Plume_Email">team@plumeacademyassistant.com</string>
     <string name="Developed">Developed by:</string>
     <string name="PDT" translatable="false">Plume Development Team</string>
-    <string name="Coding">Software and coding:</string>
+    <string name="Coding">Lead Developer:</string>
     <string name="Eric" translatable="false">Eric Decanini</string>
+    <string name="Security">Database Security:</string>
     <string name="Graphics">Graphics and design:</string>
     <string name="Reiss" translatable="false">Reiss Tozer</string>
     <string name="Michael" translatable="false">Michael Sumner</string>
-    <string name="Testers">Alpha testers:</string>
+    <string name="Testers">App testers:</string>
     <string name="Connor" translatable="false">Connor Hutchings</string>
     <string name="Ryan" translatable="false">Ryan Hutchings</string>
+    <string name="Ben" translatable="false">Benjamin Whitehead</string>
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
         as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
 
@@ -335,6 +342,28 @@
         <item>Clear photo</item>
     </string-array>
 
+    <string-array name="settings_schedule_type_entries">
+        <item>Time based</item>
+        <item>Period based</item>
+        <item>Block based</item>
+    </string-array>
+
+    <string-array name="settings_schedule_type_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="settings_week_type_entries">
+        <item>Same schedule every week</item>
+        <item>Alternating week schedules</item>
+    </string-array>
+
+    <string-array name="settings_week_type_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
     <string-array name="settings_week_number_entries">
         <item>1</item>
         <item>2</item>
@@ -346,25 +375,21 @@
     </string-array>
 
     <string-array name="settings_date_format_entries">
-        <item>Mon, January 5, 2000</item>
-        <item>Monday, January 5, 2000</item>
-        <item>Mon 5 January 2000</item>
-        <item>Monday 5 January 2000</item>
+        <item>Mon, January 5 2000</item>
+        <item>Monday, January 5 2000</item>
         <item>Mon 5th January 2000</item>
         <item>Monday 5th January 2000</item>
-        <item>01/05/00</item>
-        <item>05/01/00</item>
+        <item>01/05/2000</item>
+        <item>05/01/2000</item>
     </string-array>
 
     <string-array name="settings_date_format_values">
-        <item>EEE, MMMM d, yyyy</item>
-        <item>EEEE, MMMM d, yyyy</item>
-        <item>EEE d MMMM yyyy</item>
-        <item>EEEE d MMMM yyyy</item>
+        <item>EEE, MMMM d yyyy</item>
+        <item>EEEE, MMMM d yyyy</item>
         <item>EEE :d: MMMM yyyy</item>
         <item>EEEE :d: MMMM yyyy</item>
-        <item>MM/dd/yy</item>
-        <item>dd/MM/yy</item>
+        <item>MM/dd/yyyy</item>
+        <item>dd/MM/yyyy</item>
     </string-array>
 
     <string-array name="settings_block_format_entries">

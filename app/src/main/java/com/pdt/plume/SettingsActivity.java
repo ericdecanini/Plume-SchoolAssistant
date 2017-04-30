@@ -47,6 +47,8 @@ public class SettingsActivity extends PreferenceActivity
 
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_BASIS)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_WEEK_NUMBER_SETTING)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));

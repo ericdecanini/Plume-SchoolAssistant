@@ -9,14 +9,11 @@
     android:orientation="vertical"
     tools:context="com.pdt.plume.PeopleActivity">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
         <android.support.design.widget.AppBarLayout
             android:id="@+id/appbar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/extended_app_bar_height"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
             android:theme="@style/AppTheme.AppBarOverlay"
             app:elevation="0dp">
 
@@ -41,82 +38,68 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
                 android:text="Pandakun"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
+            <TextView
+                android:id="@+id/flavour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:padding="4dp"
+                android:text="To be or not to be"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
         </android.support.design.widget.AppBarLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/appbar"
-            android:background="@drawable/bg_grey_tiled"
-            android:paddingTop="48dp">
+            android:layout_height="132dp"
+            android:background="@drawable/bg_grey_tiled">
 
-            <ImageView
-                android:id="@+id/qr"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_centerInParent="true"
-                android:src="@drawable/sample" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="4dp"
-                android:layout_toLeftOf="@id/qr"
-                android:text="@string/scan"
-                android:textColor="@color/black_0.54"
-                android:textSize="20sp" />
+                android:layout_marginTop="32dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="4dp"
-                android:layout_toRightOf="@id/qr"
-                android:text="@string/here"
-                android:textColor="@color/black_0.54"
-                android:textSize="20sp" />
+                <ImageView
+                    android:id="@+id/qr"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/sample" />
 
-        </RelativeLayout>
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true">
-
-            <View
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginBottom="40dp"
-                android:layout_marginRight="100dp"
-                android:rotation="45"
-                android:layout_gravity="center_horizontal|bottom"
-                android:background="@color/white" />
-
-            <FrameLayout
-                android:id="@+id/box"
-                android:layout_width="256dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="156dp"
-                android:background="@color/white">
                 <TextView
-                    android:id="@+id/flavour"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:text="@string/whats_up"
-                    android:textColor="@color/gray_500" />
-            </FrameLayout>
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_toLeftOf="@id/qr"
+                    android:layout_toStartOf="@id/qr"
+                    android:text="@string/scan"
+                    android:textColor="@color/black_0.54"
+                    android:textSize="20sp" />
 
-        </FrameLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_toEndOf="@id/qr"
+                    android:layout_toRightOf="@id/qr"
+                    android:text="@string/here"
+                    android:textColor="@color/black_0.54"
+                    android:textSize="20sp" />
 
-    </RelativeLayout>
+            </RelativeLayout>
+
+        </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
@@ -128,12 +111,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin">
-
-        <View
-            android:layout_width="36dp"
-            android:layout_height="3dp"
-            android:layout_gravity="bottom"
-            android:background="@color/gray_500" />
 
         <TextView
             android:id="@+id/textView2"
@@ -150,8 +127,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingRight="8dp"
+            android:paddingLeft="8dp"
             android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginLeft="12dp"
             android:text="@string/add_peer"
             android:textColor="@color/colorPrimary" />
     </FrameLayout>
@@ -167,7 +148,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray_200"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:background="@color/gray_200" />
 
-    </LinearLayout>
+</LinearLayout>

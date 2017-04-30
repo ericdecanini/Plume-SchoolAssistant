@@ -67,9 +67,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Intro"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".ScheduleDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.ActionBar.Transparent" />
@@ -187,35 +184,40 @@
 
         <activity
             android:name=".PeopleActivity"
+            android:label="@string/nav_people"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".PeersActivity"
-            android:parentActivityName=".PeopleActivity" />
-        <activity
             android:name=".LoginActivity"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SignUpActivity"
-            android:parentActivityName=".LoginActivity" />
+            android:parentActivityName=".LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".RequestsActivity"
+            android:label="@string/nav_requests"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".UserSearchActivity"
+            android:label=""
             android:parentActivityName=".PeopleActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".AddPeerActivity"
+            android:label=""
             android:parentActivityName=".UserSearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".AcceptPeerActivity"
+            android:label=""
             android:parentActivityName=".RequestsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".PeerProfileActivity"
-            android:parentActivityName=".PeersActivity"
+            android:label=""
+            android:parentActivityName=".PeopleActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.facebook.CustomTabActivity"
@@ -233,9 +235,9 @@
             android:name=".PictureActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".NewPeriodOneActivity" />
-        <activity android:name=".NewPeriodTwoActivity" />
-        <activity android:name=".NewPeriodThreeTimeActivity" />
-        <activity android:name=".NewPeriodActivity"></activity>
+        <activity android:name=".NewPeriodTwoActivity"
+            android:parentActivityName=".NewPeriodOneActivity"/>
+        <activity android:name=".IntroActivity"></activity>
     </application>
 
 </manifest>

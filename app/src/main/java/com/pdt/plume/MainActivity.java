@@ -7,7 +7,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -42,6 +44,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -75,6 +78,8 @@ import com.pdt.plume.services.ScheduleNotificationService;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -86,11 +91,12 @@ import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION;
+
 import com.pdt.plume.data.DbContract.TasksEntry;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         TasksDetailFragment.OnTaskCompleteListener, TasksDetailFragment.OnTaskDeleteListener,
-        ScheduleDetailFragment.OnClassDeleteListener{
+        ScheduleDetailFragment.OnClassDeleteListener {
 
     // Constantly used variables
     String LOG_TAG = MainActivity.class.getSimpleName();
@@ -129,6 +135,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        preferences.edit()
+                .putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent))
+                .apply();
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        mDarkColor = Color.HSVToColor(hsv);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
         // Initialise Facebook
         CallbackManager callbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -164,7 +183,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getSupportActionBar().setTitle("");
         mAppbar = (AppBarLayout) findViewById(R.id.appbar);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
 
         // If it's the first time launching this version, perform this function
@@ -214,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             if (mFirebaseUser != null) {
                 DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
-                        .child("users").child(mFirebaseUser.getUid()).child("requets");
+                        .child("users").child(mFirebaseUser.getUid()).child("requests");
                 requestsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -371,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         if (id == R.id.intro) {
-            Intent intent = new Intent(this, Intro.class);
+            Intent intent = new Intent(this, IntroActivity.class);
             startActivity(intent);
         }
 
@@ -505,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
         editor.putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), mSecondaryColor);
 
+
         // Initialise the week number
         weekNumber = 0;
         editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -512,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Commit the preferences
         editor.apply();
 
-        Intent intent = new Intent(this, Intro.class);
+        Intent intent = new Intent(this, IntroActivity.class);
         startActivity(intent);
     }
 
@@ -527,11 +546,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void initTabs() {
-        // Create the mScheduleAdapter that will return a fragment for each of the two
+        // Create the mTasksAdapter that will return a fragment for each of the two
         // primary sections of the activity.
         mSectionsPagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections mScheduleAdapter.
+        // Set up the ViewPager with the sections mTasksAdapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         if (mViewPager != null)
             mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -567,14 +586,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Get a reference to the action bar and
         // disable its title display
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null)
+        if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        }
 
         // Get a reference to the spinner UI element
-        // and set its mScheduleAdapter and ItemClickListener
+        // and set its mTasksAdapter and ItemClickListener
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         if (spinner != null) {
-            // Set the mScheduleAdapter of the spinner
+            // Set the mTasksAdapter of the spinner
             spinner.setAdapter(new mSpinnerAdapter(
                     mToolbar.getContext(),
                     new String[]{
@@ -1026,69 +1047,71 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Cursor classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
         Calendar c = Calendar.getInstance();
         final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
-        for (int i = 0; i < classesCursor.getCount(); i++) {
-            classesCursor.moveToPosition(i);
-            final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-            String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-            int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
+        if (classesCursor != null)
+            for (int i = 0; i < classesCursor.getCount(); i++) {
+                classesCursor.moveToPosition(i);
+                final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+                String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+                int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
 
-            long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
-            c = Calendar.getInstance();
-            Calendar timeInCalendar = Calendar.getInstance();
-            timeInCalendar.setTimeInMillis(timeInValue);
-            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-            c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
-            Calendar current = Calendar.getInstance();
-            if (c.getTimeInMillis() < current.getTimeInMillis())
-                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
-            c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
+                long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
+                c = Calendar.getInstance();
+                Calendar timeInCalendar = Calendar.getInstance();
+                timeInCalendar.setTimeInMillis(timeInValue);
+                c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
+                c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
+                Calendar current = Calendar.getInstance();
+                if (c.getTimeInMillis() < current.getTimeInMillis())
+                    c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+                c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
 
-            // Build the notification
-            final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-            Bitmap largeIcon = null;
-            try {
-                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                    .setBackground(largeIcon);
-
-            Intent contentIntent = new Intent(MainActivity.this, ScheduleDetailActivity.class);
-            contentIntent.putExtra("_ID", ID);
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
-            stackBuilder.addParentStack(ScheduleDetailActivity.class);
-            stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-
-            final Calendar finalC = c;
-            Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    builder.setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
-                            .setColor(getResources().getColor(R.color.colorPrimary))
-                            .setContentTitle(title)
-                            .setContentText(getString(R.string.class_notification_message, Integer.toString(forerunnerTime)))
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .extend(wearableExtender)
-                            .setDefaults(Notification.DEFAULT_ALL);
-
-                    Notification notification = builder.build();
-
-                    Intent notificationIntent = new Intent(MainActivity.this, TaskNotificationPublisher.class);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, finalC.getTimeInMillis(), pendingIntent);
+                // Build the notification
+                final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                Bitmap largeIcon = null;
+                try {
+                    largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            });
-        }
-        classesCursor.close();
+                final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                        .setBackground(largeIcon);
+
+                Intent contentIntent = new Intent(MainActivity.this, ScheduleDetailActivity.class);
+                contentIntent.putExtra("_ID", ID);
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+                stackBuilder.addParentStack(ScheduleDetailActivity.class);
+                stackBuilder.addNextIntent(contentIntent);
+                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
+
+                final Calendar finalC = c;
+                Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        builder.setContentIntent(contentPendingIntent)
+                                .setSmallIcon(R.drawable.ic_assignment)
+                                .setColor(getResources().getColor(R.color.colorPrimary))
+                                .setContentTitle(title)
+                                .setContentText(getString(R.string.class_notification_message, Integer.toString(forerunnerTime)))
+                                .setAutoCancel(true)
+                                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                                .extend(wearableExtender)
+                                .setDefaults(Notification.DEFAULT_ALL);
+
+                        Notification notification = builder.build();
+
+                        Intent notificationIntent = new Intent(MainActivity.this, TaskNotificationPublisher.class);
+                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
+                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                        final PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQUEST_NOTIFICATION_ALARM,
+                                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                        alarmManager.set(AlarmManager.RTC, finalC.getTimeInMillis(), pendingIntent);
+                    }
+                });
+            }
+        if (classesCursor != null)
+            classesCursor.close();
 
         // Execute the Sign Out Operation
         mFirebaseAuth.signOut();

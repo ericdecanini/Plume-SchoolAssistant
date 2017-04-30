@@ -20,12 +20,17 @@ public class NewPeriodTwoActivity extends AppCompatActivity {
         weekSame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewPeriodTwoActivity.this);
                 preferences.edit()
                         .putString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "0")
                         .apply();
-                Intent intent = new Intent(NewPeriodTwoActivity.this, NewScheduleActivity.class);
+                boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+
+                Intent intent;
+                if (FIRST_LAUNCH) intent = new Intent(NewPeriodTwoActivity.this, MainActivity.class);
+                else intent = new Intent(NewPeriodTwoActivity.this, NewScheduleActivity.class);
+
+                preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
                 startActivity(intent);
             }
         });
@@ -33,12 +38,17 @@ public class NewPeriodTwoActivity extends AppCompatActivity {
         weekAlt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewPeriodTwoActivity.this);
                 preferences.edit()
                         .putString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "1")
                         .apply();
-                Intent intent = new Intent(NewPeriodTwoActivity.this, NewScheduleActivity.class);
+                boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
+
+                Intent intent;
+                if (FIRST_LAUNCH) intent = new Intent(NewPeriodTwoActivity.this, MainActivity.class);
+                else intent = new Intent(NewPeriodTwoActivity.this, NewScheduleActivity.class);
+
+                preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
                 startActivity(intent);
             }
         });

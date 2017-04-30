@@ -260,7 +260,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 // Get the key data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes").child(title);
-                classRef.addValueEventListener(new ValueEventListener() {
+                classRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         teacher = dataSnapshot.child("teacher").getValue(String.class);
@@ -686,34 +686,23 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             // Get the data from Firebase
             DatabaseReference notesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("notes");
-            childListener2 = new ChildEventListener() {
+            notesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String classTitle = dataSnapshot.child("scheduletitle").getValue(String.class);
-                    Log.v(LOG_TAG, "ClassTitle: " + classTitle + " Title: " + title);
-                    if (classTitle.equals(title)) {
-                        notesArray.add(dataSnapshot.getKey());
-                        mNotesAdapter.notifyDataSetChanged();
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()) {
+                        String classTitle = noteSnapshot.child("scheduletitle").getValue(String.class);
+                        if (classTitle != null && classTitle.equals(title)) {
+                            notesArray.add(noteSnapshot.getKey());
+                            mNotesAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
 
                 @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
                 public void onCancelled(DatabaseError databaseError) {
+
                 }
-            };
-            notesRef.addChildEventListener(childListener2);
+            });
         } else {
             // Get the data from SQLite
             DbHelper dbHelper = new DbHelper(this);
@@ -985,9 +974,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             cursor.close();
 
-            // Get the list view's current mScheduleAdapter, clear it,
+            // Get the list view's current mTasksAdapter, clear it,
             // and query the database again for the current day
-            // data, then notify the mScheduleAdapter for the changes
+            // data, then notify the mTasksAdapter for the changes
             TaskAdapter adapter = (TaskAdapter) listView.getAdapter();
             adapter.clear();
             adapter.addAll(db.getTaskDataArray());
@@ -1226,9 +1215,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
             cursor.close();
 
-            // Get the list view's current mScheduleAdapter, clear it,
+            // Get the list view's current mTasksAdapter, clear it,
             // and query the database again for the current day
-            // data, then notify the mScheduleAdapter for the changes
+            // data, then notify the mTasksAdapter for the changes
             ArrayAdapter adapter = (ArrayAdapter) notesList.getAdapter();
             adapter.clear();
             adapter.addAll(db.getNoteDataArray());

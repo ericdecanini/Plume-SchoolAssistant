@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,7 +72,7 @@ public class MismatchListAdapter extends ArrayAdapter {
 
             // Get the schedule list from Firebase
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+            final FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
             String userId = firebaseUser.getUid();
             final DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
@@ -107,20 +108,29 @@ public class MismatchListAdapter extends ArrayAdapter {
                                     newClassRef.child("room").setValue(bundle.getString("room"));
                                     // Get all the listed data
                                     ArrayList<String> occurrences = bundle.getStringArrayList("occurrence");
-                                    Log.v(LOG_TAG, "Occurrences Size: " + occurrences.size());
                                     ArrayList<Integer> timeins = bundle.getIntegerArrayList("timein");
                                     ArrayList<Integer> timeouts = bundle.getIntegerArrayList("timeout");
                                     ArrayList<Integer> timeinalts = bundle.getIntegerArrayList("timeinalt");
                                     ArrayList<Integer> timeoutalts = bundle.getIntegerArrayList("timeoutalt");
                                     ArrayList<String> periods = bundle.getStringArrayList("periods");
-                                    for (int i = 0; i < occurrences.size(); i++) {
+
+                                    for (int i = 0; i < occurrences.size(); i++)
                                         newClassRef.child("occurrence").child(occurrences.get(i)).setValue("");
+
+                                    for (int i = 0; i < timeins.size(); i++)
                                         newClassRef.child("timein").child(String.valueOf(i)).setValue(timeins.get(i));
+
+                                    for (int i = 0; i < timeouts.size(); i++)
                                         newClassRef.child("timeout").child(String.valueOf(i)).setValue(timeouts.get(i));
+
+                                    for (int i = 0; i < timeinalts.size(); i++)
                                         newClassRef.child("timeinalt").child(String.valueOf(i)).setValue(timeinalts.get(i));
+
+                                    for (int i = 0; i < timeoutalts.size(); i++)
                                         newClassRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeoutalts.get(i));
+
+                                    for (int i = 0; i < periods.size(); i++)
                                         newClassRef.child("periods").child(periods.get(i)).setValue("");
-                                    }
 
                                     Toast.makeText(context, bundle.getString("title") + " " + context.getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
                                     holder.dropdownText.setText(bundle.getString("title"));

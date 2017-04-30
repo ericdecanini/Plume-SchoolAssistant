@@ -124,7 +124,7 @@ public class Utility {
     }
 
     // Helper method for converting seconds into a time string
-    public String millisToHourTime(float seconds) {
+    public String millisToHourTime(long seconds) {
         // Return a blank string if there is no time data
         if (seconds == -1)
             return "";

@@ -143,7 +143,7 @@ public class NewTaskActivity extends AppCompatActivity
     Uri mTempPhotoUri;
 
     long reminderDateMillis;
-    float reminderTimeMillis;
+    long reminderTimeMillis;
 
     // Theme Variables
     int mPrimaryColor;
@@ -343,9 +343,9 @@ public class NewTaskActivity extends AppCompatActivity
                 String classType = extras.getString(getString(R.string.INTENT_EXTRA_TYPE));
                 String description = extras.getString(getString(R.string.INTENT_EXTRA_DESCRIPTION));
                 String attachment = "";
-                float dueDate = extras.getFloat(getString(R.string.INTENT_EXTRA_DUEDATE));
-                float reminderDate = extras.getFloat(getString(R.string.INTENT_EXTRA_ALARM_DATE));
-                float reminderTime = extras.getFloat(getString(R.string.INTENT_EXTRA_ALARM_TIME));
+                long dueDate = extras.getLong(getString(R.string.INTENT_EXTRA_DUEDATE));
+                long reminderDate = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_DATE));
+                long reminderTime = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_TIME));
 
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT), false);
@@ -614,7 +614,6 @@ public class NewTaskActivity extends AppCompatActivity
                         float dueDateMonth = c.get(Calendar.MONTH);
                         float dueDateDay = c.get(Calendar.DAY_OF_MONTH);
                         fieldDueDateTextView.setText(utility.formatDateString(this, ((int) dueDateYear), ((int) dueDateMonth), ((int) dueDateDay)));
-                        Log.v(LOG_TAG, "DueDate set from FLAG EDIT");
                         this.dueDateMillis = c.getTimeInMillis();
                     }
 
@@ -1326,7 +1325,6 @@ public class NewTaskActivity extends AppCompatActivity
                 c.set(year, monthOfYear, dayOfMonth);
                 dueDateMillis = c.getTimeInMillis();
                 fieldDueDateTextView.setText(utility.formatDateString(NewTaskActivity.this, year, monthOfYear, dayOfMonth));
-                Log.v(LOG_TAG, "DueDate text set at 2");
             }
         };
     }
@@ -1791,7 +1789,6 @@ public class NewTaskActivity extends AppCompatActivity
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
-                Log.v(LOG_TAG, "Task ID: " + ID);
             }
         });
     }
@@ -1840,7 +1837,6 @@ public class NewTaskActivity extends AppCompatActivity
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        Log.v(LOG_TAG, "TempFile Path: " + image.getPath());
 
         return image;
     }

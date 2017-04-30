@@ -1,5 +1,6 @@
 package com.pdt.plume;
 
+import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,8 +32,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.data.DbContract.TasksEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,11 +46,11 @@ public class CompletedTasksActivity extends AppCompatActivity {
     DbHelper dbHelper = new DbHelper(this);
 
     // Listview Variables
-    ArrayList<String> taskTitles;
+    ArrayList<Task> mTasksList;
     ArrayList<Integer> taskIDs;
     ArrayList<String> taskFirebaseIDs;
     ListView listView;
-    ArrayAdapter<String> mScheduleAdapter;
+    TaskAdapter mTasksAdapter;
 
     // CAM Variables
     private Menu mActionMenu;
@@ -61,7 +64,6 @@ public class CompletedTasksActivity extends AppCompatActivity {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
-    ChildEventListener tasksListener = null;
 
 
     @Override
@@ -81,14 +83,14 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
         // Initialise the adapter of completed tasks
         // If no items were found, show the header
-        taskTitles = new ArrayList<>();
+        mTasksList = new ArrayList<>();
         taskIDs = new ArrayList<>();
         taskFirebaseIDs = new ArrayList<>();
-        mScheduleAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, taskTitles);
+        mTasksAdapter = new TaskAdapter(this, R.layout.list_item_task, mTasksList);
         getCompletedTasksData();
 
         // Inflate the listview with the adapter
-        listView.setAdapter(mScheduleAdapter);
+        listView.setAdapter(mTasksAdapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(new ModeCallback());
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -96,6 +98,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Create an intent to the TaskDetailActivity passing on the ID
                 Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
+                intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
                 if (mFirebaseUser != null) {
                     String firebaseID = taskFirebaseIDs.get(position);
                     intent.putExtra("id", firebaseID);
@@ -104,8 +107,17 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     intent.putExtra("_ID", ID);
                 }
 
-                intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
-                startActivity(intent);
+                // Add the animation
+                intent.putExtra("icon", mTasksList.get(position).taskIcon);
+                View icon = view.findViewById(R.id.task_icon2);
+                if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
+                        && ((String) icon.getTag()).contains("com.pdt.plume")) {
+                    // Shared element transition
+                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(CompletedTasksActivity.this, icon, icon.getTransitionName()).toBundle();
+                    startActivity(intent, bundle);
+                } else startActivity(intent);
             }
         });
 
@@ -119,10 +131,22 @@ public class CompletedTasksActivity extends AppCompatActivity {
                         .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                if (mFirebaseUser != null) {
+                                    DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(mUserId).child("tasks");
+                                    for (int i = 0; i < taskFirebaseIDs.size(); i++) {
+                                        String id = taskFirebaseIDs.get(i);
+                                        tasksRef.child(id).removeValue();
+                                    }
+                                } else {
                                     for (int i = 0; i < taskIDs.size(); i++) {
                                         int id = taskIDs.get(i);
                                         dbHelper.deleteTaskItem(id);
                                     }
+                                }
+
+                                Intent intent = new Intent(CompletedTasksActivity.this, MainActivity.class);
+                                startActivity(intent);
                                 }}).show();
             }
         });
@@ -146,9 +170,9 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
     }
 
-    // Update the listview with its mScheduleAdapter
+    // Update the listview with its mTasksAdapter
     private void getCompletedTasksData() {
-        taskTitles.clear();
+        mTasksList.clear();
         taskIDs.clear();
         taskFirebaseIDs.clear();
 
@@ -156,21 +180,29 @@ public class CompletedTasksActivity extends AppCompatActivity {
             // Get the data from Firebase
             DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks");
-            tasksRef.addChildEventListener(new ChildEventListener() {
+            tasksRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    boolean isTaskCompleted = dataSnapshot.child("completed").getValue(boolean.class);
-                    if (isTaskCompleted) {
-                        taskTitles.add(dataSnapshot.child("title").getValue(String.class));
-                        taskFirebaseIDs.add(dataSnapshot.getKey());
-                        findViewById(R.id.header_textview).setVisibility(View.GONE);
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot taskSnapshot: dataSnapshot.getChildren()) {
+                        boolean isTaskCompleted = taskSnapshot.child("completed").getValue(boolean.class);
+                        if (isTaskCompleted) {
+                            // Gather the necessary data
+                            String title = taskSnapshot.child("title").getValue(String.class);
+                            String icon = taskSnapshot.child("icon").getValue(String.class);
+                            String sharer = taskSnapshot.child("sharer").getValue(String.class);
+                            String classTitle = taskSnapshot.child("class").getValue(String.class);
+                            String classType = taskSnapshot.child("type").getValue(String.class);
+                            String description = taskSnapshot.child("description").getValue(String.class);
+                            float duedate = taskSnapshot.child("duedate").getValue(float.class);
+
+                            mTasksList.add(new Task(icon, title, sharer, classTitle, classType, description, "", duedate, -1, null));
+                            taskFirebaseIDs.add(taskSnapshot.getKey());
+                            findViewById(R.id.header_textview).setVisibility(View.GONE);
+                            mTasksAdapter.notifyDataSetChanged();
+                        }
                     }
-                    mScheduleAdapter.notifyDataSetChanged();
-                    tasksListener = this;
                 }
-                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
                 @Override public void onCancelled(DatabaseError databaseError) {}});
         } else {
             // Get the data from SQLite
@@ -178,7 +210,14 @@ public class CompletedTasksActivity extends AppCompatActivity {
             if (cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     cursor.moveToPosition(i);
-                    taskTitles.add(cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)));
+                    String title = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE));
+                    String icon = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON));
+                    String classTitle = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_CLASS));
+                    String classType = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TYPE));
+                    String description = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
+                    float duedate = cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
+
+                    mTasksList.add(new Task(icon, title, "", classTitle, classType, description, "", duedate, -1, null));
                     taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
                 findViewById(R.id.header_textview).setVisibility(View.GONE);
@@ -186,16 +225,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             cursor.close();
         }
 
-        mScheduleAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    protected void onStop() {
-        if (tasksListener != null)
-            FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(mUserId).child("tasks")
-                    .removeEventListener(tasksListener);
-        super.onStop();
+        mTasksAdapter.notifyDataSetChanged();
     }
 
     // Set a task item to incomplete state so it shows in TasksFragment again
@@ -233,7 +263,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                         icon, pictureStringList, false);
                 cursor.close();
         }
-            // Refresh the mScheduleAdapter so the restored task is no longer displayed
+            // Refresh the mTasksAdapter so the restored task is no longer displayed
             getCompletedTasksData();
         }
 
@@ -380,7 +410,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             }
 
 
-            // Notify the mScheduleAdapter of the changes
+            // Notify the mTasksAdapter of the changes
             getCompletedTasksData();
 
             // Then clear the selected items array list and emulate

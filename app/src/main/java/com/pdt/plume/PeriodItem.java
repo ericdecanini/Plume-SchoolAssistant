@@ -5,12 +5,13 @@ import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class PeriodItem {
     String LOG_TAG = PeriodItem.class.getSimpleName();
     Utility utility = new Utility();
 
-    // Basis and Week Type. The mScheduleAdapter will determine
+    // Basis and Week Type. The mTasksAdapter will determine
     // the layout based on these variables
     public String basis;
     public String weekType;
@@ -25,24 +26,35 @@ public class PeriodItem {
     String timeinalt;
     String timeoutalt;
 
-    int timeinValue = -1;
-    int timeoutValue = -1;
-    int timeinaltValue = -1;
-    int timeoutaltValue = -1;
+    long timeinValue = -1;
+    long timeoutValue = -1;
+    long timeinaltValue = -1;
+    long timeoutaltValue = -1;
 
     boolean[] period = {false, false, false, false, false, false, false, false};
     boolean[] periodAlt = {false, false, false, false, false, false, false, false};
     String periods;
 
     // Constructor where global variables are set
-    // These global variables are then accessed by the mScheduleAdapter
-    public PeriodItem(Context context, int timeIn, int timeOut, int timeInAlt,
-                      int timeOutAlt, String periods, String occurrence) {
+    // These global variables are then accessed by the mTasksAdapter
+    public PeriodItem(Context context, long timeIn, long timeOut, long timeInAlt,
+                      long timeOutAlt, String periods, String occurrence) {
         super();
         this.timeinValue = timeIn;
         this.timeoutValue = timeOut;
         this.timeinaltValue = timeInAlt;
         this.timeoutaltValue = timeOutAlt;
+
+        Calendar c = Calendar.getInstance();
+        if (timeinValue == -1)
+            timeinValue = ((int)c.getTimeInMillis());
+        if (timeinaltValue == -1)
+            timeinaltValue = ((int)c.getTimeInMillis());
+        c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
+        if (timeoutValue == -1)
+            timeoutValue = ((int)c.getTimeInMillis());
+        if (timeoutaltValue == -1)
+            timeoutaltValue = ((int)c.getTimeInMillis());
 
         this.timein = utility.millisToHourTime(timeIn);
         this.timeout = utility.millisToHourTime(timeOut);
@@ -51,7 +63,7 @@ public class PeriodItem {
 
         this.periods = periods;
         String[] periodsArray = periods.split(":");
-        for (int i = 0; i < periodsArray.length; i++) {
+        for (int i = 0; i < 7; i++) {
             if (periodsArray[i].equals("0")) {
                 this.period[i] = false;
                 this.periodAlt[i] = false;
@@ -77,10 +89,10 @@ public class PeriodItem {
             if (occurrenceArray[i+2].equals("0")) {
                 days[i] = "0";
                 daysAlt[i] = "0";
-            } else if (occurrenceArray[i+2].equals("0")) {
+            } else if (occurrenceArray[i+2].equals("1")) {
                 days[i] = "1";
                 daysAlt[i] = "0";
-            } else if (occurrenceArray[i+2].equals("0")) {
+            } else if (occurrenceArray[i+2].equals("2")) {
                 days[i] = "0";
                 daysAlt[i] = "1";
             } else {
@@ -100,7 +112,6 @@ public class PeriodItem {
             builder.append(daysAlt[i]);
         }
         this.days_alt = builder.toString();
-
     }
 
 }

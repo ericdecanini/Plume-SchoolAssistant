@@ -87,7 +87,6 @@ public class PeopleActivity extends AppCompatActivity
     // UI Variables
     ImageView selfIconView;
     TextView selfNameView, flavourView;
-    View flavourBox;
 
     // UI Data
     String selfIconUri, selfName, flavour;
@@ -146,7 +145,6 @@ public class PeopleActivity extends AppCompatActivity
         selfIconView = (ImageView) findViewById(R.id.icon);
         selfNameView = (TextView) findViewById(R.id.name);
         flavourView = (TextView) findViewById(R.id.flavour);
-        flavourBox = findViewById(R.id.box);
         ImageView QRCodeView = (ImageView) findViewById(R.id.qr);
         TextView addPeersTextview = (TextView) findViewById(R.id.add_peer);
         listView = (ListView) findViewById(R.id.listView);
@@ -179,7 +177,7 @@ public class PeopleActivity extends AppCompatActivity
                 fragment.show(getSupportFragmentManager(), "dialog");
             }
         });
-        flavourBox.setOnClickListener(new View.OnClickListener() {
+        flavourView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FlavourDialogFragment fragment = FlavourDialogFragment.newInstance(flavour);
@@ -489,24 +487,39 @@ public class PeopleActivity extends AppCompatActivity
             if (resultCode == RESULT_OK) {
                 // Check if the QR Code is a user's Firebase ID
                 // Then get the id and send the intent to AddPeerActivity
-                String contents = data.getStringExtra("SCAN_RESULT");
-                DatabaseReference peerRef = FirebaseDatabase.getInstance().getReference()
+                final String contents = data.getStringExtra("SCAN_RESULT");
+                final DatabaseReference peerRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(contents);
 
-                if (contents.equals(mUserId)) {
-                    new AlertDialog.Builder(this).setTitle(getString(R.string.nice_try_title))
-                            .setMessage(getString(R.string.nice_try_message))
-                            .setPositiveButton(getString(R.string.ok), null)
-                            .show();
-                    return;
-                }
+                peerRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.getChildrenCount() > 0) {
+                            if (contents.equals(mUserId)) {
+                                new AlertDialog.Builder(PeopleActivity.this).setTitle(getString(R.string.nice_try_title))
+                                        .setMessage(getString(R.string.nice_try_message))
+                                        .setPositiveButton(getString(R.string.ok), null)
+                                        .show();
+                                return;
+                            }
 
-                if (peerRef != null) {
-                    // QR CODE IS LEGIT - SEND THE INTENT
-                    Intent intent = new Intent(this, AddPeerActivity.class);
-                    intent.putExtra("id", contents);
-                    startActivity(intent);
-                }
+                            Intent intent = new Intent(PeopleActivity.this, AddPeerActivity.class);
+                            intent.putExtra("id", contents);
+                            startActivity(intent);
+
+                        } else {
+                            new AlertDialog.Builder(PeopleActivity.this).setTitle(getString(R.string.error))
+                                    .setMessage(getString(R.string.invalid_qr_message))
+                                    .setPositiveButton(getString(R.string.ok), null)
+                                    .show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
             if(resultCode == RESULT_CANCELED){
                 //handle cancel

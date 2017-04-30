@@ -117,6 +117,12 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void deleteTaskTable() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS tasks");
+        onCreate(db);
+    }
+
     /**
      * Schedule Database Functions
      * getCursor
@@ -241,25 +247,25 @@ public class DbHelper extends SQLiteOpenHelper {
                 // Week 1 / Same week items
                 if (weekNumber.equals("0") || occurrence.split(":")[1].equals("0")) {
                     // Get the variables to check from the database
-                    String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
+                    Log.v(LOG_TAG, "TimeInValue: " + timeInValue);
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item and schedule the notification
-                    if (!timeIn.equals("")) {
+                    if (timeInValue > -1) {
                         arrayList.add(new Schedule(
                                 context,
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                 "", null
                         ));
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                         String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-                        long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
 
                         Calendar timeInCalendar = Calendar.getInstance();
                         timeInCalendar.setTimeInMillis(timeInValue);
@@ -285,8 +291,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                    "",
+                                    "",
                                     periodList.get(ii), null));
                         }
                     }
@@ -295,26 +301,26 @@ public class DbHelper extends SQLiteOpenHelper {
                 // Week 2: Use alternate data
                 else {
                     // Get the variables to check from the database
-                    String timeIn = utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
+                    Log.v(LOG_TAG, "TimeInAltValue: " + timeInValue);
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item
-                    if (!timeIn.equals("")) {
+                    if (timeInValue > -1) {
                         arrayList.add(new Schedule(
                                 context,
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 "", null
                         ));
 
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                         String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-                        long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
                         c.setTimeInMillis(timeInValue);
                         c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
                         ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
@@ -331,8 +337,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                    utility.millisToHourTime(cursor.getFloat(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                    "",
+                                    "",
                                     periodList.get(ii), null));
                         }
                     }
@@ -438,10 +444,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     bundle.putString("teacher", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)));
                     bundle.putString("room", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)));
                     bundle.putString("occurrence", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE)));
-                    bundle.putInt("timein", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
-                    bundle.putInt("timeout", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
-                    bundle.putInt("timeinalt", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
-                    bundle.putInt("timeoutalt", cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
+                    bundle.putLong("timein", cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)));
+                    bundle.putLong("timeout", cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)));
+                    bundle.putLong("timeinalt", cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)));
+                    bundle.putLong("timeoutalt", cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)));
                     bundle.putString("periods", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)));
                     bundle.putString("icon", cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON)));
 
@@ -456,7 +462,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public boolean insertSchedule(String title, String teacher, String room, String occurrence,
-                                  int timein, int timeout, int timeinalt, int timeoutalt,
+                                  long timein, long timeout, long timeinalt, long timeoutalt,
                                   String periods, String icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();

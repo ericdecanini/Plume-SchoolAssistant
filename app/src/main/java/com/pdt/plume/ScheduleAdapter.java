@@ -30,7 +30,7 @@ import java.util.ArrayList;
 public class ScheduleAdapter extends ArrayAdapter {
     String LOG_TAG = ScheduleAdapter.class.getSimpleName();
 
-    // Staple mScheduleAdapter variables
+    // Staple mTasksAdapter variables
     Context context;
     int layoutResourceId;
     ArrayList<Schedule> data = null;
@@ -50,10 +50,10 @@ public class ScheduleAdapter extends ArrayAdapter {
         View row = convertView;
         ViewHolder holder = null;
 
-        // Create a new list item using the data passed into the mScheduleAdapter
+        // Create a new list item using the data passed into the mTasksAdapter
         final Schedule schedule = data.get(position);
 
-        // If the row hasn't been used by the mScheduleAdapter before
+        // If the row hasn't been used by the mTasksAdapter before
         // create a new row
         if(row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
@@ -103,11 +103,12 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher.setText(schedule.scheduleTeacher);
             holder.room.setText(schedule.scheduleRoom);
 
+            Log.v(LOG_TAG, "Out: " + schedule.scheduleTimeOut + ", In: " + schedule.scheduleTimeIn);
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,
                         schedule.scheduleTimeIn));
-            } else if (schedule.scheduleTimeIn.equals(" "))
+            } else if (schedule.scheduleTimeIn.equals("") || schedule.scheduleTimeIn.equals(" "))
                 holder.timeIn.setText("");
             else {
                 // Time based format

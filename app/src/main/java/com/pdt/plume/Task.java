@@ -20,7 +20,7 @@ public class Task {
         super();
     }
 
-    // The global variables are accessed by the mScheduleAdapter
+    // The global variables are accessed by the mTasksAdapter
     // Set them using the input parameters
     public Task(String icon, String title, String sharer, String taskClass, String taskType,
                 String description, String attachment, float dueDate, float alarmTime,

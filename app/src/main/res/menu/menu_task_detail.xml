@@ -18,6 +18,7 @@
         android:id="@+id/action_time"
         android:icon="@drawable/ic_alarm_on_white_24dp"
         android:orderInCategory="50"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
 
     </menu>
