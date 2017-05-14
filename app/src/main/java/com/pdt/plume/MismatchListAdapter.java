@@ -30,7 +30,7 @@ import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
-
+import java.util.HashMap;
 
 
 public class MismatchListAdapter extends ArrayAdapter {
@@ -39,15 +39,15 @@ public class MismatchListAdapter extends ArrayAdapter {
 
     Context context;
     int layoutResourceId;
-    ArrayList<Bundle> data = null;
-    ArrayList<String> classTitles = new ArrayList<>();
-    ArrayList<String> classIcons = new ArrayList<>();
+    ArrayList<String> data = new ArrayList<>();
+    String uid;
 
-    public MismatchListAdapter(Context context, int layoutResourceId, ArrayList<Bundle> data) {
+    public MismatchListAdapter(Context context, int layoutResourceId, ArrayList<String> data, String uid) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+        this.uid = uid;
     }
 
     @NonNull
@@ -64,8 +64,6 @@ public class MismatchListAdapter extends ArrayAdapter {
             holder.title = (TextView) row.findViewById(R.id.title);
             holder.dropdown = (LinearLayout) row.findViewById(R.id.field_class_dropdown);
             holder.dropdownText = (TextView) row.findViewById(R.id.field_class_textview);
-            holder.dropdownText.setTag("null");
-            holder.dropdown.setTag(data.get(position).getString("icon"));
 
             // Add the dropdown to the linear layout
             final PopupMenu popupMenu = new PopupMenu(context, holder.dropdown);
@@ -76,20 +74,17 @@ public class MismatchListAdapter extends ArrayAdapter {
             String userId = firebaseUser.getUid();
             final DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
-            classesRef.addValueEventListener(new ValueEventListener() {
+            classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
                         // Roll through each class and add it to a list of Schedules
-                        ArrayList<Schedule> classesList = new ArrayList<>();
+                        final ArrayList<Schedule> classesList = new ArrayList<>();
                         String title = classSnapshot.getKey();
                         String icon = classSnapshot.child("icon").getValue(String.class);
                         String teacher = classSnapshot.child("teacher").getValue(String.class);
                         String room = classSnapshot.child("room").getValue(String.class);
-                        classesList.add(new Schedule(context, icon, title, teacher, room, "", "", "", null));
-
-                        classTitles.add(title);
-                        classIcons.add(icon);
+                        classesList.add(new Schedule(context, icon, title, teacher, room, "", "", ""));
 
                         for (int i = 0; i < classesList.size(); i++) {
                             popupMenu.getMenu().add(classesList.get(i).scheduleLesson);
@@ -98,54 +93,77 @@ public class MismatchListAdapter extends ArrayAdapter {
                         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem menuItem) {
-                                Bundle bundle = data.get(position);
                                 if (menuItem.getTitle().equals(context.getString(R.string.add_new_class))) {
                                     // Get the data of the class and add it as a new class
-                                    DatabaseReference newClassRef = classesRef.child(bundle.getString("title"));
-                                    // Get key data first
-                                    newClassRef.child("icon").setValue(bundle.getString("icon"));
-                                    newClassRef.child("teacher").setValue(bundle.getString("teacher"));
-                                    newClassRef.child("room").setValue(bundle.getString("room"));
-                                    // Get all the listed data
-                                    ArrayList<String> occurrences = bundle.getStringArrayList("occurrence");
-                                    ArrayList<Integer> timeins = bundle.getIntegerArrayList("timein");
-                                    ArrayList<Integer> timeouts = bundle.getIntegerArrayList("timeout");
-                                    ArrayList<Integer> timeinalts = bundle.getIntegerArrayList("timeinalt");
-                                    ArrayList<Integer> timeoutalts = bundle.getIntegerArrayList("timeoutalt");
-                                    ArrayList<String> periods = bundle.getStringArrayList("periods");
+                                    final String title = data.get(position);
+                                    final DatabaseReference newClassRef = classesRef.child(title);
 
-                                    for (int i = 0; i < occurrences.size(); i++)
-                                        newClassRef.child("occurrence").child(occurrences.get(i)).setValue("");
+                                    Log.v(LOG_TAG, "UID: " + uid + ", newClassRef: " + newClassRef + ", Title: " + title);
+                                    FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(uid).child("classes")
+                                            .child(title).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            String icon = dataSnapshot.child("icon").getValue(String.class);
+                                            String teacher = dataSnapshot.child("teacher").getValue(String.class);
+                                            String room = dataSnapshot.child("room").getValue(String.class);
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("occurrence").getChildren()) {
+                                                newClassRef.child("occurrence").child(arraySnapshot.getKey()).setValue("");
+                                            }
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("periods").getChildren()) {
+                                                newClassRef.child("periods").child(arraySnapshot.getKey()).setValue("");
+                                            }
+                                            int i1 = 0;
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("timein").getChildren()) {
+                                                newClassRef.child("timein").child(String.valueOf(i1)).setValue(arraySnapshot.getValue(long.class));
+                                                i1++;
+                                            }
+                                            int i2 = 0;
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("timeout").getChildren()) {
+                                                newClassRef.child("timeout").child(String.valueOf(i2)).setValue(arraySnapshot.getValue(long.class));
+                                                i2++;
+                                            }
+                                            int i3 = 0;
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("timeinalt").getChildren()) {
+                                                newClassRef.child("timeinalt").child(String.valueOf(i3)).setValue(arraySnapshot.getValue(long.class));
+                                                i3++;
+                                            }
+                                            int i4 = 0;
+                                            for (DataSnapshot arraySnapshot: dataSnapshot.child("timeoutalt").getChildren()) {
+                                                newClassRef.child("timeoutalt").child(String.valueOf(i4)).setValue(arraySnapshot.getValue(long.class));
+                                                i4++;
+                                            }
 
-                                    for (int i = 0; i < timeins.size(); i++)
-                                        newClassRef.child("timein").child(String.valueOf(i)).setValue(timeins.get(i));
+                                            newClassRef.child("icon").setValue(icon);
+                                            newClassRef.child("teacher").setValue(teacher);
+                                            newClassRef.child("room").setValue(room);
 
-                                    for (int i = 0; i < timeouts.size(); i++)
-                                        newClassRef.child("timeout").child(String.valueOf(i)).setValue(timeouts.get(i));
+                                            popupMenu.getMenu().add(title);
+                                            holder.dropdownText.setText(title);
+                                            holder.dropdownText.setTag(title);
+                                            holder.dropdown.setTag(icon);
+                                        }
 
-                                    for (int i = 0; i < timeinalts.size(); i++)
-                                        newClassRef.child("timeinalt").child(String.valueOf(i)).setValue(timeinalts.get(i));
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
 
-                                    for (int i = 0; i < timeoutalts.size(); i++)
-                                        newClassRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeoutalts.get(i));
+                                        }
+                                    });
 
-                                    for (int i = 0; i < periods.size(); i++)
-                                        newClassRef.child("periods").child(periods.get(i)).setValue("");
-
-                                    Toast.makeText(context, bundle.getString("title") + " " + context.getString(R.string.new_schedule_toast_class_inserted), Toast.LENGTH_SHORT).show();
-                                    holder.dropdownText.setText(bundle.getString("title"));
-                                    holder.dropdownText.setTag(bundle.getString("title"));
                                 } else {
                                     holder.dropdownText.setText(menuItem.getTitle());
                                     holder.dropdownText.setTag(menuItem.getTitle());
                                     int position = -1;
-                                    for (int i = 0; i < classTitles.size(); i++)
-                                        if (classTitles.get(i).equals(menuItem.getTitle()))
+                                    for (int i = 0; i < data.size(); i++)
+                                        if (data.get(i).equals(menuItem.getTitle()))
                                             position = i;
 
-                                    String icon = classIcons.get(position);
-                                    if (position != -1)
+
+                                    if (position != -1){
+                                        String icon = data.get(position);
                                         holder.dropdown.setTag(icon);
+                                    }
+
                                 }
                                 return true;
                             }
@@ -176,7 +194,7 @@ public class MismatchListAdapter extends ArrayAdapter {
             holder = (ViewHolder) row.getTag();
         }
 
-        holder.title.setText(data.get(position).getString("title"));
+        holder.title.setText(data.get(position));
 
         return row;
     }

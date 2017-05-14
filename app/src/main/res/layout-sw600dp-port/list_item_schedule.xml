@@ -20,7 +20,6 @@
             android:id="@+id/schedule_teacher"
             android:layout_width="wrap_content"
             android:maxLines="1"
-            android:text="Mrs. Welch"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textColor="@color/black_0.54"
@@ -28,20 +27,18 @@
         <TextView
             android:id="@+id/schedule_room"
             android:layout_width="wrap_content"
-            android:text="102"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:maxLines="1"
             android:textColor="@color/black_0.54"
             android:layout_marginTop="2dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp"/>q
         <TextView
             android:id="@+id/schedule_time_in"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:layout_gravity="bottom|end"
-            android:text="1st period"
             android:maxLines="1"
             android:layout_marginBottom="8dp"
             android:textColor="@color/black_0.54"/>
@@ -63,7 +60,6 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_gravity="center"
-                android:src="@drawable/art_maths_64dp"
                 android:transitionName="@string/INTENT_EXTRA_TRANSITION" />
 
             <com.pdt.plume.CircularImageView
@@ -81,7 +77,6 @@
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
-            android:text="Maths"
             android:textColor="@color/black_0.87"
             android:textSize="16sp" />
     </LinearLayout>

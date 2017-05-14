@@ -17,7 +17,7 @@
         android:gravity="center_vertical"
         android:background="@drawable/touch_selector"
         android:orientation="horizontal"
-        android:paddingBottom="12dp">
+        android:paddingBottom="@dimen/margin_line_spacing_large">
 
         <FrameLayout
             android:layout_width="0dp"
@@ -38,6 +38,7 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/textView9"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/class_time_one_timebased"
@@ -47,7 +48,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_description_timebased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -57,7 +58,7 @@
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_example_timebased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -78,8 +79,8 @@
         android:gravity="center_vertical"
         android:background="@drawable/touch_selector"
         android:orientation="horizontal"
-        android:paddingBottom="12dp"
-        android:paddingTop="12dp">
+        android:paddingBottom="@dimen/margin_line_spacing_large"
+        android:paddingTop="@dimen/margin_line_spacing_large">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -110,7 +111,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_description_periodbased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -119,7 +120,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_example_periodbased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -140,8 +141,8 @@
         android:gravity="center_vertical"
         android:background="@drawable/touch_selector"
         android:orientation="horizontal"
-        android:paddingBottom="12dp"
-        android:paddingTop="12dp">
+        android:paddingBottom="@dimen/margin_line_spacing_large"
+        android:paddingTop="@dimen/margin_line_spacing_large">
 
         <FrameLayout
             android:layout_width="0dp"
@@ -171,7 +172,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_description_blockbased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -181,7 +182,7 @@
                 android:id="@+id/textView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_example_blockbased"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"

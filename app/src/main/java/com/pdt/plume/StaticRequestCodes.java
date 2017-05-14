@@ -20,4 +20,7 @@ public class StaticRequestCodes {
     public static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 12;
     public static final int REQUEST_PERMISSION_CAMERA = 13;
 
+    // LoginActivity
+    public static final int REQUEST_GOOGLE_SIGNIN = 14;
+
 }

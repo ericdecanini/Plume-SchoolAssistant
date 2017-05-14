@@ -20,6 +20,13 @@
             android:entryValues="@array/settings_week_type_values"
             android:defaultValue="0" />
 
+        <ListPreference
+            android:key="@string/KEY_WEEK_NUMBER"
+            android:title="@string/week_number"
+            android:entries="@array/settings_week_number_entries"
+            android:entryValues="@array/settings_week_number_values"
+            android:defaultValue="0" />
+
         <com.pdt.plume.NumberPickerPreference
             android:defaultValue="30"
             android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
@@ -29,13 +36,6 @@
         <CheckBoxPreference
             android:key="@string/KEY_SETTINGS_CLASS_MUTE"
             android:title="@string/settings_class_mute_title" />
-
-        <ListPreference
-            android:key="@string/KEY_WEEK_NUMBER_SETTING"
-            android:title="@string/week_number"
-            android:entries="@array/settings_week_number_entries"
-            android:entryValues="@array/settings_week_number_values"
-            android:defaultValue="0" />
 
     </com.pdt.plume.ColouredPreferenceCategory>
     <com.pdt.plume.ColouredPreferenceCategory
@@ -51,7 +51,7 @@
             android:key="@string/KEY_SETTINGS_DATE_FORMAT"
             android:entries="@array/settings_date_format_entries"
             android:entryValues="@array/settings_date_format_values"
-            android:defaultValue="EEE, MMMM d, yyyy"/>
+            android:defaultValue="EEE, MMMM d yyyy"/>
 
         <ListPreference
             android:title="@string/settings_block_format_title"
@@ -59,6 +59,13 @@
             android:entries="@array/settings_block_format_entries"
             android:entryValues="@array/settings_block_format_values"
             android:defaultValue="d:l" />
+
+        <ListPreference
+            android:title="@string/settings_week_format_title"
+            android:key="@string/KEY_SETTINGS_WEEK_FORMAT"
+            android:entries="@array/settings_week_format_entries"
+            android:entryValues="@array/settings_week_format_values"
+            android:defaultValue="w:l" />
 
     </com.pdt.plume.ColouredPreferenceCategory>
 
@@ -70,9 +77,9 @@
             android:title="@string/settings_about_plume_title"
             android:key="@string/KEY_SETTINGS_ABOUT_PLUME" />
 
-        <Preference
-            android:title="@string/settings_changelog"
-            android:key="@string/KEY_SETTINGS_CHANGELOG" />
+        <!--<Preference-->
+            <!--android:title="@string/settings_changelog"-->
+            <!--android:key="@string/KEY_SETTINGS_CHANGELOG" />-->
 
     </com.pdt.plume.ColouredPreferenceCategory>
 

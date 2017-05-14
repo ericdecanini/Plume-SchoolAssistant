@@ -11,6 +11,7 @@
     <dimen name="nav_header_height">132dp</dimen>
 
     <dimen name="def_icon_size">72dp</dimen>
+    <dimen name="def_icon_resolution">108dp</dimen>
 
     <!-- Intro Screen Dimensions -->
     <dimen name="dots_height">30dp</dimen>
@@ -22,6 +23,14 @@
 
     <!-- APP BAR DIMENSIONS -->
     <dimen name="extended_app_bar_height">172dp</dimen>
+    <dimen name="extended_app_bar_height_classes">172dp</dimen>
     <dimen name="extended_app_bar_height_newschedule">124dp</dimen>
+
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="list_item_padding">16dp</dimen>
+
+    <dimen name="profile_icon_size">72dp</dimen>
+    <dimen name="nickname_text_size">20sp</dimen>
+    <dimen name="margin_line_spacing_large">12dp</dimen>
 
 </resources>

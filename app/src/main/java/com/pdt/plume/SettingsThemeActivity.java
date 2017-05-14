@@ -44,29 +44,6 @@ public class SettingsThemeActivity extends PreferenceActivity
     int mPrimaryColor;
     int mDarkColor;
 
-    private Drawable[] mThumbIds = {
-            new ColorDrawable(Color.parseColor("#F44336")),
-            new ColorDrawable(Color.parseColor("#E91E63")),
-            new ColorDrawable(Color.parseColor("#9C27B0")),
-            new ColorDrawable(Color.parseColor("#673AB7")),
-            new ColorDrawable(Color.parseColor("#3F51B5")),
-            new ColorDrawable(Color.parseColor("#2196F3")),
-            new ColorDrawable(Color.parseColor("#03A9F4")),
-            new ColorDrawable(Color.parseColor("#00BCD4")),
-            new ColorDrawable(Color.parseColor("#009688")),
-            new ColorDrawable(Color.parseColor("#4CAF50")),
-            new ColorDrawable(Color.parseColor("#8BC34A")),
-            new ColorDrawable(Color.parseColor("#C0CA33")),
-            new ColorDrawable(Color.parseColor("#FBC02D")),
-            new ColorDrawable(Color.parseColor("#FFC107")),
-            new ColorDrawable(Color.parseColor("#FF9800")),
-            new ColorDrawable(Color.parseColor("#FF5722")),
-            new ColorDrawable(Color.parseColor("#795548")),
-            new ColorDrawable(Color.parseColor("#9E9E9E")),
-            new ColorDrawable(Color.parseColor("#607D8B")),
-            new ColorDrawable(Color.parseColor("#212121"))
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
@@ -149,7 +126,11 @@ public class SettingsThemeActivity extends PreferenceActivity
         GridView gridView = new GridView(this);
         final AlertDialog dialog;
 
-        gridView.setAdapter(new ColorsAdapter(this));
+        final int[] thumbIds;
+        if (setting == 0) thumbIds = getResources().getIntArray(R.array.primaryColours);
+        else thumbIds = getResources().getIntArray(R.array.secondaryColours);
+
+        gridView.setAdapter(new ColorsAdapter(this, thumbIds));
         gridView.setNumColumns(4);
         gridView.setPadding(8, 16, 8, 16);
         gridView.setGravity(Gravity.CENTER);
@@ -161,8 +142,7 @@ public class SettingsThemeActivity extends PreferenceActivity
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Drawable drawable = mThumbIds[position];
-                int color = ((ColorDrawable) drawable).getColor();
+                int color = thumbIds[position];
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SettingsThemeActivity.this);
                 SharedPreferences.Editor editor = preferences.edit();
                 if (setting == 0) {

@@ -2,8 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:background="@drawable/touch_selector"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
+    android:paddingLeft="@dimen/list_item_padding"
+    android:paddingRight="@dimen/list_item_padding"
     android:layout_marginTop="12dp"
     android:layout_marginBottom="12dp"
     android:layout_height="wrap_content" >
@@ -19,7 +19,6 @@
         <ImageView
             android:id="@+id/schedule_icon"
             android:transitionName="@string/INTENT_EXTRA_TRANSITION"
-            android:src="@drawable/art_maths_64dp"
             android:layout_gravity="center"
             android:layout_width="64dp"
             android:layout_height="64dp" />
@@ -34,7 +33,6 @@
         <TextView
             android:id="@+id/schedule_lesson"
             android:layout_width="wrap_content"
-            android:text="Maths"
             android:layout_height="wrap_content"
             android:textColor="@color/black_0.87"
             android:layout_marginLeft="8dp"
@@ -51,7 +49,6 @@
         <TextView
             android:id="@+id/schedule_teacher"
             android:layout_width="wrap_content"
-            android:text="Mrs. Welch"
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:textColor="@color/black_0.54"
@@ -59,7 +56,6 @@
         <TextView
             android:id="@+id/schedule_room"
             android:layout_width="wrap_content"
-            android:text="102"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="@color/black_0.54"
@@ -71,7 +67,6 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:layout_gravity="bottom|end"
-            android:text="1st period"
             android:layout_marginBottom="8dp"
             android:textColor="@color/black_0.54"/>
 

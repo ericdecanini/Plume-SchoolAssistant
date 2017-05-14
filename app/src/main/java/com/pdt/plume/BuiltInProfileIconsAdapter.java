@@ -48,9 +48,10 @@ public class BuiltInProfileIconsAdapter extends BaseAdapter {
     private Integer[] mThumbIds = {
             R.drawable.art_profile_default,
             R.drawable.art_profile_uniform,
+            R.drawable.art_profile_uniform_female,
             R.drawable.art_profile_blazer,
+            R.drawable.art_profile_blazer_female,
             R.drawable.art_profile_mustache,
-            R.drawable.art_profile_blazerpanda,
-            R.drawable.art_profile_alien
+            R.drawable.art_profile_pandakun
     };
 }

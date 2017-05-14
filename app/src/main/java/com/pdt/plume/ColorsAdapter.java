@@ -18,11 +18,16 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-public class ColorsAdapter extends BaseAdapter {
-    private Context mContext;
+import java.util.ArrayList;
 
-    public ColorsAdapter(Context c) {
+public class ColorsAdapter extends BaseAdapter {
+
+    private Context mContext;
+    private int[] mThumbIds;
+
+    public ColorsAdapter(Context c, int[] colours) {
         mContext = c;
+        this.mThumbIds = colours;
     }
 
     public int getCount() {
@@ -50,14 +55,14 @@ public class ColorsAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
-        imageView.setImageDrawable(mThumbIds[position]);
-        int color = ((ColorDrawable)mThumbIds[position]).getColor();
+        imageView.setImageDrawable(new ColorDrawable(mThumbIds[position]));
+        int color = (new ColorDrawable(mThumbIds[position])).getColor();
         int scale = (int) mContext.getResources().getDisplayMetrics().density;
         Bitmap colorBitmap = Bitmap.createBitmap(40 * scale, 40 * scale, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(colorBitmap);
         canvas.drawColor(color);
         Bitmap bitmap = getRoundedCornerBitmap(colorBitmap,
-                (int) mContext.getResources().getDimension(R.dimen.def_icon_size));
+                (int) mContext.getResources().getDimension(R.dimen.def_icon_resolution));
         imageView.setImageBitmap(bitmap);
         return imageView;
     }
@@ -83,27 +88,4 @@ public class ColorsAdapter extends BaseAdapter {
         return output;
     }
 
-    // references to our images
-    private Drawable[] mThumbIds = {
-            new ColorDrawable(Color.parseColor("#F44336")),
-            new ColorDrawable(Color.parseColor("#E91E63")),
-            new ColorDrawable(Color.parseColor("#9C27B0")),
-            new ColorDrawable(Color.parseColor("#673AB7")),
-            new ColorDrawable(Color.parseColor("#3F51B5")),
-            new ColorDrawable(Color.parseColor("#2196F3")),
-            new ColorDrawable(Color.parseColor("#03A9F4")),
-            new ColorDrawable(Color.parseColor("#00BCD4")),
-            new ColorDrawable(Color.parseColor("#009688")),
-            new ColorDrawable(Color.parseColor("#4CAF50")),
-            new ColorDrawable(Color.parseColor("#8BC34A")),
-            new ColorDrawable(Color.parseColor("#C0CA33")),
-            new ColorDrawable(Color.parseColor("#FBC02D")),
-            new ColorDrawable(Color.parseColor("#FFC107")),
-            new ColorDrawable(Color.parseColor("#FF9800")),
-            new ColorDrawable(Color.parseColor("#FF5722")),
-            new ColorDrawable(Color.parseColor("#795548")),
-            new ColorDrawable(Color.parseColor("#9E9E9E")),
-            new ColorDrawable(Color.parseColor("#607D8B")),
-            new ColorDrawable(Color.parseColor("#212121"))
-    };
 }

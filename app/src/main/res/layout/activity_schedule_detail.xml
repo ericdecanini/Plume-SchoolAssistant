@@ -10,7 +10,7 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="192dp"
+        android:layout_height="@dimen/extended_app_bar_height"
         android:fitsSystemWindows="true"
         android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -25,7 +25,7 @@
             <View
                 android:id="@+id/revealBackground"
                 android:layout_width="match_parent"
-                android:layout_height="192dp"
+                android:layout_height="@dimen/extended_app_bar_height"
                 android:paddingTop="24dp"
                 android:background="@color/colorPrimary">
             </View>
@@ -33,7 +33,7 @@
             <View
                 android:id="@+id/reveal"
                 android:layout_width="match_parent"
-                android:layout_height="192dp"
+                android:layout_height="@dimen/extended_app_bar_height"
                 android:paddingTop="24dp"
                 android:background="@color/colorPrimary">
             </View>
@@ -92,7 +92,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Room 204"
                     android:textColor="@color/black_0.54"
                     android:textSize="20sp" />
 
@@ -101,7 +100,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Mr Smith"
                     android:textColor="@color/black_0.54"
                     android:textSize="18sp" />
 
@@ -128,32 +126,17 @@
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:paddingTop="4dp">
 
-                    <View
-                        android:layout_width="36dp"
-                        android:layout_height="3dp"
-                        android:layout_gravity="bottom"
-                        android:background="@color/gray_500" />
-
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="2dp"
                         android:layout_marginBottom="6dp"
                         android:layout_marginTop="16dp"
                         android:text="@string/schedule_detail_tasks_title"
                         android:textColor="@color/black_0.54"
                         android:textSize="20sp" />
 
-                    <TextView
-                        android:id="@+id/add_task"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:background="@color/white"
-                        android:paddingRight="@dimen/activity_horizontal_margin"
-                        android:paddingTop="8dp"
-                        android:text="@string/schedule_detail_add_task"
-                        android:textColor="@color/colorPrimary" />
                 </FrameLayout>
 
                 <com.pdt.plume.NonScrollListView
@@ -188,19 +171,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:layout_marginLeft="22dp"
+                        android:layout_marginStart="22dp"
                         android:layout_marginTop="16dp"
                         android:text="@string/schedule_detail_notes_title"
                         android:textColor="@color/black_0.54"
                         android:textSize="20sp" />
-
-                    <View
-                        android:layout_width="36dp"
-                        android:layout_height="3dp"
-                        android:layout_gravity="bottom"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:background="@color/gray_500" />
 
                     <TextView
                         android:id="@+id/schedule_detail_notes_textview"
@@ -240,19 +216,12 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_marginLeft="22dp"
+                    android:layout_marginStart="22dp"
                     android:layout_marginTop="16dp"
                     android:text="@string/schedule_detail_periods_title"
                     android:textColor="@color/black_0.54"
                     android:textSize="20sp" />
-
-                <View
-                    android:layout_width="48dp"
-                    android:layout_height="3dp"
-                    android:layout_gravity="bottom"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="4dp"
-                    android:background="@color/gray_500" />
 
                 <com.pdt.plume.NonScrollListView
                     android:id="@+id/schedule_detail_periods_list"
@@ -260,7 +229,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"/>
             </LinearLayout>
 
         </LinearLayout>

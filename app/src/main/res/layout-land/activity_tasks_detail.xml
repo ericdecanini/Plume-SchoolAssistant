@@ -1,0 +1,269 @@
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/master_layout"
+    android:background="@drawable/bg_grey_tiled"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.pdt.plume.ScheduleDetailFragment">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/extended_app_bar_height"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:expandedTitleTextAppearance="?android:attr/textAppearanceSmall"
+            app:expandedTitleMarginBottom="73dp"
+            app:expandedTitleMarginEnd="72dp"
+            app:expandedTitleMarginStart="76dp"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <View
+                android:id="@+id/revealBackground"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/extended_app_bar_height"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
+
+            <View
+                android:id="@+id/reveal"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/extended_app_bar_height"
+                android:paddingTop="24dp"
+                android:background="@color/colorPrimary">
+            </View>
+
+            <TextView
+                android:id="@+id/task_detail_timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="32dp"
+                android:layout_marginRight="64dp"
+                android:layout_marginEnd="64dp"
+                android:layout_marginLeft="48dp"
+                android:layout_marginStart="48dp"
+                app:layout_collapseMode="parallax"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin" />
+
+            <TextView
+                android:id="@+id/collapsingToolbarSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/abc_text_size_subhead_material"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                app:layout_collapseMode="parallax"
+                android:layout_gravity="bottom"/>
+
+            <TextView
+                android:id="@+id/task_detail_duedate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:textSize="14sp"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                app:layout_collapseMode="parallax"
+                android:paddingBottom="8dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/white" />
+
+        </android.support.design.widget.CollapsingToolbarLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <com.pdt.plume.CircularImageView
+        android:id="@+id/temp_icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginLeft="16dp"
+        android:transitionName="@string/INTENT_EXTRA_TRANSITION"
+        android:minHeight="48dp"
+        android:minWidth="48dp" />
+
+    <View
+        android:id="@+id/reveal2"
+        android:layout_marginTop="28dp"
+        android:layout_marginLeft="16dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:paddingTop="56dp" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:background="@color/white"
+                android:layout_height="56dp">
+                <TextView
+                    android:id="@+id/mark_as_done"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:textColor="@color/colorPrimary"
+                    android:text="@string/mark_as_done"
+                    android:textSize="14sp"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray_200"
+                    android:layout_gravity="bottom"/>
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/description_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/gray_50"
+                android:paddingBottom="34dp"
+                android:paddingTop="34dp"
+                android:paddingLeft="40dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/task_detail_description"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="6"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/black_0.54" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="2" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:id="@+id/task_detail_photo_layout">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/dividerColor" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_photo_camera_black_32dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:tint="@color/gray_700" />
+
+                    <!--<ImageView-->
+                    <!--android:id="@+id/task_detail_photo"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:adjustViewBounds="true"-->
+                    <!--android:layout_gravity="center_horizontal"/>-->
+
+                </FrameLayout>
+
+
+
+            </LinearLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/task_attachment_layout"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp">
+
+                <View
+                    android:id="@+id/task_attachment_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/dividerColor" />
+
+                <ImageView
+                    android:id="@+id/task_detail_attachment_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/task_attachment_divider"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:src="@drawable/ic_attachment_black_24dp"
+                    android:tint="@color/gray_700" />
+
+                <TextView
+                    android:id="@+id/task_detail_attachment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/task_attachment_divider"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_toEndOf="@id/task_detail_attachment_icon"
+                    android:layout_toRightOf="@id/task_detail_attachment_icon"
+                    android:text="September 5, 2000"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/black" />
+            </RelativeLayout>
+
+            <View
+                android:id="@+id/task_photo_divider"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/dividerColor" />
+
+            <LinearLayout
+                android:id="@+id/photos_layout"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/backgroundColor"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

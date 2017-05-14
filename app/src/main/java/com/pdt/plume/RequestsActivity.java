@@ -58,11 +58,11 @@ public class RequestsActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser == null) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+            if (isTablet) startActivity(new Intent(this, LoginActivityTablet.class));
+            else new Intent(this, LoginActivityTablet.class);
             return;
         }
-
 
         // Initialise the progress bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
@@ -75,25 +75,6 @@ public class RequestsActivity extends AppCompatActivity {
         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), mPrimaryColor);
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
@@ -105,7 +86,6 @@ public class RequestsActivity extends AppCompatActivity {
 
         // Inflate the list
         setRequestsListAdapater();
-
     }
 
     private void setRequestsListAdapater() {
@@ -198,14 +178,22 @@ public class RequestsActivity extends AppCompatActivity {
             peerArrayList.add(new Peer(userIconList.get(i), userNameList.get(i)));
 
         ListView listView = (ListView) findViewById(R.id.listView);
-        PeerAdapter adapter = new PeerAdapter(this, R.layout.list_item_peer, peerArrayList);
+        int layout;
+        if (getResources().getBoolean(R.bool.isTablet))
+            layout = R.layout.list_item_peer2;
+        else layout = R.layout.list_item_peer;
+        PeerAdapter adapter = new PeerAdapter(this, layout, peerArrayList);
         listView.setAdapter(adapter);
         spinner.setVisibility(View.GONE);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(RequestsActivity.this, AcceptPeerActivity.class);
+                Class activity;
+                if (getResources().getBoolean(R.bool.isTablet))
+                    activity = AcceptPeerActivityTablet.class;
+                else activity = AcceptPeerActivity.class;
+                Intent intent = new Intent(RequestsActivity.this, activity);
                 intent.putExtra("requestingUserId", userIdList.get(i));
                 intent.putExtra("icon", userIconList.get(i));
                 intent.putExtra("name", userNameList.get(i));

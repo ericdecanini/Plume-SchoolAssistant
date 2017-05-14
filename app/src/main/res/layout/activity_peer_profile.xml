@@ -30,8 +30,9 @@
 
             <com.pdt.plume.CircularImageView
                 android:id="@+id/icon"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="@dimen/profile_icon_size"
+                android:layout_height="@dimen/profile_icon_size"
+                android:src="@drawable/art_profile_default"
                 android:layout_gravity="center"
                 android:background="@drawable/circle_white"
                 android:padding="8dp"
@@ -42,17 +43,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="Pandakun"
+                android:layout_marginTop="8dp"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="@dimen/nickname_text_size" />
 
             <TextView
                 android:id="@+id/flavour"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                android:text="To be or not to be"
+                android:layout_marginTop="6dp"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -71,7 +71,6 @@
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
             android:layout_marginTop="16dp"
             android:text="@string/classes_you_share"
             android:textColor="@color/black_0.54"
@@ -84,7 +83,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp" />
 
     <View
         android:layout_width="match_parent"

@@ -7,6 +7,7 @@ import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -103,7 +104,12 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     private View mRevealBackgroundView2;
     private AppBarLayout mToolbar;
 
+    // Flags
+    boolean isLandscape;
+    boolean transitioning = false;
+
     private void executeEnterTransition() {
+        transitioning = false;
         mToolbar = (AppBarLayout) findViewById(R.id.appbar);
 
         // Explode the icon into the circle reveal
@@ -171,6 +177,11 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isLandscape = getResources().getBoolean(R.bool.isLandscape);
+        if (savedInstanceState != null) transitioning = false;
+        else transitioning = true;
+        if (isLandscape) transitioning = false;
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) transitioning = false;
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -184,35 +195,40 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_schedule_detail);
         final String icon = getIntent().getStringExtra("icon");
         ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
+        if (isLandscape) findViewById(R.id.temp_icon).setVisibility(View.INVISIBLE);
 
         // Add a listener to the shared transition
-        Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
-        sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
-            @Override
-            public void onTransitionStart(Transition transition) {
+        findViewById(R.id.temp_icon).setAlpha(0);
 
-            }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
+            sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
+                @Override
+                public void onTransitionStart(Transition transition) {
+                    findViewById(R.id.temp_icon).setAlpha(1);
+                    transitioning = true;
+                }
 
-            @Override
-            public void onTransitionEnd(Transition transition) {
-                executeEnterTransition();
-            }
+                @Override
+                public void onTransitionEnd(Transition transition) {
+                    executeEnterTransition();
+                }
 
-            @Override
-            public void onTransitionCancel(Transition transition) {
+                @Override
+                public void onTransitionCancel(Transition transition) {
+                }
 
-            }
+                @Override
+                public void onTransitionPause(Transition transition) {
 
-            @Override
-            public void onTransitionPause(Transition transition) {
+                }
 
-            }
+                @Override
+                public void onTransitionResume(Transition transition) {
 
-            @Override
-            public void onTransitionResume(Transition transition) {
-
-            }
-        });
+                }
+            });
+        }
 
         // Get references to the UI elements
         final TextView teacherTextview = (TextView) findViewById(R.id.teacher);
@@ -474,42 +490,49 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                                Log.v(LOG_TAG, "IconUri: " + iconUri);
+
                                 Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
                                     @Override
                                     public void onGenerated(Palette palette) {
                                         int mainColour;
 
-                                        if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                                        if (iconUri.toString().contains("art_arts_64dp"))
                                             mainColour = Color.parseColor("#29235C");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                                        else if (iconUri.toString().contains("art_business_64dp"))
                                             mainColour = Color.parseColor("#575756");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                                        else if (iconUri.toString().contains("art_chemistry_64dp"))
                                             mainColour = Color.parseColor("#006838");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                                        else if (iconUri.toString().contains("art_cooking_64dp"))
                                             mainColour = Color.parseColor("#A48A7B");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                                        else if (iconUri.toString().contains("art_drama_64dp"))
                                             mainColour = Color.parseColor("#7B6A58");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                                        else if (iconUri.toString().contains("art_engineering_64dp"))
                                             mainColour = Color.parseColor("#9E9E9E");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                                        else if (iconUri.toString().contains("art_ict_64dp"))
                                             mainColour = Color.parseColor("#936037");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                                        else if (iconUri.toString().contains("art_media_64dp"))
                                             mainColour = Color.parseColor("#F39200");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                                        else if (iconUri.toString().contains("art_music_64dp"))
                                             mainColour = Color.parseColor("#432918");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                                        else if (iconUri.toString().contains("art_re_64dp"))
                                             mainColour = Color.parseColor("#D35095");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                                        else if (iconUri.toString().contains("art_science_64dp"))
                                             mainColour = Color.parseColor("#1D1D1B");
-                                        else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                                        else if (iconUri.toString().contains("art_woodwork_64dp"))
                                             mainColour = Color.parseColor("#424242");
                                         else {
                                             // Set the action bar colour according to the theme
                                             mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
                                                     getResources().getColor(R.color.colorPrimary)));
+                                            ColorStateList a = ColorStateList.valueOf(mainColour);
+                                            ColorStateList b = ColorStateList.valueOf(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                                    getResources().getColor(R.color.colorPrimary)));
+                                            if (a.equals(b))
+                                                findViewById(R.id.temp_icon).setVisibility(View.GONE);
                                         }
 
+                                        if (!iconUri.toString().contains("art_"))
+                                            mainColour = mPrimaryColor;
                                         mPrimaryColor = mainColour;
                                         float[] hsv = new float[3];
                                         int color = mainColour;
@@ -518,13 +541,33 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         mDarkColor = Color.HSVToColor(hsv);
                                         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
-                                        collapsingToolbar.setBackgroundColor(mPrimaryColor);
+//                                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
+//                                            mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+
+                                        if (!transitioning) {
+                                            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+
+                                            mRevealView = findViewById(R.id.reveal);
+                                            mRevealView2 = findViewById(R.id.reveal2);
+                                            mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                                            mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+                                            mRevealView.setVisibility(View.INVISIBLE);
+                                            mRevealView2.setVisibility(View.INVISIBLE);
+                                            mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                                            mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                                collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                                            } else {
+                                                collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                                            }
+                                        }
 
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                             getWindow().setStatusBarColor(mDarkColor);
                                         }
 
-                                        // Initialise Notes
+                                        // Initialise Notes and Tasks
                                         TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
                                         notesTextview.setTextColor(mPrimaryColor);
                                     }
@@ -535,7 +578,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onCancelled(DatabaseError databaseError) {
                             }
                         });
-
 
                     }
 
@@ -613,36 +655,37 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                         public void onGenerated(Palette palette) {
                             int mainColour;
 
-                            if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                            if (iconUri.toString().contains("art_arts_64dp"))
                                 mainColour = Color.parseColor("#29235C");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                            else if (iconUri.toString().contains("art_business_64dp"))
                                 mainColour = Color.parseColor("#575756");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                            else if (iconUri.toString().contains("art_chemistry_64dp"))
                                 mainColour = Color.parseColor("#006838");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                            else if (iconUri.toString().contains("art_cooking_64dp"))
                                 mainColour = Color.parseColor("#A48A7B");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                            else if (iconUri.toString().contains("art_drama_64dp"))
                                 mainColour = Color.parseColor("#7B6A58");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                            else if (iconUri.toString().contains("art_engineering_64dp"))
                                 mainColour = Color.parseColor("#9E9E9E");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                            else if (iconUri.toString().contains("art_ict_64dp"))
                                 mainColour = Color.parseColor("#936037");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                            else if (iconUri.toString().contains("art_media_64dp"))
                                 mainColour = Color.parseColor("#F39200");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                            else if (iconUri.toString().contains("art_music_64dp"))
                                 mainColour = Color.parseColor("#432918");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                            else if (iconUri.toString().contains("art_re_64dp"))
                                 mainColour = Color.parseColor("#D35095");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                            else if (iconUri.toString().contains("art_science_64dp"))
                                 mainColour = Color.parseColor("#1D1D1B");
-                            else if (iconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                            else if (iconUri.toString().contains("art_woodwork_64dp"))
                                 mainColour = Color.parseColor("#424242");
                             else {
                                 // Set the action bar colour according to the theme
                                 mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
                                         getResources().getColor(R.color.colorPrimary)));
                             }
-
+                            if (!iconUri.toString().contains("art_"))
+                                mainColour = mPrimaryColor;
                             mPrimaryColor = mainColour;
                             float[] hsv = new float[3];
                             int color = mainColour;
@@ -651,9 +694,32 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                             mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
                             mDarkColor = Color.HSVToColor(hsv);
+
+//                            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
+//                                mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+
                             collapsingToolbar.setBackgroundColor(mPrimaryColor);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 getWindow().setStatusBarColor(mDarkColor);
+                            }
+
+                            if (!transitioning) {
+                                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+
+                                mRevealView = findViewById(R.id.reveal);
+                                mRevealView2 = findViewById(R.id.reveal2);
+                                mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                                mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+                                mRevealView.setVisibility(View.INVISIBLE);
+                                mRevealView2.setVisibility(View.INVISIBLE);
+                                mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                                mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                                } else {
+                                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                                }
                             }
 
                             // Initialise Notes

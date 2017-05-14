@@ -49,6 +49,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -138,12 +139,14 @@ public class NewTaskActivity extends AppCompatActivity
     ArrayList<String> classTypeArray = new ArrayList<>();
     String classTitle = "None";
     String classType = "None";
-    float dueDateMillis;
-    ArrayList<Uri> photoUriList = new ArrayList<>();
-    Uri mTempPhotoUri;
 
+    float dueDateMillis;
     long reminderDateMillis;
     long reminderTimeMillis;
+
+    ArrayList<Uri> photoUriList = new ArrayList();
+    ArrayList<ImageView> photos = new ArrayList<>();
+    Uri mTempPhotoUri;
 
     // Theme Variables
     int mPrimaryColor;
@@ -175,6 +178,7 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
             R.drawable.art_graphics_64dp,
+            R.drawable.art_history_64dp,
             R.drawable.art_hospitality_64dp,
             R.drawable.art_ict_64dp,
             R.drawable.art_maths_64dp,
@@ -189,7 +193,6 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_task_64dp,
             R.drawable.art_woodwork_64dp
     };
-
 
     // Intent Data
     boolean FLAG_EDIT = false;
@@ -343,12 +346,13 @@ public class NewTaskActivity extends AppCompatActivity
                 String classType = extras.getString(getString(R.string.INTENT_EXTRA_TYPE));
                 String description = extras.getString(getString(R.string.INTENT_EXTRA_DESCRIPTION));
                 String attachment = "";
-                long dueDate = extras.getLong(getString(R.string.INTENT_EXTRA_DUEDATE));
+                float dueDate = extras.getFloat(getString(R.string.INTENT_EXTRA_DUEDATE));
                 long reminderDate = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_DATE));
                 long reminderTime = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_TIME));
 
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT), false);
+                Log.v(LOG_TAG, "FLAG_EDIT: " + FLAG_EDIT);
 
                 if (FLAG_EDIT) {
                     // Get the id depending on where the data came from
@@ -361,140 +365,84 @@ public class NewTaskActivity extends AppCompatActivity
                     fieldTitle.setSelection(fieldTitle.getText().length());
                     fieldDescription.setText(description);
 
+                    // Set the current state of the due date
+                    if (dueDate > 0f) {
+                        this.dueDateMillis = dueDate;
+
+                        // Format duedate using the utility method
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis(((long) dueDate));
+                        fieldDueDateTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
+                                c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+                    }
+
+                    // Set the current state of the dropdown text views
+                    if (classTitle.equals(""))
+                        fieldClassTextview.setText(getString(R.string.none));
+                    else fieldClassTextview.setText(classTitle);
+                    this.classTitle = classTitle;
+                    if (classType.equals(""))
+                        fieldTypeTextview.setText(getString(R.string.none));
+                    else fieldTypeTextview.setText(classType);
+                    this.classType = classType;
+                    this.iconUriString = icon;
+
+                    // Set the current state of the reminder date and time
+                    if (reminderDate != 0f) {
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis((long) reminderDate);
+                        float reminderDateYear = c.get(Calendar.YEAR);
+                        float reminderDateMonth = c.get(Calendar.MONTH);
+                        float reminderDateDay = c.get(Calendar.DAY_OF_MONTH);
+
+                        Calendar today = Calendar.getInstance();
+                        if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
+                                && today.get(Calendar.YEAR) == reminderDateYear)
+                            fieldSetReminderDateTextview.setText(getString(R.string.today));
+                        else {
+                            today.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) + 1);
+                            if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
+                                    && today.get(Calendar.YEAR) == reminderDateYear)
+                                fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
+                            else
+                                fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
+                                        ((int) reminderDateMonth), ((int) reminderDateDay)));
+                        }
+                        this.reminderDateMillis = c.getTimeInMillis();
+                    } else {
+                        fieldSetReminderDateTextview.setText(getString(R.string.none));
+                        fieldSetReminderTime.setEnabled(false);
+                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
+                    }
+
+
+                    if (reminderTime != 0f) {
+                        fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
+                        this.reminderTimeMillis = reminderTime;
+                    } else {
+                        fieldSetReminderTimeTextview.setText(getString(R.string.none));
+                    }
+
                     // Get photo data
                     if (mFirebaseUser != null) {
                         DatabaseReference photosRef = FirebaseDatabase.getInstance().getReference()
                                 .child("users").child(mUserId).child("tasks").child(firebaseEditId)
                                 .child("photos");
-                        DatabaseReference localRef = photosRef.child("local");
-                        localRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        photosRef.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                long childrenCount = dataSnapshot.getChildrenCount();
-                                for (DataSnapshot uriSnapshot : dataSnapshot.getChildren())
-                                    photoUriList.add(Uri.parse(uriSnapshot.getValue(String.class)));
-                                if (childrenCount > 0) {
+                                for (DataSnapshot uriSnapshot : dataSnapshot.getChildren()) {
+                                    String photoPath = uriSnapshot.getKey()
+                                            .replace("'dot'", ".")
+                                            .replace("'slash'", "/")
+                                            .replace("'hash'", "#")
+                                            .replace("'ampers'", "&");
+                                    photoUriList.add(Uri.parse(photoPath));
+                                }
                                     // Add in the views for the photos
                                     for (int i = 0; i < photoUriList.size(); i++) {
-                                        // Add the photo as a new image view
-                                        final RelativeLayout relativeLayout = new RelativeLayout(NewTaskActivity.this);
-                                        relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-                                        ImageView photo = new ImageView(NewTaskActivity.this);
-                                        photo.setImageURI(photoUriList.get(i));
-                                        int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
-                                        photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-                                        photo.setPadding(4, 0, 4, 0);
-                                        photo.setId(Utility.generateViewId());
-
-                                        final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-                                        photosLayout.setVisibility(View.VISIBLE);
-                                        photosLayout.addView(relativeLayout);
-                                        relativeLayout.addView(photo);
-
-                                        // Add the cancel button to remove the photo
-                                        final ImageView cancel = new ImageView(NewTaskActivity.this);
-                                        cancel.setImageResource(R.drawable.ic_cancel);
-                                        int wh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-                                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wh, wh);
-                                        params.addRule(RelativeLayout.ALIGN_END, photo.getId());
-                                        params.addRule(RelativeLayout.ALIGN_RIGHT, photo.getId());
-                                        params.addRule(RelativeLayout.ALIGN_TOP, photo.getId());
-                                        cancel.setLayoutParams(params);
-                                        relativeLayout.addView(cancel);
-                                        cancel.setVisibility(View.GONE);
-                                        final int finalI = i;
-                                        cancel.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                photosLayout.removeView(relativeLayout);
-                                                photoUriList.remove(photoUriList.get(finalI));
-                                            }
-                                        });
-
-                                        // Add the click listener of the photo
-                                        cancel.setTag("null");
-                                        final Runnable runnable = new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                cancel.setTag("null");
-                                                cancel.setVisibility(View.GONE);
-                                            }
-                                        };
-                                        photo.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                if (cancel.getTag().equals("cancelVisible")) {
-                                                    cancel.setTag("null");
-                                                    cancel.setVisibility(View.GONE);
-                                                    handler.removeCallbacks(runnable);
-                                                } else {
-                                                    cancel.setVisibility(View.VISIBLE);
-                                                    Runnable runnable1 = new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            View otherCancels = photosLayout.findViewWithTag("cancelVisible");
-                                                            if (otherCancels != null) {
-                                                                otherCancels.setVisibility(View.GONE);
-                                                                otherCancels.setTag("null");
-                                                                handler.post(this);
-                                                            } else cancel.setTag("cancelVisible");
-                                                        }
-                                                    };
-
-                                                    handler.post(runnable1);
-                                                    handler.postDelayed(runnable, 2000);
-                                                }
-                                            }
-                                        });
+                                        addPhotoView(photoUriList.get(i));
                                     }
-                                } else {
-                                    // Download the photos
-                                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReference();
-                                    i = 0;
-                                    for (final DataSnapshot photoUriSnapshot : dataSnapshot.child("photos").child("cloud").getChildren()) {
-                                        StorageReference photosRef = storageRef.child(photoUriSnapshot.getValue(String.class));
-                                        final long ONE_MEGABYTE = 1024 * 1024;
-                                        photosRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                                            @Override
-                                            public void onSuccess(byte[] bytes) {
-                                                // Save the file locally
-                                                File file = new File(photoUriList.get(i).toString());
-                                                try {
-                                                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-                                                    bos.write(bytes);
-                                                    bos.flush();
-                                                    bos.close();
-                                                } catch (FileNotFoundException e) {
-                                                    e.printStackTrace();
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                                // Add the view
-                                                if (!active) return;
-                                                photoUriList.add(Uri.fromFile(file));
-                                                LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-                                                ImageView photo = new ImageView(NewTaskActivity.this);
-                                                photo.setImageURI(Uri.fromFile(file));
-                                                int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
-                                                photo.setLayoutParams(new LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-                                                photo.setPadding(4, 0, 4, 0);
-                                                photo.setId(Utility.generateViewId());
-                                                photosLayout.addView(photo);
-                                                photosLayout.setVisibility(View.VISIBLE);
-
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                // TODO: Handle Unsuccessful Download
-                                            }
-                                        });
-                                        i++;
-                                    }
-                                }
                             }
 
                             @Override
@@ -502,14 +450,6 @@ public class NewTaskActivity extends AppCompatActivity
 
                             }
                         });
-
-                        // Set the saved photo's bitmap
-                        // PHOTO DISABLED FOR THE BETA
-//                    if (!photo.equals("")) {
-//                        fieldPhotoSlot.setImageURI(Uri.parse(photo));
-//                        mCurrentPhotoPathString = photo;
-//                        mCurrentPhotoPath = Uri.parse(mCurrentPhotoPathString);
-//                    }
 
                     }
 
@@ -525,7 +465,8 @@ public class NewTaskActivity extends AppCompatActivity
                             final RelativeLayout relativeLayout = new RelativeLayout(NewTaskActivity.this);
                             relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-                            ImageView photo = new ImageView(NewTaskActivity.this);
+                            final ImageView photo = new ImageView(NewTaskActivity.this);
+                            this.photos.add(photo);
                             photo.setImageURI(photoUri);
                             int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
                             photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -548,12 +489,12 @@ public class NewTaskActivity extends AppCompatActivity
                             cancel.setLayoutParams(params);
                             relativeLayout.addView(cancel);
                             cancel.setVisibility(View.GONE);
-                            final int finalI = i;
                             cancel.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     photosLayout.removeView(relativeLayout);
                                     photoUriList.remove(photoUri);
+                                    NewTaskActivity.this.photos.remove(photo);
                                 }
                             });
 
@@ -594,78 +535,6 @@ public class NewTaskActivity extends AppCompatActivity
                             });
                         }
                     }
-
-                    // Set the current state of the dropdown text views
-                    if (classTitle.equals(""))
-                        fieldClassTextview.setText(getString(R.string.none));
-                    else fieldClassTextview.setText(classTitle);
-                    this.classTitle = classTitle;
-                    if (classType.equals(""))
-                        fieldTypeTextview.setText(getString(R.string.none));
-                    else fieldTypeTextview.setText(classType);
-                    this.classType = classType;
-                    this.iconUriString = icon;
-
-                    // Set the current state of the due date
-                    if (dueDate != 0f) {
-                        Calendar c = Calendar.getInstance();
-                        c.setTimeInMillis((long) dueDate);
-                        float dueDateYear = c.get(Calendar.YEAR);
-                        float dueDateMonth = c.get(Calendar.MONTH);
-                        float dueDateDay = c.get(Calendar.DAY_OF_MONTH);
-                        fieldDueDateTextView.setText(utility.formatDateString(this, ((int) dueDateYear), ((int) dueDateMonth), ((int) dueDateDay)));
-                        this.dueDateMillis = c.getTimeInMillis();
-                    }
-
-                    // Set the current state of the reminder date and time
-                    if (reminderDate != 0f) {
-                        Calendar c = Calendar.getInstance();
-                        c.setTimeInMillis((long) reminderDate);
-                        float reminderDateYear = c.get(Calendar.YEAR);
-                        float reminderDateMonth = c.get(Calendar.MONTH);
-                        float reminderDateDay = c.get(Calendar.DAY_OF_MONTH);
-
-                        Calendar today = Calendar.getInstance();
-                        if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
-                                && today.get(Calendar.YEAR) == reminderDateYear)
-                            fieldSetReminderDateTextview.setText(getString(R.string.today));
-                        else {
-                            today.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) + 1);
-                            if (today.get(Calendar.DAY_OF_MONTH) == reminderDateDay && today.get(Calendar.MONTH) == reminderDateMonth
-                                    && today.get(Calendar.YEAR) == reminderDateYear)
-                                fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
-                            else
-                                fieldSetReminderDateTextview.setText(utility.formatDateString(this, ((int) reminderDateYear),
-                                        ((int) reminderDateMonth), ((int) reminderDateDay)));
-                        }
-                        this.reminderDateMillis = c.getTimeInMillis();
-                    } else {
-                        fieldSetReminderDateTextview.setText(getString(R.string.none));
-                        fieldSetReminderTime.setEnabled(false);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
-                    }
-
-
-                    if (reminderTime != 0f) {
-                        fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
-                        this.reminderTimeMillis = reminderTime;
-                    } else {
-                        fieldSetReminderTimeTextview.setText(getString(R.string.none));
-                    }
-
-                    // ATTACHMENT WILL NOT BE INCLUDED IN BETA
-//                    attachment = cursorEdit.getString(cursorEdit.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-//                    Uri filePathUri = Uri.parse(attachment);
-//                    if (!attachment.equals("")) {
-//                        Cursor returnCursor = getContentResolver().query(filePathUri, null, null, null, null);
-//                        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-//                        if (returnCursor.moveToFirst()) {
-//                            String fileName = returnCursor.getString(nameIndex);
-//                            returnCursor.close();
-//                            fieldAttachFile.setText(fileName);
-//                            this.attachedFileUriString = filePathUri.toString();
-//                        }
-//                    }
                 } else {
                     setDefaultData();
                     // Check if there is any data sent through the intent
@@ -799,34 +668,6 @@ public class NewTaskActivity extends AppCompatActivity
                 } else intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
                 try {
                     if (insertTaskDataIntoDatabase()) {
-                        // Upload the icon to the cloud if applicable
-                        if (mFirebaseUser != null && customIconUploaded) {
-                            FirebaseStorage storage = FirebaseStorage.getInstance();
-                            StorageReference storageRef = storage.getReference();
-                            StorageReference iconRef = storageRef.child(mUserId + "/tasks/" + fieldTitle.getText().toString());
-
-                            fieldIcon.setDrawingCacheEnabled(true);
-                            fieldIcon.buildDrawingCache();
-                            Bitmap bitmap = fieldIcon.getDrawingCache();
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                            byte[] data = baos.toByteArray();
-
-                            UploadTask uploadTask = iconRef.putBytes(data);
-                            uploadTask.addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    // TODO: Handle unsuccessful uploads
-                                }
-                            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    // TODO: Handle successful uploads if action is required
-                                }
-                            });
-
-                        }
-
                         startActivity(intent);
                         return true;
                     } else {
@@ -908,84 +749,6 @@ public class NewTaskActivity extends AppCompatActivity
             fieldAttachFile.setText(fileName);
         }
 
-        // Take Photo
-        if (requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
-            // Add the uri to the array list
-            final Uri imageData = data.getData();
-            photoUriList.add(imageData);
-
-            // Add the photo as a new image view
-            final RelativeLayout relativeLayout = new RelativeLayout(this);
-            relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-            ImageView photo = new ImageView(this);
-            photo.setImageURI(imageData);
-            int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
-            photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-            photo.setPadding(4, 0, 4, 0);
-            photo.setId(Utility.generateViewId());
-
-            final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-            photosLayout.setVisibility(View.VISIBLE);
-            photosLayout.addView(relativeLayout);
-            relativeLayout.addView(photo);
-
-            // Add the cancel button to remove the photo
-            final ImageView cancel = new ImageView(this);
-            cancel.setImageResource(R.drawable.ic_cancel);
-            int wh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wh, wh);
-            params.addRule(RelativeLayout.ALIGN_END, photo.getId());
-            params.addRule(RelativeLayout.ALIGN_RIGHT, photo.getId());
-            params.addRule(RelativeLayout.ALIGN_TOP, photo.getId());
-            cancel.setLayoutParams(params);
-            relativeLayout.addView(cancel);
-            cancel.setVisibility(View.GONE);
-            cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    photosLayout.removeView(relativeLayout);
-                    photoUriList.remove(imageData);
-                }
-            });
-
-            // Add the click listener of the photo
-            cancel.setTag("null");
-            final Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    cancel.setTag("null");
-                    cancel.setVisibility(View.GONE);
-                }
-            };
-            photo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (cancel.getTag().equals("cancelVisible")) {
-                        cancel.setTag("null");
-                        cancel.setVisibility(View.GONE);
-                        handler.removeCallbacks(runnable);
-                    } else {
-                        cancel.setVisibility(View.VISIBLE);
-                        Runnable runnable1 = new Runnable() {
-                            @Override
-                            public void run() {
-                                View otherCancels = photosLayout.findViewWithTag("cancelVisible");
-                                if (otherCancels != null) {
-                                    otherCancels.setVisibility(View.GONE);
-                                    otherCancels.setTag("null");
-                                    handler.post(this);
-                                } else cancel.setTag("cancelVisible");
-                            }
-                        };
-
-                        handler.post(runnable1);
-                        handler.postDelayed(runnable, 2000);
-                    }
-                }
-            });
-        }
-
         // Custom Icon Upload
         if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
             Uri dataUri = data.getData();
@@ -1002,6 +765,95 @@ public class NewTaskActivity extends AppCompatActivity
             fieldIcon.setImageBitmap(setImageBitmap);
             customIconUploaded = true;
         }
+
+        // Take/Pick Photo
+        if (requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
+            // Add the uri to the array list
+                final Uri imageData;
+                if (requestCode == REQUEST_IMAGE_GET_PHOTO)
+                    imageData = data.getData();
+                else {
+                    imageData = mTempPhotoUri;
+                }
+
+                photoUriList.add(imageData);
+                addPhotoView(imageData);
+        }
+    }
+
+    private void addPhotoView(final Uri imageUri) {
+        // Add the photo as a new image view
+        final RelativeLayout relativeLayout = new RelativeLayout(this);
+        relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        final ImageView photo = new ImageView(this);
+        photos.add(photo);
+        photo.setImageURI(imageUri);
+        int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
+        photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
+        photo.setPadding(4, 0, 4, 0);
+        photo.setId(Utility.generateViewId());
+
+        final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+        photosLayout.setVisibility(View.VISIBLE);
+        photosLayout.addView(relativeLayout);
+        relativeLayout.addView(photo);
+
+        // Add the cancel button to remove the photo
+        final ImageView cancel = new ImageView(this);
+        cancel.setImageResource(R.drawable.ic_cancel);
+        int wh = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wh, wh);
+        params.addRule(RelativeLayout.ALIGN_END, photo.getId());
+        params.addRule(RelativeLayout.ALIGN_RIGHT, photo.getId());
+        params.addRule(RelativeLayout.ALIGN_TOP, photo.getId());
+        cancel.setLayoutParams(params);
+        relativeLayout.addView(cancel);
+        cancel.setVisibility(View.GONE);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                photosLayout.removeView(relativeLayout);
+                photoUriList.remove(imageUri);
+                photos.remove(photo);
+            }
+        });
+
+        // Add the click listener of the photo
+        cancel.setTag("null");
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                cancel.setTag("null");
+                cancel.setVisibility(View.GONE);
+            }
+        };
+        photo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (cancel.getTag().equals("cancelVisible")) {
+                    cancel.setTag("null");
+                    cancel.setVisibility(View.GONE);
+                    handler.removeCallbacks(runnable);
+                } else {
+                    cancel.setVisibility(View.VISIBLE);
+                    Runnable runnable1 = new Runnable() {
+                        @Override
+                        public void run() {
+                            View otherCancels = photosLayout.findViewWithTag("cancelVisible");
+                            if (otherCancels != null) {
+                                otherCancels.setVisibility(View.GONE);
+                                otherCancels.setTag("null");
+                                handler.post(this);
+                            } else cancel.setTag("cancelVisible");
+                        }
+                    };
+
+                    handler.post(runnable1);
+                    handler.postDelayed(runnable, 2000);
+                }
+            }
+        });
     }
 
     private void showClassDropdownMenu() {
@@ -1060,6 +912,37 @@ public class NewTaskActivity extends AppCompatActivity
                 }
                 // Set the dropdown list text to the selected item
                 fieldClassTextview.setText(NewTaskActivity.this.classTitle);
+
+                if (mFirebaseUser != null) {
+                    // Enable the Share checkbox accordingly
+                    if (classTitle.equals(getString(R.string.none))) {
+                        fieldSharedCheckbox.setEnabled(true);
+                        fieldSharedCheckbox.setClickable(true);
+                    } else {
+                        fieldSharedCheckbox.setEnabled(false);
+                        fieldSharedCheckbox.setClickable(false);
+                        FirebaseDatabase.getInstance().getReference()
+                                .child("users").child(mUserId).child("peers")
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot peerSnapshot: dataSnapshot.getChildren()) {
+                                            for (DataSnapshot classSnapshot: peerSnapshot.child("classes").getChildren()) {
+                                                if (classSnapshot.getKey().equals(fieldTitle.getText().toString())) {
+                                                    fieldSharedCheckbox.setEnabled(true);
+                                                    fieldSharedCheckbox.setClickable(true);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                    }
+                }
 
                 return true;
             }
@@ -1533,43 +1416,70 @@ public class NewTaskActivity extends AppCompatActivity
             // Photos upload
             StorageReference photosRef = iconRef.child("photos");
             for (int i = 0; i < photoUriList.size(); i++) {
-                // Save the photos uri in the database
-                taskRef.child("photos").child("local").child(String.valueOf(i)).setValue(photoUriList.get(i).toString());
+                // Copy the photo into the app's local directory
+                Uri imageUri = photoUriList.get(i);
+                Log.v(LOG_TAG, "Image Uri: " + imageUri);
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                String filename = taskRef.getKey() + ".jpg";
+                byte[] data = getBytes(inputStream);
+                File file = new File(getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                // Create a path and an input stream to upload the photo
-                StorageReference uploadPathRef = photosRef.child(Integer.toString(i));
-                InputStream iStream = getContentResolver().openInputStream(photoUriList.get(i));
-                byte[] data = getBytes(iStream);
-                UploadTask uploadTask = uploadPathRef.putBytes(data);
+                // Image compression
+                Bitmap decodedBitmap = decodeFile(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] bitmapData = baos.toByteArray();
+                file.delete();
+                File file1 = new File(getFilesDir(), filename);
+                FileOutputStream fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+
+                // Get the uri of the file so it can be saved
+                Uri uri = Uri.fromFile(file1);
+                photoUriList.remove(i);
+                photoUriList.add(i, uri);
+
+                // Save the photos uri in the database
+                String savedUriString = uri.toString()
+                        .replace(".", "'dot'")
+                        .replace("/", "'slash'")
+                        .replace("#", "'hash'")
+                        .replace("&", "'ampers'");
+                taskRef.child("photos").child(savedUriString).setValue(uri);
+
+                // Upload the custom icon and photos
+                StorageReference iconRef1 = storageRef.child(mUserId + "/tasks/" + title + "/photos/" + String.valueOf(i));
+                Log.v(LOG_TAG, "Bucket path: " + iconRef1.getPath());
+                Bitmap bitmap = decodedBitmap;
+                ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos1);
+                byte[] data1 = baos1.toByteArray();
+
+                UploadTask uploadTask = iconRef1.putBytes(data1);
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         // TODO: Handle unsuccessful uploads
+                        Log.v(LOG_TAG, "UPLOAD FAILED: " + e.getMessage());
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         // TODO: Handle successful upload if any action is required
-                        taskRef.child("photos").child("cloud").addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                ArrayList<String> currentData = (ArrayList<String>) dataSnapshot.getValue();
-                                if (currentData != null)
-                                    currentData.add(taskSnapshot.getDownloadUrl().toString());
-                                else {
-                                    currentData = new ArrayList<>();
-                                    currentData.add(taskSnapshot.getDownloadUrl().toString());
-                                }
-                                taskRef.child("photos").child("cloud").setValue(currentData);
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
+                        Log.v(LOG_TAG, "UPLOAD SUCCESS: " + taskSnapshot.getDownloadUrl());
                     }
                 });
+
             }
 
             // Set the alarm for the notification
@@ -1577,6 +1487,7 @@ public class NewTaskActivity extends AppCompatActivity
                 Calendar c = Calendar.getInstance();
                 c.setTimeInMillis(reminderDateMillis);
                 int hour = (int) reminderTimeMillis / 3600;
+
                 int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
                 c.set(Calendar.HOUR_OF_DAY, hour);
                 c.set(Calendar.MINUTE, minute);
@@ -1589,7 +1500,7 @@ public class NewTaskActivity extends AppCompatActivity
             if (fieldSharedCheckbox.isChecked()) {
                 final ArrayList<String> peerUIDs = new ArrayList<>();
                 DatabaseReference classPeersRef;
-                if (classTitle.equals(""))
+                if (classTitle.equals(getString(R.string.none)) || classTitle.equals(""))
                     classPeersRef = FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("peers");
                 else classPeersRef = FirebaseDatabase.getInstance().getReference()
@@ -1812,8 +1723,8 @@ public class NewTaskActivity extends AppCompatActivity
                     Uri photoURI = FileProvider.getUriForFile(this,
                             "com.pdt.plume.fileprovider",
                             photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     mTempPhotoUri = photoURI;
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }

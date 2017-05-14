@@ -15,6 +15,7 @@ public class PeriodItem {
     // the layout based on these variables
     public String basis;
     public String weekType;
+    public int position;
 
     // Main header string data and day button binary data
     String days;

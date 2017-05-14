@@ -178,7 +178,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
                 String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
                 if (utility.occurrenceMatchesCurrentDay(context, occurrence, periods, weekNumber, dayOfWeek)) {
-                    Log.v(LOG_TAG, "Adding " + title + " with occurrence " + occurrence);
                     returningRowIDs.add(String.valueOf(cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID))));
                 }
             }
@@ -261,8 +260,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                 utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
                                 utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
-                                "", null
-                        ));
+                                ""));
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
                         String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
@@ -293,7 +291,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                     "",
                                     "",
-                                    periodList.get(ii), null));
+                                    periodList.get(ii)));
                         }
                     }
                 }
@@ -315,8 +313,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                 utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
                                 utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
-                                "", null
-                        ));
+                                ""));
 
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
@@ -339,7 +336,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
                                     "",
                                     "",
-                                    periodList.get(ii), null));
+                                    periodList.get(ii)));
                         }
                     }
                 }
@@ -420,9 +417,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
                             " ",
                             " ",
-                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
-                            null
-                    ));
+                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))));
 
                     usedTitles.add(title);
                 }

@@ -46,10 +46,11 @@ public class MismatchDialog extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_accept_peer_match, container);
 
         Bundle args = getArguments();
-        ArrayList<Bundle> mismatchedClassesList = (ArrayList<Bundle>) args.getSerializable("mismatchedClassesList");
+        ArrayList<String> mismatchedClassesList = args.getStringArrayList("mismatched");
+        String uid = args.getString("uid");
 
         final ListView listView = (ListView) rootView.findViewById(R.id.listView);
-        final MismatchListAdapter adapter = new MismatchListAdapter(getContext(), R.layout.list_item_mismatch, mismatchedClassesList);
+        final MismatchListAdapter adapter = new MismatchListAdapter(getContext(), R.layout.list_item_mismatch, mismatchedClassesList, uid);
         listView.setAdapter(adapter);
 
         Button button = (Button) rootView.findViewById(R.id.button);

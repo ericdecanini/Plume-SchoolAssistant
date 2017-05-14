@@ -426,20 +426,6 @@ public class TasksDetailFragment extends Fragment {
 
                     applyDataToUI();
 
-
-                    // Set the attachment field data
-                    // ATTACHMENTS DISABLED FOR THE BETA
-//                attachmentPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-//                String fileName;
-//                if (!attachmentPath.equals("")) {
-//                    Uri attachmentUri = Uri.parse(attachmentPath);
-//                    Cursor returnCursor = getContentResolver().query(attachmentUri, null, null, null, null);
-//                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-//                    returnCursor.moveToFirst();
-//                    fileName = returnCursor.getString(nameIndex);
-//                    attachmentTextview.setText(fileName);
-//                } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
-
                     // Set the photo field data
                     LinearLayout photosLayout = (LinearLayout) rootview.findViewById(R.id.photos_layout);
                     for (int i = 0; i < photos.length; i++) {
@@ -489,14 +475,18 @@ public class TasksDetailFragment extends Fragment {
     private void applyDataToUI() {
         // Get references to the UI elements
         ImageView icon = (ImageView) rootview.findViewById(R.id.icon);
+        ImageView icon2 = (ImageView) rootview.findViewById(R.id.icon2);
         TextView titleTextview = (TextView) rootview.findViewById(R.id.title);
-        TextView subtitleTextview = (TextView) rootview.findViewById(R.id.subtitle);
+        TextView subtitleTextview = (TextView) rootview.findViewById(R.id.collapsingToolbarSubtitle);
         TextView duedateTextview = (TextView) rootview.findViewById(R.id.task_detail_duedate);
         TextView descriptionTextview = (TextView) rootview.findViewById(R.id.task_detail_description);
 //        TextView attachmentTextview = (TextView) rootview.findViewById(R.id.task_detail_attachment);
 
         // Apply the data to the UI
-        icon.setImageURI(Uri.parse(iconUri));
+        if (iconUri != null)
+            if (iconUri.contains("android.resource://com.pdt.plume"))
+                icon.setImageURI(Uri.parse(iconUri));
+            else icon2.setImageURI(Uri.parse(iconUri));
         titleTextview.setText(title);
         if (subtitle.equals("") || subtitle.equals(" "))
             subtitleTextview.setVisibility(View.GONE);
@@ -509,12 +499,6 @@ public class TasksDetailFragment extends Fragment {
         else rootview.findViewById(R.id.task_detail_description).setVisibility(View.VISIBLE);
 
         final Uri ParsedIconUri = Uri.parse(iconUri);
-        Bitmap iconBitmap = null;
-        try {
-            iconBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), ParsedIconUri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         // Initialise the theme variables
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());

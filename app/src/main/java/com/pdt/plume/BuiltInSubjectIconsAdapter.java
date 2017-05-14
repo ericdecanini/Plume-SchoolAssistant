@@ -8,6 +8,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 public class BuiltInSubjectIconsAdapter extends BaseAdapter {
+
     private Context mContext;
 
     public BuiltInSubjectIconsAdapter(Context c) {
@@ -44,7 +45,7 @@ public class BuiltInSubjectIconsAdapter extends BaseAdapter {
         return imageView;
     }
 
-    // references to our images
+    // Built-in Icons
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -61,6 +62,7 @@ public class BuiltInSubjectIconsAdapter extends BaseAdapter {
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
             R.drawable.art_graphics_64dp,
+            R.drawable.art_history_64dp,
             R.drawable.art_hospitality_64dp,
             R.drawable.art_ict_64dp,
             R.drawable.art_maths_64dp,
@@ -75,4 +77,5 @@ public class BuiltInSubjectIconsAdapter extends BaseAdapter {
             R.drawable.art_task_64dp,
             R.drawable.art_woodwork_64dp
     };
+
 }

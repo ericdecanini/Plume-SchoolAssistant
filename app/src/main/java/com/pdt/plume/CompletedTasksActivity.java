@@ -81,7 +81,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.completed_tasks_list);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        // Initialise the adapter of completed tasks
+        // Initialise the mScheduleAdapter of completed tasks
         // If no items were found, show the header
         mTasksList = new ArrayList<>();
         taskIDs = new ArrayList<>();
@@ -89,7 +89,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         mTasksAdapter = new TaskAdapter(this, R.layout.list_item_task, mTasksList);
         getCompletedTasksData();
 
-        // Inflate the listview with the adapter
+        // Inflate the listview with the mScheduleAdapter
         listView.setAdapter(mTasksAdapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(new ModeCallback());
@@ -97,27 +97,41 @@ public class CompletedTasksActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Create an intent to the TaskDetailActivity passing on the ID
-                Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
-                intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
-                if (mFirebaseUser != null) {
-                    String firebaseID = taskFirebaseIDs.get(position);
-                    intent.putExtra("id", firebaseID);
+                boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+                if (!isTablet) {
+                    Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
+                    intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
+                    if (mFirebaseUser != null) {
+                        String firebaseID = taskFirebaseIDs.get(position);
+                        intent.putExtra("id", firebaseID);
+                    } else {
+                        int ID = taskIDs.get(position);
+                        intent.putExtra("_ID", ID);
+                    }
+
+                    // Add the animation
+                    intent.putExtra("icon", mTasksList.get(position).taskIcon);
+                    View icon = view.findViewById(R.id.task_icon2);
+                    if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
+                            && ((String) icon.getTag()).contains("com.pdt.plume")) {
+                        // Shared element transition
+                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(CompletedTasksActivity.this, icon, icon.getTransitionName()).toBundle();
+                        startActivity(intent, bundle);
+                    } else startActivity(intent);
                 } else {
-                    int ID = taskIDs.get(position);
-                    intent.putExtra("_ID", ID);
+                    Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivityTablet.class);
+                    intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
+                    if (mFirebaseUser != null) {
+                        String firebaseID = taskFirebaseIDs.get(position);
+                        intent.putExtra("id", firebaseID);
+                    } else {
+                        int ID = taskIDs.get(position);
+                        intent.putExtra("_ID", ID);
+                    }
+                    startActivity(intent);
                 }
-
-                // Add the animation
-                intent.putExtra("icon", mTasksList.get(position).taskIcon);
-                View icon = view.findViewById(R.id.task_icon2);
-                if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
-
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
-                        && ((String) icon.getTag()).contains("com.pdt.plume")) {
-                    // Shared element transition
-                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(CompletedTasksActivity.this, icon, icon.getTransitionName()).toBundle();
-                    startActivity(intent, bundle);
-                } else startActivity(intent);
             }
         });
 
@@ -266,7 +280,6 @@ public class CompletedTasksActivity extends AppCompatActivity {
             // Refresh the mTasksAdapter so the restored task is no longer displayed
             getCompletedTasksData();
         }
-
 
     }
 

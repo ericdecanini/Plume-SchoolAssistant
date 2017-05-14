@@ -14,6 +14,19 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -37,7 +50,7 @@ public class PeerAdapter extends ArrayAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
-        ViewHolder holder;
+        final ViewHolder holder;
 
         if (row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
@@ -54,10 +67,15 @@ public class PeerAdapter extends ArrayAdapter {
             holder = (ViewHolder) row.getTag();
         }
 
-        Peer peer = data.get(position);
+        final Peer peer = data.get(position);
+        holder.name.setText(peer.peerName);
+
+        // Set the icon
+        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        final String mUserId = mFirebaseUser.getUid();
 
         holder.icon.setImageURI(Uri.parse(peer.peerIcon));
-        holder.name.setText(peer.peerName);
 
         return row;
     }

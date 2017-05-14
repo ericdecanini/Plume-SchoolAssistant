@@ -1,5 +1,6 @@
 <resources>
 
     <dimen name="def_icon_size">84dp</dimen>
+    <dimen name="def_icon_resolution">144dp</dimen>
 
 </resources>

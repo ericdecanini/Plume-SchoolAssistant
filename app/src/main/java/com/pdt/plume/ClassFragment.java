@@ -69,8 +69,6 @@ public class ClassFragment extends Fragment{
 
     // Flags
     boolean isTablet;
-    public static boolean showBlockHeaderA = false;
-    public static boolean showBlockHeaderB = false;
 
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
@@ -262,36 +260,23 @@ public class ClassFragment extends Fragment{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 long snapshotCount = dataSnapshot.getChildrenCount();
+                if (snapshotCount > 0)
+                    headerTextView.setVisibility(View.GONE);
                 for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
-                    String title = classSnapshot.child("title").getValue(String.class);
+                    String title = classSnapshot.getKey();
                     String icon = classSnapshot.child("icon").getValue(String.class);
                     String teacher = classSnapshot.child("teacher").getValue(String.class);
                     String room = classSnapshot.child("room").getValue(String.class);
-                    String periods = classSnapshot.child("periods").getValue(String.class);
-                    String customIcon = classSnapshot.child("customicon").getValue(String.class);
                     String timein;
                     String timeout;
 
-                    if (weekNumber.equals("0")) {
-                        int timeinvalue = classSnapshot.child("timein").getValue(int.class);
-                        int timeoutvalue = classSnapshot.child("timeout").getValue(int.class);
-                        timein = utility.millisToHourTime(timeinvalue);
-                        timeout = utility.millisToHourTime(timeoutvalue);
-                    } else {
-                        int timeinvalue = classSnapshot.child("timeinalt").getValue(int.class);
-                        int timeoutvalue = classSnapshot.child("timeoutalt").getValue(int.class);
-                        timein = utility.millisToHourTime(timeinvalue);
-                        timeout = utility.millisToHourTime(timeoutvalue);
-                    }
 
-
-                    mScheduleList.add(new Schedule(getContext(), icon, title, teacher, room, timein, timeout, periods, null));
+                    mScheduleList.add(new Schedule(getContext(), icon, title, teacher, room, "", "", ""));
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }

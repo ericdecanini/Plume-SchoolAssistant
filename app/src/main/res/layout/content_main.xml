@@ -1,37 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/backgroundColor"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
     android:fitsSystemWindows="true"
     tools:context="com.pdt.plume.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
-        app:elevation="0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:elevation="0dp">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/extended_app_bar_height"
             android:paddingTop="@dimen/appbar_padding_top"
-            app:popupTheme="@style/AppTheme.PopupOverlay" >
+            app:popupTheme="@style/AppTheme.PopupOverlay">
 
-            <TextView
-                android:id="@+id/header"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="28sp"
-                android:textColor="@color/white"
                 android:paddingTop="56dp"
                 android:layout_gravity="center"
-                android:foregroundGravity="center"/>
+                android:foregroundGravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/subheader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:foregroundGravity="center_horizontal"
+                    android:paddingTop="4dp"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
 
@@ -40,12 +57,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            app:tabTextColor="@color/gray_500"
             app:tabBackground="@drawable/tab_item_selector"
             app:tabIndicatorColor="@color/colorPrimary"
-            app:tabSelectedTextColor="@color/gray_900"
+            app:tabPaddingEnd="0dp"
             app:tabPaddingStart="0dp"
-            app:tabPaddingEnd="0dp" />
+            app:tabSelectedTextColor="@color/gray_900"
+            app:tabTextColor="@color/gray_500" />
 
     </android.support.design.widget.AppBarLayout>
 

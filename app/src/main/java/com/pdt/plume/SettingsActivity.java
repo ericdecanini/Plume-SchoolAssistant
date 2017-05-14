@@ -12,6 +12,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
@@ -19,12 +20,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 public class SettingsActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
@@ -35,6 +34,11 @@ public class SettingsActivity extends PreferenceActivity
 
     int mPrimaryColor;
     int mDarkColor;
+
+    PreferenceCategory mainCategory;
+    PreferenceCategory apperanceCategory;
+    Preference blockFormatPreference;
+    Preference weekFormatPreference;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,14 +54,43 @@ public class SettingsActivity extends PreferenceActivity
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_BASIS)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_WEEK_NUMBER_SETTING)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_WEEK_NUMBER)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)));
 
         // For other preferences, simply an OnClickListener is needed
         findPreference(getString(R.string.KEY_SETTINGS_THEME)).setOnPreferenceClickListener(onPreferenceClickListener());
         findPreference(getString(R.string.KEY_SETTINGS_ABOUT_PLUME)).setOnPreferenceClickListener(onPreferenceClickListener());
-        findPreference(getString(R.string.KEY_SETTINGS_CHANGELOG)).setOnPreferenceClickListener(onPreferenceClickListener());
+//        findPreference(getString(R.string.KEY_SETTINGS_CHANGELOG)).setOnPreferenceClickListener(onPreferenceClickListener());
+
+        mainCategory = (PreferenceCategory) findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_GENERAL));
+        apperanceCategory = (PreferenceCategory) findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_APPEARANCE));
+        blockFormatPreference = findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT));
+        weekFormatPreference = findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT));
+
+        // Disable 'Alternating Weeks' if Schedule type is block-based
+        String scheduleType = PreferenceManager.getDefaultSharedPreferences(this).
+                getString(getString(R.string.KEY_PREFERENCE_BASIS), "0");
+        if (scheduleType.equals("2")) {
+            findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)).setEnabled(false);
+            findPreference(getString(R.string.KEY_WEEK_NUMBER)).setEnabled(false);
+            findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)).setEnabled(true);
+            findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(false);
+        } else {
+            findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)).setEnabled(false);
+            findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(true);
+
+            String weekType = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "0");
+            if (weekType.equals("0")) {
+                findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(false);
+            } else findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(true);
+        }
+        if (!scheduleType.equals("0")) {
+            findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).setEnabled(false);
+            findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).setEnabled(false);
+        }
+
     }
 
     @Override
@@ -104,7 +137,7 @@ public class SettingsActivity extends PreferenceActivity
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
         String stringValue = value.toString();
         String prefKey = preference.getKey();
@@ -116,12 +149,43 @@ public class SettingsActivity extends PreferenceActivity
             int prefIndex = listPreference.findIndexOfValue(stringValue);
             if (prefIndex >= 0) {
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
-                Log.v(LOG_TAG, preference.getKey() + " entry at index " + prefIndex + " = " + listPreference.getEntries()[prefIndex]);
+
+                // 'Schedule type'
+                if (prefKey.equals(getString(R.string.KEY_PREFERENCE_BASIS))) {
+                    // Disable 'Alternating Weeks' if Schedule type is block-based
+                    String scheduleType = ((String)listPreference.getEntryValues()[prefIndex]);
+                    if (scheduleType.equals("2")) {
+                        findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)).setEnabled(false);
+                        findPreference(getString(R.string.KEY_WEEK_NUMBER)).setEnabled(false);
+                        findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)).setEnabled(true);
+                        findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(false);
+                    }
+                    else {
+                        findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)).setEnabled(true);
+                        findPreference(getString(R.string.KEY_WEEK_NUMBER)).setEnabled(true);
+                        findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)).setEnabled(false);
+                        findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(true);
+                    }
+                    if (!scheduleType.equals("0")) {
+                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).setEnabled(false);
+                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).setEnabled(false);
+                    } else {
+                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).setEnabled(true);
+                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).setEnabled(true);
+                    }
+                }
+
+                if (prefKey.equals(getString(R.string.KEY_PREFERENCE_WEEKTYPE))) {
+                    String weekType = ((String)listPreference.getEntryValues()[prefIndex]);
+                    if (
+                            weekType.equals("0")) {
+                        findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(false);
+                    } else findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).setEnabled(true);
+                }
 
                 // If 'Week number'
-                if (prefKey.equals(getString(R.string.KEY_SETTINGS_WEEK_NUMBER))){
-                    editor.putString(getString(R.string.KEY_WEEK_NUMBER_SETTING), ((String)listPreference.getEntryValues()[prefIndex]));
-                    Log.v(LOG_TAG, "Setting week number to " + prefIndex);
+                if (prefKey.equals(getString(R.string.KEY_WEEK_NUMBER))){
+                    editor.putString(getString(R.string.KEY_WEEK_NUMBER), ((String)listPreference.getEntryValues()[prefIndex]));
                 }
 
                 // If 'Date format'

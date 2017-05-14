@@ -10,16 +10,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
@@ -28,6 +33,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
@@ -53,6 +59,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -61,20 +68,28 @@ import com.google.zxing.WriterException;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static android.R.attr.data;
 import static android.os.Build.ID;
+import static com.pdt.plume.R.string.B;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_MANAGE_DOCUMENTS;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_SCAN_QR_CODE;
 
 public class PeopleActivity extends AppCompatActivity
@@ -119,13 +134,16 @@ public class PeopleActivity extends AppCompatActivity
     private Integer[] mThumbIds = {
             R.drawable.art_profile_default,
             R.drawable.art_profile_uniform,
+            R.drawable.art_profile_uniform_female,
             R.drawable.art_profile_blazer,
+            R.drawable.art_profile_blazer_female,
             R.drawable.art_profile_mustache,
-            R.drawable.art_profile_blazerpanda,
-            R.drawable.art_profile_alien
+            R.drawable.art_profile_pandakun
     };
 
     private CharSequence[] addPeerMethodsArray = {"", ""};
+    boolean isTablet;
+    boolean isLandscape;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +153,7 @@ public class PeopleActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         // Initialise AddPeerMethodsArray and mUserId
         addPeerMethodsArray[0] = getString(R.string.AddByUsername);
@@ -212,7 +231,7 @@ public class PeopleActivity extends AppCompatActivity
                                             startActivityForResult(intent, REQUEST_SCAN_QR_CODE);
                                         } catch (Exception e) {
                                             Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
-                                            Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
+                                            Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
                                             startActivity(marketIntent);
                                         }
                                         return;
@@ -232,38 +251,16 @@ public class PeopleActivity extends AppCompatActivity
         if (mFirebaseUser == null) {
             loadLogInView();
             return;
-        }
-        else mUserId = mFirebaseUser.getUid();
+        } else mUserId = mFirebaseUser.getUid();
 
         // If there is previously set data in shared preferences, set it accordingly
         // If new data is found in the cloud database, this data will be replaced once loaded
         String savedName = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_NAME), getString(R.string.yourNameHere));
         flavour = preferences.getString(getString(R.string.KEY_PREFERENCES_FLAVOUR), getString(R.string.whats_up));
-        String savedIconUri = preferences.getString(getString(R.string.KEY_PREFERENCES_SELF_ICON), null);
         selfNameView.setText(savedName);
         selfName = savedName;
         flavourView.setText(flavour);
-        if (savedIconUri != null)
-            try {
-                // Check the permission for MANAGE DOCUMENTS and revert to the default icon
-                // if the icon is custom uploaded and the permission is denied
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_DOCUMENTS) == PackageManager.PERMISSION_GRANTED
-                        || savedIconUri.contains("android.resource://com.pdt.plume/drawable/")) {
-                    Log.v(LOG_TAG, "MANAGE DOCUMENTS = " + Manifest.permission.MANAGE_DOCUMENTS + " PERMISSION GRANTED: " + PackageManager.PERMISSION_GRANTED);
-                    selfIconView.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(savedIconUri)));
-                    selfIconUri = savedIconUri;
-                }
-                else {
-                    selfIconUri = defaultIconUri;
-                    PreferenceManager.getDefaultSharedPreferences(this).edit()
-                            .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), defaultIconUri)
-                            .apply();
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        setImageUri();
 
         // Retrieve the data from the cloud database
         // and set the listener for changes in the cloud
@@ -274,56 +271,8 @@ public class PeopleActivity extends AppCompatActivity
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // After setting the self data to the saved key values in the phone
                     // The program will check for updated data in the cloud
-                    // TODO: Perform check on if the snapshot is a URI or basic String and perform corresponding action
-                    // TODO: This is for setting the selfIcon
-                    Log.v(LOG_TAG, "Snapshot Value: " + dataSnapshot.getValue());
-                    String iconData = dataSnapshot.child("icon").getValue(String.class);
                     String nicknameData = dataSnapshot.child("nickname").getValue(String.class);
                     String flavourData = dataSnapshot.child("flavour").getValue(String.class);
-                    final Bitmap[] bitmap = {null};
-                    // Data snapshot is the icon
-                    // TODO: ADD STORAGE FUNCTIONS
-//                    if (iconData != null) {
-//                        // Download from storage
-//                        StorageReference storageRef = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com");
-//                        StorageReference pathReference = storageRef.child("images/" + mUserId + ".jpg");
-//                        StorageReference gsReference = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com/images/" + mUserId + ".jpg");
-//                        StorageReference httpsReference = mFirebaseStorage.getReferenceFromUrl
-//                                ("https://firebasestorage.googleapis.com/b/plume-academy-assistant.appspot.com/o/images%20" + mUserId + ".jpg");
-//
-//                        final long TEN_MEGABYTE = 1024 * 1024 * 10;
-//                        gsReference.getBytes(TEN_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-//                            @Override
-//                            public void onSuccess(byte[] bytes) {
-//                                // Data for "images/island.jpg" is returns, use this as needed
-//                                bitmap[0] = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception exception) {
-//                                // Handle any errors
-//                            }
-//                        });
-//
-//
-//                        try {
-//                            if (bitmap[0] == null)
-//                                bitmap[0] = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(selfIconUri));
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                        selfIconView.setImageBitmap(bitmap[0]);
-//                        selfIconUri = iconData;
-//                        // Save the data to shared preferences
-//                        preferences.edit()
-//                                .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), iconData)
-//                                .apply();
-//                    }
-
-                    if (iconData != null) {
-                        selfIconView.setImageURI(Uri.parse(iconData));
-                    }
 
                     if (flavourData == null) {
                         flavourData = flavour;
@@ -341,7 +290,6 @@ public class PeopleActivity extends AppCompatActivity
                                 .putString(getString(R.string.KEY_PREFERENCES_FLAVOUR), flavourData)
                                 .apply();
                     }
-
 
 
                 }
@@ -383,10 +331,56 @@ public class PeopleActivity extends AppCompatActivity
 
     }
 
+    private void setImageUri() {
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mUserId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String iconUri = dataSnapshot.child("icon").getValue(String.class);
+
+                // First check if the icon uses a default drawable or from the storage
+                if (!iconUri.contains("android.resource://com.pdt.plume")) {
+                    String[] iconUriSplit = iconUri.split("/");
+                    File file = new File(getFilesDir(), iconUriSplit[iconUriSplit.length - 1]);
+                    selfIconView.setImageURI(Uri.parse(iconUri));
+                    if (file.exists()) {
+                        selfIconView.setImageURI(Uri.parse(iconUri));
+                        selfIconUri = iconUri;
+                    } else {
+                        // File doesn't exist: Download from storage
+                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                        StorageReference storageRef = storage.getReference();
+                        StorageReference iconRef = storageRef.child(mUserId).child("/icon");
+
+                        file = new File(getFilesDir(), "icon.jpg");
+                        selfIconUri = Uri.fromFile(file).toString();
+                        userRef.child("icon").setValue(selfIconUri);
+
+                        iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                selfIconView.setImageURI(Uri.parse(selfIconUri));
+                            }
+                        });
+                    }
+                } else {
+                    selfIconUri = iconUri;
+                    selfIconView.setImageURI(Uri.parse(selfIconUri));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_people, menu);
         logInOut = menu.findItem(R.id.action_logout);
         if (mFirebaseUser != null)
             loggedIn = true;
@@ -401,9 +395,9 @@ public class PeopleActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+        if (id == R.id.action_invite) {
+            ShareDialog dialog = ShareDialog.newInstance();
+            dialog.show(getSupportFragmentManager(), "dialog");
             return true;
         }
 
@@ -421,7 +415,7 @@ public class PeopleActivity extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_PERMISSION_MANAGE_DOCUMENTS:
+            case REQUEST_PERMISSION_READ_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Execute upload intent
@@ -429,6 +423,11 @@ public class PeopleActivity extends AppCompatActivity
                     intent.setType("image/*");
                     if (intent.resolveActivity(getPackageManager()) != null)
                         startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.dialog_permission_rationale_take_photo))
+                            .setPositiveButton(getString(R.string.ok), null)
+                            .show();
                 }
                 break;
         }
@@ -441,53 +440,107 @@ public class PeopleActivity extends AppCompatActivity
         // Custom Icon Upload
         if (requestCode == REQUEST_IMAGE_GET_ICON && resultCode == RESULT_OK) {
             Uri dataUri = data.getData();
-            Bitmap setImageBitmap = null;
-
-            try {
-                setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), dataUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            selfIconView.setImageBitmap(setImageBitmap);
-
-            // Store the image in Firebase
-            String filePath = dataUri.toString();
-            StorageReference storageRef = mFirebaseStorage.getReferenceFromUrl("gs://plume-academy-assistant.appspot.com");
-            StorageReference iconRef = storageRef.child(mUserId + ".jpg");
-            StorageReference iconsImagesRef = storageRef.child("images/" + mUserId + ".jpg");
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            setImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] byteData = baos.toByteArray();
-
-            UploadTask uploadTask = iconRef.putBytes(byteData);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    mDatabase.child("users").child(mUserId).child("icon").setValue(downloadUrl.toString());
-                }
-            });
+            selfIconView.setImageURI(dataUri);
 
             // Save the icon uri
             PreferenceManager.getDefaultSharedPreferences(this).edit()
                     .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), dataUri.toString())
                     .apply();
 
+            // Copy the file to the app's directory
+            InputStream inputStream = null;
+            try {
+                inputStream = getContentResolver().openInputStream(dataUri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            String filename = "icon.jpg";
+            byte[] data1 = new byte[0];
+            try {
+                data1 = getBytes(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            File file = new File(getFilesDir(), filename);
+            FileOutputStream outputStream;
+            try {
+                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(data1);
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // Image compression
+            Bitmap decodedBitmap = decodeFile(file);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+            byte[] bitmapData = baos.toByteArray();
+            file.delete();
+            File file1 = new File(getFilesDir(), filename);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Get the uri of the file so it can be saved
+            dataUri = Uri.fromFile(file1);
+
+            selfIconView.setImageURI(dataUri);
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("icon")
+                    .setValue(dataUri.toString());
+
+            // Upload the custom icon and photos
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            StorageReference iconRef = storageRef.child(mUserId + "/icon");
+            selfIconView.setDrawingCacheEnabled(true);
+            selfIconView.buildDrawingCache();
+            Bitmap bitmap = loadBitmapFromView(selfIconView);
+            ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos1);
+            byte[] data2 = baos1.toByteArray();
+
+            UploadTask uploadTask = iconRef.putBytes(data2);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // TODO: Handle unsuccessful uploads
+                    Log.v(LOG_TAG, "Upload Failed: " + e.getMessage());
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // TODO: Handle successful upload if any action is required
+                    Log.v(LOG_TAG, "Upload Success: " + taskSnapshot.getDownloadUrl());
+                }
+            });
         }
 
         if (requestCode == REQUEST_SCAN_QR_CODE) {
             if (resultCode == RESULT_OK) {
+                final String contents = data.getStringExtra("SCAN_RESULT");
+                // Check if the QR Code is invalid
+                if (contents.contains(".") || contents.contains("#")
+                        || contents.contains("&") || contents.contains("[")
+                        || contents.contains("]")) {
+                    new AlertDialog.Builder(PeopleActivity.this).setTitle(getString(R.string.error))
+                            .setMessage(getString(R.string.invalid_qr_message))
+                            .setPositiveButton(getString(R.string.ok), null)
+                            .show();
+                    return;
+                }
+
                 // Check if the QR Code is a user's Firebase ID
                 // Then get the id and send the intent to AddPeerActivity
-                final String contents = data.getStringExtra("SCAN_RESULT");
                 final DatabaseReference peerRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(contents);
 
@@ -521,10 +574,56 @@ public class PeopleActivity extends AppCompatActivity
                     }
                 });
             }
-            if(resultCode == RESULT_CANCELED){
+            if (resultCode == RESULT_CANCELED) {
                 //handle cancel
             }
         }
+    }
+
+    private Bitmap loadBitmapFromView(View v) {
+        Bitmap b = Bitmap.createBitmap( v.getLayoutParams().width, v.getLayoutParams().height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.layout(0, 0, v.getLayoutParams().width, v.getLayoutParams().height);
+        v.draw(c);
+        return b;
+    }
+
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
+    }
+
+    private Bitmap decodeFile(File f) {
+        try {
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 300;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+            while (o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            // Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+        } catch (FileNotFoundException e) {
+        }
+        return null;
     }
 
     @Override
@@ -571,8 +670,9 @@ public class PeopleActivity extends AppCompatActivity
 
     private void loadLogInView() {
         Intent intent = new Intent(this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void logOut() {
@@ -625,14 +725,27 @@ public class PeopleActivity extends AppCompatActivity
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
             }
-            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onCancelled(DatabaseError databaseError) {}});
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         // CANCEL CLASS NOTIFICATIONS
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        final int weekNumber = preferences.getInt(getString(R.string.KEY_WEEK_NUMBER), 0);
+        final String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
         DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mFirebaseUser.getUid()).child("classes");
         classesRef.addChildEventListener(new ChildEventListener() {
@@ -646,7 +759,7 @@ public class PeopleActivity extends AppCompatActivity
 
                 // Get the listed data
                 ArrayList<Integer> timeins = new ArrayList<>();
-                if (weekNumber == 0)
+                if (weekNumber.equals("0"))
                     for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren())
                         timeins.add(timeinSnapshot.getValue(int.class));
                 else
@@ -699,10 +812,22 @@ public class PeopleActivity extends AppCompatActivity
                 }
 
             }
-            @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-            @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-            @Override public void onCancelled(DatabaseError databaseError) {}
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
         });
 
         // Reschedule all SQLite based Task Notifications
@@ -859,21 +984,19 @@ public class PeopleActivity extends AppCompatActivity
 
     // Custom Icon Upload Intent
     private void sendCustomIconIntent() {
-        Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
         // Conduct permission check
-//        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_DOCUMENTS);
-//        if (permissionCheck == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-//            // Execute intent
-//            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//            intent.setType("image/*");
-//            if (intent.resolveActivity(getPackageManager()) != null)
-//                startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
-//        } else {
-//            // Prompt user for permission
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{Manifest.permission.MANAGE_DOCUMENTS},
-//                    REQUEST_PERMISSION_MANAGE_DOCUMENTS);
-//        }
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            if (intent.resolveActivity(getPackageManager()) != null)
+                startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+        }
     }
 
     private void showBuiltInIconsDialog() {
@@ -949,6 +1072,10 @@ public class PeopleActivity extends AppCompatActivity
         return null;
     }
 
+    private void addPeer() {
+
+    }
+
     private void getPeersArrayData() {
         // Get Array data from Firebase
         final ArrayList<Peer> arrayList = new ArrayList<>();
@@ -957,35 +1084,109 @@ public class PeopleActivity extends AppCompatActivity
         String userId = firebaseUser.getUid();
         DatabaseReference peersRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(userId).child("peers");
-        peersRef.addChildEventListener(new ChildEventListener() {
+        peersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.v(LOG_TAG, "onChildAdded");
-                String iconUri = dataSnapshot.child("icon").getValue(String.class);
-                String name = dataSnapshot.child("nickname").getValue(String.class);
-                String flavour = dataSnapshot.child("flavour").getValue(String.class);
-                uidList.add(dataSnapshot.getKey());
-                nameList.add(name);
-                flavourList.add(flavour);
-                iconList.add(iconUri);
-                arrayList.add(new Peer(iconUri, name));
-                PeerAdapter adapter = new PeerAdapter(PeopleActivity.this, R.layout.list_item_peer, arrayList);
-                listView.setAdapter(adapter);
-            }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot peerSnapshot: dataSnapshot.getChildren()) {
+                    final String name = peerSnapshot.child("nickname").getValue(String.class);
+                    String flavour = peerSnapshot.child("flavour").getValue(String.class);
+                    uidList.add(peerSnapshot.getKey());
+                    nameList.add(name);
+                    flavourList.add(flavour);
+                    final String iconUri = peerSnapshot.child("icon").getValue(String.class);
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                Log.v(LOG_TAG, "onChildChanged");
-            }
+                    // Check if iconUri points to a valid file
+                    final File file = new File(getFilesDir(), iconUri);
+                    if (file.exists() || iconUri.contains("android.resource://com.pdt.plume")) {
+                        iconList.add(iconUri);
+                        arrayList.add(new Peer(iconUri, name));
+                        final PeerAdapter adapter = new PeerAdapter(PeopleActivity.this, R.layout.list_item_peer, arrayList);
+                        listView.setAdapter(adapter);
+                        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                            @Override
+                            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                PopupMenu popupMenu = new PopupMenu(PeopleActivity.this, view);
+                                popupMenu.getMenuInflater().inflate(R.menu.menu_peer, popupMenu.getMenu());
+                                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem item) {
+                                        if (item.getItemId() == R.id.action_remove) {
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(PeopleActivity.this);
+                                            builder.setMessage(getString(R.string.dialog_remove_peer, name))
+                                                    .setNegativeButton(getString(R.string.cancel), null)
+                                                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                                            // Remove the peer from the peers tab
+                                                            final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference()
+                                                                    .child("users");
+                                                            usersRef.child(mUserId).child("peers").child(peerSnapshot.getKey()).removeValue();
+                                                            usersRef.child(peerSnapshot.getKey()).child("peers").child(mUserId).removeValue();
+                                                            arrayList.remove(i);
+                                                            adapter.notifyDataSetChanged();
+                                                        }
+                                                    })
+                                                    .show();
+                                        }
+                                        return true;
+                                    }
+                                });
+                                popupMenu.show();
+                                return true;
+                            }
+                        });
+                    } else {
+                        // FILE DOESN'T EXIST: DOWNLOAD FROM CLOUD STORAGE
+                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                        StorageReference storageRef = storage.getReference();
+                        StorageReference iconRef = storageRef.child(peerSnapshot.getKey()).child("icon");
+                        iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                // ADD THE LIST ITEM HERE
+                                arrayList.add(new Peer(iconUri, name));
+                                final PeerAdapter adapter = new PeerAdapter(PeopleActivity.this, R.layout.list_item_peer, arrayList);
+                                listView.setAdapter(adapter);
+                                listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                                    @Override
+                                    public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                        PopupMenu popupMenu = new PopupMenu(PeopleActivity.this, view);
+                                        popupMenu.getMenuInflater().inflate(R.menu.menu_peer, popupMenu.getMenu());
+                                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                            @Override
+                                            public boolean onMenuItemClick(MenuItem item) {
+                                                if (item.getItemId() == R.id.action_remove) {
+                                                    AlertDialog.Builder builder = new AlertDialog.Builder(PeopleActivity.this);
+                                                    builder.setMessage(getString(R.string.dialog_remove_peer, name))
+                                                            .setNegativeButton(getString(R.string.cancel), null)
+                                                            .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                                    // Remove the peer from the peers tab
+                                                                    final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference()
+                                                                            .child("users");
+                                                                    usersRef.child(mUserId).child("peers").child(peerSnapshot.getKey()).removeValue();
+                                                                    usersRef.child(peerSnapshot.getKey()).child("peers").child(mUserId).removeValue();
+                                                                    arrayList.remove(i);
+                                                                    adapter.notifyDataSetChanged();
+                                                                }
+                                                            })
+                                                            .show();
+                                                }
+                                                return true;
+                                            }
+                                        });
+                                        popupMenu.show();
+                                        return true;
+                                    }
+                                });
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                            }
+                        });
+                    }
 
-            }
 
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+                }
             }
 
             @Override

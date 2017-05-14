@@ -4,12 +4,12 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -44,7 +44,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -54,9 +53,11 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -74,19 +75,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.services.ClassesActivityTablet;
 import com.pdt.plume.services.ScheduleNotificationService;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 import static android.os.Build.ID;
-import static com.pdt.plume.ScheduleFragment.showBlockHeaderA;
-import static com.pdt.plume.ScheduleFragment.showBlockHeaderB;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
@@ -102,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String LOG_TAG = MainActivity.class.getSimpleName();
     Utility utility = new Utility();
     boolean isTablet = false;
+    boolean isLandscape;
 
     // UI Elements
     Toolbar mToolbar;
@@ -116,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FloatingActionButton fab;
 
     // Variables aiding schedule
-    int weekNumber;
+    String weekSettings;
 
     // Intent Data
     public static boolean notificationServiceIsRunning = false;
@@ -127,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     boolean loggedIn = false;
     MenuItem logInOut;
     CallbackManager callbackManager;
+    ValueEventListener requestsListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,19 +133,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_main);
         fab = (FloatingActionButton) findViewById(R.id.fab);
+        isLandscape = getResources().getBoolean(R.bool.isLandscape);
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
-        preferences.edit()
-                .putInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent))
-                .apply();
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+        updateWeekNumber();
 
         // Initialise Facebook
         CallbackManager callbackManager = CallbackManager.Factory.create();
@@ -185,21 +183,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         boolean FIRST_LAUNCH = preferences.getBoolean(getString(R.string.KEY_FIRST_LAUNCH), true);
 
-        // If it's the first time launching this version, perform this function
-        if (!FIRST_LAUNCH && preferences.getBoolean(getString(R.string.Version), true)) {
-            // Show the changelog dialog
-            preferences.edit()
-                    .putBoolean(getString(R.string.Version), false)
-                    .apply();
+//         If it's the first time launching this version, perform this function
+//        if (!FIRST_LAUNCH && preferences.getBoolean(getString(R.string.Version), true)) {
+//            // Show the changelog dialog
+//            preferences.edit()
+//                    .putBoolean(getString(R.string.Version), false)
+//                    .apply();
+//
+//            new AlertDialog.Builder(this)
+//                    .setTitle(getString(R.string.changelog_title, getString(R.string.Version)))
+//                    .setMessage(getString(R.string.changelog))
+//                    .setPositiveButton(getString(R.string.ok), null)
+//                    .show();
+//        }
 
+        // If a week has passed since using the app, let the user give the app a good rating
+        Calendar firstLaunch = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
+        long firstLaunchMillis = preferences.getLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), 0);
+        firstLaunch.setTimeInMillis(firstLaunchMillis);
+        int day1 = firstLaunch.get(Calendar.DAY_OF_YEAR);
+        int day2 = c.get(Calendar.DAY_OF_YEAR);
+
+        boolean weekPassed = preferences.getBoolean(getString(R.string.KEY_WEEK_PASSED), false);
+        Log.v(LOG_TAG, "Week passed: " + weekPassed);
+        if ((day2 >= day1 + 7 || day2 < day1) && !weekPassed) {
+            preferences.edit()
+                    .putBoolean(getString(R.string.KEY_WEEK_PASSED), true)
+                    .apply();
             new AlertDialog.Builder(this)
-                    .setTitle("Version 0.4 Changelog")
-                    .setMessage("+ You can now log in with Facebook\n\n" +
-                            "+ You can now upload your own icons for your classes and tasks\n\n" +
-                            "+ See how many peer requests you have with an unseen request counter in the side menu\n\n" +
-                            "+ You can now add photos with your tasks\n\n" +
-                            "+ Several bug fixes\n")
-                    .setPositiveButton(getString(R.string.ok), null)
+                    .setTitle(getString(R.string.dialog_rate_title))
+                    .setMessage(getString(R.string.dialog_rate))
+                    .setPositiveButton(getString(R.string.rate), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Uri uri = Uri.parse("market://details?id=" + getPackageName());
+                            Intent myAppLinkToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                            try {
+                                startActivity(myAppLinkToMarket);
+                            } catch (ActivityNotFoundException e) {
+                                Toast.makeText(MainActivity.this, " unable to find market app", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    })
+                    .setNegativeButton(getString(R.string.not_now), null)
                     .show();
         }
 
@@ -233,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (mFirebaseUser != null) {
                 DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mFirebaseUser.getUid()).child("requests");
-                requestsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                requestsListener =  new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         long childrenCount = dataSnapshot.getChildrenCount();
@@ -244,7 +271,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                };
+                requestsRef.addValueEventListener(requestsListener);
             }
         }
 
@@ -254,6 +282,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             notificationServiceIsRunning = true;
         }
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFirebaseUser != null) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid()).child("requests")
+                    .removeEventListener(requestsListener);
+        }
     }
 
     @Override
@@ -274,15 +312,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (!isTablet) {
             Calendar c = Calendar.getInstance();
             TextView headerTextView = (TextView) findViewById(R.id.header);
-            if (showBlockHeaderA) {
-                String blockString = utility.formatBlockString(this, 0);
-                headerTextView.setText(blockString);
-            } else if (showBlockHeaderB) {
-                String blockString = utility.formatBlockString(this, 1);
-                headerTextView.setText(blockString);
+            TextView subheader = (TextView) findViewById(R.id.subheader);
+            headerTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+            String basis = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getString(getString(R.string.KEY_PREFERENCE_BASIS), "0");
+            if (basis.equals("2")) {
+                String blockString;
+                int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+                Log.v(LOG_TAG, "Day: " + day);
+                if (day == 1 || day == 3 || day == 5)
+                    blockString = utility.formatBlockString(this, 0);
+                else if (day == 2 || day == 4)
+                    blockString = utility.formatBlockString(this, 1);
+                else blockString = getString(R.string.weekend);
+                subheader.setText(blockString);
             } else {
-                headerTextView.setText(utility.formatDateString(this, c.get(Calendar.YEAR),
-                        c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+                String weekNumber = PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString(getString(R.string.KEY_WEEK_NUMBER), "0");
+                String weekString = PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString(getString(R.string.KEY_SETTINGS_WEEK_FORMAT), "w:l");
+                if (weekNumber.equals("0"))
+                    weekString = weekString.replace("w", getString(R.string.week))
+                    .replace(":", " ")
+                    .replace("l", getString(R.string.A))
+                    .replace("n", getString(R.string.one))
+                    .replace("o", getString(R.string.first));
+                else weekString = weekString.replace("w", getString(R.string.week))
+                        .replace(":", " ")
+                        .replace("l", getString(R.string.B))
+                        .replace("n", getString(R.string.two))
+                        .replace("o", getString(R.string.second));
+                subheader.setText(weekString);
             }
         }
 
@@ -303,6 +364,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
+        if (isTablet)
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
 
         // Initialise the tab layout theme
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -481,11 +544,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         switch (item.getItemId()) {
             case R.id.nav_classes:
-                startActivity(new Intent
+                if (isTablet) startActivity(new Intent
+                            (this, ClassesActivityTablet.class));
+                else startActivity(new Intent
                         (this, ClassesActivity.class));
                 break;
             case R.id.nav_people:
-                startActivity(new Intent
+                if (isTablet) startActivity(new Intent
+                        (this, PeopleActivityTablet.class));
+                else startActivity(new Intent
                         (this, PeopleActivity.class));
                 break;
             case R.id.nav_requests:
@@ -525,8 +592,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         // Initialise the week number
-        weekNumber = 0;
+        weekSettings = "0";
         editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");
+        Calendar c = Calendar.getInstance();
+        int weekOfYear = c.get(Calendar.WEEK_OF_YEAR);
+        editor.putInt(getString(R.string.KEY_WEEK_OF_YEAR), weekOfYear);
+
+        editor.putLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), c.getTimeInMillis());
 
         // Commit the preferences
         editor.apply();
@@ -538,8 +610,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Check for any  peer requests and set it in the navigation view
     private void setMenuCounter(@IdRes int itemId, int count) {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        TextView view = (TextView) navigationView.getMenu().findItem(itemId).getActionView();
-        view.setText(count > 0 ? String.valueOf(count) : null);
+        FrameLayout view = (FrameLayout) navigationView.getMenu().findItem(itemId).getActionView();
+        TextView viewText = (TextView) view.findViewById(R.id.textView);
+        viewText.setText(count > 0 ? String.valueOf(count) : null);
         if (count == 0)
             view.setVisibility(View.GONE);
         else view.setVisibility(View.VISIBLE);
@@ -809,33 +882,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void updateWeekNumber() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        weekSettings = preferences.getString(getString(R.string.KEY_SETTINGS_WEEK_NUMBER), "0");
+
         Calendar c = Calendar.getInstance();
         int weekOfYear = c.get(Calendar.WEEK_OF_YEAR);
-        String weekSetting = preferences.getString(getString(R.string.KEY_WEEK_NUMBER_SETTING), "0");
-        int weekNumber;
-
-
-        if (weekSetting.equals("0")) {
-            // Week A will be on an odd number week
-            if ((weekOfYear & 0x01) != 0)
-                weekNumber = 0;
-            else weekNumber = 1;
-        } else {
-            // Week A will be on an even number week
-            if ((weekOfYear & 0x01) != 0)
-                weekNumber = 1;
-            else weekNumber = 0;
+        int savedWeekOfYear = preferences.getInt(getString(R.string.KEY_WEEK_OF_YEAR), 0);
+        if (weekOfYear > savedWeekOfYear) {
+            SharedPreferences.Editor editor = preferences.edit();
+            int difference = weekOfYear - savedWeekOfYear;
+            if (difference % 2 > 0) {
+                if (weekSettings.equals("0"))
+                    editor.putString(getString(R.string.KEY_WEEK_NUMBER), "1");
+                else editor.putString(getString(R.string.KEY_WEEK_NUMBER), "0");;
+            }
+            editor.putInt(getString(R.string.KEY_WEEK_OF_YEAR), weekOfYear)
+                    .apply();
+        } else if (weekOfYear < savedWeekOfYear) {
+            preferences.edit().putInt(getString(R.string.KEY_WEEK_OF_YEAR), weekOfYear)
+                    .putString(getString(R.string.KEY_WEEK_NUMBER), "0")
+                    .apply();
         }
 
-        // Save the new date data to SharedPreferences
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("weekNumber", weekNumber)
-                .apply();
+        Log.v(LOG_TAG, "Week number: " + preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0"));
+
     }
 
     private void loadLogInView() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        if (isTablet) startActivity(new Intent(this, LoginActivityTablet.class));
+        else startActivity(new Intent(this, LoginActivity.class));
     }
 
     private void logOut() {
@@ -922,7 +996,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     // Get the listed data
                     ArrayList<Integer> timeins = new ArrayList<>();
-                    if (weekNumber == 0)
+                    if (weekSettings.equals("0"))
                         for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
                             timeins.add(timeinSnapshot.getValue(int.class));
                     else

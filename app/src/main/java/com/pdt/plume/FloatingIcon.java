@@ -22,8 +22,7 @@ public class FloatingIcon extends android.support.v7.widget.AppCompatImageView {
     public FloatingIcon(Context context) {
         super(context);
 
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         int height = displayMetrics.heightPixels;
         y = height;
     }

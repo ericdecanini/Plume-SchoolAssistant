@@ -1,6 +1,7 @@
 package com.pdt.plume;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -11,11 +12,25 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Spinner;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -123,20 +138,24 @@ public class Utility {
         return ((hourOfDay * 60 * 60) + (minute * 60)) * 1000;
     }
 
-    // Helper method for converting seconds into a time string
-    public String millisToHourTime(long seconds) {
+    // Helper method for converting millis into a time string
+    public String millisToHourTime(long millis) {
         // Return a blank string if there is no time data
-        if (seconds == -1)
+        if (millis == -1)
             return "";
-        seconds /= 1000;
+        millis /= 1000;
         // Get the hour by dividing with decimals disregarded
-        int hourOfDay = (int) seconds / 3600;
+        int hourOfDay = (int) millis / 3600;
         // Get the minutes by formula as a float to
         // allow for decimals to be computed
-        float floatMinute = seconds - hourOfDay * 3600;
+        float floatMinute = millis - hourOfDay * 3600;
         floatMinute = (floatMinute / 3600) * 60;
         // Convert minute from float to int
         int minute = (int) floatMinute;
+
+        if (hourOfDay == 24)
+            hourOfDay = 0;
+
         // If minute is less than 10, add a 0 to improve visual impact
         if (minute < 10)
             return hourOfDay + ":0" + minute;
@@ -406,57 +425,47 @@ public class Utility {
 
         String[] splitOccurrence = occurrence.split(":");
         String[] splitPeriods = periods.split(":");
-        ScheduleFragment.showBlockHeaderA = false;
-        ScheduleFragment.showBlockHeaderB = false;
 
         // 1ST CHECK: Block Based Day Check
         if (splitOccurrence[0].equals("2")) {
             // Get the preference for the Block format and set the boolean to show the block header
-            String blockFormat = ((Activity) context).getPreferences(Context.MODE_PRIVATE)
-                    .getString("blockFormat", "0:1:2:1:2:1:0");
+            String blockFormat = PreferenceManager.getDefaultSharedPreferences(context)
+                    .getString("blockformat", "0:1:2:1:2:1:0");
             String[] splitBlockFormat = blockFormat.split(":");
 
             // Day A Check
             if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
-                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
                 }
             if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
-                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
                 }
             if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
-                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
                 }
             if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
-                    ScheduleFragment.showBlockHeaderA = true;
                     return true;
                 }
 
             // Day B Check
             if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
-                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
                 }
             if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
-                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
                 }
             if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
-                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
                 }
             if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
-                    ScheduleFragment.showBlockHeaderB = true;
                     return true;
                 }
         }

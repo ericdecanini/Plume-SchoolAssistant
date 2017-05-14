@@ -3,18 +3,21 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +70,7 @@ public class TaskAdapter extends ArrayAdapter {
             holder.taskClass = (TextView) row.findViewById(R.id.task_class);
             holder.taskType = (TextView) row.findViewById(R.id.task_type);
             holder.date = (TextView)row.findViewById(R.id.task_date);
+            holder.sharer = (TextView)row.findViewById(R.id.task_sharer);
 
             row.setTag(holder);
         }
@@ -96,6 +100,9 @@ public class TaskAdapter extends ArrayAdapter {
 
         // If this returns null, list_item_task2 is being used which only has icon and title
         if (holder.taskClass != null) {
+            if (!task.taskShared.equals(""))
+                holder.sharer.setText(context.getString(R.string.shared_by, task.taskShared));
+            else holder.sharer.setText("");
             holder.taskClass.setText(task.taskClass);
             holder.taskType.setText(task.taskType);
 
@@ -114,6 +121,7 @@ public class TaskAdapter extends ArrayAdapter {
         TextView taskClass;
         TextView taskType;
         TextView date;
+        TextView sharer;
     }
 
 

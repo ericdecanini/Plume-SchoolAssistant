@@ -174,6 +174,7 @@ public class ScheduleDetailFragment extends Fragment {
 
         // Get references to the UI elements
         final ImageView icon = (ImageView) rootview.findViewById(R.id.icon);
+        final ImageView icon2 = (ImageView) rootview.findViewById(R.id.icon2);
         final TextView titleTextview = (TextView) rootview.findViewById(R.id.title);
         final TextView teacherTextview = (TextView) rootview.findViewById(R.id.teacher);
         final TextView roomTextview = (TextView) rootview.findViewById(R.id.room);
@@ -239,7 +240,9 @@ public class ScheduleDetailFragment extends Fragment {
 
                         // Apply data to the UI
                         if (iconUri != null)
+                            if (iconUri.toString().contains("android.resource://com.pdt.plume"))
                             icon.setImageURI(iconUri);
+                        else icon2.setImageURI(iconUri);
                         teacherTextview.setText(teacher);
                         roomTextview.setText(room);
                         if ((teacher == null || teacher.equals("")) && (room == null || room.equals("")))
@@ -493,7 +496,9 @@ public class ScheduleDetailFragment extends Fragment {
 
                     // Apply data to the UI
                     if (iconUri != null)
-                        icon.setImageURI(iconUri);
+                        if (iconUri.toString().contains("android.resource://com.pdt.plume"))
+                            icon.setImageURI(iconUri);
+                        else icon2.setImageURI(iconUri);
                     titleTextview.setText(title);
                     teacherTextview.setText(teacher);
                     roomTextview.setText(room);

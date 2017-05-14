@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -27,7 +29,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.R.attr.editable;
@@ -88,7 +98,11 @@ public class UserSearchActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(UserSearchActivity.this, AddPeerActivity.class);
+                Class activity;
+                if (getResources().getBoolean(R.bool.isTablet))
+                    activity = AddPeerActivityTablet.class;
+                else activity = AddPeerActivity.class;
+                Intent intent = new Intent(UserSearchActivity.this, activity);
                 intent.putExtra("id", searchResultIDs.get(i));
                 startActivity(intent);
             }
@@ -98,16 +112,6 @@ public class UserSearchActivity extends AppCompatActivity {
         textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                if (charSequence.toString().length() == 0) {
-//                    clearButton.setVisibility(View.GONE);
-//                    searchResults.clear();
-//                    searchResultIDs.clear();
-//                    adapter.notifyDataSetChanged();
-//                }
-//                else {
-//                    clearButton.setVisibility(View.VISIBLE);
-//                    ASyncUserSearch(charSequence.toString());
-//                }
             }
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -124,16 +128,6 @@ public class UserSearchActivity extends AppCompatActivity {
             }
             @Override
             public void afterTextChanged(Editable editable) {
-//                if (editable.toString().length() == 0) {
-//                    clearButton.setVisibility(View.GONE);
-//                    searchResults.clear();
-//                    searchResultIDs.clear();
-//                    adapter.notifyDataSetChanged();
-//                }
-//                else {
-//                    clearButton.setVisibility(View.VISIBLE);
-//                    ASyncUserSearch(editable.toString());
-//                }
             }
         };
         searchBar.addTextChangedListener(textWatcher);
@@ -157,13 +151,46 @@ public class UserSearchActivity extends AppCompatActivity {
             FirebaseDatabase.getInstance().getReference().child("users")
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                                String name = userSnapshot.child("nickname").getValue(String.class);
-                                String icon = userSnapshot.child("icon").getValue(String.class);
-                                userNames.add(name);
-                                userList.add(new Peer(icon, name));
-                                userIDs.add(userSnapshot.getKey());
+                        public void onDataChange(final DataSnapshot dataSnapshot) {
+                            for (final DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                final String name = userSnapshot.child("nickname").getValue(String.class);
+                                String iconUri = userSnapshot.child("icon").getValue(String.class);
+                                if (name != null && iconUri != null) {
+                                    iconUri = iconUri.replace("icon", userSnapshot.getKey());
+                                    if (!iconUri.contains("android.resource://")) {
+                                        String[] iconUriSplit = iconUri.split("/");
+                                        File file = new File(getFilesDir(), iconUriSplit[iconUriSplit.length - 1]);
+                                        if (file.exists()) {
+                                            // ADD THE LIST ITEM HERE
+                                            userIDs.add(userSnapshot.getKey());
+                                            userList.add(new Peer(iconUri, name));
+                                            userNames.add(name);
+                                        } else {
+                                            // File doesn't exist: Download from storage
+                                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                                            StorageReference storageRef = storage.getReference();
+                                            StorageReference iconRef = storageRef.child(userSnapshot.getKey()).child("icon");
+
+                                            file = new File(getFilesDir(), userSnapshot.getKey() +  ".jpg");
+
+                                            final String finalIconUri = iconUri;
+                                            iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                                @Override
+                                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                    // ADD THE LIST ITEM HERE
+                                                    userIDs.add(userSnapshot.getKey());
+                                                    userList.add(new Peer(finalIconUri, name));
+                                                    userNames.add(name);
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        // Drawable being used
+                                        userIDs.add(userSnapshot.getKey());
+                                        userList.add(new Peer(iconUri, name));
+                                        userNames.add(name);
+                                    }
+                                }
                             }
                         }
 
@@ -197,25 +224,28 @@ public class UserSearchActivity extends AppCompatActivity {
         searchResults.clear();
         searchResultIDs.clear();
         for (int i = 0; i < userNames.size(); i++) {
-            if (searchResultApproved(userNames.get(i), text, 0)) {
+            if (searchResultApproved(userNames.get(i), text, 0) && !userIDs.get(i).equals(mUserId)) {
                 searchResults.add(userList.get(i));
                 searchResultIDs.add(userIDs.get(i));
             }
         }
         for (int i = 0; i < userNames.size(); i++) {
-            if (searchResultApproved(userNames.get(i), text, 1) && !searchResultIDs.contains(userIDs.get(i))) {
+            if (searchResultApproved(userNames.get(i), text, 1) && !searchResultIDs.contains(userIDs.get(i))
+                    && !userIDs.get(i).equals(mUserId)) {
                 searchResults.add(userList.get(i));
                 searchResultIDs.add(userIDs.get(i));
             }
         }
         for (int i = 0; i < userNames.size(); i++) {
-            if (searchResultApproved(userNames.get(i), text, 2) && !searchResultIDs.contains(userIDs.get(i))) {
+            if (searchResultApproved(userNames.get(i), text, 2) && !searchResultIDs.contains(userIDs.get(i))
+                    && !userIDs.get(i).equals(mUserId)) {
                 searchResults.add(userList.get(i));
                 searchResultIDs.add(userIDs.get(i));
             }
         }
         for (int i = 0; i < userNames.size(); i++) {
-            if (searchResultApproved(userNames.get(i), text, 3) && !searchResultIDs.contains(userIDs.get(i))) {
+            if (searchResultApproved(userNames.get(i), text, 3) && !searchResultIDs.contains(userIDs.get(i))
+                    && !userIDs.get(i).equals(mUserId)) {
                 searchResults.add(userList.get(i));
                 searchResultIDs.add(userIDs.get(i));
             }

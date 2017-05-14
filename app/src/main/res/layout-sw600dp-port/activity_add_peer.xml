@@ -34,7 +34,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Pandakun"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
@@ -45,7 +44,6 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
                 android:maxWidth="386dp"
-                android:text="To be or not to be"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 
@@ -58,17 +56,12 @@
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin">
 
-            <View
-                android:layout_width="36dp"
-                android:layout_height="3dp"
-                android:layout_gravity="bottom"
-                android:background="@color/gray_500" />
-
             <TextView
                 android:id="@+id/whichClasses"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
+                android:visibility="gone"
                 android:layout_marginTop="16dp"
                 android:text="@string/whichClasses"
                 android:textColor="@color/black_0.54"
@@ -90,7 +83,7 @@
                 android:layout_marginTop="32dp"
                 android:progressDrawable="@drawable/circular_progress_bar" />
 
-            <ListView
+            <com.pdt.plume.NonScrollListView
                 android:id="@+id/listView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

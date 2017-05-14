@@ -62,7 +62,8 @@ public class ScheduleAdapter extends ArrayAdapter {
             // Get references to the View Holder's views
             // by searching the row for the UI element
             holder = new ViewHolder();
-            if (schedule.scheduleCustomIcon != null || !schedule.scheduleIcon.contains("art_"))
+            Log.v(LOG_TAG, "Schedule Icon Uri: " + schedule.scheduleIcon);
+            if (!schedule.scheduleIcon.contains("art_"))
                 holder.icon = (ImageView)row.findViewById(R.id.schedule_icon2);
             else holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
             holder.lesson = (TextView)row.findViewById(R.id.schedule_lesson);
@@ -81,10 +82,9 @@ public class ScheduleAdapter extends ArrayAdapter {
 
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
-        if (schedule.scheduleCustomIcon == null || !schedule.scheduleIcon.contains("com.pdt.plume")) {
-            Uri uri = Uri.parse(schedule.scheduleIcon);
-            holder.icon.setImageURI(uri);
-        } else holder.icon.setImageBitmap(schedule.scheduleCustomIcon);
+        Uri uri = Uri.parse(schedule.scheduleIcon);
+        holder.icon.setImageURI(uri);
+
         holder.lesson.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
         if (schedule.scheduleLesson.contains("%0513%")) {
             if (schedule.scheduleLesson.split("%0513%")[1].equals("cross")) {
@@ -103,7 +103,6 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher.setText(schedule.scheduleTeacher);
             holder.room.setText(schedule.scheduleRoom);
 
-            Log.v(LOG_TAG, "Out: " + schedule.scheduleTimeOut + ", In: " + schedule.scheduleTimeIn);
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,

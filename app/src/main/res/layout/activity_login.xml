@@ -121,6 +121,14 @@
                 android:paddingTop="10dp"
                 android:textSize="18sp" />
 
+            <com.google.android.gms.common.SignInButton
+                android:id="@+id/googleLoginButton"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp" />
+
         </LinearLayout>
 
         <TextView

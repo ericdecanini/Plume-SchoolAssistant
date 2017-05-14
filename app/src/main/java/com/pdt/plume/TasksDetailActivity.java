@@ -16,7 +16,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -43,6 +42,7 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -61,7 +61,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.services.RevisionTimerService;
@@ -71,12 +70,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+
+import static com.pdt.plume.R.id.collapsingToolbar;
+import static com.pdt.plume.R.id.fab;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
@@ -87,6 +85,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     private static boolean active = false;
 
     // Theme Variables
+    int mDefaultColor;
     int mPrimaryColor;
     int mDarkColor;
     int mSecondaryColor;
@@ -124,13 +123,20 @@ public class TasksDetailActivity extends AppCompatActivity {
     private AppBarLayout mToolbar;
 
     int i = 0;
+    boolean isTablet;
+    boolean isLandscape;
+    boolean transitioning = false;
 
     private void executeEnterTransition() {
+        transitioning = false;
         mToolbar = (AppBarLayout) findViewById(R.id.appbar);
 
         // Explode the icon into the circle reveal
         mRevealView2 = findViewById(R.id.reveal2);
         mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+
+        if (mPrimaryColor == getResources().getColor(R.color.colorPrimary))
+            return;
 
         Animator animator = ViewAnimationUtils.createCircularReveal(
                 mRevealView2,
@@ -197,40 +203,52 @@ public class TasksDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        isLandscape = getResources().getBoolean(R.bool.isLandscape);
+        if (savedInstanceState != null) transitioning = false;
+        else transitioning = true;
+        if (isLandscape) transitioning = false;
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) transitioning = false;
         // Set window properties
-        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-        getWindow().setEnterTransition(new AutoTransition());
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+            getWindow().setEnterTransition(new AutoTransition());
+        }
+
         setContentView(R.layout.activity_tasks_detail);
+        mToolbar = (AppBarLayout) findViewById(R.id.appbar);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
 
         // Add a listener to the shared transition
-        Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
-        sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
-            @Override
-            public void onTransitionStart(Transition transition) {
+        findViewById(R.id.temp_icon).setAlpha(0);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            Transition sharedElementEnterTransition = getWindow().getSharedElementEnterTransition();
+            sharedElementEnterTransition.addListener(new Transition.TransitionListener() {
+                @Override
+                public void onTransitionStart(Transition transition) {
+                    transitioning = true;
+                    findViewById(R.id.temp_icon).setAlpha(1);
+                }
 
-            }
+                @Override
+                public void onTransitionEnd(Transition transition) {
+                    executeEnterTransition();
+                }
 
-            @Override
-            public void onTransitionEnd(Transition transition) {
-                executeEnterTransition();
-            }
+                @Override
+                public void onTransitionCancel(Transition transition) {
+                }
 
-            @Override
-            public void onTransitionCancel(Transition transition) {
+                @Override
+                public void onTransitionPause(Transition transition) {
+                }
 
-            }
+                @Override
+                public void onTransitionResume(Transition transition) {
+                }
+            });
+        }
 
-            @Override
-            public void onTransitionPause(Transition transition) {
-
-            }
-
-            @Override
-            public void onTransitionResume(Transition transition) {
-
-            }
-        });
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -240,11 +258,13 @@ public class TasksDetailActivity extends AppCompatActivity {
 
         // Set the attributes of the window
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        final CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbar);
-        final ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle(getString(R.string.task));
-        collapsingToolbar.setTitle("");
+        if (!isTablet) {
+            final CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbar);
+            final ActionBar actionBar = getSupportActionBar();
+            actionBar.setTitle(getString(R.string.task));
+            collapsingToolbar.setTitle("");
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Set the mark as done button
         markAsDoneView = (TextView) findViewById(R.id.mark_as_done);
@@ -287,13 +307,20 @@ public class TasksDetailActivity extends AppCompatActivity {
                                 c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                         // Get the photo data
-                        long photoCount = dataSnapshot.child("photos").child("local").getChildrenCount();
-                        for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").child("local").getChildren()) {
-                            photoUris.add(Uri.parse(photoSnapshot.getValue(String.class)));
+                        long photoCount = dataSnapshot.child("photos").getChildrenCount();
+                        for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").getChildren()) {
+                            String photoPath = photoSnapshot.getKey()
+                                    .replace("'dot'", ".")
+                                    .replace("'slash'", "/")
+                                    .replace("'hash'", "#")
+                                    .replace("'ampers'", "&");
+                            photoUris.add(Uri.parse(photoPath));
                         }
-                        if (photoCount > 0) {
-                            // Add in the views for the photos
-                            for (int i = 0; i < photoUris.size(); i++) {
+                        // Add in the views for the photos
+                        for (int i = 0; i < photoUris.size(); i++) {
+                            // Check validity of URI
+                            File file = new File(photoUris.get(i).getPath());
+                            if (file.exists()) {
                                 int wh = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics()));
                                 LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
 
@@ -326,20 +353,19 @@ public class TasksDetailActivity extends AppCompatActivity {
                                         startActivity(pictureIntent, bundle);
                                     }
                                 });
-                            }
-                        } else {
-                            // Download the photo data
-                            FirebaseStorage storage = FirebaseStorage.getInstance();
-                            StorageReference storageRef = storage.getReference();
-                            i = 0;
-                            for (final DataSnapshot photoUriSnapshot : dataSnapshot.child("photos").child("cloud").getChildren()) {
-                                StorageReference photosRef = storageRef.child(photoUriSnapshot.getValue(String.class));
+                            } else {
+                                // Download the photo data
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReference();
+                                StorageReference photosRef = storageRef.child(dataSnapshot.child("photos")
+                                        .child(String.valueOf(i)).getKey());
                                 final long ONE_MEGABYTE = 1024 * 1024;
+                                final int finalI1 = i;
                                 photosRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                                     @Override
                                     public void onSuccess(byte[] bytes) {
                                         // Save the file locally
-                                        File file = new File(photoUris.get(i).toString());
+                                        File file = new File(photoUris.get(finalI1).toString());
                                         try {
                                             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
                                             bos.write(bytes);
@@ -363,7 +389,6 @@ public class TasksDetailActivity extends AppCompatActivity {
                                         photo.setId(Utility.generateViewId());
                                         photosLayout.addView(photo);
                                         photosLayout.setVisibility(View.VISIBLE);
-
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -372,6 +397,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                                     }
                                 });
                                 i++;
+
                             }
                         }
 
@@ -409,7 +435,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                     // Process the data for the duedate to a string
                     Calendar c = Calendar.getInstance();
                     duedateValue = (long) cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
-                    c.setTimeInMillis((long)duedateValue);
+                    c.setTimeInMillis((long) duedateValue);
                     duedate = utility.formatDateString(this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                     applyDataToUI();
@@ -497,9 +523,12 @@ public class TasksDetailActivity extends AppCompatActivity {
         TextView attachmentTextview = (TextView) findViewById(R.id.task_detail_attachment);
 
         // Apply the data to the UI
-        collapsingToolbar.setTitle(title);
+        if (isTablet) actionBar.setTitle(title);
+        else collapsingToolbar.setTitle(title);
+        if (isLandscape) getSupportActionBar().setTitle(title);
         collapsingToolbarSubtitle.setText(subtitle);
         duedateTextview.setText(getString(R.string.due, duedate));
+
         descriptionTextview.setText(description);
 
         if (description.length() == 0)
@@ -523,6 +552,12 @@ public class TasksDetailActivity extends AppCompatActivity {
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+        mDefaultColor = mPrimaryColor;
+        ImageView tempIcon = (ImageView) findViewById(R.id.temp_icon);
+        if (!transitioning)
+            tempIcon.setVisibility(View.INVISIBLE);
+        if (isLandscape)
+            tempIcon.setVisibility(View.INVISIBLE);
 
         Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
             @Override
@@ -557,7 +592,10 @@ public class TasksDetailActivity extends AppCompatActivity {
                     // Set the action bar colour according to the theme
                     mainColour = palette.getVibrantColor(mPrimaryColor);
                 }
-                if (mainColour == mPrimaryColor) findViewById(R.id.temp_icon).setVisibility(View.GONE);
+                if (mainColour == mPrimaryColor)
+                    findViewById(R.id.temp_icon).setVisibility(View.GONE);
+                if (!iconUri.contains("art_"))
+                    mainColour = mPrimaryColor;
                 mPrimaryColor = mainColour;
                 float[] hsv = new float[3];
                 int color = mainColour;
@@ -565,22 +603,40 @@ public class TasksDetailActivity extends AppCompatActivity {
                 hsv[2] *= 0.8f; // value component
                 mDarkColor = Color.HSVToColor(hsv);
 
+//                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
+//                    mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+
                 String icon = getIntent().getStringExtra("icon");
                 ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
 
-//                actionBar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                } else {
-//                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+
+                if (findViewById(R.id.temp_icon).getTag() != null || !transitioning) {
+                    getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+
+                    mToolbar.setBackgroundColor(mPrimaryColor);
+                    mRevealView = findViewById(R.id.reveal);
+                    mRevealView2 = findViewById(R.id.reveal2);
+                    mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                    mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+                    mRevealView.setVisibility(View.INVISIBLE);
+                    mRevealView2.setVisibility(View.INVISIBLE);
+                    mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                    mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                    } else {
+                        collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
+                    }
                 }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     getWindow().setStatusBarColor(mDarkColor);
                 }
+
+                markAsDoneView.setTextColor(mPrimaryColor);
             }
         });
-
-        markAsDoneView.setTextColor(mPrimaryColor);
 
         if (FLAG_TASK_COMPLETED) {
             markAsDoneView.setText(getString(R.string.mark_as_undone));

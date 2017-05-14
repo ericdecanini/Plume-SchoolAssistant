@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.api.model.StringList;
@@ -28,7 +29,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class PeerProfileActivity extends AppCompatActivity {
@@ -54,12 +59,13 @@ public class PeerProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_peer_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (!getResources().getBoolean(R.bool.isTablet))
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Get reference to the views
         TextView nameView = (TextView) findViewById(R.id.name);
         TextView flavourView = (TextView) findViewById(R.id.flavour);
-        ImageView iconView = (ImageView) findViewById(R.id.icon);
+        final ImageView iconView = (ImageView) findViewById(R.id.icon);
 
         // Initialise the theme
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -89,13 +95,43 @@ public class PeerProfileActivity extends AppCompatActivity {
         Intent intent = getIntent();
         uid = intent.getStringExtra("uid");
         profileName = intent.getStringExtra("name");
-        profileIcon = intent.getStringExtra("icon");
+        profileIcon = intent.getStringExtra("icon").replace("icon", uid);
         profileFlavour = intent.getStringExtra("flavour");
 
         // Set the key data
         nameView.setText(profileName);
-        iconView.setImageURI(Uri.parse(profileIcon));
         flavourView.setText(profileFlavour);
+        // Check if the icon points to an existing file
+        // First check if the icon uses a default drawable or from the storage
+        if (!profileIcon.contains("android.resource://com.pdt.plume")) {
+            String[] iconUriSplit = profileIcon.split("/");
+            File file = new File(getFilesDir(), iconUriSplit[iconUriSplit.length - 1]);
+            iconView.setImageURI(Uri.parse(profileIcon));
+            if (file.exists()) {
+                iconView.setImageURI(Uri.parse(profileIcon));
+            } else {
+                // File doesn't exist: Download from storage
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference();
+                StorageReference iconRef = storageRef.child(mUserId).child("/icon");
+
+                file = new File(getFilesDir(), "icon.jpg");
+                profileIcon = Uri.fromFile(file).toString();
+                FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(uid).child("icon")
+                        .setValue(profileIcon);
+
+                iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        iconView.setImageURI(Uri.parse(profileIcon));
+                    }
+                });
+            }
+        } else {
+            iconView.setImageURI(Uri.parse(profileIcon));
+        }
+
 
         // Initialise and inflate the listview
         listView = (ListView) findViewById(R.id.listView);
@@ -125,6 +161,8 @@ public class PeerProfileActivity extends AppCompatActivity {
                                         .child("users");
                                 usersRef.child(mUserId).child("peers").child(uid).removeValue();
                                 usersRef.child(uid).child("peers").child(mUserId).removeValue();
+                                Intent intent = new Intent(PeerProfileActivity.this, PeopleActivity.class);
+                                startActivity(intent);
                             }
                         })
                         .show();
@@ -149,7 +187,7 @@ public class PeerProfileActivity extends AppCompatActivity {
                 String title = dataSnapshot.getKey();
                 String iconUri = dataSnapshot.getValue(String.class);
                 Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,
-                        "", "", "", "", "", null);
+                        "", "", "", "", "");
                 schedule.addExtra(uid);
                 arrayList.add(schedule);
                 adapter.notifyDataSetChanged();

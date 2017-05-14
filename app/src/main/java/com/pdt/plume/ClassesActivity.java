@@ -37,6 +37,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -45,9 +46,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -136,14 +144,44 @@ public class ClassesActivity extends AppCompatActivity
         // Set the picture on top of the activity
         if (mFirebaseUser != null) {
             FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(mUserId).addValueEventListener(new ValueEventListener() {
+                    .child("users").child(mUserId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    ImageView icon = (ImageView) findViewById(R.id.icon);
+                public void onDataChange(final DataSnapshot dataSnapshot) {
+                    final ImageView icon = (ImageView) findViewById(R.id.icon);
                     String iconUri = dataSnapshot.child("icon").getValue(String.class);
                     icon.setVisibility(View.VISIBLE);
-                    if (iconUri != null)
-                        icon.setImageURI(Uri.parse(iconUri));
+                    if (iconUri != null) {
+                        // First check if the icon uses a default drawable or from the storage
+                        if (!iconUri.contains("android.resource://com.pdt.plume")) {
+                            String[] iconUriSplit = iconUri.split("/");
+                            File file = new File(getFilesDir(), iconUriSplit[iconUriSplit.length - 1]);
+                            icon.setImageURI(Uri.parse(iconUri));
+                            if (file.exists()) {
+                                icon.setImageURI(Uri.parse(iconUri));
+                            } else {
+                                // File doesn't exist: Download from storage
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReference();
+                                StorageReference iconRef = storageRef.child(mUserId).child("/icon");
+
+                                file = new File(getFilesDir(), "icon.jpg");
+                                iconUri = Uri.fromFile(file).toString();
+                                FirebaseDatabase.getInstance().getReference()
+                                        .child("users").child(mUserId)
+                                        .child("icon").setValue(iconUri);
+
+                                final String finalIconUri = iconUri;
+                                iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                        icon.setImageURI(Uri.parse(finalIconUri));
+                                    }
+                                });
+                            }
+                        } else {
+                            icon.setImageURI(Uri.parse(iconUri));
+                        }
+                    }
                     else icon.setImageResource(R.drawable.art_profile_default);
                     String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
                     FirebaseDatabase.getInstance().getReference()
@@ -578,6 +616,7 @@ public class ClassesActivity extends AppCompatActivity
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
+
                 }
             });
 
@@ -598,13 +637,32 @@ public class ClassesActivity extends AppCompatActivity
                         if (i == snapshotCount && !isTablet)
                             spinner.setVisibility(View.GONE);
 
-                        String title = classSnapshot.getKey();
-                        String icon = classSnapshot.child("icon").getValue(String.class);
-                        String teacher = classSnapshot.child("teacher").getValue(String.class);
-                        String room = classSnapshot.child("room").getValue(String.class);
-                        if (icon != null)
-                            mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
-                                    teacher, room, " ", " ", "", null));
+                        final String title = classSnapshot.getKey();
+                        final String icon = classSnapshot.child("icon").getValue(String.class);
+                        final String teacher = classSnapshot.child("teacher").getValue(String.class);
+                        final String room = classSnapshot.child("room").getValue(String.class);
+                        if (icon != null) {
+                            File file = new File(getFilesDir(), title + ".jpg");
+                            if (file.exists() || icon.contains("android.resource://com.pdt.plume")) {
+                                mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
+                                        teacher, room, " ", " ", ""));
+                            } else {
+                                // File is non existent: Download from storage
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReference();
+                                StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
+
+                                iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                        mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
+                                                teacher, room, " ", " ", ""));
+                                    }
+                                });
+                            }
+                        }
+
+
 
                         if (mScheduleAdapter != null)
                             mScheduleAdapter.notifyDataSetChanged();

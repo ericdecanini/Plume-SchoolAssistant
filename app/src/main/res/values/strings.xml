@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Plume - Academy Assistant</string>
+    <string name="app_link">https://plumeacademyassistant.com/</string>
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
     <string name="fb_already_authenticated">An account using this email already exists. Please log in with your email instead.</string>
     <string name="fb_login_protocol_scheme">fb1232139486864891</string>
-    <string name="facebook_app_id">1232139486864891</string>
+    <string name="facebook_app_id">1731101926904025</string>
+    <string name="google_web_client_id">62922774016-dthkdc3godlv5ps9tl6qf4abdgm0tv01.apps.googleusercontent.com</string>
 
     <string name="nav_classes">Classes</string>
     <string name="nav_completedTasks">Completed tasks</string>
@@ -61,6 +63,9 @@
     <string name="friday">Friday</string>
     <string name="saturday">Saturday</string>
 
+    <string name="A">A</string>
+    <string name="B">B</string>
+
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="set_date">Set date</string>
@@ -91,16 +96,18 @@
     <string name="login_error_message">Email or password is invalid</string>
     <string name="login_error_title">Error!</string>
     <string name="login_button_label">Log in</string>
+    <string name="login_button_label_google">Log in with Google</string>
     <string name="sign_up_text">New here? Sign Up!</string>
     <string name="title_activity_login">Sign in</string>
     <string name="login_button_facebook">Sign in with Facebook</string>
     <string name="action_login">Log in</string>
     <string name="action_logout">Log out</string>
+    <string name="action_invite">Invite Peers</string>
 
     <string name="accept">Accept</string>
     <string name="acceptPeerHeader">%1$s wants to add you in these classes</string>
     <string name="activity_classes_label">Classes</string>
-    <string name="activity_classes_splash_no_classes">You have no classes.</string>
+    <string name="activity_classes_splash_no_classes">You have no classes</string>
     <string name="activity_completedTasks_dialog_title">Delete all items?</string>
     <string name="activity_completedTasks_label">Completed Tasks</string>
     <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
@@ -153,8 +160,12 @@
     <string name="dialog_example_sameweek">Maths on Mon, 9:00 Every Week</string>
     <string name="dialog_example_timebased">Maths - 9:00&#8211;10:00am</string>
     <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
+    <string name="dialog_rate">Take a second to give us a friendly rating and review. This will also help us improve Plume and bring you better apps!</string>
+    <string name="dialog_rate_title">Rate us on Google Play</string>
     <string name="dialog_remove_class">Remove %1$s from %2$s and stop sharing tasks?</string>
     <string name="dialog_remove_peer">Remove %1$s from being your peer?</string>
+    <string name="dialog_share">Let your friends know about Plume and collaborate with more peers</string>
+    <string name="dialog_share_title">Invite Friends</string>
     <string name="done">Done</string>
     <string name="due">Due %1$s</string>
     <string name="due_date">Due date:</string>
@@ -212,14 +223,17 @@
     <string name="new_schedule_time_in">From</string>
     <string name="new_schedule_time_out">To</string>
     <string name="new_schedule_toast_class_inserted">%1$s added to Classes</string>
+    <string name="new_schedule_toast_validation_clashing_title">You already have a class with this title</string>
     <string name="new_schedule_toast_validation_no_days_selected">Please select at least one day</string>
     <string name="new_schedule_toast_validation_no_period_selected">Please select at least one period</string>
+    <string name="new_schedule_toast_validation_end_before_start">Class cannot end before it starts</string>
     <string name="new_schedule_toast_validation_title_not_found">Please enter a title</string>
     <string name="new_task_hint">Enter Task Title&#8230;</string>
     <string name="new_tasks_toast_validation_title_not_found">Please enter a title</string>
     <string name="nice_try_message">Are you that lonely?</string>
     <string name="nice_try_title">Nice try</string>
     <string name="none">None</string>
+    <string name="not_now">Not now</string>
     <string name="notes_note_hint">Note</string>
     <string name="notes_title_hint">Title</string>
     <string name="notification_message_reminder">Touch for more details.</string>
@@ -227,8 +241,12 @@
     <string name="preference_category_appearance">Appearance settings</string>
     <string name="preference_category_general">General settings</string>
     <string name="qrScanPrompt">Scan a peer\'s QR code</string>
+    <string name="rate">Rate</string>
+    <string name="recommendation">Try out this Digital School Planner</string>
     <string name="remove_class">Remove class</string>
     <string name="remove_peer">Remove peer</string>
+    <string name="request_cancel">Cancel request</string>
+    <string name="request_pending">Peer request pending</string>
     <string name="requestSent">Request sent to %1$s</string>
     <string name="restore">Restore</string>
     <string name="save">Save</string>
@@ -251,6 +269,7 @@
     <string name="schedule_type">Schedule type</string>
     <string name="search">Search</string>
     <string name="select">Select</string>
+    <string name="select_application">Select an application</string>
     <string name="select_class">Select class</string>
     <string name="select_gallery">Select a photo from gallery</string>
     <string name="select_items">Select Items</string>
@@ -260,6 +279,7 @@
     <string name="settings">Settings</string>
     <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
     <string name="settings_block_format_title">Block format</string>
+    <string name="settings_week_format_title">Week format</string>
     <string name="settings_changelog">Changelog</string>
     <string name="settings_class_mute_title">Mute phone during classes</string>
     <string name="settings_class_notification_dialog_message">Set to 0 to disable class notifications</string>
@@ -272,6 +292,7 @@
     <string name="settings_theme_title">Theme</string>
     <string name="share">Share</string>
     <string name="share_task">Share task with peers</string>
+    <string name="shared_by">Shared by %1$s</string>
     <string name="splash_no_request">You have no Peer Requests</string>
     <string name="storage_message">This will allow Plume to sync your data online.</string>
     <string name="storage_title">Allow Plume to access your storage?</string>
@@ -289,6 +310,8 @@
     <string name="toast_timer_set">Timer set for</string>
     <string name="user_search">user_search</string>
     <string name="viewPeers">View Peers</string>
+    <string name="week">Week</string>
+    <string name="weekend">Weekend</string>
     <string name="weekends">Weekends</string>
     <string name="weekdays">Weekdays</string>
     <string name="week_every">Every week</string>
@@ -298,6 +321,8 @@
     <string name="week_two">Week 2</string>
     <string name="whats_up">What՚s up??</string>
     <string name="whichClasses">Which of your classes is %1$s in?</string>
+    <string name="whichClassesNone1">You have no classes to add %1$s in</string>
+    <string name="whichClassesNone2">%1$s wants to add you as a peer</string>
     <string name="your_peers">Your Peers</string>
     <string name="yourNameHere">Your Name Here</string>
 
@@ -321,8 +346,12 @@
     <string name="Connor" translatable="false">Connor Hutchings</string>
     <string name="Ryan" translatable="false">Ryan Hutchings</string>
     <string name="Ben" translatable="false">Benjamin Whitehead</string>
+    <string name="Michael_Smith" translatable="false">Michael Smith</string>
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
         as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
+
+    <string name="changelog_title">%1$s Changelog</string>
+    <string name="changelog">BLANK FOR INITIAL RELEASE</string>
 
 
     <string-array name="new_schedule_icon_list_array">
@@ -399,11 +428,23 @@
         <item>1 Day</item>
     </string-array>
 
+    <string-array name="settings_week_format_entries">
+        <item>Week A</item>
+        <item>Week 1</item>
+        <item>1st Week</item>
+    </string-array>
+
     <string-array name="settings_block_format_values">
         <item>d:l</item>
         <item>l:d</item>
         <item>d:n</item>
         <item>n:d</item>
+    </string-array>
+
+    <string-array name="settings_week_format_values">
+        <item>w:l</item>
+        <item>w:n</item>
+        <item>o:w</item>
     </string-array>
 
     <string-array name="settings_block_format_entries_b">
@@ -449,12 +490,15 @@
     <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
     <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
     <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
-    <string name="KEY_WEEK_NUMBER_SETTING" translatable="false">KEY_WEEK_NUMBER_SETTING</string>
+    <string name="KEY_WEEK_OF_YEAR" translatable="false">KEY_WEEK_OF_YEAR</string>
     <string name="KEY_FIRST_LAUNCH" translatable="false">KEY_FIRST_LAUNCH</string>
+    <string name="KEY_FIRST_LAUNCH_DATE" translatable="false">KEY_FIRST_LAUNCH_DATE</string>
+    <string name="KEY_WEEK_PASSED" translatable="false">KEY_WEEK_PASSED</string>
 
     <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
     <string name="KEY_SETTINGS_ABOUT_PLUME" translatable="false">KEY_SETTINGS_ABOUT_PLUME</string>
     <string name="KEY_SETTINGS_BLOCK_FORMAT" translatable="false">KEY_SETTINGS_BLOCK_FORMAT</string>
+    <string name="KEY_SETTINGS_WEEK_FORMAT" translatable="false">KEY_SETTINGS_WEEK_FORMAT</string>
     <string name="KEY_SETTINGS_CATEGORY_APPEARANCE" translatable="false">KEY_SETTINGS_CATEGORY_APPEARANCE</string>
     <string name="KEY_SETTINGS_CHANGELOG" translatable="false">KEY_SETTINGS_CHANGELOG</string>
     <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>

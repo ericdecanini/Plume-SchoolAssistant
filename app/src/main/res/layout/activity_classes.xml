@@ -11,7 +11,7 @@
         android:id="@+id/appbar"
         app:elevation="0dp"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/extended_app_bar_height"
+        android:layout_height="@dimen/extended_app_bar_height_classes"
         android:theme="@style/AppTheme.AppBarOverlay">
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -22,8 +22,8 @@
         
         <com.pdt.plume.CircularImageView
             android:id="@+id/icon"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="@dimen/profile_icon_size"
+            android:layout_height="@dimen/profile_icon_size"
             android:padding="8dp"
             android:visibility="gone"
             android:background="@drawable/circle_white"

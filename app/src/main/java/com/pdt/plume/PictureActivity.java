@@ -30,6 +30,9 @@ public class PictureActivity extends AppCompatActivity {
         final View scrim = findViewById(R.id.scrim);
         TouchImageView image = (TouchImageView) findViewById(R.id.image);
 
+        int width = getResources().getDisplayMetrics().widthPixels;
+        image.setMinimumWidth(width);
+
         // Apply the intent data
         Intent intent = getIntent();
         String uri = intent.getStringExtra(getString(R.string.INTENT_EXTRA_PATH));

@@ -16,7 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.icu.util.Calendar;
+import java.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static android.R.attr.data;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
@@ -111,6 +112,7 @@ public class NewScheduleActivity extends AppCompatActivity
     String mUserId;
 
     // Built-in Icons
+    // Built-in Icons
     private Integer[] mThumbIds = {
             R.drawable.art_arts_64dp,
             R.drawable.art_biology_64dp,
@@ -127,6 +129,7 @@ public class NewScheduleActivity extends AppCompatActivity
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
             R.drawable.art_graphics_64dp,
+            R.drawable.art_history_64dp,
             R.drawable.art_hospitality_64dp,
             R.drawable.art_ict_64dp,
             R.drawable.art_maths_64dp,
@@ -361,19 +364,39 @@ public class NewScheduleActivity extends AppCompatActivity
                 Calendar c = Calendar.getInstance();
                 int hour = c.get(Calendar.HOUR_OF_DAY);
                 int minute = c.get(Calendar.MINUTE);
-                timein =  utility.timeToMillis(hour, minute);
+                if (minute >= 15 && minute < 45)
+                    minute = 30;
+                if (minute >= 45) {
+                    minute = 0;
+                    hour++;
+                }
+                timein = utility.timeToMillis(hour, minute);
                 hour += 1;
-                timeout =  utility.timeToMillis(hour, minute);
+                timeout = utility.timeToMillis(hour, minute);
             } else {
                 timein = -1;
                 timeout = -1;
             }
-            if (weekType.equals("0"))
-                mPeriodsList.add(new PeriodItem(this, timein, timeout, -1, -1,
-                        "0:0:0:0:0:0:0:0", basis + ":" + weekType + ":0:0:0:0:0:0:0"));
-            else
-                mPeriodsList.add(new PeriodItem(this, timein, timeout, timein, timeout,
-                        "0:0:0:0:0:0:0:0", basis + ":" + weekType + ":0:0:0:0:0:0:0"));
+
+            // Build an occurrence containing the current day
+            StringBuilder builder = new StringBuilder();
+            Calendar c = Calendar.getInstance();
+            int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+            String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
+            Log.v(LOG_TAG, "Day of week: " + dayOfWeek);
+            for (int i = 0; i < 7; i++) {
+                builder.append(":");
+                if (i == dayOfWeek - 1)
+                    if (weekNumber.equals("0"))
+                        builder.append("1");
+                    else builder.append("2");
+                else builder.append("0");
+            }
+
+            Log.v(LOG_TAG, "Init occurrence: " + builder.toString());
+
+            mPeriodsList.add(new PeriodItem(this, timein, timeout, timein, timeout,
+                    "0:0:0:0:0:0:0:0", basis + ":" + weekType + builder.toString()));
         }
         periodAdapter.notifyDataSetChanged();
         classTimeList.setAdapter(periodAdapter);
@@ -403,9 +426,9 @@ public class NewScheduleActivity extends AppCompatActivity
             if (isTablet)
                 fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
             if (fieldTeacher != null)
-            fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+                fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
             if (fieldTeacher != null)
-            fieldRoom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+                fieldRoom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
         }
     }
 
@@ -434,18 +457,18 @@ public class NewScheduleActivity extends AppCompatActivity
                     return false;
                 }
 
-                Log.v(LOG_TAG, "OnOptionsItemSelected periodListSize: " + mPeriodsList.size());
                 for (int i = 0; i < mPeriodsList.size(); i++) {
                     String[] occurrenceArray = mPeriodsList.get(i).occurrence.split(":");
                     ArrayList<String> daysList = new ArrayList<>();
                     for (int l = 0; l < occurrenceArray.length; l++)
                         if (l > 1)
                             daysList.add(occurrenceArray[l]);
-                    if (!daysList.contains("1") && !daysList.contains("2") && !daysList.contains("3")) {
+                    if (!daysList.contains("1") && !daysList.contains("2") && !daysList.contains("3") && !basis.equals("2")) {
                         Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_no_days_selected),
                                 Toast.LENGTH_SHORT).show();
                         return false;
                     }
+
                     String[] daysArray = mPeriodsList.get(i).days.split(":");
                     String[] daysAltArray = mPeriodsList.get(i).days_alt.split(":");
                     ArrayList<String> dayList = new ArrayList<>();
@@ -472,35 +495,88 @@ public class NewScheduleActivity extends AppCompatActivity
                                 Toast.LENGTH_SHORT).show();
                         return false;
                     }
+
+                    // Validate timeIn and timeOut
+                    long timeIn = mPeriodsList.get(i).timeinValue;
+                    long timeOut = mPeriodsList.get(i).timeoutValue;
+                    long timeInAlt = mPeriodsList.get(i).timeinaltValue;
+                    long timeOutAlt = mPeriodsList.get(i).timeoutaltValue;
+
+                    if (timeOut < timeIn && dayList.contains("1")) {
+                        Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_end_before_start),
+                                Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+
+                    if (timeOutAlt < timeInAlt && dayAltList.contains("1")) {
+                        Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_end_before_start),
+                                Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 }
-                // Perform Database/Firebase Insertion
-                Log.v(LOG_TAG, "InsertScheduleDataIntoFirebase executing");
+
                 mPeriodListSize = 0;
-                if (mFirebaseUser != null)
-                    insertScheduleDataIntoFirebase();
-                else try {
-                    insertScheduleDataIntoDatabase();
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                // Check for clashing titles from existing classes
+                title = fieldTitle.getText().toString();
+                if (mFirebaseUser != null) {
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).child("classes")
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                                        if (classSnapshot.getKey().equals(title) && !FLAG_EDIT) {
+                                            Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_clashing_title),
+                                                    Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    }
+
+                                    // No clashes: perform insert function
+                                    insertScheduleDataIntoFirebase();
+                                    if (!FLAG_EDIT)
+                                        Toast.makeText(NewScheduleActivity.this,
+                                                getString(R.string.new_schedule_toast_class_inserted, title), Toast.LENGTH_SHORT).show();
+
+                                    if (!STARTED_BY_NEWTASKACTIVITY) {
+                                        Intent intent = new Intent(NewScheduleActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                    finish();
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                } else {
+                    DbHelper dbHelper = new DbHelper(this);
+                    Cursor cursor = dbHelper.getScheduleDataByTitle(title);
+                    if (cursor.getCount() == 0) {
+                        try {
+                            insertScheduleDataIntoDatabase();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (!FLAG_EDIT)
+                            Toast.makeText(NewScheduleActivity.this,
+                                    getString(R.string.new_schedule_toast_class_inserted, title), Toast.LENGTH_SHORT).show();
+
+                        if (!STARTED_BY_NEWTASKACTIVITY) {
+                            Intent intent = new Intent(this, MainActivity.class);
+                            startActivity(intent);
+                        }
+                        finish();
+                        return true;
+                    }
+                    else {
+                        Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_clashing_title),
+                                Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 }
-
-                // Update any widgets
-                Intent widgetUpdate = new Intent(this, ScheduleWidgetProvider.class);
-                widgetUpdate.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-                int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), ScheduleWidgetProvider.class));
-                widgetUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                sendBroadcast(widgetUpdate);
-
-                // Make the toast
-                if (!FLAG_EDIT)
-                    Toast.makeText(NewScheduleActivity.this,
-                            getString(R.string.new_schedule_toast_class_inserted, title), Toast.LENGTH_SHORT).show();
-
-                if (!STARTED_BY_NEWTASKACTIVITY) {
-                    Intent intent = new Intent(this, MainActivity.class);
-                    startActivity(intent);
-                }
-                finish();
                 break;
         }
         return true;
@@ -547,10 +623,11 @@ public class NewScheduleActivity extends AppCompatActivity
                 .child("users").child(mUserId).child("classes").child(title);
         classRef.child("teacher").setValue(teacher);
         classRef.child("room").setValue(room);
+        classRef.child("occurrence").removeValue();
+        classRef.child("periods").removeValue();
 
         // Set the listed values of the class
         if (mPeriodsList.size() != 0) {
-            Log.v(LOG_TAG, "mPeriodsList size: " + mPeriodsList.size());
             for (int i = 0; i < mPeriodsList.size(); i++) {
                 // Gather the data to set the values on the cloud
                 PeriodItem item = ((PeriodItem) periodAdapter.getItem(i));
@@ -560,7 +637,6 @@ public class NewScheduleActivity extends AppCompatActivity
                 long timeInAlt = item.timeinaltValue;
                 long timeOutAlt = item.timeoutaltValue;
                 String periods = getItemPeriods(i);
-                Log.v(LOG_TAG, "Adding: " + occurrence + ", " + periods);
 
                 classRef.child("occurrence").child(occurrence).setValue("");
                 classRef.child("timein").child(String.valueOf(i)).setValue(timeIn);
@@ -586,7 +662,7 @@ public class NewScheduleActivity extends AppCompatActivity
             try {
                 Uri imageUri = Uri.parse(iconUri);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                String filename = imageUri.getLastPathSegment();
+                String filename = title + ".jpg";
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
@@ -838,7 +914,7 @@ public class NewScheduleActivity extends AppCompatActivity
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String occurrence = basis+":"+weekType+":0:0:0:0:0:0:0";
+                String occurrence = basis + ":" + weekType + ":0:0:0:0:0:0:0";
                 String periods = "0:0:0:0:0:0:0:0";
                 mPeriodsList.add(new PeriodItem(NewScheduleActivity.this, -1, -1, -1, -1, periods, occurrence));
                 periodAdapter.notifyDataSetChanged();

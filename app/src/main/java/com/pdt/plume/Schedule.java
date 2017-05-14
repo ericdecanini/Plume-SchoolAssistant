@@ -14,7 +14,6 @@ public class Schedule {
     public String scheduleRoom;
     public String scheduleTimeIn;
     public String scheduleTimeOut;
-    public Bitmap scheduleCustomIcon;
 
     public Object extra;
 
@@ -25,24 +24,23 @@ public class Schedule {
     // The global variables are accessed by the mTasksAdapter
     // Set them using the input parameters
     public Schedule(Context context, String icon, String lesson, String teacher, String room,
-                    String timeIn, String timeOut, String period, @Nullable Bitmap customIcon) {
+                    String timeIn, String timeOut, String period) {
         super();
         this.scheduleIcon = icon;
         this.scheduleLesson = lesson;
         this.scheduleTeacher = teacher;
         this.scheduleRoom = room;
-        this.scheduleCustomIcon = customIcon;
 
         // Find out the basis of the item based on the timeIn and period Strings
         // and set the in and out strings based on that
         // Time based
-        if (!timeIn.equals("")){
+        if (period.equals("0:0:0:0:0:0:0:0")){
             this.scheduleTimeIn = timeIn;
             this.scheduleTimeOut = timeOut;
         }
         // Period/Block based
         else {
-            this.scheduleTimeIn = period;
+            this.scheduleTimeIn = Utility.getReadablePeriodsString(period);
             this.scheduleTimeOut = context.getString(R.string.class_time_list_header_substring_period);
         }
 

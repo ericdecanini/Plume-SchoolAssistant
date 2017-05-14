@@ -85,32 +85,40 @@
         android:layout_gravity="center_horizontal"
         android:orientation="vertical">
 
-        <Button android:id="@+id/loginButton"
+        <Button
+            android:id="@+id/loginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_button"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:textAllCaps="false"
-            android:layout_marginTop="48dp"
             android:layout_gravity="center_horizontal"
-            android:text="@string/login_button_label" />
+            android:layout_marginTop="48dp"
+            android:background="@drawable/bg_button"
+            android:text="@string/login_button_label"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
 
         <com.facebook.login.widget.LoginButton
             android:id="@+id/facebookLoginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
             android:gravity="center_horizontal"
-            android:layout_gravity="center_horizontal"
-            android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:paddingLeft="32dp"
-            android:paddingStart="32dp"/>
+            android:paddingStart="32dp"
+            android:paddingTop="10dp"
+            android:textSize="18sp" />
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/googleLoginButton"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp" />
 
     </LinearLayout>
-
 
 
     <TextView

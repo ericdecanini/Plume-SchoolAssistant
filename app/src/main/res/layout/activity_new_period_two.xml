@@ -48,7 +48,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_description_sameweek"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -58,7 +58,7 @@
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/margin_line_spacing_large"
                 android:text="@string/dialog_example_sameweek"
                 android:textColor="@color/gray_700"
                 android:textSize="14sp"
@@ -110,7 +110,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/margin_line_spacing_large"
                     android:text="@string/dialog_description_altweek"
                     android:textColor="@color/gray_700"
                     android:textSize="14sp"
@@ -119,7 +119,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/margin_line_spacing_large"
                     android:text="@string/dialog_example_altweek"
                     android:textColor="@color/gray_700"
                     android:textSize="14sp"

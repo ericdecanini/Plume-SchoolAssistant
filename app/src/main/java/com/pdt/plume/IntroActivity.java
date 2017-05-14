@@ -34,7 +34,7 @@ public class IntroActivity extends AppCompatActivity {
             View overlay = findViewById(R.id.canvas_overlay);
             overlay.animate()
                     .alpha(0)
-                    .setDuration(5000)
+                    .setDuration(2000)
                     .start();
             created = true;
         }
