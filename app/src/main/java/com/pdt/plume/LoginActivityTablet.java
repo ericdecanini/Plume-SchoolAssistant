@@ -202,6 +202,7 @@ public class LoginActivityTablet extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
                                         // Cancel all SQLite Fired Notifications
+                                        new Utility().cancelOfflineClassNotifications(LoginActivityTablet.this);
                                         DbHelper dbHelper = new DbHelper(LoginActivityTablet.this);
                                         Cursor tasksCursor = dbHelper.getTaskData();
                                         tasksCursor.moveToFirst();

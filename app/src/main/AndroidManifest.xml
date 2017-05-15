@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pdt.plume">
+    package="com.pdt.plume"
+    android:versionCode="3">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="com.pdt.plume.permission.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.READ_DATABASE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
-
-    <permission
-        android:name="com.pdt.plume.permission.C2D_MESSAGE"
-        android:protectionLevel="signature" />
-
-    <uses-feature
-        android:name="android.hardware.camera2"
-        android:required="true" />
 
     <application
         android:name=".App"
@@ -72,8 +64,8 @@
             android:theme="@style/AppTheme.ActionBar.Transparent" />
         <activity
             android:name=".TasksDetailActivity"
-            android:parentActivityName=".MainActivity"
             android:configChanges="orientation"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TasksDetailActivityTablet"
@@ -151,7 +143,12 @@
 
         <receiver android:name=".TaskNotificationPublisher" />
 
-        <service android:name=".services.ScheduleNotificationService" />
+        <receiver android:name=".services.ClassNotificationReceiver">
+            <intent-filter>
+                <action android:name="com.pdt.plume.NOTIFICATION"/>
+                <action android:name="com.pdt.plume.NOTIFICATION2"/>
+            </intent-filter>
+        </receiver>
 
         <!-- <receiver -->
         <!-- android:name=".ScheduleWidgetProvider" -->
@@ -267,9 +264,15 @@
             android:name=".PictureActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".NewPeriodOneActivity" />
-        <activity android:name=".NewPeriodTwoActivity"
-            android:parentActivityName=".NewPeriodOneActivity"/>
-        <activity android:name=".IntroActivity"></activity>
+        <activity
+            android:name=".NewPeriodTwoActivity"
+            android:parentActivityName=".NewPeriodOneActivity" />
+        <activity android:name=".IntroActivity" />
+
+        <service
+            android:name=".services.ClassNotificationService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

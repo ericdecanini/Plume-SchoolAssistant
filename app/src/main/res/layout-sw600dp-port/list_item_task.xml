@@ -4,8 +4,6 @@
     android:layout_height="wrap_content"
     android:background="@drawable/touch_selector"
     android:paddingBottom="16dp"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp"
     android:paddingTop="16dp">
 
     <LinearLayout

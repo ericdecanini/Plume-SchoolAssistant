@@ -264,7 +264,7 @@
     <string name="schedule_detail_tasks_title">Tasks</string>
     <string name="schedule_detail_teacher_subtitle">Teacher</string>
     <string name="schedule_fragment_splash_no_classes">You have no classes today</string>
-    <string name="schedule_notification_message">Class starts in</string>
+    <string name="schedule_notification_message">Starts in %1$s minutes</string>
     <string name="schedule_tasks_splash_no_tasks">You have no tasks to be done</string>
     <string name="schedule_type">Schedule type</string>
     <string name="search">Search</string>

@@ -34,7 +34,7 @@ public class Schedule {
         // Find out the basis of the item based on the timeIn and period Strings
         // and set the in and out strings based on that
         // Time based
-        if (period.equals("0:0:0:0:0:0:0:0")){
+        if (period.equals("0:0:0:0:0:0:0:0") || period.equals("") || period.equals(" ")){
             this.scheduleTimeIn = timeIn;
             this.scheduleTimeOut = timeOut;
         }

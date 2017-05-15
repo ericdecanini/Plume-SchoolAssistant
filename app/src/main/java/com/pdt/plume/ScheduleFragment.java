@@ -349,10 +349,6 @@ public class ScheduleFragment extends Fragment {
                         final String room = classSnapshot.child("room").getValue(String.class);
                         final String iconUri = classSnapshot.child("icon").getValue(String.class);
 
-                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                        final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
-                        final Calendar[] c = {Calendar.getInstance()};
-
                         final ArrayList<String> occurrences = new ArrayList<>();
                         for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren())
                             occurrences.add(occurrenceSnapshot.getKey());
@@ -433,50 +429,6 @@ public class ScheduleFragment extends Fragment {
             });
 
         }
-    }
-
-    private void ScheduleNotification(final Date dateTime, String classTitle, final String title, final String message, String icon) {
-        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext());
-        Bitmap largeIcon = null;
-        try {
-            largeIcon = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.parse(icon));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                .setBackground(largeIcon);
-
-        Intent contentIntent = new Intent(getContext(), ScheduleDetailActivity.class);
-        contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(getContext());
-        stackBuilder.addParentStack(ScheduleDetailActivity.class);
-        stackBuilder.addNextIntent(contentIntent);
-        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        builder.setContentIntent(contentPendingIntent)
-                .setSmallIcon(R.drawable.ic_assignment)
-                .setColor(getResources().getColor(R.color.colorPrimary))
-                .setContentTitle(title)
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .extend(wearableExtender)
-                .setDefaults(Notification.DEFAULT_ALL);
-
-        Notification notification = builder.build();
-
-        Intent notificationIntent = new Intent(getContext(), TaskNotificationPublisher.class);
-        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
-        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_NOTIFICATION_ALARM,
-                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(dateTime.getTime());
-        Log.v(LOG_TAG, "Notification scheduled for " + c.get(Calendar.YEAR) + " " + c.get(Calendar.MONTH) + " "
-                + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE));
     }
 
     // Subclass for the Contextual Action Mode

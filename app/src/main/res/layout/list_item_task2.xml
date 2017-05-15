@@ -8,12 +8,25 @@
     android:background="@drawable/touch_selector"
     android:layout_height="wrap_content">
 
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
     <ImageView
         android:id="@+id/task_icon"
         android:layout_gravity="center_vertical"
         android:transitionName="@string/INTENT_EXTRA_TRANSITION"
         android:layout_width="64dp"
         android:layout_height="48dp" />
+
+    <com.pdt.plume.CircularImageView
+        android:id="@+id/task_icon2"
+        android:layout_gravity="center_vertical"
+        android:transitionName="@string/INTENT_EXTRA_TRANSITION"
+        android:layout_width="64dp"
+        android:layout_height="48dp" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/task_title"

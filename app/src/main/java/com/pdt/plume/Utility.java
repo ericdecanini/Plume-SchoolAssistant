@@ -1,9 +1,14 @@
 package com.pdt.plume;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -14,6 +19,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Spinner;
 
@@ -25,6 +32,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.pdt.plume.data.DbContract;
+import com.pdt.plume.data.DbHelper;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,12 +47,81 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
+import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
+
 
 public class Utility {
 
     String LOG_TAG = Utility.class.getSimpleName();
 
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+
+    public void cancelOfflineClassNotifications(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int mPrimaryColor = preferences.getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                context.getResources().getColor(R.color.colorPrimary));
+        DbHelper dbHelper = new DbHelper(context);
+        Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(context);
+        for (int i = 0; i < cursor.getCount(); i++) {
+            cursor.moveToPosition(i);
+            String title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+            String icon = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+            String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
+            long timeIn;
+            if (preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
+                timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
+            else timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT));
+
+            Calendar c = Calendar.getInstance();
+            Calendar timeInC = Calendar.getInstance();
+            timeInC.setTimeInMillis(timeIn);
+            int hour = timeInC.get(Calendar.HOUR_OF_DAY);
+            int minute = timeInC.get(Calendar.MINUTE);
+            c.set(Calendar.HOUR_OF_DAY, hour);
+            c.set(Calendar.MINUTE, minute);
+            long alarmTime = c.getTimeInMillis();
+
+
+            if (occurrence.split(":")[0].equals("0")) {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+                Bitmap largeIcon = null;
+                try {
+                    largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                        .setBackground(largeIcon);
+
+                Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
+                contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_CLASS), title);
+                PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
+                        contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                Notification notification = builder
+                        .setContentIntent(contentPendingIntent)
+                        .setSmallIcon(R.drawable.ic_class_white)
+                        .setColor(mPrimaryColor)
+                        .setContentTitle(title)
+                        .setContentText(context.getString(R.string.schedule_notification_message))
+                        .setWhen(System.currentTimeMillis())
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .extend(wearableExtender)
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .build();
+
+                Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);;
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
+                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                alarmManager.cancel(pendingIntent);
+            }
+        }
+    }
 
     public byte[] getBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();

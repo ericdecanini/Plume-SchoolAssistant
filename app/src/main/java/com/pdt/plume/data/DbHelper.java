@@ -273,9 +273,6 @@ public class DbHelper extends SQLiteOpenHelper {
                         Calendar current = Calendar.getInstance();
                         if (c.getTimeInMillis() > current.getTimeInMillis())
                             c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
-
-                        ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
-                                context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
 
                     // Add the period/block based list item
@@ -320,8 +317,6 @@ public class DbHelper extends SQLiteOpenHelper {
                         String icon = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
                         c.setTimeInMillis(timeInValue);
                         c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
-                        ScheduleClassNotification(context, new Date(c.getTimeInMillis()), ID, title,
-                                context.getString(R.string.class_notification_message, Integer.toString(forerunnerTime)), icon);
                     }
 
                     // Add the period/block based list item
@@ -554,50 +549,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(ScheduleEntry.TABLE_NAME, ScheduleEntry.COLUMN_TITLE + " = ?", new String[]{title});
-    }
-
-    private void ScheduleClassNotification(final Context context, final Date dateTime, int ID, final String title, final String message, String icon) {
-        Log.v(LOG_TAG, "Notification set for " + utility.millisToHourTime(dateTime.getTime()));
-        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-        Bitmap largeIcon = null;
-        try {
-            largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                .setBackground(largeIcon);
-
-        Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
-        contentIntent.putExtra("_ID", ID);
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
-                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                builder.setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(context.getResources().getColor(R.color.colorPrimary))
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .extend(wearableExtender)
-                        .setDefaults(Notification.DEFAULT_ALL);
-
-                Notification notification = builder.build();
-
-                Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
-                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
-            }
-        });
     }
 
     /**

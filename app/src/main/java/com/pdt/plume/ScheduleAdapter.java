@@ -103,6 +103,8 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher.setText(schedule.scheduleTeacher);
             holder.room.setText(schedule.scheduleRoom);
 
+            Log.v(LOG_TAG, "ScheduleTimeIn: " + schedule.scheduleTimeIn
+            + ", Out: " + schedule.scheduleTimeOut);
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,

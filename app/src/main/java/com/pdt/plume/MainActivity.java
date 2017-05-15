@@ -75,8 +75,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.services.ClassNotificationReceiver;
 import com.pdt.plume.services.ClassesActivityTablet;
-import com.pdt.plume.services.ScheduleNotificationService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,9 +115,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Variables aiding schedule
     String weekSettings;
-
-    // Intent Data
-    public static boolean notificationServiceIsRunning = false;
 
     // Firebase variables
     private FirebaseAuth mFirebaseAuth;
@@ -276,11 +273,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
 
-        // Start the class notification service
-        if (!notificationServiceIsRunning) {
-            startService(new Intent(this, ScheduleNotificationService.class));
-            notificationServiceIsRunning = true;
-        }
+        // Trigger the notification service
+        Intent intent = new Intent(this, ClassNotificationReceiver.class);
+        intent.setAction("com.pdt.plume.NOTIFICATION");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
+                57, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 1);
+        calendar.set(Calendar.MINUTE, 1);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pendingIntent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
     }
 

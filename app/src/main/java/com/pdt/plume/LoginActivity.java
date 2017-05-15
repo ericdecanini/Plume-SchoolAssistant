@@ -227,6 +227,7 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull com.google.android.gms.tasks.Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
                                         // Cancel all SQLite Fired Notifications
+                                        new Utility().cancelOfflineClassNotifications(LoginActivity.this);
                                         DbHelper dbHelper = new DbHelper(LoginActivity.this);
                                         Cursor tasksCursor = dbHelper.getTaskData();
                                         tasksCursor.moveToFirst();
