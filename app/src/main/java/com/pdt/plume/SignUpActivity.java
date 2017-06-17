@@ -2,6 +2,7 @@ package com.pdt.plume;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -88,7 +89,7 @@ public class SignUpActivity extends AppCompatActivity {
                     confirmPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
                             InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     confirmPasswordEditText.setSelection(confirmPasswordEditText.getText().length());
-                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.white));
+                    visibleIcon.setColorFilter(getResources().getColor(R.color.white));
                     passwordsAreVisible = false;
                 } else {
                     passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
@@ -97,7 +98,7 @@ public class SignUpActivity extends AppCompatActivity {
                     confirmPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
                             InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
                     confirmPasswordEditText.setSelection(confirmPasswordEditText.getText().length());
-                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.colorAccent));
+                    visibleIcon.setColorFilter(getResources().getColor(R.color.colorAccentLight));
                     passwordsAreVisible = true;
                 }
             }

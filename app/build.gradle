@@ -15,7 +15,7 @@ android {
         applicationId "com.pdt.plume"
         minSdkVersion 15
         targetSdkVersion 25
-        versionName '1.0.0'
+        versionName '1.0.1d'
         signingConfig signingConfigs.defaultConfig
     }
     buildTypes {

@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static com.pdt.plume.R.string.schedule;
+
 public class TaskAdapter extends ArrayAdapter {
 
     // Constantly used variables
@@ -79,22 +81,25 @@ public class TaskAdapter extends ArrayAdapter {
         // Get the tag of the recycled row
         else {
             holder = (ViewHolder)row.getTag();
+            if (task.taskIcon.equals("storage") || !task.taskIcon.contains("/art_")) {
+                row.findViewById(R.id.task_icon).setVisibility(View.GONE);
+                row.findViewById(R.id.task_icon2).setVisibility(View.VISIBLE);
+                holder.icon = (ImageView) row.findViewById(R.id.task_icon2);
+            }
+            else {
+                holder.icon = (ImageView) row.findViewById(R.id.task_icon);
+                row.findViewById(R.id.task_icon).setVisibility(View.VISIBLE);
+                row.findViewById(R.id.task_icon2).setVisibility(View.GONE);
+            }
         }
 
-        // Set the UI elements contained in the View Holder
-        // using data constructed in the Task class object
-        Bitmap setImageBitmap = null;
-        if (task.customIcon == null)
-        try {
-            Uri uri = Uri.parse(task.taskIcon);
-            File file = new File(uri.getPath());
-            setImageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } else {
-            setImageBitmap = task.customIcon;
+        if (getContext() instanceof ScheduleDetailActivity) {
+            holder.icon.setTransitionName(null);
         }
-        holder.icon.setImageBitmap(setImageBitmap);
+
+
+        Uri uri = Uri.parse(task.taskIcon);
+        holder.icon.setImageURI(uri);
         holder.title.setText(task.taskTitle);
         holder.title.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
 

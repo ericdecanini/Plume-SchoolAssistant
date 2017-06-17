@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Plume - Academy Assistant</string>
+    <string name="app_name">Class-ify: School Assistant and Planner</string>
     <string name="app_link">https://plumeacademyassistant.com/</string>
     <string name="DATABASE_NAME" translatable="false">PLUME DATABASE</string>
     <string name="fb_already_authenticated">An account using this email already exists. Please log in with your email instead.</string>
@@ -13,7 +13,7 @@
     <string name="nav_requests">Requests</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
-    <string name="nav_about">About Plume - Academy Assistant</string>
+    <string name="nav_about">About Class-ify</string>
 
     <string name="hyphen">&#45;</string>
 
@@ -159,12 +159,12 @@
     <string name="dialog_example_periodbased">Maths - 1st Period</string>
     <string name="dialog_example_sameweek">Maths on Mon, 9:00 Every Week</string>
     <string name="dialog_example_timebased">Maths - 9:00&#8211;10:00am</string>
-    <string name="dialog_permission_rationale_take_photo">To use this feature, Plume - Academy Assistant requires access to your storage.</string>
-    <string name="dialog_rate">Take a second to give us a friendly rating and review. This will also help us improve Plume and bring you better apps!</string>
+    <string name="dialog_permission_rationale_take_photo">To use this feature, Class-ify requires access to your storage.</string>
+    <string name="dialog_rate">Take a second to give us a friendly rating and review. This will also help us improve Class-ify and bring you better apps!</string>
     <string name="dialog_rate_title">Rate us on Google Play</string>
     <string name="dialog_remove_class">Remove %1$s from %2$s and stop sharing tasks?</string>
     <string name="dialog_remove_peer">Remove %1$s from being your peer?</string>
-    <string name="dialog_share">Let your friends know about Plume and collaborate with more peers</string>
+    <string name="dialog_share">Let your friends know about Class-ify and collaborate with more peers</string>
     <string name="dialog_share_title">Invite Friends</string>
     <string name="done">Done</string>
     <string name="due">Due %1$s</string>
@@ -238,6 +238,7 @@
     <string name="notes_title_hint">Title</string>
     <string name="notification_message_reminder">Touch for more details.</string>
     <string name="ok">OK</string>
+    <string name="planner">Planner</string>
     <string name="preference_category_appearance">Appearance settings</string>
     <string name="preference_category_general">General settings</string>
     <string name="qrScanPrompt">Scan a peer\'s QR code</string>
@@ -277,7 +278,7 @@
     <string name="sendPeerRequest">Send Request</string>
     <string name="set_timer">Set timer</string>
     <string name="settings">Settings</string>
-    <string name="settings_about_plume_title">About Plume - Academy Assistant</string>
+    <string name="settings_about_plume_title">About Class-ify</string>
     <string name="settings_block_format_title">Block format</string>
     <string name="settings_week_format_title">Week format</string>
     <string name="settings_changelog">Changelog</string>
@@ -294,8 +295,8 @@
     <string name="share_task">Share task with peers</string>
     <string name="shared_by">Shared by %1$s</string>
     <string name="splash_no_request">You have no Peer Requests</string>
-    <string name="storage_message">This will allow Plume to sync your data online.</string>
-    <string name="storage_title">Allow Plume to access your storage?</string>
+    <string name="storage_message">This will allow Class-ify to sync your data online.</string>
+    <string name="storage_title">Allow Class-ify to access your storage?</string>
     <string name="take_photo">Take a photo</string>
     <string name="task">Task</string>
     <string name="tasks">Tasks</string>
@@ -326,16 +327,14 @@
     <string name="your_peers">Your Peers</string>
     <string name="yourNameHere">Your Name Here</string>
 
-    <string name="about_activity_label">About Plume</string>
-    <string name="Plume" translatable="false">Plume</string>
-    <string name="Assistant">Academy Assistant</string>
-    <string name="Version">Version 1.0.0</string>
-    <string name="Weblink" translatable="false">https://plumeacademyassistant.com</string>
+    <string name="about_activity_label">About Class-ify</string>
+    <string name="Classify" translatable="false">Class-ify</string>
+    <string name="Assistant">School Assistant and Planner</string>
+    <string name="Version">Version 1.0.1d</string>
+    <string name="Weblink" translatable="false">https://class-ify.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
-    <string name="Plume_Email">team@plumeacademyassistant.com</string>
-    <string name="Developed">Developed by:</string>
-    <string name="PDT" translatable="false">Plume Development Team</string>
+    <string name="Plume_Email">team@class-ify.com</string>
     <string name="Coding">Lead Developer:</string>
     <string name="Eric" translatable="false">Eric Decanini</string>
     <string name="Security">Database Security:</string>
@@ -347,6 +346,8 @@
     <string name="Ryan" translatable="false">Ryan Hutchings</string>
     <string name="Ben" translatable="false">Benjamin Whitehead</string>
     <string name="Michael_Smith" translatable="false">Michael Smith</string>
+    <string name="Clint" translatable="false">Clint Campoy</string>
+    <string name="Theodore" translatable="false">Theodore Mananquil</string>
     <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
         as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
 

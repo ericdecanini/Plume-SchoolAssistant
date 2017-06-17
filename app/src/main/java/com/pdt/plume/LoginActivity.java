@@ -175,13 +175,13 @@ public class LoginActivity extends AppCompatActivity {
                     passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
                             InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     passwordEditText.setSelection(passwordEditText.getText().length());
-                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.white));
+                    visibleIcon.setColorFilter(getResources().getColor(R.color.white));
                     passwordsAreVisible = false;
                 } else {
                     passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT |
                             InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
                     passwordEditText.setSelection(passwordEditText.getText().length());
-                    visibleIcon.setImageTintList(getResources().getColorStateList(R.color.colorAccent));
+                    visibleIcon.setColorFilter(getResources().getColor(R.color.colorAccentLight));
                     passwordsAreVisible = true;
                 }
             }

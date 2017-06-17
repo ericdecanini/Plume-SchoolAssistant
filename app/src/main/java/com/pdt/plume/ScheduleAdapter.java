@@ -62,7 +62,6 @@ public class ScheduleAdapter extends ArrayAdapter {
             // Get references to the View Holder's views
             // by searching the row for the UI element
             holder = new ViewHolder();
-            Log.v(LOG_TAG, "Schedule Icon Uri: " + schedule.scheduleIcon);
             if (!schedule.scheduleIcon.contains("art_"))
                 holder.icon = (ImageView)row.findViewById(R.id.schedule_icon2);
             else holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
@@ -103,8 +102,6 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher.setText(schedule.scheduleTeacher);
             holder.room.setText(schedule.scheduleRoom);
 
-            Log.v(LOG_TAG, "ScheduleTimeIn: " + schedule.scheduleTimeIn
-            + ", Out: " + schedule.scheduleTimeOut);
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,

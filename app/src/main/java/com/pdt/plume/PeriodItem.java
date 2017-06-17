@@ -2,12 +2,16 @@ package com.pdt.plume;
 
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class PeriodItem {
+import static android.view.View.Y;
+
+public class PeriodItem implements Parcelable {
     String LOG_TAG = PeriodItem.class.getSimpleName();
     Utility utility = new Utility();
 
@@ -25,7 +29,7 @@ public class PeriodItem {
     String timein;
     String timeout;
     String timeinalt;
-    String timeoutalt;
+    String timeoutalt ;
 
     long timeinValue = -1;
     long timeoutValue = -1;
@@ -47,6 +51,7 @@ public class PeriodItem {
         this.timeoutaltValue = timeOutAlt;
 
         Calendar c = Calendar.getInstance();
+        c.set(0, 0, 0, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
         if (timeinValue == -1)
             timeinValue = ((int)c.getTimeInMillis());
         if (timeinaltValue == -1)
@@ -115,4 +120,62 @@ public class PeriodItem {
         this.days_alt = builder.toString();
     }
 
+    protected PeriodItem(Parcel in) {
+        LOG_TAG = in.readString();
+        basis = in.readString();
+        weekType = in.readString();
+        position = in.readInt();
+        days = in.readString();
+        days_alt = in.readString();
+        occurrence = in.readString();
+        timein = in.readString();
+        timeout = in.readString();
+        timeinalt = in.readString();
+        timeoutalt = in.readString();
+        timeinValue = in.readLong();
+        timeoutValue = in.readLong();
+        timeinaltValue = in.readLong();
+        timeoutaltValue = in.readLong();
+        period = in.createBooleanArray();
+        periodAlt = in.createBooleanArray();
+        periods = in.readString();
+    }
+
+    public static final Creator<PeriodItem> CREATOR = new Creator<PeriodItem>() {
+        @Override
+        public PeriodItem createFromParcel(Parcel in) {
+            return new PeriodItem(in);
+        }
+
+        @Override
+        public PeriodItem[] newArray(int size) {
+            return new PeriodItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(days);
+        parcel.writeString(days_alt);
+        parcel.writeString(occurrence);
+
+        parcel.writeString(timein);
+        parcel.writeString(timeout);
+        parcel.writeString(timeinalt);
+        parcel.writeString(timeoutalt);
+
+        parcel.writeLong(timeinValue);
+        parcel.writeLong(timeoutValue);
+        parcel.writeLong(timeinaltValue);
+        parcel.writeLong(timeoutaltValue);
+
+        parcel.writeBooleanArray(period);
+        parcel.writeBooleanArray(periodAlt);
+        parcel.writeString(periods);
+    }
 }

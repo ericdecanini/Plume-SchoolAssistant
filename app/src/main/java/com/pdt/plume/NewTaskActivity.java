@@ -91,6 +91,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.R.attr.id;
+import static android.R.attr.track;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_FILE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_CAPTURE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
@@ -143,6 +145,9 @@ public class NewTaskActivity extends AppCompatActivity
     float dueDateMillis;
     long reminderDateMillis;
     long reminderTimeMillis;
+
+    long oldReminderDateMillis;
+    long oldReminderTimeMillis;
 
     ArrayList<Uri> photoUriList = new ArrayList();
     ArrayList<ImageView> photos = new ArrayList<>();
@@ -274,7 +279,7 @@ public class NewTaskActivity extends AppCompatActivity
         fieldTypeDropdown.setOnClickListener(listener());
         fieldTakePhotoText.setOnClickListener(listener());
         if (fieldTakePhotoIcon != null)
-        fieldTakePhotoIcon.setOnClickListener(listener());
+            fieldTakePhotoIcon.setOnClickListener(listener());
 //        fieldAttachFile.setOnClickListener(listener());
         fieldSetReminderDate.setOnClickListener(listener());
         fieldSetReminderTime.setOnClickListener(listener());
@@ -352,7 +357,6 @@ public class NewTaskActivity extends AppCompatActivity
 
                 int position = extras.getInt("position");
                 FLAG_EDIT = extras.getBoolean(getString(R.string.INTENT_FLAG_EDIT), false);
-                Log.v(LOG_TAG, "FLAG_EDIT: " + FLAG_EDIT);
 
                 if (FLAG_EDIT) {
                     // Get the id depending on where the data came from
@@ -423,6 +427,9 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderTimeTextview.setText(getString(R.string.none));
                     }
 
+                    oldReminderDateMillis = reminderDate;
+                    oldReminderTimeMillis = reminderTime;
+
                     // Get photo data
                     if (mFirebaseUser != null) {
                         DatabaseReference photosRef = FirebaseDatabase.getInstance().getReference()
@@ -439,10 +446,10 @@ public class NewTaskActivity extends AppCompatActivity
                                             .replace("'ampers'", "&");
                                     photoUriList.add(Uri.parse(photoPath));
                                 }
-                                    // Add in the views for the photos
-                                    for (int i = 0; i < photoUriList.size(); i++) {
-                                        addPhotoView(photoUriList.get(i));
-                                    }
+                                // Add in the views for the photos
+                                for (int i = 0; i < photoUriList.size(); i++) {
+                                    addPhotoView(photoUriList.get(i));
+                                }
                             }
 
                             @Override
@@ -455,7 +462,7 @@ public class NewTaskActivity extends AppCompatActivity
 
                     // Photo data from SQLite
                     String photoString = intent.getStringExtra("photo");
-                    if (photoString != null) {
+                    if (photoString != null && !photoString.equals("")) {
                         String[] photos = photoString.split("#seperate#");
                         // Add in the views for the photos
                         for (int i = 0; i < photos.length; i++) {
@@ -561,7 +568,7 @@ public class NewTaskActivity extends AppCompatActivity
         // Reminder Date and Time
         fieldSetReminderDateTextview.setText(getString(R.string.none));
         if (!isTablet)
-        fieldSetReminderTime.setEnabled(false);
+            fieldSetReminderTime.setEnabled(false);
         else fieldSetReminderTimeTextview.setEnabled(false);
         fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
         fieldSetReminderTimeTextview.setText(getString(R.string.none));
@@ -595,7 +602,8 @@ public class NewTaskActivity extends AppCompatActivity
         }
         if (!isTablet)
             fieldTitle.setBackgroundColor(mPrimaryColor);
-        else fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
 
         if (LAUNCHED_NEW_CLASS) {
             DbHelper dbHelper = new DbHelper(this);
@@ -665,7 +673,8 @@ public class NewTaskActivity extends AppCompatActivity
                     intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE), getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE));
                     intent.putExtra(getString(R.string.INTENT_EXTRA_POSITION),
                             getIntent().getIntExtra(getString(R.string.INTENT_EXTRA_POSITION), 0));
-                } else intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
+                } else
+                    intent.putExtra(getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), getString(R.string.INTENT_FLAG_RETURN_TO_TASKS));
                 try {
                     if (insertTaskDataIntoDatabase()) {
                         startActivity(intent);
@@ -769,15 +778,15 @@ public class NewTaskActivity extends AppCompatActivity
         // Take/Pick Photo
         if (requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_IMAGE_GET_PHOTO && resultCode == RESULT_OK) {
             // Add the uri to the array list
-                final Uri imageData;
-                if (requestCode == REQUEST_IMAGE_GET_PHOTO)
-                    imageData = data.getData();
-                else {
-                    imageData = mTempPhotoUri;
-                }
+            final Uri imageData;
+            if (requestCode == REQUEST_IMAGE_GET_PHOTO)
+                imageData = data.getData();
+            else {
+                imageData = mTempPhotoUri;
+            }
 
-                photoUriList.add(imageData);
-                addPhotoView(imageData);
+            photoUriList.add(imageData);
+            addPhotoView(imageData);
         }
     }
 
@@ -926,8 +935,8 @@ public class NewTaskActivity extends AppCompatActivity
                                 .addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
-                                        for (DataSnapshot peerSnapshot: dataSnapshot.getChildren()) {
-                                            for (DataSnapshot classSnapshot: peerSnapshot.child("classes").getChildren()) {
+                                        for (DataSnapshot peerSnapshot : dataSnapshot.getChildren()) {
+                                            for (DataSnapshot classSnapshot : peerSnapshot.child("classes").getChildren()) {
                                                 if (classSnapshot.getKey().equals(fieldTitle.getText().toString())) {
                                                     fieldSharedCheckbox.setEnabled(true);
                                                     fieldSharedCheckbox.setClickable(true);
@@ -1019,8 +1028,10 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.today));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
+                        if (!isTablet)
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
@@ -1037,8 +1048,10 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
                         reminderDateMillis = c.getTimeInMillis();
                         fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
+                        if (!isTablet)
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         if (reminderTimeMillis == 0) {
                             Calendar toGetTime = Calendar.getInstance();
                             int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
@@ -1052,8 +1065,10 @@ public class NewTaskActivity extends AppCompatActivity
                         break;
                     case R.id.dropdown_reminder_date_setdate:
                         fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet) fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
+                        if (!isTablet)
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
+                        else
+                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
                         int year = c.get(Calendar.YEAR);
                         int month = c.get(Calendar.MONTH);
                         int day = c.get(Calendar.DAY_OF_MONTH) + 1;
@@ -1418,7 +1433,6 @@ public class NewTaskActivity extends AppCompatActivity
             for (int i = 0; i < photoUriList.size(); i++) {
                 // Copy the photo into the app's local directory
                 Uri imageUri = photoUriList.get(i);
-                Log.v(LOG_TAG, "Image Uri: " + imageUri);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 String filename = taskRef.getKey() + ".jpg";
                 byte[] data = getBytes(inputStream);
@@ -1457,9 +1471,8 @@ public class NewTaskActivity extends AppCompatActivity
                         .replace("&", "'ampers'");
                 taskRef.child("photos").child(savedUriString).setValue(uri);
 
-                // Upload the custom icon and photos
+                // Upload the and photos
                 StorageReference iconRef1 = storageRef.child(mUserId + "/tasks/" + title + "/photos/" + String.valueOf(i));
-                Log.v(LOG_TAG, "Bucket path: " + iconRef1.getPath());
                 Bitmap bitmap = decodedBitmap;
                 ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos1);
@@ -1470,13 +1483,11 @@ public class NewTaskActivity extends AppCompatActivity
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         // TODO: Handle unsuccessful uploads
-                        Log.v(LOG_TAG, "UPLOAD FAILED: " + e.getMessage());
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         // TODO: Handle successful upload if any action is required
-                        Log.v(LOG_TAG, "UPLOAD SUCCESS: " + taskSnapshot.getDownloadUrl());
                     }
                 });
 
@@ -1493,7 +1504,7 @@ public class NewTaskActivity extends AppCompatActivity
                 c.set(Calendar.MINUTE, minute);
                 long notificationMillis = (c.getTimeInMillis());
                 if (reminderDateMillis > 0)
-                    ScheduleNotification(new Date(notificationMillis), -1, taskRef.getKey(), getString(R.string.notification_message_reminder), title);
+                    ScheduleNotification(new Date(notificationMillis), -1, taskRef.getKey(), getString(R.string.notification_message_reminder), title, false);
             }
 
             // Share the task to peers if checked shared
@@ -1567,31 +1578,91 @@ public class NewTaskActivity extends AppCompatActivity
                 iconUriString = Uri.fromFile(file1).toString();
             }
 
+            // Copy over photos
+            for (int i = 0; i < photoUriList.size(); i++) {
+                // Copy the photo into the app's local directory
+                Uri imageUri = photoUriList.get(i);
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                String filename = i + ".jpg";
+                byte[] data = getBytes(inputStream);
+                File file = new File(getFilesDir(), filename);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // Image compression
+                Bitmap decodedBitmap = decodeFile(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                decodedBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] bitmapData = baos.toByteArray();
+                file.delete();
+                File file1 = new File(getFilesDir(), filename);
+                FileOutputStream fos = new FileOutputStream(file1);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+
+                // Get the uri of the file so it can be saved
+                Uri uri = Uri.fromFile(file1);
+                photoUriList.remove(i);
+                photoUriList.add(i, uri);
+            }
+
             // Insert into SQLite
             DbHelper dbHelper = new DbHelper(this);
 
             if (FLAG_EDIT) {
                 // Update database row
                 if (dbHelper.updateTaskItem(this, editId, title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false))
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false)) {
+                    // Cancel the old notification
+                    {
+                        Calendar c = Calendar.getInstance();
+                        c.setTimeInMillis(oldReminderDateMillis);
+                        int hour = (int) oldReminderTimeMillis / 3600;
+                        int minute = (int) (oldReminderTimeMillis - hour * 3600) / 60;
+                        c.set(Calendar.HOUR_OF_DAY, hour);
+                        c.set(Calendar.MINUTE, minute);
+                        long notificationMillis = (c.getTimeInMillis());
+                        if (oldReminderDateMillis > 0)
+                            ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title, true);
+                    }
+
+                    // Set the alarm for the notification
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeInMillis(reminderDateMillis);
+                    int hour = (int) reminderTimeMillis / 3600;
+
+                    int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
+                    c.set(Calendar.HOUR_OF_DAY, hour);
+                    c.set(Calendar.MINUTE, minute);
+                    long notificationMillis = (c.getTimeInMillis());
+                    if (reminderDateMillis > 0)
+                        ScheduleNotification(new Date(notificationMillis), editId, "",
+                                getString(R.string.notification_message_reminder), title, false);
+
                     return true;
+                }
             } else {
                 // Insert a new database row
                 int id = (int) dbHelper.insertTask(this, title, classTitle, classType, description, attachedFileUriString,
                         dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false);
 
                 // Schedule a notification
-                {
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis(reminderDateMillis);
-                    int hour = (int) reminderTimeMillis / 3600;
-                    int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
-                    c.set(Calendar.HOUR_OF_DAY, hour);
-                    c.set(Calendar.MINUTE, minute);
-                    long notificationMillis = (c.getTimeInMillis());
-                    if (reminderDateMillis > 0)
-                        ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title);
-                }
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(reminderDateMillis);
+                int hour = (int) reminderTimeMillis / 3600;
+                int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
+                c.set(Calendar.HOUR_OF_DAY, hour);
+                c.set(Calendar.MINUTE, minute);
+                long notificationMillis = (c.getTimeInMillis());
+                if (reminderDateMillis > 0)
+                    ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title, false);
 
                 if (id > -1)
                     return true;
@@ -1610,11 +1681,11 @@ public class NewTaskActivity extends AppCompatActivity
             BitmapFactory.decodeStream(new FileInputStream(f), null, o);
 
             // The new size we want to scale to
-            final int REQUIRED_SIZE=300;
+            final int REQUIRED_SIZE = 300;
 
             // Find the correct scale value. It should be the power of 2.
             int scale = 1;
-            while(o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+            while (o.outWidth / scale / 2 >= REQUIRED_SIZE &&
                     o.outHeight / scale / 2 >= REQUIRED_SIZE) {
                 scale *= 2;
             }
@@ -1623,7 +1694,8 @@ public class NewTaskActivity extends AppCompatActivity
             BitmapFactory.Options o2 = new BitmapFactory.Options();
             o2.inSampleSize = scale;
             return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
-        } catch (FileNotFoundException e) {}
+        } catch (FileNotFoundException e) {
+        }
         return null;
     }
 
@@ -1656,7 +1728,8 @@ public class NewTaskActivity extends AppCompatActivity
         }
     }
 
-    private void ScheduleNotification(final Date dateTime, final int ID, final String firebaseID, final String title, final String message) {
+    private void ScheduleNotification(final Date dateTime, final int ID, final String firebaseID,
+                                      final String title, final String message, final boolean cancel) {
         final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
@@ -1671,6 +1744,7 @@ public class NewTaskActivity extends AppCompatActivity
         if (ID > -1)
             contentIntent.putExtra("_ID", ID);
         else contentIntent.putExtra("id", firebaseID);
+        contentIntent.putExtra("icon", iconUriString);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(TasksDetailActivity.class);
         stackBuilder.addNextIntent(contentIntent);
@@ -1693,13 +1767,16 @@ public class NewTaskActivity extends AppCompatActivity
                 Notification notification = builder.build();
 
                 Intent notificationIntent = new Intent(NewTaskActivity.this, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 60);
                 notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
                 final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewTaskActivity.this, REQUEST_NOTIFICATION_ALARM,
                         notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+                if (cancel)
+                    alarmManager.cancel(pendingIntent);
+                else
+                    alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
             }
         });
     }
@@ -1760,10 +1837,10 @@ public class NewTaskActivity extends AppCompatActivity
                 showBuiltInIconsDialog();
                 break;
             case 1:
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    if (intent.resolveActivity(getPackageManager()) != null)
-                        startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                if (intent.resolveActivity(getPackageManager()) != null)
+                    startActivityForResult(intent, REQUEST_IMAGE_GET_ICON);
                 break;
         }
     }

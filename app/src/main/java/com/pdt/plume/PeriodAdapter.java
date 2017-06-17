@@ -60,6 +60,8 @@ public class PeriodAdapter extends ArrayAdapter {
         String weekType = item.weekType;
         String basis = item.occurrence.split(":")[0];
 
+        Log.v(LOG_TAG, "Init item with stats " + basis + weekType);
+
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         mPrimaryColor = preferences.getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR),
@@ -70,374 +72,380 @@ public class PeriodAdapter extends ArrayAdapter {
             row = inflater.inflate(layoutResourceId, parent, false);
 
             holder = new ViewHolder();
-            if (basis.equals("0")) {
-                row.findViewById(R.id.time_layout).setVisibility(View.VISIBLE);
-                holder.weekOne = (TextView) row.findViewById(R.id.week_one_time);
-                holder.weekTwo = (TextView) row.findViewById(R.id.week_two_time);
-                holder.weekTwoLayout = row.findViewById(R.id.week_two_layout_time);
+            row.setTag(holder);
+        } else holder = (ViewHolder) row.getTag();
 
-                holder.days = (TextView) row.findViewById(R.id.days_time);
-                holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_time);
+        if (basis.equals("0")) {
+            row.findViewById(R.id.time_layout).setVisibility(View.VISIBLE);
+            row.findViewById(R.id.period_layout).setVisibility(View.GONE);
+            row.findViewById(R.id.block_layout).setVisibility(View.GONE);
+            holder.weekOne = (TextView) row.findViewById(R.id.week_one_time);
+            holder.weekTwo = (TextView) row.findViewById(R.id.week_two_time);
+            holder.weekTwoLayout = row.findViewById(R.id.week_two_layout_time);
 
-                holder.timein = (TextView) row.findViewById(R.id.timein);
-                holder.timeout = (TextView) row.findViewById(R.id.timeout);
-                holder.timeinAlt = (TextView) row.findViewById(R.id.timein_alt);
-                holder.timeoutAlt = (TextView) row.findViewById(R.id.timeout_alt);
+            holder.days = (TextView) row.findViewById(R.id.days_time);
+            holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_time);
 
-                holder.timein.setText(item.timein);
-                holder.timeout.setText(item.timeout);
-                holder.timeinAlt.setText(item.timeinalt);
-                holder.timeoutAlt.setText(item.timeoutalt);
+            holder.timein = (TextView) row.findViewById(R.id.timein);
+            holder.timeout = (TextView) row.findViewById(R.id.timeout);
+            holder.timeinAlt = (TextView) row.findViewById(R.id.timein_alt);
+            holder.timeoutAlt = (TextView) row.findViewById(R.id.timeout_alt);
 
-                if (weekType.equals("0")) {
-                    holder.weekOne.setVisibility(View.GONE);
-                    holder.weekTwo.setVisibility(View.GONE);
-                    holder.weekTwoLayout.setVisibility(View.GONE);
-                }
+            holder.timein.setText(item.timein);
+            holder.timeout.setText(item.timeout);
+            holder.timeinAlt.setText(item.timeinalt);
+            holder.timeoutAlt.setText(item.timeoutalt);
 
-                if (getContext() instanceof NewScheduleActivity) {
-                    holder.days.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            PeriodItem item = objects.get(position);
-                            DialogFragment fragment = DaysDialog.newInstance();
-                            Bundle args = new Bundle();
-                            args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days);
-                            args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
-                            Log.v(LOG_TAG, "OnClickPosition: " + position);
-                            fragment.setArguments(args);
-                            fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
+            if (weekType.equals("0")) {
+                holder.weekOne.setVisibility(View.GONE);
+                holder.weekTwo.setVisibility(View.GONE);
+                holder.weekTwoLayout.setVisibility(View.GONE);
+            }
+
+            if (getContext() instanceof NewScheduleActivity) {
+                holder.days.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        PeriodItem item = objects.get(position);
+                        DialogFragment fragment = DaysDialog.newInstance();
+                        Bundle args = new Bundle();
+                        args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days);
+                        args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
+                        fragment.setArguments(args);
+                        fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
+                    }
+                });
+
+                holder.daysAlt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        PeriodItem item = objects.get(position);
+                        DialogFragment fragment = DaysDialog.newInstance();
+                        Bundle args = new Bundle();
+                        args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days_alt);
+                        args.putBoolean(context.getString(R.string.ARGUMENT_ALTERNATE), true);
+                        args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
+                        fragment.setArguments(args);
+                        fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
+                    }
+                });
+
+                holder.timein.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        final PeriodItem item = objects.get(position);
+                        Calendar c = Calendar.getInstance();
+
+                        int hour = c.get(Calendar.HOUR_OF_DAY);
+                        int minute = c.get(Calendar.MINUTE);
+                        if (minute >= 15 && minute < 45)
+                            minute = 30;
+                        if (minute >= 45) {
+                            minute = 0;
+                            hour++;
                         }
-                    });
 
-                    holder.daysAlt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            PeriodItem item = objects.get(position);
-                            DialogFragment fragment = DaysDialog.newInstance();
-                            Bundle args = new Bundle();
-                            args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days_alt);
-                            args.putBoolean(context.getString(R.string.ARGUMENT_ALTERNATE), true);
-                            args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
-                            fragment.setArguments(args);
-                            fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
-                        }
-                    });
-
-                    holder.timein.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            final PeriodItem item = objects.get(position);
-                            Calendar c = Calendar.getInstance();
-
-                            int hour = c.get(Calendar.HOUR_OF_DAY);
-                            int minute = c.get(Calendar.MINUTE);
-                            if (minute >= 15 && minute < 45)
-                                minute = 30;
-                            if (minute >= 45) {
-                                minute = 0;
-                                hour++;
-                            }
-
-                            TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                                @Override
-                                public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                    item.timeinValue = utility.timeToMillis(i, i1);
-                                    item.timein = utility.millisToHourTime(item.timeinValue);
-                                    holder.timein.setText(item.timein);
-                                }
-                            }, hour, minute, false);
-                            timePickerDialog.show();
-                        }
-                    });
-
-                    holder.timeout.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            final PeriodItem item = objects.get(position);
-                            Calendar c = Calendar.getInstance();
-                            c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
-
-                            int hour = c.get(Calendar.HOUR_OF_DAY);
-                            int minute = c.get(Calendar.MINUTE);
-                            if (minute >= 15 && minute < 45)
-                                minute = 30;
-                            if (minute >= 45) {
-                                minute = 0;
-                                hour++;
-                            }
-
-                            TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                                @Override
-                                public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                    item.timeoutValue = utility.timeToMillis(i, i1);
-                                    item.timeout = utility.millisToHourTime(item.timeoutValue);
-                                    holder.timeout.setText(item.timeout);
-                                }
-                            }, hour, minute, false);
-                            timePickerDialog.show();
-                        }
-                    });
-
-                    holder.timeinAlt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            final PeriodItem item = objects.get(position);
-                            Calendar c = Calendar.getInstance();
-
-                            int hour = c.get(Calendar.HOUR_OF_DAY);
-                            int minute = c.get(Calendar.MINUTE);
-                            if (minute >= 15 && minute < 45)
-                                minute = 30;
-                            if (minute >= 45) {
-                                minute = 0;
-                                hour++;
-                            }
-
-                            TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                                @Override
-                                public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                    item.timeinaltValue = utility.timeToMillis(i, i1);
-                                    item.timeinalt = utility.millisToHourTime(item.timeinaltValue);
-                                    holder.timeinAlt.setText(item.timeinalt);
-                                }
-                            }, hour, minute, false);
-                            timePickerDialog.show();
-                        }
-                    });
-
-                    holder.timeoutAlt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            final PeriodItem item = objects.get(position);
-                            Calendar c = Calendar.getInstance();
-                            c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
-
-                            int hour = c.get(Calendar.HOUR_OF_DAY);
-                            int minute = c.get(Calendar.MINUTE);
-                            if (minute >= 15 && minute < 45)
-                                minute = 30;
-                            if (minute >= 45) {
-                                minute = 0;
-                                hour++;
-                            }
-
-                            TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                                @Override
-                                public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                    item.timeoutaltValue = utility.timeToMillis(i, i1);
-                                    item.timeoutalt = utility.millisToHourTime(item.timeoutaltValue);
-                                    holder.timeoutAlt.setText(item.timeoutalt);
-                                }
-                            }, hour, minute, false);
-                            timePickerDialog.show();
-                        }
-                    });
-                }
-
-            } else if (basis.equals("1")) {
-                row.findViewById(R.id.period_layout).setVisibility(View.VISIBLE);
-                holder.weekOne = (TextView) row.findViewById(R.id.week_one_period);
-                holder.weekTwo = (TextView) row.findViewById(R.id.week_two_period);
-                holder.weekTwoLayout = row.findViewById(R.id.week_two_layout_period);
-
-                holder.days = (TextView) row.findViewById(R.id.days_period);
-                holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_period);
-
-                holder.period[0] = (TextView) row.findViewById(R.id.one_period);
-                holder.period[1] = (TextView) row.findViewById(R.id.two_period);
-                holder.period[2] = (TextView) row.findViewById(R.id.three_period);
-                holder.period[3] = (TextView) row.findViewById(R.id.four_period);
-                holder.period[4] = (TextView) row.findViewById(R.id.five_period);
-                holder.period[5] = (TextView) row.findViewById(R.id.six_period);
-                holder.period[6] = (TextView) row.findViewById(R.id.seven_period);
-                holder.period[7] = (TextView) row.findViewById(R.id.eight_period);
-
-                holder.periodAlt[0] = (TextView) row.findViewById(R.id.one_alt_period);
-                holder.periodAlt[1] = (TextView) row.findViewById(R.id.two_alt_period);
-                holder.periodAlt[2] = (TextView) row.findViewById(R.id.three_alt_period);
-                holder.periodAlt[3] = (TextView) row.findViewById(R.id.four_alt_period);
-                holder.periodAlt[4] = (TextView) row.findViewById(R.id.five_alt_period);
-                holder.periodAlt[5] = (TextView) row.findViewById(R.id.six_alt_period);
-                holder.periodAlt[6] = (TextView) row.findViewById(R.id.seven_alt_period);
-                holder.periodAlt[7] = (TextView) row.findViewById(R.id.eight_alt_period);
-
-                if (weekType.equals("0")) {
-                    holder.weekOne.setVisibility(View.GONE);
-                    holder.weekTwo.setVisibility(View.GONE);
-                    holder.weekTwoLayout.setVisibility(View.GONE);
-                }
-
-                if (context instanceof NewScheduleActivity) {
-
-                    holder.days.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            PeriodItem item = objects.get(position);
-                            DialogFragment fragment = DaysDialog.newInstance();
-                            Bundle args = new Bundle();
-                            args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days);
-                            args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
-                            fragment.setArguments(args);
-                            fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
-                        }
-                    });
-
-                    holder.daysAlt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            View parentRow = (View) view.getParent().getParent().getParent();
-                            ListView listView = (ListView) parentRow.getParent();
-                            int position = listView.getPositionForView(parentRow);
-                            PeriodItem item = objects.get(position);
-                            DialogFragment fragment = DaysDialog.newInstance();
-                            Bundle args = new Bundle();
-                            args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days_alt);
-                            args.putBoolean(context.getString(R.string.ARGUMENT_ALTERNATE), true);
-                            args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
-                            fragment.setArguments(args);
-                            fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
-                        }
-                    });
-
-                    for (int i = 0; i < 8; i++) {
-                        final int finalI = i;
-                        holder.period[i].setOnClickListener(new View.OnClickListener() {
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
-                            public void onClick(View view) {
-                                View parentRow = (View) view.getParent().getParent().getParent();
-                                ListView listView = (ListView) parentRow.getParent();
-                                int position = listView.getPositionForView(parentRow);
-                                PeriodItem item = objects.get(position);
-                                if (item.days.equals("0:0:0:0:0:0:0")) {
-                                    return;
-                                }
-                                if (!item.period[finalI]) {
-                                    item.period[finalI] = true;
-                                    view.setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                item.timeinValue = utility.timeToMillis(i, i1);
+                                item.timein = utility.millisToHourTime(item.timeinValue);
+                                holder.timein.setText(item.timein);
+                            }
+                        }, hour, minute, false);
+                        timePickerDialog.show();
+                    }
+                });
+
+                holder.timeout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        final PeriodItem item = objects.get(position);
+                        Calendar c = Calendar.getInstance();
+                        c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
+
+                        int hour = c.get(Calendar.HOUR_OF_DAY);
+                        int minute = c.get(Calendar.MINUTE);
+                        if (minute >= 15 && minute < 45)
+                            minute = 30;
+                        if (minute >= 45) {
+                            minute = 0;
+                            hour++;
+                        }
+
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                item.timeoutValue = utility.timeToMillis(i, i1);
+                                item.timeout = utility.millisToHourTime(item.timeoutValue);
+                                holder.timeout.setText(item.timeout);
+                            }
+                        }, hour, minute, false);
+                        timePickerDialog.show();
+                    }
+                });
+
+                holder.timeinAlt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        final PeriodItem item = objects.get(position);
+                        Calendar c = Calendar.getInstance();
+
+                        int hour = c.get(Calendar.HOUR_OF_DAY);
+                        int minute = c.get(Calendar.MINUTE);
+                        if (minute >= 15 && minute < 45)
+                            minute = 30;
+                        if (minute >= 45) {
+                            minute = 0;
+                            hour++;
+                        }
+
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                item.timeinaltValue = utility.timeToMillis(i, i1);
+                                item.timeinalt = utility.millisToHourTime(item.timeinaltValue);
+                                holder.timeinAlt.setText(item.timeinalt);
+                            }
+                        }, hour, minute, false);
+                        timePickerDialog.show();
+                    }
+                });
+
+                holder.timeoutAlt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        final PeriodItem item = objects.get(position);
+                        Calendar c = Calendar.getInstance();
+                        c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
+
+                        int hour = c.get(Calendar.HOUR_OF_DAY);
+                        int minute = c.get(Calendar.MINUTE);
+                        if (minute >= 15 && minute < 45)
+                            minute = 30;
+                        if (minute >= 45) {
+                            minute = 0;
+                            hour++;
+                        }
+
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                item.timeoutaltValue = utility.timeToMillis(i, i1);
+                                item.timeoutalt = utility.millisToHourTime(item.timeoutaltValue);
+                                holder.timeoutAlt.setText(item.timeoutalt);
+                            }
+                        }, hour, minute, false);
+                        timePickerDialog.show();
+                    }
+                });
+            }
+
+        } else if (basis.equals("1")) {
+            row.findViewById(R.id.period_layout).setVisibility(View.VISIBLE);
+            row.findViewById(R.id.time_layout).setVisibility(View.GONE);
+            row.findViewById(R.id.block_layout).setVisibility(View.GONE);
+            holder.weekOne = (TextView) row.findViewById(R.id.week_one_period);
+            holder.weekTwo = (TextView) row.findViewById(R.id.week_two_period);
+            holder.weekTwoLayout = row.findViewById(R.id.week_two_layout_period);
+
+            holder.days = (TextView) row.findViewById(R.id.days_period);
+            holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_period);
+
+            holder.period[0] = (TextView) row.findViewById(R.id.one_period);
+            holder.period[1] = (TextView) row.findViewById(R.id.two_period);
+            holder.period[2] = (TextView) row.findViewById(R.id.three_period);
+            holder.period[3] = (TextView) row.findViewById(R.id.four_period);
+            holder.period[4] = (TextView) row.findViewById(R.id.five_period);
+            holder.period[5] = (TextView) row.findViewById(R.id.six_period);
+            holder.period[6] = (TextView) row.findViewById(R.id.seven_period);
+            holder.period[7] = (TextView) row.findViewById(R.id.eight_period);
+
+            holder.periodAlt[0] = (TextView) row.findViewById(R.id.one_alt_period);
+            holder.periodAlt[1] = (TextView) row.findViewById(R.id.two_alt_period);
+            holder.periodAlt[2] = (TextView) row.findViewById(R.id.three_alt_period);
+            holder.periodAlt[3] = (TextView) row.findViewById(R.id.four_alt_period);
+            holder.periodAlt[4] = (TextView) row.findViewById(R.id.five_alt_period);
+            holder.periodAlt[5] = (TextView) row.findViewById(R.id.six_alt_period);
+            holder.periodAlt[6] = (TextView) row.findViewById(R.id.seven_alt_period);
+            holder.periodAlt[7] = (TextView) row.findViewById(R.id.eight_alt_period);
+
+            if (weekType.equals("0")) {
+                holder.weekOne.setVisibility(View.GONE);
+                holder.weekTwo.setVisibility(View.GONE);
+                holder.weekTwoLayout.setVisibility(View.GONE);
+            }
+
+            if (context instanceof NewScheduleActivity) {
+
+                holder.days.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        PeriodItem item = objects.get(position);
+                        DialogFragment fragment = DaysDialog.newInstance();
+                        Bundle args = new Bundle();
+                        args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days);
+                        args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
+                        fragment.setArguments(args);
+                        fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
+                    }
+                });
+
+                holder.daysAlt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        View parentRow = (View) view.getParent().getParent().getParent();
+                        ListView listView = (ListView) parentRow.getParent();
+                        int position = listView.getPositionForView(parentRow);
+                        PeriodItem item = objects.get(position);
+                        DialogFragment fragment = DaysDialog.newInstance();
+                        Bundle args = new Bundle();
+                        args.putString(context.getString(R.string.ARGUMENT_DAYS), item.days_alt);
+                        args.putBoolean(context.getString(R.string.ARGUMENT_ALTERNATE), true);
+                        args.putInt(context.getString(R.string.ARGUMENT_POSITION), position);
+                        fragment.setArguments(args);
+                        fragment.show(((AppCompatActivity) context).getSupportFragmentManager(), "dialog");
+                    }
+                });
+
+                for (int i = 0; i < 8; i++) {
+                    final int finalI = i;
+                    holder.period[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (item.days.equals("0:0:0:0:0:0:0")) {
+                                return;
+                            }
+                            if (!item.period[finalI]) {
+                                item.period[finalI] = true;
+                                view.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     view.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                } else {
-                                    item.period[finalI] = false;
-                                    view.setBackground(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                }
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.period[finalI] = false;
+                                view.setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
                             }
-                        });
-                        holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                View parentRow = (View) view.getParent().getParent().getParent();
-                                ListView listView = (ListView) parentRow.getParent();
-                                int position = listView.getPositionForView(parentRow);
-                                PeriodItem item = objects.get(position);
-                                if (item.days_alt.equals("0:0:0:0:0:0:0")) {
-                                    return;
-                                }
-                                if (!item.periodAlt[finalI]) {
-                                    item.periodAlt[finalI] = true;
-                                    holder.periodAlt[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                        }
+                    });
+                    holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (item.days_alt.equals("0:0:0:0:0:0:0")) {
+                                return;
+                            }
+                            if (!item.periodAlt[finalI]) {
+                                item.periodAlt[finalI] = true;
+                                holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                } else {
-                                    item.periodAlt[finalI] = false;
-                                    holder.periodAlt[finalI].setBackground(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                }
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.periodAlt[finalI] = false;
+                                holder.periodAlt[finalI].setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
                             }
-                        });
-                    }
-
-                    // Here set apply the data to the UI as if it were edited
-                    for (int i = 0; i < 3; i++) {
-                        final int finalI = i;
-                        holder.period[i].setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                View parentRow = (View) view.getParent().getParent().getParent();
-                                ListView listView = (ListView) parentRow.getParent();
-                                int position = listView.getPositionForView(parentRow);
-                                PeriodItem item = objects.get(position);
-                                if (item.days.equals("0:0:0:0:0:0:0")) {
-                                    return;
-                                }
-                                if (!item.period[finalI]) {
-                                    item.period[finalI] = true;
-                                    holder.period[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                    holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                } else {
-                                    item.period[finalI] = false;
-                                    holder.period[finalI].setBackground(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                }
-                            }
-                        });
-                        holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                View parentRow = (View) view.getParent().getParent().getParent();
-                                ListView listView = (ListView) parentRow.getParent();
-                                int position = listView.getPositionForView(parentRow);
-                                PeriodItem item = objects.get(position);
-                                if (item.days_alt.equals("0:0:0:0:0:0:0")) {
-                                    return;
-                                }
-                                if (!item.periodAlt[finalI]) {
-                                    item.periodAlt[finalI] = true;
-                                    holder.periodAlt[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                    holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                } else {
-                                    item.periodAlt[finalI] = false;
-                                    holder.periodAlt[finalI].setBackground(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                }
-                            }
-                        });
-                    }
-
+                        }
+                    });
                 }
 
+                // Here set apply the data to the UI as if it were edited
+                for (int i = 0; i < 3; i++) {
+                    final int finalI = i;
+                    holder.period[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (item.days.equals("0:0:0:0:0:0:0")) {
+                                return;
+                            }
+                            if (!item.period[finalI]) {
+                                item.period[finalI] = true;
+                                holder.period[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                                    holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.period[finalI] = false;
+                                holder.period[finalI].setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                            }
+                        }
+                    });
+                    holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (item.days_alt.equals("0:0:0:0:0:0:0")) {
+                                return;
+                            }
+                            if (!item.periodAlt[finalI]) {
+                                item.periodAlt[finalI] = true;
+                                holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                                    holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.periodAlt[finalI] = false;
+                                holder.periodAlt[finalI].setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                            }
+                        }
+                    });
+                }
 
-            } else if (basis.equals("2")) {
-                row.findViewById(R.id.block_layout).setVisibility(View.VISIBLE);
-                holder.period[0] = (TextView) row.findViewById(R.id.one_block);
-                holder.period[1] = (TextView) row.findViewById(R.id.two_block);
-                holder.period[2] = (TextView) row.findViewById(R.id.three_block);
-                holder.period[3] = (TextView) row.findViewById(R.id.four_block);
+            }
+        } else if (basis.equals("2")) {
+            row.findViewById(R.id.block_layout).setVisibility(View.VISIBLE);
+            row.findViewById(R.id.period_layout).setVisibility(View.GONE);
+            row.findViewById(R.id.time_layout).setVisibility(View.GONE);
+            holder.period[0] = (TextView) row.findViewById(R.id.one_block);
+            holder.period[1] = (TextView) row.findViewById(R.id.two_block);
+            holder.period[2] = (TextView) row.findViewById(R.id.three_block);
+            holder.period[3] = (TextView) row.findViewById(R.id.four_block);
 
-                holder.periodAlt[0] = (TextView) row.findViewById(R.id.one_alt_block);
-                holder.periodAlt[1] = (TextView) row.findViewById(R.id.two_alt_block);
-                holder.periodAlt[2] = (TextView) row.findViewById(R.id.three_alt_block);
-                holder.periodAlt[3] = (TextView) row.findViewById(R.id.four_alt_block);
+            holder.periodAlt[0] = (TextView) row.findViewById(R.id.one_alt_block);
+            holder.periodAlt[1] = (TextView) row.findViewById(R.id.two_alt_block);
+            holder.periodAlt[2] = (TextView) row.findViewById(R.id.three_alt_block);
+            holder.periodAlt[3] = (TextView) row.findViewById(R.id.four_alt_block);
 
-                if (context instanceof NewScheduleActivity) {
+            if (context instanceof NewScheduleActivity) {
 //                    if (!basis.equals("2"))
 //                    holder.days.setOnClickListener(new View.OnClickListener() {
 //                        @Override
@@ -465,53 +473,8 @@ public class PeriodAdapter extends ArrayAdapter {
 //                        }
 //                    });
 
-                    if (basis.equals("2"))
-                        for (int i = 0; i < 4; i++) {
-                            final int finalI = i;
-                            holder.period[i].setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    View parentRow = (View) view.getParent().getParent().getParent().getParent();
-                                    ListView listView = (ListView) parentRow.getParent();
-                                    int position = listView.getPositionForView(parentRow);
-                                    PeriodItem item = objects.get(position);
-                                    if (!item.period[finalI]) {
-                                        item.period[finalI] = true;
-                                        view.setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                        view.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                        ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                    } else {
-                                        item.period[finalI] = false;
-                                        view.setBackground(null);
-                                        ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                    }
-                                }
-                            });
-                            holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    View parentRow = (View) view.getParent().getParent().getParent().getParent();
-                                    ListView listView = (ListView) parentRow.getParent();
-                                    int position = listView.getPositionForView(parentRow);
-                                    PeriodItem item = objects.get(position);
-                                    if (!item.periodAlt[finalI]) {
-                                        item.periodAlt[finalI] = true;
-                                        holder.periodAlt[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
-                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                        holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                        ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
-                                    } else {
-                                        item.periodAlt[finalI] = false;
-                                        holder.periodAlt[finalI].setBackground(null);
-                                        ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
-                                    }
-                                }
-                            });
-                        }
-
-                    // Here set apply the data to the UI as if it were edited
-                    for (int i = 0; i < 3; i++) {
+                if (basis.equals("2"))
+                    for (int i = 0; i < 4; i++) {
                         final int finalI = i;
                         holder.period[i].setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -522,13 +485,13 @@ public class PeriodAdapter extends ArrayAdapter {
                                 PeriodItem item = objects.get(position);
                                 if (!item.period[finalI]) {
                                     item.period[finalI] = true;
-                                    holder.period[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                    view.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                    holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                        view.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
                                     ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
                                 } else {
                                     item.period[finalI] = false;
-                                    holder.period[finalI].setBackground(null);
+                                    view.setBackgroundDrawable(null);
                                     ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
                                 }
                             }
@@ -542,25 +505,67 @@ public class PeriodAdapter extends ArrayAdapter {
                                 PeriodItem item = objects.get(position);
                                 if (!item.periodAlt[finalI]) {
                                     item.periodAlt[finalI] = true;
-                                    holder.periodAlt[finalI].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                    holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                                    holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                        holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
                                     ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
                                 } else {
                                     item.periodAlt[finalI] = false;
-                                    holder.periodAlt[finalI].setBackground(null);
+                                    holder.periodAlt[finalI].setBackgroundDrawable(null);
                                     ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
                                 }
                             }
                         });
                     }
 
+                // Here set apply the data to the UI as if it were edited
+                for (int i = 0; i < 3; i++) {
+                    final int finalI = i;
+                    holder.period[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (!item.period[finalI]) {
+                                item.period[finalI] = true;
+                                holder.period[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                                    holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.period[finalI] = false;
+                                holder.period[finalI].setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                            }
+                        }
+                    });
+                    holder.periodAlt[i].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            View parentRow = (View) view.getParent().getParent().getParent().getParent();
+                            ListView listView = (ListView) parentRow.getParent();
+                            int position = listView.getPositionForView(parentRow);
+                            PeriodItem item = objects.get(position);
+                            if (!item.periodAlt[finalI]) {
+                                item.periodAlt[finalI] = true;
+                                holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                                    holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                            } else {
+                                item.periodAlt[finalI] = false;
+                                holder.periodAlt[finalI].setBackgroundDrawable(null);
+                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                            }
+                        }
+                    });
                 }
 
             }
 
-            row.setTag(holder);
-        } else holder = (ViewHolder) row.getTag();
+        }
 
         // The days
         if (item.days != null) {
@@ -605,25 +610,25 @@ public class PeriodAdapter extends ArrayAdapter {
             for (int i = 0; i < totalPeriods; i++) {
                 if (item.period[i]) {
                     item.period[i] = true;
-                    holder.period[i].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
+                    holder.period[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                         holder.period[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
                     holder.period[i].setTextColor(context.getResources().getColor(R.color.white));
                 } else {
                     item.period[i] = false;
-                    holder.period[i].setBackground(null);
+                    holder.period[i].setBackgroundDrawable(null);
                     holder.period[i].setTextColor(context.getResources().getColor(R.color.gray_900));
                 }
 
                 if (item.periodAlt[i]) {
                     item.periodAlt[i] = true;
-                    holder.periodAlt[i].setBackground(context.getResources().getDrawable(R.drawable.bg_period_button));
+                    holder.periodAlt[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                    holder.periodAlt[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                        holder.periodAlt[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
                     holder.periodAlt[i].setTextColor(context.getResources().getColor(R.color.white));
                 } else {
                     item.periodAlt[i] = false;
-                    holder.periodAlt[i].setBackground(null);
+                    holder.periodAlt[i].setBackgroundDrawable(null);
                     holder.periodAlt[i].setTextColor(context.getResources().getColor(R.color.gray_900));
                 }
             }

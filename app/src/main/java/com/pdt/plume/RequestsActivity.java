@@ -58,9 +58,13 @@ public class RequestsActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser == null) {
+            Intent intent;
             boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-            if (isTablet) startActivity(new Intent(this, LoginActivityTablet.class));
-            else new Intent(this, LoginActivityTablet.class);
+            if (isTablet) intent = new Intent(this, LoginActivityTablet.class);
+            else intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
             return;
         }
 

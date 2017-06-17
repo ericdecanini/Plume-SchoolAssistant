@@ -63,64 +63,67 @@ public class Utility {
                 context.getResources().getColor(R.color.colorPrimary));
         DbHelper dbHelper = new DbHelper(context);
         Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(context);
-        for (int i = 0; i < cursor.getCount(); i++) {
-            cursor.moveToPosition(i);
-            String title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-            String icon = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-            String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
-            long timeIn;
-            if (preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
-                timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
-            else timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT));
+        if (cursor != null)
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                String title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
+                String icon = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
+                String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
+                long timeIn;
+                if (preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
+                    timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
+                else
+                    timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT));
 
-            Calendar c = Calendar.getInstance();
-            Calendar timeInC = Calendar.getInstance();
-            timeInC.setTimeInMillis(timeIn);
-            int hour = timeInC.get(Calendar.HOUR_OF_DAY);
-            int minute = timeInC.get(Calendar.MINUTE);
-            c.set(Calendar.HOUR_OF_DAY, hour);
-            c.set(Calendar.MINUTE, minute);
-            long alarmTime = c.getTimeInMillis();
+                Calendar c = Calendar.getInstance();
+                Calendar timeInC = Calendar.getInstance();
+                timeInC.setTimeInMillis(timeIn);
+                int hour = timeInC.get(Calendar.HOUR_OF_DAY);
+                int minute = timeInC.get(Calendar.MINUTE);
+                c.set(Calendar.HOUR_OF_DAY, hour);
+                c.set(Calendar.MINUTE, minute);
+                long alarmTime = c.getTimeInMillis();
 
 
-            if (occurrence.split(":")[0].equals("0")) {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-                Bitmap largeIcon = null;
-                try {
-                    largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (occurrence.split(":")[0].equals("0")) {
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+                    Bitmap largeIcon = null;
+                    try {
+                        largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                            .setBackground(largeIcon);
+
+                    Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
+                    contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_CLASS), title);
+                    PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
+                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    Notification notification = builder
+                            .setContentIntent(contentPendingIntent)
+                            .setSmallIcon(R.drawable.ic_class_white)
+                            .setColor(mPrimaryColor)
+                            .setContentTitle(title)
+                            .setContentText(context.getString(R.string.schedule_notification_message))
+                            .setWhen(System.currentTimeMillis())
+                            .setAutoCancel(true)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .extend(wearableExtender)
+                            .setDefaults(Notification.DEFAULT_ALL)
+                            .build();
+
+                    Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
+                    ;
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
+                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                    alarmManager.cancel(pendingIntent);
                 }
-                android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                        .setBackground(largeIcon);
-
-                Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
-                contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_CLASS), title);
-                PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
-                        contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                Notification notification = builder
-                        .setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_class_white)
-                        .setColor(mPrimaryColor)
-                        .setContentTitle(title)
-                        .setContentText(context.getString(R.string.schedule_notification_message))
-                        .setWhen(System.currentTimeMillis())
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .extend(wearableExtender)
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .build();
-
-                Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);;
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
-                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                alarmManager.cancel(pendingIntent);
             }
-        }
     }
 
     public byte[] getBytes(InputStream inputStream) throws IOException {
@@ -136,7 +139,7 @@ public class Utility {
     }
 
     public static int generateViewId() {
-        for (;;) {
+        for (; ; ) {
             final int result = sNextGeneratedId.get();
             // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
             int newValue = result + 1;
@@ -365,12 +368,12 @@ public class Utility {
     }
 
     // Helper method to create an arrayList of set periods based on the periods string
-    public ArrayList<String> createSetPeriodsArrayList(String periods, String weekNumber) {
+    public ArrayList<String> createSetPeriodsArrayList(String periods, String weekNumber, String weekType) {
         String[] splitPeriods = periods.split(":");
         ArrayList<String> periodList = new ArrayList<>();
 
         // Week 1: Get regular data
-        if (weekNumber.equals("0")) {
+        if (weekNumber.equals("0") || weekType.equals("0")) {
             // This will be called if the row is period based
             if (splitPeriods.length == 12) {
                 if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
@@ -496,7 +499,6 @@ public class Utility {
 
     // Helper method to check if occurrence matches current day
     public boolean occurrenceMatchesCurrentDay(Context context, String occurrence, String periods, String weekNumber, int dayOfWeek) {
-        Log.v(LOG_TAG, "Occurrence " + occurrence + " matches");
         // In this case, no class time would have been set
         if (occurrence.equals("-1"))
             return false;
@@ -510,7 +512,6 @@ public class Utility {
             String blockFormat = PreferenceManager.getDefaultSharedPreferences(context)
                     .getString("blockformat", "0:1:2:1:2:1:0");
             String[] splitBlockFormat = blockFormat.split(":");
-
             // Day A Check
             if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
                 if (splitBlockFormat[dayOfWeek - 1].equals("1")) {

@@ -99,8 +99,8 @@ public class AddPeerActivityTablet extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
+            ((Button) findViewById(R.id.button)).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
         }
-        ((Button) findViewById(R.id.button)).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
 
         if (isTablet) {
             findViewById(R.id.gradient_overlay).setBackgroundColor(mPrimaryColor);
@@ -132,7 +132,7 @@ public class AddPeerActivityTablet extends AppCompatActivity {
                     // For listed values, arrayLists must be stored in the bundle
                     ArrayList<String> occurrenceList = new ArrayList<>();
                     for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren()) {
-                        occurrenceList.add(occurrenceSnapshot.getKey());
+                        occurrenceList.add(occurrenceSnapshot.getValue(String.class));
                     }
                     ArrayList<Integer> timeInList = new ArrayList<>();
                     for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren()) {
@@ -152,7 +152,7 @@ public class AddPeerActivityTablet extends AppCompatActivity {
                     }
                     ArrayList<String> periodsList = new ArrayList<>();
                     for (DataSnapshot periodSnapshot : classSnapshot.child("periods").getChildren()) {
-                        periodsList.add(periodSnapshot.getKey());
+                        periodsList.add(periodSnapshot.getValue(String.class));
                     }
 
                     Bundle bundle = new Bundle();
@@ -215,7 +215,6 @@ public class AddPeerActivityTablet extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot peerSnapshot: dataSnapshot.getChildren()) {
                     if (peerSnapshot.getKey().equals(targetUserId)) {
-                        Log.v(LOG_TAG, "Peer: " + peerSnapshot.getKey() + ", " + targetUserId);
                         Intent intent = new Intent(AddPeerActivityTablet.this, PeerProfileActivity.class);
                         intent.putExtra("uid", peerSnapshot.getKey());
                         intent.putExtra("name", peerSnapshot.child("nickname").getValue(String.class));

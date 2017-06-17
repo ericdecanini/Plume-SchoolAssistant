@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -132,7 +133,7 @@ public class TasksFragment extends Fragment {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     spinner.setVisibility(View.GONE);
-                    for (final DataSnapshot tasksSnapshot: dataSnapshot.getChildren()) {
+                    for (final DataSnapshot tasksSnapshot : dataSnapshot.getChildren()) {
                         final String icon = tasksSnapshot.child("icon").getValue(String.class);
                         final String title = tasksSnapshot.child("title").getValue(String.class);
                         final String sharer = tasksSnapshot.child("sharer").getValue(String.class);
@@ -168,36 +169,38 @@ public class TasksFragment extends Fragment {
                                     listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));
                             }
                         } else {
-                                // File is non existent, download from storage
-                                FirebaseStorage storage = FirebaseStorage.getInstance();
-                                StorageReference storageRef = storage.getReference();
-                                StorageReference iconsRef = storageRef.child(mUserId + "/tasks/" + tasksSnapshot.getKey());
+                            // File is non existent, download from storage
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            StorageReference iconsRef = storageRef.child(mUserId + "/tasks/" + tasksSnapshot.getKey());
 
                             final Boolean finalCompleted = completed;
                             iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                        if (!finalCompleted && duedate != null) {
-                                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
-                                            FirebaseIdList.add(tasksSnapshot.getKey());
-                                            mTasksAdapter.notifyDataSetChanged();
-                                            spinner.setVisibility(View.GONE);
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    if (!finalCompleted && duedate != null) {
+                                        mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
+                                        FirebaseIdList.add(tasksSnapshot.getKey());
+                                        mTasksAdapter.notifyDataSetChanged();
+                                        spinner.setVisibility(View.GONE);
 
-                                            // The header text view will only be visible if there is no items in the task mScheduleAdapter
-                                            if (mTasksAdapter.getCount() == 0)
-                                                headerTextView.setVisibility(View.VISIBLE);
-                                            else headerTextView.setVisibility(View.GONE);
+                                        // The header text view will only be visible if there is no items in the task mScheduleAdapter
+                                        if (mTasksAdapter.getCount() == 0)
+                                            headerTextView.setVisibility(View.VISIBLE);
+                                        else headerTextView.setVisibility(View.GONE);
 
-                                            int selectedPosition = listView.getSelectedItemPosition();
-                                            if (isTablet && mTasksList.size() > 0 && selectedPosition == -1)
-                                                listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));                                        }
+                                        int selectedPosition = listView.getSelectedItemPosition();
+                                        if (isTablet && mTasksList.size() > 0 && selectedPosition == -1)
+                                            listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
+                    }
                 }
 
-                @Override public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
                     spinner.setVisibility(View.GONE);
                     headerTextView.setVisibility(View.VISIBLE);
                     headerTextView.setText(getString(R.string.check_internet));
@@ -220,8 +223,7 @@ public class TasksFragment extends Fragment {
                 public void onCancelled(DatabaseError databaseError) {
                 }
             });
-        }
-        else {
+        } else {
             // Get the data from SQLite
             mTasksList = dbHelper.getUncompletedTaskArray();
             spinner.setVisibility(View.GONE);
@@ -278,7 +280,8 @@ public class TasksFragment extends Fragment {
         mDarkColor = Color.HSVToColor(hsv);
 
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
     @Override
@@ -287,7 +290,8 @@ public class TasksFragment extends Fragment {
 
         int selectedPosition = listView.getSelectedItemPosition();
         if (isTablet && mTasksList.size() > 0 && selectedPosition == -1)
-            listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));    }
+            listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));
+    }
 
     @Override
     public void onStop() {
@@ -323,6 +327,14 @@ public class TasksFragment extends Fragment {
                 // If the used device is a phone, start a new TasksDetailActivity
                 // passing the data of the clicked row to the fragment
                 else {
+                    listView.setEnabled(false);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            listView.setEnabled(true);
+                        }
+                    }, 1000);
                     final Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
                     if (mFirebaseUser != null) {
                         intent.putExtra("id", FirebaseIdList.get(position));
@@ -539,7 +551,6 @@ public class TasksFragment extends Fragment {
                 final String[] classTitle = new String[1];
                 final String[] classType = new String[1];
                 final String[] description = new String[1];
-                final String[] photos = new String[1];
                 final String[] attachment = new String[1];
                 final float[] dueDate = new float[1];
                 final float[] reminderDate = new float[1];
@@ -583,13 +594,16 @@ public class TasksFragment extends Fragment {
                             taskRef.removeEventListener(this);
                             startActivity(intent);
                         }
-                        @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                        }
+                    });
 
                     while (title.equals("")) {
                         // Sleep until intent is sent by the value added listener
                     }
-                }
-                else {
+                } else {
                     // Get the data from SQLite
                     // Get a reference to the database and
                     // Get a cursor of the Task Data
@@ -604,7 +618,6 @@ public class TasksFragment extends Fragment {
                         title[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
                         classTitle[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_CLASS));
                         classType[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TYPE));
-                        photos[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_PICTURE));
                         description[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DESCRIPTION));
                         attachment[0] = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
                         dueDate[0] = cursor.getFloat(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE));
@@ -617,7 +630,6 @@ public class TasksFragment extends Fragment {
                         intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title[0]);
                         intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), classTitle[0]);
                         intent.putExtra(getString(R.string.INTENT_EXTRA_TYPE), classType[0]);
-                        intent.putExtra("photo", photos[0]);
                         intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DESCRIPTION), description[0]);
                         intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ATTACHMENT), attachment[0]);
                         intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate[0]);

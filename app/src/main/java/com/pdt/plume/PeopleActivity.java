@@ -105,7 +105,7 @@ public class PeopleActivity extends AppCompatActivity
 
     // UI Data
     String selfIconUri, selfName, flavour;
-    private static String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
+    public static String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
 
     // Theme Variables
     int mPrimaryColor, mDarkColor;
@@ -338,6 +338,11 @@ public class PeopleActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String iconUri = dataSnapshot.child("icon").getValue(String.class);
+                if (iconUri == null) {
+                    iconUri = defaultIconUri;
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserId).setValue(iconUri);
+                }
 
                 // First check if the icon uses a default drawable or from the storage
                 if (!iconUri.contains("android.resource://com.pdt.plume")) {

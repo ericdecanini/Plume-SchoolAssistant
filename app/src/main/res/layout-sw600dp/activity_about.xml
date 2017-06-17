@@ -45,7 +45,7 @@
                     android:paddingBottom="32dp"
                     android:layout_toEndOf="@id/about_appicon"
                     android:layout_toRightOf="@id/about_appicon"
-                    android:text="@string/Plume"
+                    android:text="@string/Classify"
                     android:textColor="@color/gray_900"
                     android:textSize="26sp" />
 
@@ -139,25 +139,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
-                android:text="@string/Developed"
-                android:textColor="@color/gray_900"
-                android:textSize="20sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:text="@string/PDT"
-                android:textSize="18sp"
-                android:textColor="@color/gray_900" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/Coding"
                 android:textColor="@color/gray_900"
                 android:textSize="20sp" />
@@ -251,6 +232,24 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
                 android:text="@string/Michael_Smith"
+                android:textSize="18sp"
+                android:textColor="@color/gray_900" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/Clint"
+                android:textSize="18sp"
+                android:textColor="@color/gray_900" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/Theodore"
                 android:textSize="18sp"
                 android:textColor="@color/gray_900" />
 

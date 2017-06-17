@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -99,6 +100,15 @@ public class CompletedTasksActivity extends AppCompatActivity {
                 // Create an intent to the TaskDetailActivity passing on the ID
                 boolean isTablet = getResources().getBoolean(R.bool.isTablet);
                 if (!isTablet) {
+                    listView.setEnabled(false);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            listView.setEnabled(true);
+                        }
+                    }, 1000);
+
                     Intent intent = new Intent(CompletedTasksActivity.this, TasksDetailActivity.class);
                     intent.putExtra(getString(R.string.INTENT_FLAG_COMPLETED), true);
                     if (mFirebaseUser != null) {
@@ -178,9 +188,9 @@ public class CompletedTasksActivity extends AppCompatActivity {
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
+            fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
         }
 
-        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
 
     }
 

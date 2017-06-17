@@ -107,11 +107,15 @@ public class MismatchListAdapter extends ArrayAdapter {
                                             String icon = dataSnapshot.child("icon").getValue(String.class);
                                             String teacher = dataSnapshot.child("teacher").getValue(String.class);
                                             String room = dataSnapshot.child("room").getValue(String.class);
+                                            int i00 = 0;
                                             for (DataSnapshot arraySnapshot: dataSnapshot.child("occurrence").getChildren()) {
-                                                newClassRef.child("occurrence").child(arraySnapshot.getKey()).setValue("");
+                                                newClassRef.child("occurrence").child(String.valueOf(i00)).setValue(arraySnapshot.getKey());
+                                                i00++;
                                             }
+                                            int i0 = 0;
                                             for (DataSnapshot arraySnapshot: dataSnapshot.child("periods").getChildren()) {
-                                                newClassRef.child("periods").child(arraySnapshot.getKey()).setValue("");
+                                                newClassRef.child("periods").child(String.valueOf(i0)).setValue(arraySnapshot.getKey());
+                                                i0++;
                                             }
                                             int i1 = 0;
                                             for (DataSnapshot arraySnapshot: dataSnapshot.child("timein").getChildren()) {

@@ -41,7 +41,9 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
@@ -57,6 +59,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract.TasksEntry;
@@ -285,7 +288,6 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                                 c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 
                         // Get the photo data
-                        long photoCount = dataSnapshot.child("photos").getChildrenCount();
                         for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").getChildren()) {
                             String photoPath = photoSnapshot.getKey()
                                     .replace("'dot'", ".")
@@ -295,87 +297,42 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                             photoUris.add(Uri.parse(photoPath));
                         }
                         // Add in the views for the photos
+                        final ArrayList<Uri> photos = new ArrayList<>();
+                        GridView photosLayout = (GridView) findViewById(R.id.photos_layout);
+                        final ImageAdapter adapter = new ImageAdapter(TasksDetailActivityTablet.this, R.layout.grid_item_photo, photos);
+                        photosLayout.setAdapter(adapter);
+                        photosLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                Intent pictureIntent = new Intent(TasksDetailActivityTablet.this, PictureActivity.class);
+                                pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(i).toString());
+                                View view1 = view.findViewById(R.id.photo);
+                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                        (TasksDetailActivityTablet.this, view1, view1.getTransitionName()).toBundle();
+                                startActivity(pictureIntent, bundle);
+                            }
+                        });
                         for (int i = 0; i < photoUris.size(); i++) {
                             // Check validity of URI
-                            File file = new File(photoUris.get(i).getPath());
+                            final File file = new File(getFilesDir(), photoUris.get(i).getPath());
                             if (file.exists()) {
-                                int wh = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics()));
-                                LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-
-                                final CardView cardView = new CardView(TasksDetailActivityTablet.this);
-                                cardView.setLayoutParams(new LinearLayout.LayoutParams(wh, wh));
-                                cardView.setElevation(24f);
-                                photosLayout.addView(cardView);
-
-                                final ImageView photo = new ImageView(TasksDetailActivityTablet.this);
-                                photo.setImageURI(photoUris.get(i));
-
-                                photo.setLayoutParams(new CardView.LayoutParams
-                                        (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                                photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                photo.setId(Utility.generateViewId());
-                                cardView.addView(photo);
-
-                                photosLayout.setVisibility(View.VISIBLE);
-
-                                // Add the listener
-                                final int finalI = i;
-                                cardView.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        Intent pictureIntent = new Intent(TasksDetailActivityTablet.this, PictureActivity.class);
-                                        pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(finalI).toString());
-                                        photo.setTransitionName("transition");
-                                        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
-                                                (TasksDetailActivityTablet.this, photo, photo.getTransitionName()).toBundle();
-                                        startActivity(pictureIntent, bundle);
-                                    }
-                                });
+                                photos.add(photoUris.get(i));
+                                adapter.notifyDataSetChanged();
                             } else {
                                 // Download the photo data
                                 FirebaseStorage storage = FirebaseStorage.getInstance();
                                 StorageReference storageRef = storage.getReference();
                                 StorageReference photosRef = storageRef.child(dataSnapshot.child("photos")
                                         .child(String.valueOf(i)).getKey());
-                                final long ONE_MEGABYTE = 1024 * 1024;
                                 final int finalI1 = i;
-                                photosRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                photosRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                                     @Override
-                                    public void onSuccess(byte[] bytes) {
-                                        // Save the file locally
-                                        File file = new File(photoUris.get(finalI1).toString());
-                                        try {
-                                            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-                                            bos.write(bytes);
-                                            bos.flush();
-                                            bos.close();
-                                        } catch (FileNotFoundException e) {
-                                            e.printStackTrace();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                         // Add the view
-                                        if (!active) return;
-                                        photoUris.add(Uri.fromFile(file));
-                                        LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
-                                        ImageView photo = new ImageView(TasksDetailActivityTablet.this);
-                                        photo.setImageURI(Uri.fromFile(file));
-                                        int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
-                                        photo.setLayoutParams(new LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-                                        photo.setPadding(4, 0, 4, 0);
-                                        photo.setId(Utility.generateViewId());
-                                        photosLayout.addView(photo);
-                                        photosLayout.setVisibility(View.VISIBLE);
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        // TODO: Handle Unsuccessful Download
+                                        photos.add(photoUris.get(finalI1));
+                                        adapter.notifyDataSetChanged();
                                     }
                                 });
-                                i++;
-
                             }
                         }
 
@@ -407,7 +364,6 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                     subtitle = getString(R.string.format_subtitle, classTitle, classType);
                     description = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
                     iconUri = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON));
-                    String photoLine = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_PICTURE));
                     final String[] photos = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_PICTURE)).split("#seperate#");
 
                     // Process the data for the duedate to a string
@@ -418,63 +374,30 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
 
                     applyDataToUI();
 
-
-                    // Set the attachment field data
-                    // ATTACHMENTS DISABLED FOR THE BETA
-//                attachmentPath = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ATTACHMENT));
-//                String fileName;
-//                if (!attachmentPath.equals("")) {
-//                    Uri attachmentUri = Uri.parse(attachmentPath);
-//                    Cursor returnCursor = getContentResolver().query(attachmentUri, null, null, null, null);
-//                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-//                    returnCursor.moveToFirst();
-//                    fileName = returnCursor.getString(nameIndex);
-//                    attachmentTextview.setText(fileName);
-//                } else findViewById(R.id.task_attachment_layout).setVisibility(View.GONE);
-
                     // Set the photo field data
-                    LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
+                    GridView photosLayout = (GridView) findViewById(R.id.photos_layout);
+                    ImageAdapter adapter = new ImageAdapter(TasksDetailActivityTablet.this, R.layout.grid_item_photo, photoUris);
+                    photosLayout.setAdapter(adapter);
+                    photosLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                            Intent pictureIntent = new Intent(TasksDetailActivityTablet.this, PictureActivity.class);
+                            pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(i).toString());
+                            View view1 = view.findViewById(R.id.photo);
+                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                    (TasksDetailActivityTablet.this, view1, view1.getTransitionName()).toBundle();
+                            startActivity(pictureIntent, bundle);
+                        }
+                    });
                     for (int i = 0; i < photos.length; i++) {
                         if (photos[i].length() > 1) {
                             final Uri photoUri = Uri.parse(photos[i]);
                             photoUris.add(photoUri);
-
-                            // Add in the views for the photos
-                            int wh = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 156, getResources().getDisplayMetrics()));
-
-                            final CardView cardView = new CardView(TasksDetailActivityTablet.this);
-                            cardView.setLayoutParams(new LinearLayout.LayoutParams(wh, wh));
-                            cardView.setElevation(24f);
-                            photosLayout.addView(cardView);
-
-                            final ImageView photo = new ImageView(TasksDetailActivityTablet.this);
-                            photo.setImageURI(photoUri);
-
-                            photo.setLayoutParams(new CardView.LayoutParams
-                                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                            photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                            photo.setId(Utility.generateViewId());
-                            cardView.addView(photo);
-
-                            photosLayout.setVisibility(View.VISIBLE);
-
-                            // Add the listener
-                            cardView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    Intent pictureIntent = new Intent(TasksDetailActivityTablet.this, PictureActivity.class);
-                                    pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUri.toString());
-                                    photo.setTransitionName("transition");
-                                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
-                                            (TasksDetailActivityTablet.this, photo, photo.getTransitionName()).toBundle();
-                                    startActivity(pictureIntent, bundle);
-                                }
-                            });
+                            adapter.notifyDataSetChanged();
                         }
                     }
 
                 }
-
             }
         }
     }

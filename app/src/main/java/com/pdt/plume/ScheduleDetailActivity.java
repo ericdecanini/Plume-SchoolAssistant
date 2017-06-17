@@ -40,6 +40,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -48,9 +49,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -259,6 +264,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Intent intent = new Intent(ScheduleDetailActivity.this, TasksDetailActivity.class);
+                    intent.putExtra("notransition", "notransition");
                     if (mFirebaseUser != null)
                         intent.putExtra("id", taskFirebaseIDs.get(position));
                     else intent.putExtra("_ID", taskIDs.get(position));
@@ -302,18 +308,43 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 String classTitle = dataSnapshot.child("class").getValue(String.class);
                                 if (classTitle.equals(title)) {
                                     tasksLayout.setVisibility(View.VISIBLE);
-                                    String id = dataSnapshot.getKey();
-                                    String icon = dataSnapshot.child("icon").getValue(String.class);
-                                    String title = dataSnapshot.child("title").getValue(String.class);
-                                    String sharer = dataSnapshot.child("sharer").getValue(String.class);
-                                    String taskClass = dataSnapshot.child("class").getValue(String.class);
-                                    String tasktType = dataSnapshot.child("type").getValue(String.class);
-                                    String description = dataSnapshot.child("description").getValue(String.class);
-                                    float duedate = dataSnapshot.child("duedate").getValue(float.class);
+                                    final String id = dataSnapshot.getKey();
+                                    final String icon = dataSnapshot.child("icon").getValue(String.class);
+                                    final String title = dataSnapshot.child("title").getValue(String.class);
+                                    final String sharer = dataSnapshot.child("sharer").getValue(String.class);
+                                    final String taskClass = dataSnapshot.child("class").getValue(String.class);
+                                    final String tasktType = dataSnapshot.child("type").getValue(String.class);
+                                    final String description = dataSnapshot.child("description").getValue(String.class);
+                                    final float duedate = dataSnapshot.child("duedate").getValue(float.class);
+                                    final boolean completed = dataSnapshot.child("completed").getValue(boolean.class);
 
-                                    taskFirebaseIDs.add(id);
-                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
-                                    ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
+                                    // Check for icon validity
+                                    File file = new File(getFilesDir(), dataSnapshot.getKey() + ".jpg");
+                                    if (file.exists()) {
+                                        if (!completed) {
+                                            taskFirebaseIDs.add(id);
+                                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
+                                            ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
+                                        }
+                                    } else {
+                                        // File is non existent, download from storage
+                                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                                        StorageReference storageRef = storage.getReference();
+                                        StorageReference iconsRef = storageRef.child(mUserId + "/tasks/" + dataSnapshot.getKey());
+
+                                        iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                if (!completed) {
+                                                    taskFirebaseIDs.add(id);
+                                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
+                                                    ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
+                                                }
+                                            }
+                                        });
+                                    }
+
+
                                 }
                             }
 
@@ -351,7 +382,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    occurrences.add(occurrenceSnapshot.getKey());
+                                    occurrences.add(occurrenceSnapshot.getValue(String.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
@@ -469,7 +500,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    periods.add(occurrenceSnapshot.getKey());
+                                    periods.add(occurrenceSnapshot.getValue(String.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount

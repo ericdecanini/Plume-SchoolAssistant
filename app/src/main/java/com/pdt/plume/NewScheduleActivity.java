@@ -16,11 +16,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+
+import java.lang.reflect.Array;
 import java.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -96,6 +99,7 @@ public class NewScheduleActivity extends AppCompatActivity
     // UI Data
     String iconUri;
     String title;
+    String oldTitle;
     String teacher;
     String room;
     ArrayList<PeriodItem> mPeriodsList = new ArrayList<>();
@@ -207,6 +211,13 @@ public class NewScheduleActivity extends AppCompatActivity
         fieldIcon.setOnClickListener(showIconDialogListener());
         fieldAddClassTime.setOnClickListener(addPeriodListener());
 
+        if (savedInstanceState != null) {
+            mPeriodsList = savedInstanceState.getParcelableArrayList("mPeriodsList");
+        }
+        periodAdapter = new PeriodAdapter(this, R.layout.list_item_new_period, mPeriodsList);
+        classTimeList.setAdapter(periodAdapter);
+        periodAdapter.notifyDataSetChanged();
+
         // Set the mTasksAdapter for the title auto-complete text view
         String[] subjects = getResources().getStringArray(R.array.subjects);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, subjects);
@@ -217,6 +228,7 @@ public class NewScheduleActivity extends AppCompatActivity
         Bundle extras = intent.getExtras();
         if (extras != null) {
             title = extras.getString(getString(R.string.INTENT_EXTRA_TITLE));
+            oldTitle = title;
             FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.INTENT_FLAG_EDIT), false);
             STARTED_BY_NEWTASKACTIVITY = extras.getBoolean("STARTED_BY_NEWTASKACTIVITY", false);
         }
@@ -226,110 +238,111 @@ public class NewScheduleActivity extends AppCompatActivity
                 // Get the data from Firebase
                 DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("classes").child(title);
-                classRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get key values
-                        teacher = dataSnapshot.child("teacher").getValue(String.class);
-                        room = dataSnapshot.child("room").getValue(String.class);
-                        iconUri = dataSnapshot.child("icon").getValue(String.class);
+                if (savedInstanceState == null)
+                    classRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            // Get key values
+                            teacher = dataSnapshot.child("teacher").getValue(String.class);
+                            room = dataSnapshot.child("room").getValue(String.class);
+                            iconUri = dataSnapshot.child("icon").getValue(String.class);
 
-                        ArrayList<String> occurrenceList = new ArrayList<>();
-                        ArrayList<Integer> timeInList = new ArrayList<>();
-                        ArrayList<Integer> timeOutList = new ArrayList<>();
-                        ArrayList<Integer> timeInAltList = new ArrayList<>();
-                        ArrayList<Integer> timeOutAltList = new ArrayList<>();
-                        ArrayList<String> periodsList = new ArrayList<>();
+                            ArrayList<String> occurrenceList = new ArrayList<>();
+                            ArrayList<Integer> timeInList = new ArrayList<>();
+                            ArrayList<Integer> timeOutList = new ArrayList<>();
+                            ArrayList<Integer> timeInAltList = new ArrayList<>();
+                            ArrayList<Integer> timeOutAltList = new ArrayList<>();
+                            ArrayList<String> periodsList = new ArrayList<>();
 
-                        // Get listed values
-                        DataSnapshot occurrences = dataSnapshot.child("occurrence");
-                        for (DataSnapshot occurrenceSnapshot : occurrences.getChildren()) {
-                            occurrenceList.add(occurrenceSnapshot.getKey());
-                        }
-                        DataSnapshot timeins = dataSnapshot.child("timein");
-                        for (DataSnapshot timeinSnapshot : timeins.getChildren()) {
-                            timeInList.add(timeinSnapshot.getValue(Integer.class));
-                        }
-                        DataSnapshot timeouts = dataSnapshot.child("timeout");
-                        for (DataSnapshot timeoutSnapshot : timeouts.getChildren()) {
-                            timeOutList.add(timeoutSnapshot.getValue(Integer.class));
-                        }
-                        DataSnapshot timeinsalt = dataSnapshot.child("timeinalt");
-                        for (DataSnapshot timeinaltSnapshot : timeinsalt.getChildren()) {
-                            timeInAltList.add(timeinaltSnapshot.getValue(Integer.class));
-                        }
-                        DataSnapshot timeoutsalt = dataSnapshot.child("timeoutalt");
-                        for (DataSnapshot timeoutaltSnapshot : timeoutsalt.getChildren()) {
-                            timeOutAltList.add(timeoutaltSnapshot.getValue(Integer.class));
-                        }
-                        DataSnapshot periods = dataSnapshot.child("periods");
-                        for (DataSnapshot periodsSnapshot : periods.getChildren()) {
-                            periodsList.add(periodsSnapshot.getKey());
-                        }
-
-                        // These arrays should all be of equal size
-                        // Add them to a user viewable list
-                        for (int i = 0; i < occurrenceList.size(); i++) {
-                            String occurrence = occurrenceList.get(i);
-                            if (!occurrence.equals("-1")) {
-                                mPeriodsList.add(new PeriodItem(
-                                        NewScheduleActivity.this,
-                                        timeInList.get(i),
-                                        timeOutList.get(i),
-                                        timeInAltList.get(i),
-                                        timeOutAltList.get(i),
-                                        periodsList.get(i), occurrence
-                                ));
+                            // Get listed values
+                            DataSnapshot occurrences = dataSnapshot.child("occurrence");
+                            for (DataSnapshot occurrenceSnapshot : occurrences.getChildren()) {
+                                occurrenceList.add(occurrenceSnapshot.getValue(String.class));
                             }
+                            DataSnapshot timeins = dataSnapshot.child("timein");
+                            for (DataSnapshot timeinSnapshot : timeins.getChildren()) {
+                                timeInList.add(timeinSnapshot.getValue(Integer.class));
+                            }
+                            DataSnapshot timeouts = dataSnapshot.child("timeout");
+                            for (DataSnapshot timeoutSnapshot : timeouts.getChildren()) {
+                                timeOutList.add(timeoutSnapshot.getValue(Integer.class));
+                            }
+                            DataSnapshot timeinsalt = dataSnapshot.child("timeinalt");
+                            for (DataSnapshot timeinaltSnapshot : timeinsalt.getChildren()) {
+                                timeInAltList.add(timeinaltSnapshot.getValue(Integer.class));
+                            }
+                            DataSnapshot timeoutsalt = dataSnapshot.child("timeoutalt");
+                            for (DataSnapshot timeoutaltSnapshot : timeoutsalt.getChildren()) {
+                                timeOutAltList.add(timeoutaltSnapshot.getValue(Integer.class));
+                            }
+                            DataSnapshot periods = dataSnapshot.child("periods");
+                            for (DataSnapshot periodsSnapshot : periods.getChildren()) {
+                                periodsList.add(periodsSnapshot.getValue(String.class));
+                            }
+
+                            // These arrays should all be of equal size
+                            // Add them to a user viewable list
+                            for (int i = 0; i < occurrenceList.size(); i++) {
+                                String occurrence = occurrenceList.get(i);
+                                if (!occurrence.equals("-1")) {
+                                    mPeriodsList.add(new PeriodItem(
+                                            NewScheduleActivity.this,
+                                            timeInList.get(i),
+                                            timeOutList.get(i),
+                                            timeInAltList.get(i),
+                                            timeOutAltList.get(i),
+                                            periodsList.get(i), occurrence
+                                    ));
+                                }
+                            }
+
+                            // Apply the data to the views
+                            fieldTitle.setText(title);
+                            fieldTeacher.setText(teacher);
+                            fieldRoom.setText(room);
+                            try {
+                                Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(NewScheduleActivity.this.getContentResolver(),
+                                        Uri.parse(iconUri));
+                                fieldIcon.setImageBitmap(setImageBitmap);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
                         }
 
-                        // Apply the data to the views
-                        fieldTitle.setText(title);
-                        fieldTeacher.setText(teacher);
-                        fieldRoom.setText(room);
-                        Log.v(LOG_TAG, "IconUri: " + iconUri);
-                        try {
-                            Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(NewScheduleActivity.this.getContentResolver(),
-                                    Uri.parse(iconUri));
-                            fieldIcon.setImageBitmap(setImageBitmap);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
                         }
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+                    });
             } else {
                 // Get the data from SQLite
                 DbHelper dbHelper = new DbHelper(this);
                 Cursor cursor;
                 cursor = dbHelper.getScheduleDataByTitle(title);
-                if (cursor.moveToFirst()) {
-                    teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
-                    room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
-                    iconUri = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
-                    // Get database values to put in activity Array Lists
-                    for (int i = 0; i < cursor.getCount(); i++) {
-                        String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
-                        if (!occurrence.equals("-1")) {
-                            mPeriodsList.add(new PeriodItem(
-                                    this,
-                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
-                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)),
-                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)),
-                                    cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)),
-                                    cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
-                                    occurrence));
-                        }
+                if (savedInstanceState == null)
+                    if (cursor.moveToFirst()) {
+                        teacher = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER));
+                        room = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM));
+                        iconUri = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ICON));
+                        // Get database values to put in activity Array Lists
+                        for (int i = 0; i < cursor.getCount(); i++) {
+                            String occurrence = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_OCCURRENCE));
+                            if (!occurrence.equals("-1")) {
+                                mPeriodsList.add(new PeriodItem(
+                                        this,
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN)),
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT)),
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT)),
+                                        cursor.getInt(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT)),
+                                        cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS)),
+                                        occurrence));
+                            }
 
-                        if (!cursor.moveToNext())
-                            cursor.moveToFirst();
+                            if (!cursor.moveToNext())
+                                cursor.moveToFirst();
+                        }
                     }
-                }
                 cursor.close();
 
                 // Apply the data to the views
@@ -343,21 +356,14 @@ public class NewScheduleActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
             }
-        } else {
-            // No edit, a new schedule is being added. Set the iconUri to be the default
-            Resources resources = getResources();
-            Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(defaultIcon)
-                    + '/' + resources.getResourceTypeName(defaultIcon) + '/' + resources.getResourceEntryName(defaultIcon));
-            iconUri = drawableUri.toString();
         }
 
         // Initialise the periods list
-        periodAdapter = new PeriodAdapter(this, R.layout.list_item_new_period, mPeriodsList);
         if (basis.equals("2"))
             findViewById(R.id.field_new_schedule_add_class_time).setVisibility(View.GONE);
 
         // Add one item at init (if not edited)
-        if (!FLAG_EDIT) {
+        if (!FLAG_EDIT && savedInstanceState == null) {
             long timein;
             long timeout;
             if (basis.equals("0")) {
@@ -383,17 +389,14 @@ public class NewScheduleActivity extends AppCompatActivity
             Calendar c = Calendar.getInstance();
             int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
             String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
-            Log.v(LOG_TAG, "Day of week: " + dayOfWeek);
             for (int i = 0; i < 7; i++) {
                 builder.append(":");
                 if (i == dayOfWeek - 1)
                     if (weekNumber.equals("0"))
                         builder.append("1");
-                    else builder.append("2");
+                    else builder.append("3");
                 else builder.append("0");
             }
-
-            Log.v(LOG_TAG, "Init occurrence: " + builder.toString());
 
             mPeriodsList.add(new PeriodItem(this, timein, timeout, timein, timeout,
                     "0:0:0:0:0:0:0:0", basis + ":" + weekType + builder.toString()));
@@ -425,11 +428,27 @@ public class NewScheduleActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (isTablet)
                 fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+            else fieldTitle.setBackgroundColor(mPrimaryColor);
             if (fieldTeacher != null)
                 fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
             if (fieldTeacher != null)
                 fieldRoom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("iconUri", iconUri);
+        outState.putParcelableArrayList("mPeriodsList", mPeriodsList);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        iconUri = savedInstanceState.getString("iconUri");
+        if (iconUri != null)
+            fieldIcon.setImageURI(Uri.parse(iconUri));
     }
 
     @Override
@@ -451,7 +470,7 @@ public class NewScheduleActivity extends AppCompatActivity
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
                 // Check if the title field is empty, disallow insertion of it is
-                if ((fieldTitle.getText().toString().equals(""))) {
+                if (fieldTitle != null && fieldTitle.getText() != null && fieldTitle.getText().toString().equals("")) {
                     Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_title_not_found),
                             Toast.LENGTH_SHORT).show();
                     return false;
@@ -534,6 +553,11 @@ public class NewScheduleActivity extends AppCompatActivity
                                     }
 
                                     // No clashes: perform insert function
+                                    Resources resources = getResources();
+                                    Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(defaultIcon)
+                                            + '/' + resources.getResourceTypeName(defaultIcon) + '/' + resources.getResourceEntryName(defaultIcon));
+                                    if (iconUri == null)
+                                        iconUri = drawableUri.toString();
                                     insertScheduleDataIntoFirebase();
                                     if (!FLAG_EDIT)
                                         Toast.makeText(NewScheduleActivity.this,
@@ -554,7 +578,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 } else {
                     DbHelper dbHelper = new DbHelper(this);
                     Cursor cursor = dbHelper.getScheduleDataByTitle(title);
-                    if (cursor.getCount() == 0) {
+                    if (cursor.getCount() == 0 || FLAG_EDIT) {
                         try {
                             insertScheduleDataIntoDatabase();
                         } catch (IOException e) {
@@ -610,6 +634,10 @@ public class NewScheduleActivity extends AppCompatActivity
     }
 
     private boolean insertScheduleDataIntoFirebase() {
+        if (FLAG_EDIT)
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).child("classes")
+                    .child(oldTitle).removeValue();
         // Get the input from the fields
         mPeriodListSize++;
         if (mPeriodListSize > mPeriodsList.size())
@@ -623,8 +651,6 @@ public class NewScheduleActivity extends AppCompatActivity
                 .child("users").child(mUserId).child("classes").child(title);
         classRef.child("teacher").setValue(teacher);
         classRef.child("room").setValue(room);
-        classRef.child("occurrence").removeValue();
-        classRef.child("periods").removeValue();
 
         // Set the listed values of the class
         if (mPeriodsList.size() != 0) {
@@ -638,12 +664,12 @@ public class NewScheduleActivity extends AppCompatActivity
                 long timeOutAlt = item.timeoutaltValue;
                 String periods = getItemPeriods(i);
 
-                classRef.child("occurrence").child(occurrence).setValue("");
+                classRef.child("occurrence").child(String.valueOf(i)).setValue(occurrence);
                 classRef.child("timein").child(String.valueOf(i)).setValue(timeIn);
                 classRef.child("timeout").child(String.valueOf(i)).setValue(timeOut);
                 classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeInAlt);
                 classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOutAlt);
-                classRef.child("periods").child(periods).setValue("");
+                classRef.child("periods").child(String.valueOf(i)).setValue(periods);
             }
         } else {
             // Set a class with no listed values, removing any old ones
@@ -744,6 +770,8 @@ public class NewScheduleActivity extends AppCompatActivity
         String room = fieldRoom.getText().toString();
 
         // Copy the icon into a seperate file if custom
+        if (iconUri == null)
+            iconUri = "android.resource://com.pdt.plume/drawable/art_class_64dp";
         Uri imageUri = Uri.parse(iconUri);
         InputStream inputStream = getContentResolver().openInputStream(imageUri);
         String filename = imageUri.getLastPathSegment();
@@ -797,6 +825,29 @@ public class NewScheduleActivity extends AppCompatActivity
                     long timeOutAlt = item.timeoutaltValue;
                     String periods = getItemPeriods(i);
 
+                    scheduleNotification(title, Uri.parse(iconUri), -1);
+
+                    // Schedule any notifications
+                    int advance = PreferenceManager.getDefaultSharedPreferences(this)
+                            .getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
+                    if (advance > 0) {
+                        String weekNumber = PreferenceManager.getDefaultSharedPreferences(this)
+                                .getString(getString(R.string.KEY_WEEK_NUMBER), "0");
+                        Calendar c = Calendar.getInstance();
+                        Calendar timeInC = Calendar.getInstance();
+                        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+                        timeInC.setTimeInMillis(timeIn);
+                        int hour = timeInC.get(Calendar.HOUR_OF_DAY);
+                        int minute = timeInC.get(Calendar.MINUTE);
+                        c.set(Calendar.HOUR_OF_DAY, hour);
+                        c.set(Calendar.MINUTE, minute - advance);
+                        long alarmTime = c.getTimeInMillis();
+
+                        if (occurrence.split(":")[0].equals("0")
+                                && utility.occurrenceMatchesCurrentDay(this, occurrence, periods, weekNumber, dayOfWeek))
+                            scheduleNotification(title, Uri.parse(iconUri), alarmTime);
+                    }
+
 
                     // Database insert function performed as update
                     if (dbHelper.insertSchedule(title, teacher, room, occurrence,
@@ -834,14 +885,6 @@ public class NewScheduleActivity extends AppCompatActivity
                     long timeOutAlt = item.timeoutaltValue;
                     String periods = getItemPeriods(i);
 
-                    // TODO: Check this function against alarms from ScheduleFragment
-//                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//                    Intent intent = new Intent(this, MuteAlarmReceiver.class);
-//                    intent.putExtra("UNMUTE_TIME", timeOut);
-//                    PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//                    Log.v(LOG_TAG, "Class notification for " + title + " set for " + timeIn);
-//                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeIn, AlarmManager.INTERVAL_DAY, pendingIntent);
-
                     // Database insert function
                     if (dbHelper.insertSchedule(title, teacher, room, occurrence,
                             timeIn, timeOut, timeInAlt, timeOutAlt,
@@ -866,57 +909,88 @@ public class NewScheduleActivity extends AppCompatActivity
         return false;
     }
 
-    private void scheduleNotification(final Date dateTime, final int ID, final String title, final String message) {
-
-        final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+    private void scheduleNotification(String title, Uri icon, long timeIn) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
-            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(iconUri));
+            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), icon);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+        android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
                 .setBackground(largeIcon);
 
         Intent contentIntent = new Intent(this, ScheduleDetailActivity.class);
         contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
-        final PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        contentIntent.putExtra("icon", icon.toString());
+        PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT,
+                contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                builder
-                        .setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(palette.getVibrantColor(mPrimaryColor))
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setWhen(System.currentTimeMillis())
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .extend(wearableExtender)
-                        .setDefaults(Notification.DEFAULT_ALL);
+        Notification notification = builder
+                .setContentIntent(contentPendingIntent)
+                .setSmallIcon(R.drawable.ic_class_white)
+                .setColor(mPrimaryColor)
+                .setContentTitle(title)
+                .setContentText(getString(R.string.schedule_notification_message))
+                .setWhen(System.currentTimeMillis())
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .extend(wearableExtender)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .build();
 
-                Notification notification = builder.build();
-
-                Intent notificationIntent = new Intent(NewScheduleActivity.this, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewScheduleActivity.this, REQUEST_NOTIFICATION_ALARM, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                alarmManager.setRepeating(AlarmManager.RTC, dateTime.getTime(), AlarmManager.INTERVAL_DAY, pendingIntent);
-            }
-        });
+        Intent notificationIntent = new Intent(this, TaskNotificationPublisher.class);;
+        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_ALARM,
+                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (timeIn > -1)
+            alarmManager.set(AlarmManager.RTC, timeIn, pendingIntent);
+        else alarmManager.cancel(pendingIntent);
     }
 
     private View.OnClickListener addPeriodListener() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String occurrence = basis + ":" + weekType + ":0:0:0:0:0:0:0";
-                String periods = "0:0:0:0:0:0:0:0";
-                mPeriodsList.add(new PeriodItem(NewScheduleActivity.this, -1, -1, -1, -1, periods, occurrence));
+                long timein;
+                long timeout;
+                if (basis.equals("0")) {
+                    Calendar c = Calendar.getInstance();
+                    int hour = c.get(Calendar.HOUR_OF_DAY);
+                    int minute = c.get(Calendar.MINUTE);
+                    if (minute >= 15 && minute < 45)
+                        minute = 30;
+                    if (minute >= 45) {
+                        minute = 0;
+                        hour++;
+                    }
+                    timein = utility.timeToMillis(hour, minute);
+                    hour += 1;
+                    timeout = utility.timeToMillis(hour, minute);
+                } else {
+                    timein = -1;
+                    timeout = -1;
+                }
+
+                // Build an occurrence containing the current day
+                StringBuilder builder = new StringBuilder();
+                Calendar c = Calendar.getInstance();
+                int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(NewScheduleActivity.this);
+                String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
+                for (int i = 0; i < 7; i++) {
+                    builder.append(":");
+                    if (i == dayOfWeek - 1)
+                        if (weekNumber.equals("0"))
+                            builder.append("1");
+                        else builder.append("3");
+                    else builder.append("0");
+                }
+
+                mPeriodsList.add(new PeriodItem(NewScheduleActivity.this, timein, timeout, timein, timeout,
+                        "0:0:0:0:0:0:0:0", basis + ":" + weekType + builder.toString()));
                 periodAdapter.notifyDataSetChanged();
             }
         };

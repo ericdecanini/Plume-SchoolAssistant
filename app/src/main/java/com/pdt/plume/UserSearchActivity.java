@@ -216,7 +216,8 @@ public class UserSearchActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-        searchBar.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            searchBar.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
 
     }
 

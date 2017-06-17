@@ -308,7 +308,7 @@ public class ScheduleDetailFragment extends Fragment {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    occurrences.add(occurrenceSnapshot.getKey());
+                                    occurrences.add(occurrenceSnapshot.getValue(String.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount
@@ -451,7 +451,7 @@ public class ScheduleDetailFragment extends Fragment {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 long snapshotCount = dataSnapshot.getChildrenCount();
                                 for (DataSnapshot occurrenceSnapshot : dataSnapshot.getChildren()) {
-                                    periods.add(occurrenceSnapshot.getKey());
+                                    periods.add(occurrenceSnapshot.getValue(String.class));
                                 }
                                 if (occurrences.size() >= snapshotCount && timeins.size() >= snapshotCount
                                         && timeouts.size() >= snapshotCount && timeinalts.size() >= snapshotCount

@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
@@ -182,10 +183,12 @@ public class ClassesActivity extends AppCompatActivity
                             icon.setImageURI(Uri.parse(iconUri));
                         }
                     }
-                    else icon.setImageResource(R.drawable.art_profile_default);
-                    String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
-                    FirebaseDatabase.getInstance().getReference()
-                            .child("users").child(mUserId).child("icon").setValue(defaultIconUri);
+                    else {
+                        icon.setImageResource(R.drawable.art_profile_default);
+                        String defaultIconUri = "android.resource://com.pdt.plume/drawable/art_profile_default";
+                        FirebaseDatabase.getInstance().getReference()
+                                .child("users").child(mUserId).child("icon").setValue(defaultIconUri);
+                    }
                 }
 
                 @Override
@@ -557,6 +560,15 @@ public class ClassesActivity extends AppCompatActivity
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                listView.setEnabled(false);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        listView.setEnabled(true);
+                    }
+                }, 1000);
+
                 if (mFirebaseUser != null) {
                     // Query from Firebase
                     String title = mScheduleList.get(position).scheduleLesson;
@@ -566,7 +578,7 @@ public class ClassesActivity extends AppCompatActivity
                     intent.putExtra("icon", icon);
 
                     // Add a transition if the device is Lollipop or above
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && icon.contains("art_")) {
                         // Shared element transition
                         View iconView = view.findViewById(R.id.schedule_icon);
                         Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
@@ -580,10 +592,11 @@ public class ClassesActivity extends AppCompatActivity
                     if (cursor.moveToPosition(position)) {
                         Intent intent = new Intent(ClassesActivity.this, ScheduleDetailActivity.class);
                         intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE)));
+                        String icon = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
                         intent.putExtra("icon", cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON)));
 
                         // Add a transition if the device is Lollipop or above
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && !isTablet) {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && icon.contains("art_")) {
                             // Shared element transition
                             View iconView = view.findViewById(R.id.schedule_icon);
                             Bundle bundle = ActivityOptions.makeSceneTransitionAnimation

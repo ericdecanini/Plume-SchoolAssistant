@@ -1,4 +1,4 @@
-package com.pdt.plume;
+package com.pdt.plume.services;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -9,7 +9,10 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.util.Log;
+
+import com.pdt.plume.R;
+import com.pdt.plume.UnmuteAlarmReceiver;
+import com.pdt.plume.Utility;
 
 import static com.pdt.plume.StaticRequestCodes.REQUEST_UNMUTE_ALARM;
 
@@ -30,10 +33,7 @@ public class MuteAlarmReceiver extends BroadcastReceiver {
             e.printStackTrace();
         }
 
-        Log.v(LOG_TAG, "Mute alarm received");
-
         long unmuteTime = (long) intent.getIntExtra("UNMUTE_TIME", -1);
-        Log.v(LOG_TAG, "Unmute time: " + unmuteTime);
         Intent unmuteIntent = new Intent(context, UnmuteAlarmReceiver.class);
         unmuteIntent.putExtra(context.getString(R.string.INTENT_EXTRA_MUTE), currentVolume);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

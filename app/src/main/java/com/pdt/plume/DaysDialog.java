@@ -1,7 +1,10 @@
 package com.pdt.plume;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -63,6 +66,18 @@ public class DaysDialog extends DialogFragment {
         checkbox[4] = (CheckBox) rootview.findViewById(R.id.thursday_checkbox);
         checkbox[5] = (CheckBox) rootview.findViewById(R.id.friday_checkbox);
         checkbox[6] = (CheckBox) rootview.findViewById(R.id.saturday_checkbox);
+
+        // Initialise the theme variables
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        int mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        float[] hsv = new float[3];
+        int tempColor = mPrimaryColor;
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.8f; // value component
+        int mDarkColor = Color.HSVToColor(hsv);
+        rootview.findViewById(R.id.header).setBackgroundColor(mPrimaryColor);
+        rootview.findViewById(R.id.footer).setBackgroundColor(mPrimaryColor);
+        rootview.findViewById(R.id.divider).setBackgroundColor(mDarkColor);
 
         // Attach the listeners to each of the list items
         for (int i = 0; i < days.length; i++)

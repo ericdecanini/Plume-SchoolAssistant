@@ -100,8 +100,8 @@ public class AcceptPeerActivity extends AppCompatActivity
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
+            findViewById(R.id.accept).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
         }
-        findViewById(R.id.accept).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
 
         if (isTablet) {
             if (isLandscape)

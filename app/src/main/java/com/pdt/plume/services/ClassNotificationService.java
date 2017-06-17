@@ -13,9 +13,7 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,7 +22,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.pdt.plume.R;
-import com.pdt.plume.Schedule;
 import com.pdt.plume.ScheduleDetailActivity;
 import com.pdt.plume.TaskNotificationPublisher;
 import com.pdt.plume.data.DbContract;
@@ -33,12 +30,8 @@ import com.pdt.plume.data.DbHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
-import static android.R.string.no;
-import static com.pdt.plume.R.id.timein;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class ClassNotificationService extends Service {
@@ -75,8 +68,6 @@ public class ClassNotificationService extends Service {
         if (mFirebaseUser != null)
             mUserId = mFirebaseUser.getUid();
 
-        Log.v(LOG_TAG, "ClassNotificationService started");
-
         // Initialise the theme variables
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         advance = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
@@ -102,12 +93,18 @@ public class ClassNotificationService extends Service {
 
                                 String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
                                 String timeinchild;
-                                if (weekNumber.equals("0"))
+                                String timeoutchild;
+                                if (weekNumber.equals("0")) {
                                     timeinchild = "timein";
-                                else timeinchild = "timeinalt";
+                                    timeoutchild = "timeout";
+                                }
+                                else {
+                                    timeinchild = "timeinalt";
+                                    timeoutchild = "timeoutalt";
+                                }
 
                                 for (DataSnapshot occurrenceSnapshot: classSnapshot.child("occurrence").getChildren()) {
-                                    occurrences.add(occurrenceSnapshot.getKey());
+                                    occurrences.add(occurrenceSnapshot.getValue(String.class));
                                 }
                                 int i = 0;
                                 for (DataSnapshot timeinSnapshot: classSnapshot.child(timeinchild).getChildren()) {
@@ -120,6 +117,7 @@ public class ClassNotificationService extends Service {
                                     c.set(Calendar.HOUR_OF_DAY, hour);
                                     c.set(Calendar.MINUTE, minute - advance);
                                     long timeIn = c.getTimeInMillis();
+                                    long timeOut = classSnapshot.child(timeoutchild).child(timeinSnapshot.getKey()).getValue(long.class);
 
 
                                     // Do the matching here
@@ -127,11 +125,11 @@ public class ClassNotificationService extends Service {
                                     if (weekNumber.equals("0")) {
                                         if (occurrence.split(":")[dayOfWeek + 2].equals("1")
                                                 || occurrence.split(":")[dayOfWeek + 2].equals("3")) {
-                                            scheduleNotification(title, Uri.parse(icon), timeIn);
+                                            scheduleNotification(title, Uri.parse(icon), timeIn, timeOut);
                                         }
                                     } else  if (occurrence.split(":")[dayOfWeek + 2].equals("1")
                                             || occurrence.split(":")[dayOfWeek + 2].equals("3")) {
-                                        scheduleNotification(title, Uri.parse(icon), timeIn);
+                                        scheduleNotification(title, Uri.parse(icon), timeIn, timeOut);
                                     }
 
                                     i++;
@@ -158,6 +156,10 @@ public class ClassNotificationService extends Service {
                 if (preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
                     timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
                 else timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT));
+                long timeOut;
+                if (preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
+                    timeOut = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT));
+                else timeOut = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT));
 
                 Calendar c = Calendar.getInstance();
                 Calendar timeInC = Calendar.getInstance();
@@ -167,17 +169,18 @@ public class ClassNotificationService extends Service {
                 c.set(Calendar.HOUR_OF_DAY, hour);
                 c.set(Calendar.MINUTE, minute - advance);
                 long alarmTime = c.getTimeInMillis();
+                c.set(Calendar.MINUTE, minute + advance);
 
 
                 if (occurrence.split(":")[0].equals("0"))
-                    scheduleNotification(title, Uri.parse(icon), alarmTime);
+                    scheduleNotification(title, Uri.parse(icon), alarmTime, timeOut);
             }
 
             stopSelf();
         }
     }
 
-    private void scheduleNotification(String title, Uri icon, long timeIn) {
+    private void scheduleNotification(String title, Uri icon, long timeIn, long timeOut) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
@@ -190,6 +193,7 @@ public class ClassNotificationService extends Service {
 
         Intent contentIntent = new Intent(this, ScheduleDetailActivity.class);
         contentIntent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), title);
+        contentIntent.putExtra("icon", icon.toString());
         PendingIntent contentPendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_INTENT,
                 contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -213,6 +217,18 @@ public class ClassNotificationService extends Service {
                 notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC, timeIn, pendingIntent);
+
+        // Send the mute intent
+        Intent muteIntent = new Intent(this, MuteAlarmReceiver.class);
+        muteIntent.putExtra("UNMUTE_TIME", timeOut);
+        PendingIntent mutePendingIntent = PendingIntent.getBroadcast(this,
+                61, muteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeIn);
+        calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + advance);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(mutePendingIntent);
+        alarm.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), mutePendingIntent);
     }
 
 }

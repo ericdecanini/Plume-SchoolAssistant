@@ -183,7 +183,6 @@ public class PeerProfileActivity extends AppCompatActivity {
         classesRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.v(LOG_TAG, "onChildAdded");
                 String title = dataSnapshot.getKey();
                 String iconUri = dataSnapshot.getValue(String.class);
                 Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,

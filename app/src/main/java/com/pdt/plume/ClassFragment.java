@@ -203,7 +203,8 @@ public class ClassFragment extends Fragment{
         mDarkColor = Color.HSVToColor(hsv);
 
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
-        fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
     }
 
     public AdapterView.OnItemClickListener ItemClickListener() {

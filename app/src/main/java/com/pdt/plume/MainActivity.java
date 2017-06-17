@@ -272,20 +272,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 requestsRef.addValueEventListener(requestsListener);
             }
         }
-
-        // Trigger the notification service
-        Intent intent = new Intent(this, ClassNotificationReceiver.class);
-        intent.setAction("com.pdt.plume.NOTIFICATION");
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
-                57, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 1);
-        calendar.set(Calendar.MINUTE, 1);
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarm.cancel(pendingIntent);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
-
     }
 
     @Override
@@ -324,7 +310,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (basis.equals("2")) {
                 String blockString;
                 int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-                Log.v(LOG_TAG, "Day: " + day);
                 if (day == 1 || day == 3 || day == 5)
                     blockString = utility.formatBlockString(this, 0);
                 else if (day == 2 || day == 4)
@@ -378,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         // Initialise the fab
-        if (fab != null)
+        if (fab != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             fab.setBackgroundTintList(ColorStateList.valueOf(mSecondaryColor));
     }
 
@@ -603,6 +588,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putInt(getString(R.string.KEY_WEEK_OF_YEAR), weekOfYear);
 
         editor.putLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), c.getTimeInMillis());
+
+        // Trigger the notification service
+        Intent notifIntent = new Intent(this, ClassNotificationReceiver.class);
+        notifIntent.setAction("com.pdt.plume.NOTIFICATION");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
+                57, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 1);
+        calendar.set(Calendar.MINUTE, 1);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pendingIntent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
         // Commit the preferences
         editor.apply();
@@ -964,7 +962,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                alarmManager.cancel(pendingIntent);
+                if (pendingIntent != null)
+                    alarmManager.cancel(pendingIntent);
             }
 
             @Override

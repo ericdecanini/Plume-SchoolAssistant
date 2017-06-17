@@ -277,8 +277,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                     // Add the period/block based list item
                     else if (!periods.equals("-1")) {
-                        Log.v(LOG_TAG, "Adding in " + title);
-                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "0");
+                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "0", occurrence.split(":")[1]);
                         for (int ii = 0; ii < periodList.size(); ii++) {
                             arrayList.add(new Schedule(
                                     context,
@@ -321,7 +320,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                     // Add the period/block based list item
                     else {
-                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "1");
+                        ArrayList<String> periodList = utility.createSetPeriodsArrayList(periods, "1", occurrence.split(":")[1]);
                         for (int ii = 0; ii < periodList.size(); ii++) {
                             arrayList.add(new Schedule(
                                     context,
@@ -412,7 +411,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ROOM)),
                             " ",
                             " ",
-                            cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS))));
+                            ""));
 
                     usedTitles.add(title);
                 }
