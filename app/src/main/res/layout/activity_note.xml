@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:background="@color/backgroundColor"
     android:layout_height="match_parent"
+    android:id="@+id/master_layout"
     android:orientation="vertical"
     tools:context="com.pdt.plume.NoteActivity"
     android:paddingLeft="@dimen/activity_horizontal_margin"

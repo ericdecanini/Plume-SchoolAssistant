@@ -106,7 +106,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"
-        android:progressDrawable="@drawable/circular_progress_bar"
+        android:progressDrawable="@drawable/circular_progress_bar_light"
         android:layout_gravity="center"
         android:layout_marginTop="32dp"/>
 

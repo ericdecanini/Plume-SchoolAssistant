@@ -73,6 +73,19 @@ public class PeerProfileActivityTablet extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
+
+        if (getResources().getBoolean(R.bool.isLandscape)) {
+            findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+            findViewById(R.id.activity_people).setBackgroundColor(darkBackgroundColor);
+        } else findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        ((TextView)findViewById(R.id.textView2)).setTextColor(textColor);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);

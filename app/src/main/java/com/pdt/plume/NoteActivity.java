@@ -48,6 +48,16 @@ public class NoteActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        Color.colorToHSV(titleColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTextColor = Color.HSVToColor(hsv);
+        fieldTitle.setTextColor(titleColor);
+        fieldTitle.setHintTextColor(darkTextColor);
+        fieldNote.setTextColor(titleColor);
+        fieldNote.setHintTextColor(darkTextColor);
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

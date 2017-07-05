@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -15,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -62,7 +66,7 @@ public class ScheduleAdapter extends ArrayAdapter {
             // Get references to the View Holder's views
             // by searching the row for the UI element
             holder = new ViewHolder();
-            if (!schedule.scheduleIcon.contains("art_"))
+            if (schedule.scheduleIcon != null && !schedule.scheduleIcon.contains("art_"))
                 holder.icon = (ImageView)row.findViewById(R.id.schedule_icon2);
             else holder.icon = (ImageView)row.findViewById(R.id.schedule_icon);
             holder.lesson = (TextView)row.findViewById(R.id.schedule_lesson);
@@ -79,16 +83,35 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder = (ViewHolder)row.getTag();
         }
 
+        int textColor = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+        float alpha = 0.7f;
+        if (holder.lesson != null)
+            holder.lesson.setTextColor(textColor);
+
+        if (holder.teacher != null) {
+            holder.teacher.setTextColor(textColor);
+            holder.teacher.setAlpha(alpha);
+            holder.room.setTextColor(textColor);
+            holder.room.setAlpha(alpha);
+            holder.timeIn.setTextColor(textColor);
+            holder.timeIn.setAlpha(alpha);
+        } else {
+            CheckBox checkBox = (CheckBox) row.findViewById(R.id.checkbox);
+            if (checkBox != null) checkBox.setButtonTintList(ColorStateList.valueOf(textColor));
+        }
+
         // Set the UI elements contained in the View Holder
         // using data constructed in the Schedule class object
-        Uri uri = Uri.parse(schedule.scheduleIcon);
-        holder.icon.setImageURI(uri);
+        if (schedule.scheduleIcon != null) {
+            Uri uri = Uri.parse(schedule.scheduleIcon);
+            holder.icon.setImageURI(uri);
+        }
 
         holder.lesson.setTypeface(Typeface.createFromAsset(context.getAssets(), "roboto_slab_bold.ttf"));
         if (schedule.scheduleLesson.contains("%0513%")) {
             if (schedule.scheduleLesson.split("%0513%")[1].equals("cross")) {
                 holder.lesson.setText(schedule.scheduleLesson.split("%0513%")[0]);
-                holder.lesson.setTextColor(context.getResources().getColor(R.color.gray_500));
                 row.setAlpha(0.5f);
                 row.findViewById(R.id.checkbox).setClickable(true);
                 row.findViewById(R.id.checkbox).setEnabled(false);

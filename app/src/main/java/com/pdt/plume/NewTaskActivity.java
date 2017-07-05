@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -595,6 +596,51 @@ public class NewTaskActivity extends AppCompatActivity
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        Color.colorToHSV(textColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTextColor = Color.HSVToColor(hsv);
+
+        ((TextView) findViewById(R.id.field_class_textview)).setTextColor(darkTextColor);
+        ((ImageView) findViewById(R.id.imageView)).setColorFilter(darkTextColor);
+        findViewById(R.id.divider1).setBackgroundColor(darkTextColor);
+        ((TextView) findViewById(R.id.field_type_textview)).setTextColor(darkTextColor);
+        ((ImageView) findViewById(R.id.imageView2)).setColorFilter(darkTextColor);
+        findViewById(R.id.divider2).setBackgroundColor(darkTextColor);
+        fieldSharedCheckbox.setTextColor(darkTextColor);
+        fieldSharedCheckbox.setButtonTintList(ColorStateList.valueOf(darkTextColor));
+        ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(darkTextColor);
+        ((EditText) findViewById(R.id.field_new_task_description)).setTextColor(textColor);
+        ((EditText) findViewById(R.id.field_new_task_description)).setHintTextColor(textColor);
+        ((TextView) findViewById(R.id.field_new_task_duedate_textview)).setTextColor(textColor);
+        ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(textColor);
+        ((TextView) findViewById(R.id.field_new_task_reminder_date_textview)).setTextColor(darkTextColor);
+        ((ImageView) findViewById(R.id.field_new_task_reminder_date_icon)).setColorFilter(darkTextColor);
+
+        if (!isTablet) {
+            ((TextView) findViewById(R.id.link_to_class)).setTextColor(textColor);
+            ((TextView) findViewById(R.id.task_type)).setTextColor(textColor);
+            ((TextView) findViewById(R.id.textView3)).setTextColor(darkTextColor);
+            ((TextView) findViewById(R.id.due_date)).setTextColor(darkTextColor);
+            findViewById(R.id.divider3).setBackgroundColor(darkTextColor);
+            findViewById(R.id.divider4).setBackgroundColor(darkTextColor);
+            findViewById(R.id.divider5).setBackgroundColor(darkTextColor);
+            ((TextView) findViewById(R.id.textView7)).setTextColor(darkTextColor);
+            ((TextView) findViewById(R.id.field_new_task_reminder_time_textview)).setTextColor(darkTextColor);
+            ((ImageView) findViewById(R.id.field_new_task_reminder_time_icon)).setColorFilter(darkTextColor);
+            ((TextView) findViewById(R.id.take_photo_text)).setTextColor(darkTextColor);
+            ((ImageView) findViewById(R.id.take_photo_icon)).setColorFilter(darkTextColor);
+        } else {
+            ((TextView) findViewById(R.id.share_tasks_with_peers)).setTextColor(darkTextColor);
+            ((ImageView) findViewById(R.id.imageView3)).setColorFilter(darkTextColor);
+            ((ImageView) findViewById(R.id.imageView4)).setColorFilter(darkTextColor);
+            ((ImageView) findViewById(R.id.imageView6)).setColorFilter(darkTextColor);
+        }
+
+
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -1405,7 +1451,7 @@ public class NewTaskActivity extends AppCompatActivity
             // Upload the custom icon and photos
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
-            StorageReference iconRef = storageRef.child(mUserId + "/tasks/" + title);
+            StorageReference iconRef = storageRef.child(mUserId + "/tasks/" + taskRef.getKey());
             if (customIconUploaded) {
                 fieldIcon.setDrawingCacheEnabled(true);
                 fieldIcon.buildDrawingCache();

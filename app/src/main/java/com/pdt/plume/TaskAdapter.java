@@ -3,8 +3,10 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -96,6 +98,22 @@ public class TaskAdapter extends ArrayAdapter {
         if (getContext() instanceof ScheduleDetailActivity) {
             holder.icon.setTransitionName(null);
         }
+
+        int textColor = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+        float alpha = 0.7f;
+
+        holder.title.setTextColor(textColor);
+        if (holder.sharer != null) {
+            holder.sharer.setTextColor(textColor);
+            holder.sharer.setAlpha(alpha);
+        }
+
+        if (holder.date != null) {
+            holder.date.setTextColor(textColor);
+            holder.date.setAlpha(alpha);
+        }
+
 
 
         Uri uri = Uri.parse(task.taskIcon);

@@ -33,7 +33,6 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:background="@color/white"
         android:layout_height="64dp">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -42,6 +41,7 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:orientation="vertical">
             <TextView
+                android:id="@+id/all_classes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/all_classes"
@@ -56,7 +56,6 @@
             android:layout_height="wrap_content"
             android:text="@string/add_new_class"
             android:layout_gravity="end"
-            android:background="@color/white"
             android:paddingRight="8dp"
             android:paddingLeft="8dp"
             android:paddingTop="8dp"
@@ -68,7 +67,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/gray_200"
+            android:background="@color/dividerColor"
             android:layout_gravity="bottom" />
     </FrameLayout>
 

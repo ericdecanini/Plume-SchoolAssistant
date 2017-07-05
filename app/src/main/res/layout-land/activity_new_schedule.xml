@@ -62,6 +62,7 @@
                                 android:minWidth="212dp" />
 
                             <ImageView
+                                android:id="@+id/field_new_schedule_teacher_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
@@ -83,6 +84,7 @@
                                 android:minWidth="212dp" />
 
                             <ImageView
+                                android:id="@+id/field_new_schedule_room_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"

@@ -76,15 +76,6 @@ public class AcceptPeerActivityTablet extends AppCompatActivity
         boolean isTablet = getResources().getBoolean(R.bool.isTablet);
         boolean isLandscape = getResources().getBoolean(R.bool.isLandscape);
 
-        if (isTablet) {
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
-        } else {
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
         // Initialise the Progress Bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
         spinner.setVisibility(View.VISIBLE);
@@ -97,11 +88,24 @@ public class AcceptPeerActivityTablet extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
+
+        if (getResources().getBoolean(R.bool.isLandscape)) {
+            findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+            findViewById(R.id.activity_people).setBackgroundColor(darkBackgroundColor);
+        } else findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
             findViewById(R.id.accept).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
         }
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
 
         if (isTablet) {
             if (isLandscape)
@@ -200,6 +204,7 @@ public class AcceptPeerActivityTablet extends AppCompatActivity
 
         nameView.setText(name);
         headerView.setText(getString(R.string.acceptPeerHeader, name));
+        headerView.setTextColor(textColor);
         flavourView.setText(flavour);
 
         // Check if the icon points to an existing file

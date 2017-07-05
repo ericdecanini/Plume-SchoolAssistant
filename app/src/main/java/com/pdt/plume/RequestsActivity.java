@@ -8,7 +8,6 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -22,11 +21,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
 
-import static com.pdt.plume.R.id.listView;
+import static android.R.attr.textColor;
+import static com.pdt.plume.R.bool.isLandscape;
 
 public class RequestsActivity extends AppCompatActivity {
 
@@ -34,7 +33,7 @@ public class RequestsActivity extends AppCompatActivity {
 
     // UI Data
     ProgressBar spinner;
-    TextView headerTextView;
+    View splash;
 
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
@@ -71,8 +70,8 @@ public class RequestsActivity extends AppCompatActivity {
         // Initialise the progress bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
         spinner.setVisibility(View.VISIBLE);
-        headerTextView = (TextView) findViewById(R.id.header_textview);
-        headerTextView.setVisibility(View.GONE);
+        splash = findViewById(R.id.splash);
+        splash.setVisibility(View.GONE);
 
         // Initialise the theme
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -82,6 +81,20 @@ public class RequestsActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        if (splash != null) ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
+
+        if (getResources().getBoolean(R.bool.isTablet)) {
+            Color.colorToHSV(backgroundColor, hsv);
+            hsv[2] *= 0.9f;
+            int darkBackgroundColor = Color.HSVToColor(hsv);
+            if (getResources().getBoolean(R.bool.isLandscape)) {
+                findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+                findViewById(R.id.container).setBackgroundColor(darkBackgroundColor);
+            } else
+                findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+        } else findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -110,8 +123,8 @@ public class RequestsActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     spinner.setVisibility(View.GONE);
                     if (dataSnapshot.getChildrenCount() == 0) {
-                        headerTextView.setVisibility(View.VISIBLE);
-                        headerTextView.setText(getString(R.string.splash_no_request));
+                        splash.setVisibility(View.VISIBLE);
+                        if (splash != null) ((TextView) findViewById(R.id.textView1)).setText(getString(R.string.splash_no_request));
                     }
 
                     for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
@@ -131,7 +144,7 @@ public class RequestsActivity extends AppCompatActivity {
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
                                 spinner.setVisibility(View.GONE);
-                                headerTextView.setVisibility(View.VISIBLE);
+                                splash.setVisibility(View.VISIBLE);
                             }
                         });
                         userSnapshot.getRef().child("icon").addValueEventListener(new ValueEventListener() {
@@ -168,7 +181,7 @@ public class RequestsActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    headerTextView.setVisibility(View.VISIBLE);
+                    splash.setVisibility(View.VISIBLE);
                     spinner.setVisibility(View.GONE);
                 }
             });

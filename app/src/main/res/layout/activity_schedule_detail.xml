@@ -68,6 +68,7 @@
         android:paddingTop="56dp" />
 
     <android.support.v4.widget.NestedScrollView
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -164,10 +165,10 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/gray_50"
                     android:paddingTop="4dp">
 
                     <TextView
+                        android:id="@+id/notes_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
@@ -202,7 +203,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/gray_500" />
+                    android:background="@color/dividerColor" />
             </LinearLayout>
 
             <!-- PERIODS-->
@@ -214,6 +215,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/periods_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="22dp"

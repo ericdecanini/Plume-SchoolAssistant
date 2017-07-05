@@ -2,6 +2,7 @@
     android:layout_width="match_parent"
     android:background="@color/gray_150"
     android:orientation="horizontal"
+    android:id="@+id/container"
     android:layout_height="match_parent" >
 
     <View
@@ -13,20 +14,19 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="5"
-        android:paddingBottom="32dp"
+        android:id="@+id/master_layout"
         android:background="@color/white">
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="32dp"
-            android:paddingBottom="24dp">
+            android:paddingTop="16dp">
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
-            android:layout_marginBottom="@dimen/fab_margin"
+            android:layout_margin="@dimen/fab_margin"
             android:src="@drawable/ic_delete_white" />
 
         <LinearLayout
@@ -34,24 +34,34 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:id="@+id/splash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="172dp"
+                    android:layout_height="172dp"
+                    android:src="@drawable/splash_no_completed_tasks"
+                    android:layout_gravity="center_horizontal"/>
                 <TextView
-                    android:id="@+id/header_textview"
+                    android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:gravity="center"
-                    android:text="@string/activity_completedTasks_splashText"
-                    android:drawableLeft="@drawable/ic_error_outline_black_24dp"
-                    android:drawableStart="@drawable/ic_error_outline_black_24dp"
-                    android:drawablePadding="4dp"
-                    android:textSize="16sp"
-                    android:textColor="@color/gray_900"/>
+                    android:textColor="@color/gray_700"
+                    android:textSize="20sp"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/activity_completedTasks_splashText"/>
+            </LinearLayout>
 
 
             <ListView
                 android:id="@+id/completed_tasks_list"
+                android:divider="@color/dividerColor"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         </FrameLayout>

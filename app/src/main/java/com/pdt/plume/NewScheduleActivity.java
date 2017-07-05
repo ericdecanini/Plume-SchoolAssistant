@@ -349,6 +349,8 @@ public class NewScheduleActivity extends AppCompatActivity
                 fieldTitle.setText(title);
                 fieldTeacher.setText(teacher);
                 fieldRoom.setText(room);
+                if (iconUri == null)
+                    iconUri = "android.resource://com.pdt.plume/drawable/art_class_64dp";
                 try {
                     Bitmap setImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(iconUri));
                     fieldIcon.setImageBitmap(setImageBitmap);
@@ -417,6 +419,21 @@ public class NewScheduleActivity extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.container).setBackgroundColor(backgroundColor);
+
+        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        Color.colorToHSV(titleColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTitleColor = Color.HSVToColor(hsv);
+        fieldTeacher.setTextColor(titleColor);
+        fieldTeacher.setHintTextColor(darkTitleColor);
+        ((ImageView) findViewById(R.id.field_new_schedule_teacher_icon)).setColorFilter(darkTitleColor);
+        fieldRoom.setTextColor(titleColor);
+        fieldRoom.setHintTextColor(darkTitleColor);
+        ((ImageView) findViewById(R.id.field_new_schedule_room_icon)).setColorFilter(darkTitleColor);
+
+
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -426,9 +443,11 @@ public class NewScheduleActivity extends AppCompatActivity
         if (fieldAddClassTime != null)
             fieldAddClassTime.setTextColor(mPrimaryColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isTablet)
-                fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
-            else fieldTitle.setBackgroundColor(mPrimaryColor);
+            if (fieldTitle != null) {
+                if (isTablet)
+                    fieldTitle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
+                else fieldTitle.setBackgroundColor(mPrimaryColor);
+            }
             if (fieldTeacher != null)
                 fieldTeacher.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray_700)));
             if (fieldTeacher != null)

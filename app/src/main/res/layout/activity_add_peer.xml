@@ -6,13 +6,12 @@
     android:id="@+id/activity_people"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundColor"
     tools:context="com.pdt.plume.PeopleActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:id="@+id/master_layout"
         android:layout_height="wrap_content"
-        android:background="@color/backgroundColor"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -40,7 +39,6 @@
                     android:layout_height="@dimen/profile_icon_size"
                     android:src="@drawable/art_profile_default"
                     android:layout_gravity="center"
-                    android:background="@drawable/circle_white"
                     android:padding="8dp"
                     android:scaleType="center" />
 

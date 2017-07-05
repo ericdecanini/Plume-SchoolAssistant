@@ -6,25 +6,28 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TextView
-            android:visibility="gone"
-            android:id="@+id/header_textview"
-            android:text="@string/schedule_fragment_splash_no_classes"
-            android:layout_marginLeft="32dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="32dp"
-            android:layout_marginEnd="32dp"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:drawableLeft="@drawable/ic_error_outline_black_24dp"
-            android:drawableStart="@drawable/ic_error_outline_black_24dp"
-            android:drawablePadding="4dp"
-            android:textSize="16sp"
-            android:textColor="@color/gray_900"
+        <LinearLayout
+            android:id="@+id/splash"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="24dp"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical">
+            <ImageView
+                android:layout_width="172dp"
+                android:layout_height="172dp"
+                android:src="@drawable/splash_no_completed_tasks"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray_700"
+                android:textSize="20sp"
+                android:layout_marginTop="16dp"
+                android:text="@string/schedule_fragment_splash_no_classes"/>
+        </LinearLayout>
         <ProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
@@ -37,7 +40,6 @@
 
     <ListView
         android:id="@+id/schedule_list"
-        android:divider="@drawable/schedule_divider"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

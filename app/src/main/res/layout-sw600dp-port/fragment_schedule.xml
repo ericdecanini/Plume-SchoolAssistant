@@ -6,25 +6,28 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TextView
+        <LinearLayout
+            android:id="@+id/splash"
             android:visibility="gone"
-            android:id="@+id/header_textview"
-            android:text="@string/schedule_fragment_splash_no_classes"
-            android:layout_marginLeft="26dp"
-            android:layout_marginStart="26dp"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="22dp"
-            android:layout_marginEnd="22dp"
-            android:drawableLeft="@drawable/ic_error_outline_black_24dp"
-            android:drawableStart="@drawable/ic_error_outline_black_24dp"
-            android:drawablePadding="22dp"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:textSize="16sp"
-            android:textColor="@color/gray_900"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical">
+            <ImageView
+                android:layout_width="172dp"
+                android:layout_height="172dp"
+                android:src="@drawable/splash_no_completed_tasks"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray_700"
+                android:textSize="20sp"
+                android:layout_marginTop="16dp"
+                android:text="@string/schedule_fragment_splash_no_classes"/>
+        </LinearLayout>
         <ProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
@@ -52,8 +55,8 @@
         android:layout_marginLeft="@dimen/fab_margin"
         android:layout_marginStart="@dimen/fab_margin"
         android:layout_marginTop="@dimen/fab_margin"
-        android:layout_marginRight="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginBottom="@dimen/fab_margin" />
 
 </FrameLayout>

@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_150">
+    android:id="@+id/container"
+    android:background="@color/backgroundColor">
 
     <FrameLayout
         android:id="@+id/frame_layout"
@@ -59,7 +60,6 @@
                             android:layout_width="72dp"
                             android:layout_height="72dp"
                             android:layout_gravity="center"
-                            android:background="@drawable/circle_white"
                             android:padding="8dp"
                             android:scaleType="center"
                             android:src="@drawable/art_profile_default" />
@@ -100,6 +100,7 @@
                             android:src="@drawable/sample" />
 
                         <TextView
+                            android:id="@+id/textView1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
@@ -112,6 +113,7 @@
                             android:textSize="20sp" />
 
                         <TextView
+                            android:id="@+id/textView3"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
@@ -128,7 +130,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/gray_200" />
+                        android:background="@color/dividerColor" />
 
                     <FrameLayout
                         android:layout_width="match_parent"
@@ -170,7 +172,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="4dp"
-                        android:background="@color/gray_200" />
+                        android:background="@color/dividerColor" />
 
                 </LinearLayout>
 

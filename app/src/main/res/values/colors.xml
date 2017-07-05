@@ -27,7 +27,7 @@
     <color name="black_0.60">#96000000</color>
     <color name="black_0.54">#8C000000</color>
     <color name="black_0.10">#1A000000</color>
-    <color name="dividerColor">#CCCCCC</color>
+    <color name="dividerColor">#20000000</color>
     <color name="tab_indicator_unselected">#B1C1CC</color>
 
     <color name="blue_600">#1E88E5</color>

@@ -60,12 +60,16 @@ public class PeriodAdapter extends ArrayAdapter {
         String weekType = item.weekType;
         String basis = item.occurrence.split(":")[0];
 
-        Log.v(LOG_TAG, "Init item with stats " + basis + weekType);
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         mPrimaryColor = preferences.getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR),
                 context.getResources().getColor(R.color.colorPrimary));
+        final int backgroundColor = preferences.getInt(context.getString(R.string.KEY_THEME_BACKGROUND_COLOUR),
+                context.getResources().getColor(R.color.backgroundColor));
+        final int textColor = preferences.getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR),
+                context.getResources().getColor(R.color.gray_900));
+
 
         if (row == null) {
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
@@ -74,6 +78,7 @@ public class PeriodAdapter extends ArrayAdapter {
             holder = new ViewHolder();
             row.setTag(holder);
         } else holder = (ViewHolder) row.getTag();
+
 
         if (basis.equals("0")) {
             row.findViewById(R.id.time_layout).setVisibility(View.VISIBLE);
@@ -85,6 +90,9 @@ public class PeriodAdapter extends ArrayAdapter {
 
             holder.days = (TextView) row.findViewById(R.id.days_time);
             holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_time);
+
+            holder.days.setTextColor(textColor);
+            holder.daysAlt.setTextColor(textColor);
 
             holder.timein = (TextView) row.findViewById(R.id.timein);
             holder.timeout = (TextView) row.findViewById(R.id.timeout);
@@ -270,6 +278,9 @@ public class PeriodAdapter extends ArrayAdapter {
             holder.days = (TextView) row.findViewById(R.id.days_period);
             holder.daysAlt = (TextView) row.findViewById(R.id.days_alt_period);
 
+            holder.days.setTextColor(textColor);
+            holder.daysAlt.setTextColor(textColor);
+
             holder.period[0] = (TextView) row.findViewById(R.id.one_period);
             holder.period[1] = (TextView) row.findViewById(R.id.two_period);
             holder.period[2] = (TextView) row.findViewById(R.id.three_period);
@@ -346,11 +357,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 view.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     view.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.period[finalI] = false;
                                 view.setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -369,11 +380,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.periodAlt[finalI] = false;
                                 holder.periodAlt[finalI].setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -397,11 +408,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 holder.period[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.period[finalI] = false;
                                 holder.period[finalI].setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -420,11 +431,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.periodAlt[finalI] = false;
                                 holder.periodAlt[finalI].setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -488,11 +499,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                     view.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                         view.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                    ((TextView) view).setTextColor(backgroundColor);
                                 } else {
                                     item.period[finalI] = false;
                                     view.setBackgroundDrawable(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                    ((TextView) view).setTextColor(textColor);
                                 }
                             }
                         });
@@ -508,11 +519,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                     holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                         holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                    ((TextView) view).setTextColor(backgroundColor);
                                 } else {
                                     item.periodAlt[finalI] = false;
                                     holder.periodAlt[finalI].setBackgroundDrawable(null);
-                                    ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                    ((TextView) view).setTextColor(textColor);
                                 }
                             }
                         });
@@ -533,11 +544,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 holder.period[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.period[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.period[finalI] = false;
                                 holder.period[finalI].setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -553,11 +564,11 @@ public class PeriodAdapter extends ArrayAdapter {
                                 holder.periodAlt[finalI].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                                     holder.periodAlt[finalI].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.white));
+                                ((TextView) view).setTextColor(backgroundColor);
                             } else {
                                 item.periodAlt[finalI] = false;
                                 holder.periodAlt[finalI].setBackgroundDrawable(null);
-                                ((TextView) view).setTextColor(context.getResources().getColor(R.color.gray_900));
+                                ((TextView) view).setTextColor(textColor);
                             }
                         }
                     });
@@ -582,8 +593,8 @@ public class PeriodAdapter extends ArrayAdapter {
                     } else {
                         holder.timein.setEnabled(true);
                         holder.timeout.setEnabled(true);
-                        holder.timein.setTextColor(context.getResources().getColor(R.color.gray_900));
-                        holder.timeout.setTextColor(context.getResources().getColor(R.color.gray_900));
+                        holder.timein.setTextColor(textColor);
+                        holder.timeout.setTextColor(textColor);
                     }
 
                     if (item.days_alt.equals("0:0:0:0:0:0:0")) {
@@ -594,8 +605,8 @@ public class PeriodAdapter extends ArrayAdapter {
                     } else {
                         holder.timeinAlt.setEnabled(true);
                         holder.timeoutAlt.setEnabled(true);
-                        holder.timeinAlt.setTextColor(context.getResources().getColor(R.color.gray_900));
-                        holder.timeoutAlt.setTextColor(context.getResources().getColor(R.color.gray_900));
+                        holder.timeinAlt.setTextColor(textColor);
+                        holder.timeoutAlt.setTextColor(textColor);
                     }
                 }
             }
@@ -613,11 +624,11 @@ public class PeriodAdapter extends ArrayAdapter {
                     holder.period[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                         holder.period[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                    holder.period[i].setTextColor(context.getResources().getColor(R.color.white));
+                    holder.period[i].setTextColor(backgroundColor);
                 } else {
                     item.period[i] = false;
                     holder.period[i].setBackgroundDrawable(null);
-                    holder.period[i].setTextColor(context.getResources().getColor(R.color.gray_900));
+                    holder.period[i].setTextColor(textColor);
                 }
 
                 if (item.periodAlt[i]) {
@@ -625,11 +636,11 @@ public class PeriodAdapter extends ArrayAdapter {
                     holder.periodAlt[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
                         holder.periodAlt[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                    holder.periodAlt[i].setTextColor(context.getResources().getColor(R.color.white));
+                    holder.periodAlt[i].setTextColor(backgroundColor);
                 } else {
                     item.periodAlt[i] = false;
                     holder.periodAlt[i].setBackgroundDrawable(null);
-                    holder.periodAlt[i].setTextColor(context.getResources().getColor(R.color.gray_900));
+                    holder.periodAlt[i].setTextColor(textColor);
                 }
             }
         }

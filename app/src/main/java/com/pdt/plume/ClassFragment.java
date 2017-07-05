@@ -146,6 +146,15 @@ public class ClassFragment extends Fragment{
             }
         });
 
+        int backgroundColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        rootView.setBackgroundColor(backgroundColor);
+
+        if (isTablet)
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.detail_container, new BlankFragment())
+                    .commit();
+
         // Inflate the layout for this fragment
         return rootView;
     }
@@ -162,6 +171,8 @@ public class ClassFragment extends Fragment{
                     if (dataSnapshot.child("classes").getChildrenCount() == 0) {
                         spinner.setVisibility(View.GONE);
                         headerTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
                     }
                 }
 
@@ -175,6 +186,7 @@ public class ClassFragment extends Fragment{
             ArrayList<Schedule> newSchedules = dbHelper.getAllClassesArray(getContext());
             mScheduleList.clear();
             mScheduleList.addAll(newSchedules);
+            mScheduleAdapter.notifyDataSetChanged();
             spinner.setVisibility(View.GONE);
         }
 
@@ -273,6 +285,7 @@ public class ClassFragment extends Fragment{
 
 
                     mScheduleList.add(new Schedule(getContext(), icon, title, teacher, room, "", "", ""));
+                    mScheduleAdapter.notifyDataSetChanged();
                 }
             }
 

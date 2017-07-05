@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference
-        android:title="@string/settings_theme_primary_title"
-        android:key="@string/KEY_SETTINGS_THEME_PRIMARY" />
+    <com.pdt.plume.ColouredPreferenceCategory android:title="@string/general"
+        android:key="@string/KEY_THEME_CATEGORY_GENERAL">
 
-    <Preference
-        android:title="@string/settings_theme_secondary_title"
-        android:key="@string/KEY_SETTINGS_THEME_SECONDARY" />
+        <Preference
+            android:key="@string/KEY_SETTINGS_THEME_PRIMARY"
+            android:title="@string/settings_theme_primary_title" />
 
+        <Preference
+            android:key="@string/KEY_SETTINGS_THEME_SECONDARY"
+            android:title="@string/settings_theme_secondary_title" />
 
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:title="@string/planner"
+        android:key="@string/KEY_THEME_CATEGORY_PLANNER">
+
+        <Preference
+            android:key="@string/KEY_THEME_BACKGROUND_COLOUR"
+            android:title="@string/settings_theme_background" />
+
+        <Preference
+            android:key="@string/KEY_THEME_TITLE_COLOUR"
+            android:title="@string/settings_theme_title_colour" />
+
+    </com.pdt.plume.ColouredPreferenceCategory>
 
 
 </PreferenceScreen>

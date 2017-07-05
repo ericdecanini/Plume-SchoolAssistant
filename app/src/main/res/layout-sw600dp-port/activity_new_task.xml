@@ -52,6 +52,7 @@
             android:paddingStart="64dp">
 
             <ImageView
+                android:id="@+id/imageView3"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_classroom_black"
@@ -87,6 +88,7 @@
                     android:tint="@color/gray_700" />
 
                 <View
+                    android:id="@+id/divider1"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_gravity="bottom"
@@ -120,6 +122,7 @@
                 android:textSize="18sp" />
 
             <ImageView
+                android:id="@+id/imageView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
@@ -128,6 +131,7 @@
                 android:tint="@color/gray_700" />
 
             <View
+                android:id="@+id/divider2"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_gravity="bottom"
@@ -165,12 +169,14 @@
                 android:paddingStart="64dp">
 
                 <ImageView
+                    android:id="@+id/imageView4"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/ic_group_black_24dp"
                     android:tint="@color/gray_700" />
 
                 <TextView
+                    android:id="@+id/share_tasks_with_peers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -213,6 +219,7 @@
             android:paddingStart="64dp">
 
             <ImageView
+                android:id="@+id/field_new_task_duedate_icon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical"
@@ -247,6 +254,7 @@
             android:paddingStart="64dp">
 
             <ImageView
+                android:id="@+id/imageView6"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical"
@@ -285,6 +293,7 @@
             android:paddingStart="64dp">
 
             <ImageView
+                android:id="@+id/field_new_task_reminder_date_icon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical"
@@ -343,6 +352,7 @@
             android:paddingStart="64dp">
 
             <ImageView
+                android:id="@+id/take_photo_icon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical"

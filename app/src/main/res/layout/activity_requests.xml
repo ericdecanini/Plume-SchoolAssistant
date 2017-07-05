@@ -3,32 +3,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/backgroundColor"
     android:layout_width="match_parent"
+    android:id="@+id/master_layout"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.pdt.plume.RequestsActivity">
 
-    <TextView
-        android:id="@+id/header_textview"
-        android:visibility="gone"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:text="@string/check_internet"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:drawableLeft="@drawable/ic_error_outline_black_24dp"
-        android:drawableStart="@drawable/ic_error_outline_black_24dp"
-        android:drawablePadding="4dp"
-        android:textSize="16sp"
-        android:textColor="@color/gray_900"
+    <LinearLayout
+        android:id="@+id/splash"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="172dp"
+            android:src="@drawable/splash_no_completed_tasks"
+            android:layout_gravity="center_horizontal"/>
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gray_700"
+            android:textSize="20sp"
+            android:layout_marginTop="16dp"
+            android:text="@string/activity_completedTasks_splashText"/>
+    </LinearLayout>
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"

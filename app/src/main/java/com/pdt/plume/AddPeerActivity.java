@@ -39,6 +39,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import static com.pdt.plume.R.id.appbar;
+import static com.pdt.plume.R.id.header_textview;
 import static com.pdt.plume.R.id.view;
 
 public class AddPeerActivity extends AppCompatActivity {
@@ -95,6 +96,9 @@ public class AddPeerActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        final int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -241,6 +245,7 @@ public class AddPeerActivity extends AppCompatActivity {
                     nameView.setText(name);
                     ((TextView) findViewById(R.id.whichClasses)).setText
                             (getString(R.string.whichClasses, name));
+                    ((TextView) findViewById(R.id.whichClasses)).setTextColor(textColor);
                 }
 
                 @Override

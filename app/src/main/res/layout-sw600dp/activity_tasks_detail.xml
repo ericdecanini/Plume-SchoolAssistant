@@ -6,10 +6,12 @@
     android:paddingLeft="64dp"
     android:paddingStart="64dp"
     android:paddingRight="64dp"
+    android:id="@+id/master_layout"
     android:paddingEnd="64dp"
     tools:context="com.pdt.plume.TasksDetailFragment">
 
     <LinearLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"

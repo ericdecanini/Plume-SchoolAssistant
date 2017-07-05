@@ -11,7 +11,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/backgroundColor"
         android:orientation="vertical">
 
         <android.support.design.widget.AppBarLayout
@@ -62,8 +61,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="132dp"
-            android:background="@drawable/bg_grey_tiled">
+            android:layout_height="132dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -78,11 +76,12 @@
                     android:src="@drawable/sample" />
 
                 <TextView
+                    android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
                     android:layout_toLeftOf="@id/qr"
                     android:layout_toStartOf="@id/qr"
                     android:text="@string/scan"
@@ -90,11 +89,12 @@
                     android:textSize="20sp" />
 
                 <TextView
+                    android:id="@+id/textView3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:layout_toEndOf="@id/qr"
                     android:layout_toRightOf="@id/qr"
                     android:text="@string/here"
@@ -108,7 +108,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/gray_200" />
+            android:background="@color/dividerColor" />
 
         <FrameLayout
             android:layout_width="match_parent"

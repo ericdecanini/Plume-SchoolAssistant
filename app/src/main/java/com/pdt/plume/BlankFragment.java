@@ -1,7 +1,9 @@
 package com.pdt.plume;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +24,15 @@ public class BlankFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_blank, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_blank, container, false);
+        int backgroundColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        float[] hsv = new float[3];
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
+        rootView.findViewById(R.id.container).setBackgroundColor(darkBackgroundColor);
+        return rootView;
     }
 
 }

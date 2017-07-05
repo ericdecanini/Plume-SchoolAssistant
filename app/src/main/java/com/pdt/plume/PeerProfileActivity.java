@@ -75,6 +75,10 @@ public class PeerProfileActivity extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
@@ -180,31 +184,22 @@ public class PeerProfileActivity extends AppCompatActivity {
         DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(userId).child("peers").child(uid).child("classes");
 
-        classesRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String title = dataSnapshot.getKey();
-                String iconUri = dataSnapshot.getValue(String.class);
-                Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,
-                        "", "", "", "", "");
-                schedule.addExtra(uid);
-                arrayList.add(schedule);
-                adapter.notifyDataSetChanged();
-            }
+        classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                Log.v(LOG_TAG, "onChildChanged");
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    String title = userSnapshot.getKey();
+                    String iconUri = userSnapshot.getValue(String.class);
+                    Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,
+                            "", "", "", "", "");
+                    schedule.addExtra(uid);
+                    arrayList.add(schedule);
+                    adapter.notifyDataSetChanged();
+                }
+                if (dataSnapshot.getChildrenCount() == 0) {
+                    ((TextView) findViewById(R.id.textView2)).setText(getString(R.string.splash_no_classes_shared));
+                }
             }
 
             @Override

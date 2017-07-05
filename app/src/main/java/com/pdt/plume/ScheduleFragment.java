@@ -2,30 +2,19 @@ package com.pdt.plume;
 
 
 import android.app.ActivityOptions;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -44,7 +33,6 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,21 +46,13 @@ import com.pdt.plume.data.DbContract.ScheduleEntry;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static android.media.CamcorderProfile.get;
 import static android.support.v7.graphics.Palette.generate;
-import static com.google.android.gms.internal.zzng.fa;
-import static com.google.android.gms.internal.zzng.fo;
-import static com.pdt.plume.R.id.timeout;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class ScheduleFragment extends Fragment {
 
@@ -86,6 +66,7 @@ public class ScheduleFragment extends Fragment {
 
     // UI Elements
     ListView listView;
+    View splash;
     TextView headerTextView;
     FloatingActionButton fab;
     ProgressBar spinner;
@@ -102,6 +83,7 @@ public class ScheduleFragment extends Fragment {
 
     // Flags
     boolean isTablet;
+    public static boolean noItems = false;
 
     // Firebase Variables
     FirebaseAuth mFirebaseAuth;
@@ -128,7 +110,8 @@ public class ScheduleFragment extends Fragment {
         }
 
         // Get references to the views
-        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+        splash = rootView.findViewById(R.id.splash);
+        headerTextView = (TextView) rootView.findViewById(R.id.textView1);
         listView = (ListView) rootView.findViewById(R.id.schedule_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
@@ -136,7 +119,9 @@ public class ScheduleFragment extends Fragment {
 
         // Check if the used device is a tablet
         isTablet = getResources().getBoolean(R.bool.isTablet);
-        if (isTablet) fab.setAlpha(1f);
+        if (isTablet) {
+            fab.setAlpha(1f);
+        }
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -181,6 +166,18 @@ public class ScheduleFragment extends Fragment {
             }
         });
 
+        int backgroundColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+
+        if (isTablet)
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.detail_container, new BlankFragment())
+                    .commit();
+
+        int textColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        ((TextView) rootView.findViewById(R.id.textView1)).setTextColor(textColor);
+
         // Inflate the layout for this fragment
         return rootView;
     }
@@ -196,12 +193,21 @@ public class ScheduleFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.child("classes").getChildrenCount() == 0) {
                         spinner.setVisibility(View.GONE);
-                        headerTextView.setVisibility(View.VISIBLE);
+                        splash.setVisibility(View.VISIBLE);
+                        noItems = true;
                     }
 
                     if (mScheduleList.size() == 0)
-                        headerTextView.setVisibility(View.VISIBLE);
-                    else headerTextView.setVisibility(View.GONE);
+                    {
+                        splash.setVisibility(View.VISIBLE);
+                        noItems = true;
+                    }
+                    else {
+                        splash.setVisibility(View.GONE);
+                        noItems = false;
+                        listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+                    }
+
                     mScheduleAdapter.notifyDataSetChanged();
                 }
 
@@ -224,10 +230,16 @@ public class ScheduleFragment extends Fragment {
         }
 
         // Set the splash text if there's no classes queried and update the Adapter
-        if (headerTextView != null) {
+        if (splash != null) {
             if (mScheduleList.size() == 0)
-                headerTextView.setVisibility(View.VISIBLE);
-            else headerTextView.setVisibility(View.GONE);
+            {
+                splash.setVisibility(View.VISIBLE);
+                noItems = true;
+            }
+            else {
+                splash.setVisibility(View.GONE);
+                noItems = false;
+            }
         }
 
         if (mScheduleAdapter != null) {
@@ -326,9 +338,10 @@ public class ScheduleFragment extends Fragment {
 
     // This method is called when the app has been launched for the first time
     private void init() {
-        if (headerTextView != null) {
+        if (splash != null) {
             headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
-            headerTextView.setVisibility(View.VISIBLE);
+            splash.setVisibility(View.VISIBLE);
+            noItems = true;
         }
     }
 
@@ -416,64 +429,74 @@ public class ScheduleFragment extends Fragment {
                         for (int i3 = 0; i3 < occurrences.size(); i3++) {
                             mOccurrenceList.add(occurrences.get(i3));
 
-                        // Check if the iconUri points to an existing file
-                        if (iconUri == null) return;
+                            // Check if the iconUri points to an existing file
+                            if (iconUri == null) return;
 
-                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
-                                periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
-                            ArrayList<String> periodsList = new ArrayList<>();
-                            periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
+                            if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
+                                    periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
+                                ArrayList<String> periodsList = new ArrayList<>();
+                                periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
                                         occurrences.get(occurrences.size() - 1).split(":")[1]));
 
 
-                            File file = new File(getContext().getFilesDir(), title + ".jpg");
-                            if (file.exists() || iconUri.contains("art_")) {
-                                if (periodsList.size() != 0) {
-                                    for (int i = 0; i < periodsList.size(); i++) {
-                                        if (weekNumber.equals("0"))
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                    utility.millisToHourTime(timeins.get(i)),
-                                                    utility.millisToHourTime(timeouts.get(i)),
-                                                    periodsList.get(i)));
-                                        else
-                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                    utility.millisToHourTime(timeinalts.get(i)),
-                                                    utility.millisToHourTime(timeoutalts.get(i)),
-                                                    periodsList.get(i)));
-                                    }
-                                }
-                            } else {
-                                // File is non existent, download from storage
-                                FirebaseStorage storage = FirebaseStorage.getInstance();
-                                StorageReference storageRef = storage.getReference();
-                                StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
-
-                                iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                        for (int i = 0; i < occurrences.size(); i++) {
+                                File file = new File(getContext().getFilesDir(), title + ".jpg");
+                                if (file.exists() || iconUri.contains("art_")) {
+                                    if (periodsList.size() != 0) {
+                                        for (int i = 0; i < periodsList.size(); i++) {
                                             if (weekNumber.equals("0"))
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                         utility.millisToHourTime(timeins.get(i)),
                                                         utility.millisToHourTime(timeouts.get(i)),
-                                                        periods.get(i)));
+                                                        periodsList.get(i)));
                                             else
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                         utility.millisToHourTime(timeinalts.get(i)),
                                                         utility.millisToHourTime(timeoutalts.get(i)),
-                                                        periods.get(i)));
+                                                        periodsList.get(i)));
+                                            Collections.sort(mScheduleList, new ScheduleComparator());
+                                            mScheduleAdapter.notifyDataSetChanged();
                                         }
-                                        querySchedule();
                                     }
-                                });
+                                } else {
+                                    // File is non existent, download from storage
+                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                    StorageReference storageRef = storage.getReference();
+                                    StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
+
+                                    iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                            for (int i = 0; i < occurrences.size(); i++) {
+                                                if (weekNumber.equals("0"))
+                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                            utility.millisToHourTime(timeins.get(i)),
+                                                            utility.millisToHourTime(timeouts.get(i)),
+                                                            periods.get(i)));
+                                                else
+                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                            utility.millisToHourTime(timeinalts.get(i)),
+                                                            utility.millisToHourTime(timeoutalts.get(i)),
+                                                            periods.get(i)));
+                                                Collections.sort(mScheduleList, new ScheduleComparator());
+                                                mScheduleAdapter.notifyDataSetChanged();
+                                            }
+                                            querySchedule();
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
-                    }
 
                     if (mScheduleList.size() == 0)
-                        headerTextView.setVisibility(View.VISIBLE);
-                    else headerTextView.setVisibility(View.GONE);
+                    {
+                        splash.setVisibility(View.VISIBLE);
+                        noItems = true;
+                    }
+                    else {
+                        splash.setVisibility(View.GONE);
+                        noItems = false;
+                    }
                     mScheduleAdapter.notifyDataSetChanged();
 
                 }
@@ -481,7 +504,8 @@ public class ScheduleFragment extends Fragment {
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     spinner.setVisibility(View.GONE);
-                    headerTextView.setVisibility(View.VISIBLE);
+                    splash.setVisibility(View.VISIBLE);
+                    noItems = true;
                     headerTextView.setText(getString(R.string.check_internet));
                 }
             });
@@ -545,7 +569,6 @@ public class ScheduleFragment extends Fragment {
             // which will show or hide the edit menu action based on
             // the number of items selected
             mode.invalidate();
-            Log.d(LOG_TAG, "CAM Count: " + CAMselectedItemsList.size());
         }
 
         @Override
@@ -629,8 +652,14 @@ public class ScheduleFragment extends Fragment {
 
                 // Set the splash text if there's no classes queried
                 if (mScheduleList.size() == 0)
-                    headerTextView.setVisibility(View.VISIBLE);
-                else headerTextView.setVisibility(View.GONE);
+                {
+                    splash.setVisibility(View.VISIBLE);
+                    noItems = true;
+                }
+                else {
+                    splash.setVisibility(View.GONE);
+                    noItems = false;
+                }
                 mScheduleAdapter.notifyDataSetChanged();
 
             } else {

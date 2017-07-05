@@ -118,6 +118,14 @@ public class ClassesActivity extends AppCompatActivity
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.black_0_54));
+        if (isTablet)
+            findViewById(R.id.main_content).setBackgroundColor(backgroundColor);
+        else {
+            findViewById(R.id.container).setBackgroundColor(backgroundColor);
+            ((TextView) findViewById(R.id.all_classes)).setTextColor(textColor);
+        }
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -659,6 +667,7 @@ public class ClassesActivity extends AppCompatActivity
                             if (file.exists() || icon.contains("android.resource://com.pdt.plume")) {
                                 mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
                                         teacher, room, " ", " ", ""));
+                                mScheduleAdapter.notifyDataSetChanged();
                             } else {
                                 // File is non existent: Download from storage
                                 FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -670,6 +679,7 @@ public class ClassesActivity extends AppCompatActivity
                                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                         mScheduleList.add(new Schedule(ClassesActivity.this, icon, title,
                                                 teacher, room, " ", " ", ""));
+                                        mScheduleAdapter.notifyDataSetChanged();
                                     }
                                 });
                             }

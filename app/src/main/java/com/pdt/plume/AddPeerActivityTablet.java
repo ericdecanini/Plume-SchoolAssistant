@@ -38,6 +38,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.util.ArrayList;
 
+import static com.pdt.plume.R.bool.isLandscape;
 import static com.pdt.plume.R.id.appbar;
 import static com.pdt.plume.R.id.view;
 
@@ -74,14 +75,6 @@ public class AddPeerActivityTablet extends AppCompatActivity {
         setContentView(R.layout.activity_add_peer);
         boolean isTablet = getResources().getBoolean(R.bool.isTablet);
 
-        if (isTablet) {
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
-        } else {
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         // Initialise the Progress Bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
@@ -95,12 +88,24 @@ public class AddPeerActivityTablet extends AppCompatActivity {
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
 
+        if (getResources().getBoolean(R.bool.isLandscape)) {
+            findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+            findViewById(R.id.activity_people).setBackgroundColor(darkBackgroundColor);
+        } else findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+
+        final int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
             ((Button) findViewById(R.id.button)).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
         }
+
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
 
         if (isTablet) {
             findViewById(R.id.gradient_overlay).setBackgroundColor(mPrimaryColor);
@@ -241,6 +246,7 @@ public class AddPeerActivityTablet extends AppCompatActivity {
                     nameView.setText(name);
                     ((TextView) findViewById(R.id.whichClasses)).setText
                             (getString(R.string.whichClasses, name));
+                    ((TextView) findViewById(R.id.whichClasses)).setTextColor(textColor);
                 }
 
                 @Override

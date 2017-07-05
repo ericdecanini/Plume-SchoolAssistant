@@ -31,10 +31,6 @@
                 android:orientation="horizontal"
                 android:layout_marginLeft="72dp"
                 android:layout_marginStart="72dp">
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="@color/dividerColor" />
                 <FrameLayout
                     android:id="@+id/detail_container"
                     android:layout_width="match_parent"

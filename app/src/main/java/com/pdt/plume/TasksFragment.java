@@ -7,18 +7,14 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,7 +30,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -66,7 +61,8 @@ public class TasksFragment extends Fragment {
     private Menu mActionMenu;
     private int mOptionsMenuCount;
     FloatingActionButton fab;
-    TextView headerTextView;
+    View splash;
+    TextView headerTextview;
     ProgressBar spinner;
 
     int mPrimaryColor;
@@ -76,6 +72,7 @@ public class TasksFragment extends Fragment {
     // Flags
     boolean isTablet = false;
     boolean isLandscape;
+    public static boolean noItems = false;
 
     // List Variables
     ArrayList<Task> mTasksList;
@@ -111,7 +108,8 @@ public class TasksFragment extends Fragment {
 
 
         // Get references to the views
-        headerTextView = (TextView) rootView.findViewById(R.id.header_textview);
+        splash = rootView.findViewById(R.id.splash);
+        headerTextview = (TextView) rootView.findViewById(R.id.textView1);
         listView = (ListView) rootView.findViewById(R.id.tasks_list);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
@@ -153,6 +151,7 @@ public class TasksFragment extends Fragment {
                         // Check if icon URI is valid
                         File file = new File(getContext().getFilesDir(), tasksSnapshot.getKey() + ".jpg");
                         if (file.exists() || icon.contains("android.resource://com.pdt.plume")) {
+                            Log.v(LOG_TAG, "File exists");
                             if (!completed && duedate != null) {
                                 mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
                                 FirebaseIdList.add(tasksSnapshot.getKey());
@@ -160,15 +159,21 @@ public class TasksFragment extends Fragment {
                                 spinner.setVisibility(View.GONE);
 
                                 // The header text view will only be visible if there is no items in the task mScheduleAdapter
-                                if (mTasksAdapter.getCount() == 0)
-                                    headerTextView.setVisibility(View.VISIBLE);
-                                else headerTextView.setVisibility(View.GONE);
+                                if (mTasksAdapter.getCount() == 0) {
+                                    splash.setVisibility(View.VISIBLE);
+                                    noItems = true;
+                                } else {
+                                    splash.setVisibility(View.GONE);
+                                    noItems = false;
+                                    listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+                                }
 
                                 int selectedPosition = listView.getSelectedItemPosition();
                                 if (isTablet && mTasksList.size() > 0 && selectedPosition == -1)
                                     listView.performItemClick(mTasksAdapter.getView(0, null, null), 0, mTasksAdapter.getItemId(0));
                             }
                         } else {
+                            Log.v(LOG_TAG, "File does not exist");
                             // File is non existent, download from storage
                             FirebaseStorage storage = FirebaseStorage.getInstance();
                             StorageReference storageRef = storage.getReference();
@@ -185,9 +190,13 @@ public class TasksFragment extends Fragment {
                                         spinner.setVisibility(View.GONE);
 
                                         // The header text view will only be visible if there is no items in the task mScheduleAdapter
-                                        if (mTasksAdapter.getCount() == 0)
-                                            headerTextView.setVisibility(View.VISIBLE);
-                                        else headerTextView.setVisibility(View.GONE);
+                                        if (mTasksAdapter.getCount() == 0) {
+                                            splash.setVisibility(View.VISIBLE);
+                                            noItems = true;
+                                        } else {
+                                            splash.setVisibility(View.GONE);
+                                            noItems = false;
+                                        }
 
                                         int selectedPosition = listView.getSelectedItemPosition();
                                         if (isTablet && mTasksList.size() > 0 && selectedPosition == -1)
@@ -202,8 +211,9 @@ public class TasksFragment extends Fragment {
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     spinner.setVisibility(View.GONE);
-                    headerTextView.setVisibility(View.VISIBLE);
-                    headerTextView.setText(getString(R.string.check_internet));
+                    splash.setVisibility(View.VISIBLE);
+                    noItems = true;
+                    headerTextview.setText(getString(R.string.check_internet));
                 }
             });
 
@@ -215,7 +225,8 @@ public class TasksFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.child("tasks").getChildrenCount() == 0) {
                         spinner.setVisibility(View.GONE);
-                        headerTextView.setVisibility(View.VISIBLE);
+                        splash.setVisibility(View.VISIBLE);
+                        noItems = true;
                     }
                 }
 
@@ -231,8 +242,10 @@ public class TasksFragment extends Fragment {
         mTasksAdapter = new TaskAdapter(getContext(), R.layout.list_item_task, mTasksList);
 
         // The header text view will only be visible if there is no items in the task mScheduleAdapter
-        if (mTasksAdapter.getCount() == 0)
-            headerTextView.setVisibility(View.VISIBLE);
+        if (mTasksAdapter.getCount() == 0) {
+            splash.setVisibility(View.VISIBLE);
+            noItems = true;
+        }
 
         // Set the mTasksAdapter and listeners of the listview
         if (listView != null) {
@@ -262,6 +275,17 @@ public class TasksFragment extends Fragment {
             }
         });
 
+        int backgroundColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        if (isTablet)
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.detail_container, new BlankFragment())
+                    .commit();
+
+        int textColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        ((TextView) rootView.findViewById(R.id.textView1)).setTextColor(textColor);
+
         // Inflate the layout for this fragment
         return rootView;
     }
@@ -282,6 +306,7 @@ public class TasksFragment extends Fragment {
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             fab.setBackgroundTintList((ColorStateList.valueOf(mSecondaryColor)));
+        mTasksAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -343,29 +368,32 @@ public class TasksFragment extends Fragment {
                         intent.putExtra(getString(R.string.INTENT_EXTRA_ID), position);
                     }
                     intent.putExtra("icon", mTasksList.get(position).taskIcon);
-                    View icon = view.findViewById(R.id.task_icon2);
-                    if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
+                    View icon;
+                    if (view != null) {
+                        icon = view.findViewById(R.id.task_icon2);
+                        if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
 
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
-                            && ((String) icon.getTag()).contains("com.pdt.plume") && !isLandscape) {
-                        // First check if a shared element transition is appropriate
-                        // Shared element transition
-                        ImageView iconView = (ImageView) view.findViewById(R.id.task_icon);
-                        Uri iconUri = Uri.parse(mTasksList.get(position).taskIcon);
-                        boolean transition = false;
 
-                        if (iconUri.toString().contains("art_"))
-                            transition = true;
-                        else {
-                            transition = false;
-                        }
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
+                                && ((String) icon.getTag()).contains("com.pdt.plume") && !isLandscape) {
+                            // First check if a shared element transition is appropriate
+                            // Shared element transition
+                            Uri iconUri = Uri.parse(mTasksList.get(position).taskIcon);
+                            boolean transition = false;
 
-                        if (transition) {
-                            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
-                                    (getActivity(), iconView, iconView.getTransitionName()).toBundle();
-                            startActivity(intent, bundle);
+                            if (iconUri.toString().contains("art_"))
+                                transition = true;
+                            else {
+                                transition = false;
+                            }
+
+                            if (transition) {
+                                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
+                                        (getActivity(), icon, icon.getTransitionName()).toBundle();
+                                startActivity(intent, bundle);
+                            } else startActivity(intent);
                         } else startActivity(intent);
-                    } else startActivity(intent);
+                    }
                 }
             }
         };
@@ -506,9 +534,13 @@ public class TasksFragment extends Fragment {
 
                 // Refresh the list mTasksAdapter
                 mTasksAdapter.notifyDataSetChanged();
-                if (mTasksAdapter.getCount() == 0)
-                    headerTextView.setVisibility(View.VISIBLE);
-                else headerTextView.setVisibility(View.GONE);
+                if (mTasksAdapter.getCount() == 0) {
+                    splash.setVisibility(View.VISIBLE);
+                    noItems = true;
+                } else {
+                    splash.setVisibility(View.GONE);
+                    noItems = false;
+                }
             } else {
                 // Delete data from SQLite
                 DbHelper db = new DbHelper(getActivity());
@@ -529,9 +561,13 @@ public class TasksFragment extends Fragment {
 
                 // Refresh the mTasksAdapter
                 mTasksAdapter.notifyDataSetChanged();
-                if (mTasksAdapter.getCount() == 0)
-                    headerTextView.setVisibility(View.VISIBLE);
-                else headerTextView.setVisibility(View.GONE);
+                if (mTasksAdapter.getCount() == 0) {
+                    splash.setVisibility(View.VISIBLE);
+                    noItems = true;
+                } else {
+                    splash.setVisibility(View.GONE);
+                    noItems = false;
+                }
             }
 
             // Then clear the selected items array list and emulate

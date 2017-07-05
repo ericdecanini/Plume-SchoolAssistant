@@ -475,6 +475,12 @@ public class TasksDetailActivity extends AppCompatActivity {
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        descriptionTextview.setTextColor(textColor);
+
         mDefaultColor = mPrimaryColor;
         ImageView tempIcon = (ImageView) findViewById(R.id.temp_icon);
         if (!transitioning)

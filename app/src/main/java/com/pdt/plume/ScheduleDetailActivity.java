@@ -98,7 +98,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
     ArrayList<PeriodItem> mPeriodsList = new ArrayList<>();
 
 
-    ArrayAdapter<String> mNotesAdapter;
+    NotesAdapter mNotesAdapter;
     TaskAdapter mTasksAdapter;
     PeriodAdapter mPeriodsAdapter;
 
@@ -572,8 +572,16 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                         mDarkColor = Color.HSVToColor(hsv);
                                         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
-//                                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
-//                                            mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+                                        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+                                        findViewById(R.id.main_content).setBackgroundColor(backgroundColor);
+
+                                        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+                                        ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
+                                        ((TextView) findViewById(R.id.notes_textview)).setTextColor(textColor);
+                                        ((TextView) findViewById(R.id.periods_textview)).setTextColor(textColor);
+                                        ((TextView) findViewById(R.id.teacher)).setTextColor(textColor);
+                                        ((TextView) findViewById(R.id.room)).setTextColor(textColor);
+
 
                                         if (!transitioning) {
                                             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
@@ -772,7 +780,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         final ArrayList<String> notesArray = new ArrayList<>();
 
 
-        mNotesAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notesArray);
+        mNotesAdapter = new NotesAdapter(this, android.R.layout.simple_list_item_1, notesArray);
         notesList.setAdapter(mNotesAdapter);
         notesList.setOnItemClickListener(addNoteItemClickListener());
         notesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -1036,7 +1044,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             CAMselectedItemsList.clear();
 
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//            getWindow().setStatusBarColor(mDarkColor);
+//            getWindow().setStatusBarColor(darkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
             int colorTo = getResources().getColor(R.color.colorPrimary);
@@ -1277,7 +1285,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             CAMselectedItemsList.clear();
 
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                getWindow().setStatusBarColor(mDarkColor);
+//                getWindow().setStatusBarColor(darkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
             int colorTo = getResources().getColor(R.color.colorPrimary);

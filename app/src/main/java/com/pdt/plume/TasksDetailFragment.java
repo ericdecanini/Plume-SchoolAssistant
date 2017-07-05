@@ -1,18 +1,17 @@
 package com.pdt.plume;
 
 
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -20,8 +19,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -88,7 +87,6 @@ public class TasksDetailFragment extends Fragment {
     String iconUri;
     ArrayList<Uri> photoUris = new ArrayList<>();
 
-    View rootview;
     TextView markAsDoneView;
 
     TextView fieldTimer;
@@ -107,6 +105,8 @@ public class TasksDetailFragment extends Fragment {
     private AppBarLayout mToolbar;
 
     int i = 0;
+
+    View rootview;
 
     // Required empty public constructor
     public TasksDetailFragment() {
@@ -247,6 +247,12 @@ public class TasksDetailFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (rootview != null && isAdded()) getData();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -267,8 +273,14 @@ public class TasksDetailFragment extends Fragment {
             }
         });
 
-        // Get the class's data based on the id and fill in the fields
-        // An ID is passed by the intent so we query using that
+        initialiseTheme();
+
+        if (isAdded()) getData();
+
+        return rootview;
+    }
+
+    private void getData() {
         Bundle args = getArguments();
         if (args != null) {
             position = args.getInt(getString(R.string.INTENT_EXTRA_POSITION));
@@ -283,10 +295,13 @@ public class TasksDetailFragment extends Fragment {
                 taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!isAdded())
+                            return;
                         title = dataSnapshot.child("title").getValue(String.class);
                         iconUri = dataSnapshot.child("icon").getValue(String.class);
                         classTitle = dataSnapshot.child("class").getValue(String.class);
                         classType = dataSnapshot.child("type").getValue(String.class);
+
                         subtitle = getString(R.string.format_subtitle,
                                 classTitle, classType);
                         description = dataSnapshot.child("description").getValue(String.class);
@@ -469,7 +484,6 @@ public class TasksDetailFragment extends Fragment {
                 }
             }
         }
-        return rootview;
     }
 
     private void applyDataToUI() {
@@ -500,15 +514,40 @@ public class TasksDetailFragment extends Fragment {
 
         final Uri ParsedIconUri = Uri.parse(iconUri);
 
+        // TODO: Bring back the revision timer
+        fieldTimer = (TextView) rootview.findViewById(R.id.task_detail_timer);
+    }
+
+    private void initialiseTheme() {
+        TextView titleTextview = (TextView) rootview.findViewById(R.id.title);
+        TextView subtitleTextview = (TextView) rootview.findViewById(R.id.collapsingToolbarSubtitle);
+        TextView duedateTextview = (TextView) rootview.findViewById(R.id.task_detail_duedate);
+        TextView descriptionTextview = (TextView) rootview.findViewById(R.id.task_detail_description);
+
         // Initialise the theme variables
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary);
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
         float[] hsv = new float[3];
         int tempColor = mPrimaryColor;
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
-        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), R.color.colorAccent);
+        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkenedBackgroundColor = Color.HSVToColor(hsv);
+        rootview.findViewById(R.id.container).setBackgroundColor(darkenedBackgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        Color.colorToHSV(textColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTextColor = Color.HSVToColor(hsv);
+        titleTextview.setTextColor(textColor);
+        subtitleTextview.setTextColor(darkTextColor);
+        duedateTextview.setTextColor(darkTextColor);
+        descriptionTextview.setTextColor(darkTextColor);
 
         markAsDoneView.setTextColor(mPrimaryColor);
 
@@ -516,9 +555,6 @@ public class TasksDetailFragment extends Fragment {
             markAsDoneView.setText(getString(R.string.mark_as_undone));
             markAsDoneView.setTextColor(getResources().getColor(R.color.red_500));
         }
-
-        // TODO: Bring back the revision timer
-        fieldTimer = (TextView) rootview.findViewById(R.id.task_detail_timer);
     }
 
     private void promptCompleteTask() {

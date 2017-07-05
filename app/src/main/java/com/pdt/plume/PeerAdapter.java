@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -69,14 +70,17 @@ public class PeerAdapter extends ArrayAdapter {
 
         final Peer peer = data.get(position);
         holder.name.setText(peer.peerName);
+        int textColor = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+        holder.name.setTextColor(textColor);
 
         // Set the icon
         FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
         final String mUserId = mFirebaseUser.getUid();
 
-        holder.icon.setImageURI(Uri.parse(peer.peerIcon));
-
+        if (peer.peerIcon != null)
+            holder.icon.setImageURI(Uri.parse(peer.peerIcon));
         return row;
     }
 

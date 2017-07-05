@@ -97,6 +97,9 @@ public class AcceptPeerActivity extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
@@ -200,6 +203,7 @@ public class AcceptPeerActivity extends AppCompatActivity
 
         nameView.setText(name);
         headerView.setText(getString(R.string.acceptPeerHeader, name));
+        headerView.setTextColor(textColor);
         flavourView.setText(flavour);
 
         // Check if the icon points to an existing file

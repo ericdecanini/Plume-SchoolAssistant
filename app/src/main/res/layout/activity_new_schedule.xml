@@ -34,6 +34,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/dividerColor" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -62,6 +67,7 @@
                                 android:minWidth="156dp" />
 
                             <ImageView
+                                android:id="@+id/field_new_schedule_teacher_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
@@ -83,6 +89,7 @@
                                 android:minWidth="156dp" />
 
                             <ImageView
+                                android:id="@+id/field_new_schedule_room_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
@@ -97,16 +104,11 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginRight="40dp"
                         android:layout_marginEnd="40dp"
+                        android:layout_marginRight="40dp"
                         android:src="@drawable/art_class_64dp" />
 
                 </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/dividerColor" />
 
                 <com.pdt.plume.NonScrollListView
                     android:id="@+id/field_new_schedule_class_time_list"

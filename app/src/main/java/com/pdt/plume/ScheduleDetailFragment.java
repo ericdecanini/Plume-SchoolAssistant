@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +38,8 @@ import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
+
+import static com.pdt.plume.R.string.tasks;
 
 
 /**
@@ -168,11 +172,31 @@ public class ScheduleDetailFragment extends Fragment {
 
         // Initialise the theme variables
         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
-//        getActivity().getActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         TextView notesTextview = (TextView) rootview.findViewById(R.id.schedule_detail_notes_textview);
         notesTextview.setTextColor(mPrimaryColor);
 
-        // Get references to the UI elements
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        float[] hsv = new float[3];
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkenedBackgroundColor = Color.HSVToColor(hsv);
+        rootview.findViewById(R.id.container).setBackgroundColor(darkenedBackgroundColor);
+        rootview.findViewById(R.id.schedule_detail_periods_layout).setBackgroundColor(backgroundColor);
+        rootview.findViewById(R.id.schedule_detail_notes_layout).setBackgroundColor(backgroundColor);
+        rootview.findViewById(R.id.schedule_detail_tasks_layout).setBackgroundColor(backgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        Color.colorToHSV(textColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTextColor = Color.HSVToColor(hsv);
+        ((TextView)rootview.findViewById(R.id.title)).setTextColor(textColor);
+        ((TextView)rootview.findViewById(R.id.teacher)).setTextColor(darkTextColor);
+        ((TextView)rootview.findViewById(R.id.room)).setTextColor(darkTextColor);
+        ((TextView)rootview.findViewById(R.id.textView2)).setTextColor(darkTextColor);
+        ((TextView)rootview.findViewById(R.id.periods_textview)).setTextColor(darkTextColor);
+        ((TextView)rootview.findViewById(R.id.notes_textview)).setTextColor(darkTextColor);
+
+        // Get references to the UI elements`
         final ImageView icon = (ImageView) rootview.findViewById(R.id.icon);
         final ImageView icon2 = (ImageView) rootview.findViewById(R.id.icon2);
         final TextView titleTextview = (TextView) rootview.findViewById(R.id.title);
@@ -186,6 +210,7 @@ public class ScheduleDetailFragment extends Fragment {
         Bundle args = getArguments();
         if (args != null) {
             title = args.getString(getString(R.string.INTENT_EXTRA_CLASS));
+            titleTextview.setText(title);
             final int position = args.getInt(getString(R.string.INTENT_EXTRA_POSITION));
 
             // Initialise the tasks list

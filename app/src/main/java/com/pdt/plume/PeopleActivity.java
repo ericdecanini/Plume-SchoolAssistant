@@ -175,6 +175,12 @@ public class PeopleActivity extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.black_0_54));
+        ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
+        ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
+        ((TextView) findViewById(R.id.textView3)).setTextColor(textColor);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);

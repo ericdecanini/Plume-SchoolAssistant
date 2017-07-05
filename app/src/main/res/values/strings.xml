@@ -110,7 +110,7 @@
     <string name="activity_classes_splash_no_classes">You have no classes</string>
     <string name="activity_completedTasks_dialog_title">Delete all items?</string>
     <string name="activity_completedTasks_label">Completed Tasks</string>
-    <string name="activity_completedTasks_splashText">You have no completed tasks.</string>
+    <string name="activity_completedTasks_splashText">You have no completed tasks</string>
     <string name="activity_new_schedule_label">New Class</string>
     <string name="activity_new_task_label">New Task</string>
     <string name="activity_tasksDetail_restore_dialog_title">Restore task?</string>
@@ -130,6 +130,7 @@
     <string name="cancel">Cancel</string>
     <string name="category_other_settings_title">Other settings</string>
     <string name="check_internet">Please check your network connection.</string>
+    <string name="choose_colour">Choose colour</string>
     <string name="Class">Class</string>
     <string name="class_notification_message">In %1$s minutes</string>
     <string name="class_time_list_header_substring_and">and</string>
@@ -197,6 +198,7 @@
     <string name="format_period">%1$s period</string>
     <string name="format_subtitle">%1$s %2$s</string>
     <string name="format_time">%1$s - %2$s</string>
+    <string name="general">General</string>
     <string name="get_started">Get Started</string>
     <string name="got_it">got it</string>
     <string name="here">Here</string>
@@ -288,12 +290,16 @@
     <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
     <string name="settings_class_notification_title">Class notifications</string>
     <string name="settings_date_format_title">Date format</string>
+    <string name="settings_theme_background">Background Colour</string>
+    <string name="settings_theme_description_colour">Description Text Colour</string>
     <string name="settings_theme_primary_title">Primary Colour</string>
     <string name="settings_theme_secondary_title">Secondary Colour</string>
     <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_title_colour">Text Colour</string>
     <string name="share">Share</string>
     <string name="share_task">Share task with peers</string>
     <string name="shared_by">Shared by %1$s</string>
+    <string name="splash_no_classes_shared">You have no classes together</string>
     <string name="splash_no_request">You have no Peer Requests</string>
     <string name="storage_message">This will allow Class-ify to sync your data online.</string>
     <string name="storage_title">Allow Class-ify to access your storage?</string>
@@ -330,7 +336,7 @@
     <string name="about_activity_label">About Class-ify</string>
     <string name="Classify" translatable="false">Class-ify</string>
     <string name="Assistant">School Assistant and Planner</string>
-    <string name="Version">Version 1.0.1d</string>
+    <string name="Version">Version 1.0.2</string>
     <string name="Weblink" translatable="false">https://class-ify.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -348,8 +354,8 @@
     <string name="Michael_Smith" translatable="false">Michael Smith</string>
     <string name="Clint" translatable="false">Clint Campoy</string>
     <string name="Theodore" translatable="false">Theodore Mananquil</string>
-    <string name="Icons8">Some icons used were made by <a href="https://icons8.com/">Icons8</a>,
-        as well as Freepik and Roundicons from <a href="http://www.flaticon.com/">FlatIcon</a></string>
+    <string name="Icons8">Some icons used were made by <a href='https://icons8.com/'>Icons8</a>.
+        Libraries used include <a href='https://github.com/QuadFlask/colorpicker'>this made by QuadFlask</a></string>
 
     <string name="changelog_title">%1$s Changelog</string>
     <string name="changelog">BLANK FOR INITIAL RELEASE</string>
@@ -488,6 +494,8 @@
     <string name="KEY_PREFERENCE_BASIS" translatable="false">KEY_PREFERENCE_BASIS</string>
     <string name="KEY_PREFERENCE_WEEKTYPE" translatable="false">KEY_PREFERENCE_KEY</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
+    <string name="KEY_THEME_CATEGORY_GENERAL" translatable="false">KEY_THEME_CATEGORY_GENERAL</string>
+    <string name="KEY_THEME_CATEGORY_PLANNER" translatable="false">KEY_THEME_CATEGORY_PLANNER</string>
     <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
     <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
     <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
@@ -505,6 +513,9 @@
     <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>
     <string name="KEY_SETTINGS_DATE_FORMAT" translatable="false">KEY_SETTINGS_DATE_FORMAT</string>
     <string name="KEY_SETTINGS_THEME" translatable="false">KEY_SETTINGS_THEME</string>
+    <string name="KEY_THEME_BACKGROUND_COLOUR" translatable="false">KEY_SETTINGS_THEME_BACKGROUND</string>
+    <string name="KEY_THEME_TITLE_COLOUR" translatable="false">KEY_SETTINGS_THEME_TITLE</string>
+    <string name="KEY_THEME_DESCRIPTION_COLOUR" translatable="false">KEY_SETTINGS_THEME_DESCRIPTION</string>
     <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
     <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
     <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>

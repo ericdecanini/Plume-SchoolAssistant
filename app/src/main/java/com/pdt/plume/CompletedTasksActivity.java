@@ -7,7 +7,10 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -16,6 +19,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +29,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -47,11 +52,11 @@ public class CompletedTasksActivity extends AppCompatActivity {
     DbHelper dbHelper = new DbHelper(this);
 
     // Listview Variables
-    ArrayList<Task> mTasksList;
+    ArrayList<Peer> mTasksList;
     ArrayList<Integer> taskIDs;
     ArrayList<String> taskFirebaseIDs;
     ListView listView;
-    TaskAdapter mTasksAdapter;
+    PeerAdapter mTasksAdapter;
 
     // CAM Variables
     private Menu mActionMenu;
@@ -87,11 +92,11 @@ public class CompletedTasksActivity extends AppCompatActivity {
         mTasksList = new ArrayList<>();
         taskIDs = new ArrayList<>();
         taskFirebaseIDs = new ArrayList<>();
-        mTasksAdapter = new TaskAdapter(this, R.layout.list_item_task, mTasksList);
+        mTasksAdapter = new PeerAdapter(this, R.layout.list_item_peer, mTasksList);
+        listView.setAdapter(mTasksAdapter);
         getCompletedTasksData();
 
         // Inflate the listview with the mScheduleAdapter
-        listView.setAdapter(mTasksAdapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(new ModeCallback());
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -120,7 +125,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     }
 
                     // Add the animation
-                    intent.putExtra("icon", mTasksList.get(position).taskIcon);
+                    intent.putExtra("icon", mTasksList.get(position).peerIcon);
                     View icon = view.findViewById(R.id.task_icon2);
                     if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
 
@@ -185,6 +190,22 @@ public class CompletedTasksActivity extends AppCompatActivity {
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
+        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        if (getResources().getBoolean(R.bool.isTablet)) {
+            Color.colorToHSV(backgroundColor, hsv);
+            hsv[2] *= 0.9f;
+            int darkBackgroundColor = Color.HSVToColor(hsv);
+            if (getResources().getBoolean(R.bool.isLandscape)) {
+                findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+                findViewById(R.id.container).setBackgroundColor(darkBackgroundColor);
+            } else
+                findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+        } else findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        ((TextView)findViewById(R.id.textView1)).setTextColor(textColor);
+        findViewById(R.id.textView1).setAlpha(0.8f);
+
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
@@ -211,6 +232,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                         boolean isTaskCompleted = taskSnapshot.child("completed").getValue(boolean.class);
                         if (isTaskCompleted) {
                             // Gather the necessary data
+                            findViewById(R.id.splash).setVisibility(View.GONE);
                             String title = taskSnapshot.child("title").getValue(String.class);
                             String icon = taskSnapshot.child("icon").getValue(String.class);
                             String sharer = taskSnapshot.child("sharer").getValue(String.class);
@@ -219,12 +241,13 @@ public class CompletedTasksActivity extends AppCompatActivity {
                             String description = taskSnapshot.child("description").getValue(String.class);
                             float duedate = taskSnapshot.child("duedate").getValue(float.class);
 
-                            mTasksList.add(new Task(icon, title, sharer, classTitle, classType, description, "", duedate, -1, null));
+                            mTasksList.add(new Peer(icon, title));
                             taskFirebaseIDs.add(taskSnapshot.getKey());
-                            findViewById(R.id.header_textview).setVisibility(View.GONE);
-                            mTasksAdapter.notifyDataSetChanged();
                         }
                     }
+
+                    mTasksAdapter.notifyDataSetChanged();
+
                 }
 
                 @Override public void onCancelled(DatabaseError databaseError) {}});
@@ -233,6 +256,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             final Cursor cursor = dbHelper.getCompletedTaskData();
             if (cursor.moveToFirst()) {
                 for (int i = 0; i < cursor.getCount(); i++) {
+                    findViewById(R.id.splash).setVisibility(View.GONE);
                     cursor.moveToPosition(i);
                     String title = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE));
                     String icon = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON));
@@ -241,12 +265,17 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     String description = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
                     float duedate = cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
 
-                    mTasksList.add(new Task(icon, title, "", classTitle, classType, description, "", duedate, -1, null));
+                    mTasksList.add(new Peer(icon, title));
                     taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
-                findViewById(R.id.header_textview).setVisibility(View.GONE);
             }
             cursor.close();
+
+           // Automatically fill the list to match the whole screen
+            while (listView.getHeight() < getResources().getDisplayMetrics().heightPixels)
+                mTasksList.add(new Peer(null, ""));
+
+
         }
 
         mTasksAdapter.notifyDataSetChanged();

@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="32dp"
-            android:progressDrawable="@drawable/circular_progress_bar"
+            android:progressDrawable="@drawable/circular_progress_bar_light"
             android:visibility="gone" />
 
         <LinearLayout

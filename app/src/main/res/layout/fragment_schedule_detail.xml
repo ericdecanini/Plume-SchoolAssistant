@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_150"
+    android:background="@color/backgroundColor"
+    android:id="@+id/container"
     tools:context="com.pdt.plume.ScheduleDetailFragment">
 
     <LinearLayout
@@ -28,8 +29,7 @@
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:minHeight="80dp"
-                    android:minWidth="80dp"
-                    android:src="@drawable/art_maths_64dp" />
+                    android:minWidth="80dp" />
 
                 <com.pdt.plume.CircularImageView
                     android:id="@+id/icon2"
@@ -49,7 +49,6 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="22dp"
-                    android:text="Maths"
                     android:textColor="@color/gray_900"
                     android:textSize="28sp" />
             </RelativeLayout>
@@ -67,7 +66,6 @@
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
-                    android:text="Room 204"
                     android:textColor="@color/gray_700"
                     android:textSize="20sp" />
 
@@ -77,7 +75,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginTop="12dp"
-                    android:text="Mrs. Welch"
                     android:textColor="@color/gray_700"
                     android:textSize="20sp" />
 
@@ -100,6 +97,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/periods_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingBottom="4dp"
@@ -161,6 +159,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/notes_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
@@ -224,7 +223,6 @@
                         android:id="@+id/add_task"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@color/white"
                         android:paddingBottom="16dp"
                         android:paddingEnd="16dp"
                         android:paddingLeft="16dp"
