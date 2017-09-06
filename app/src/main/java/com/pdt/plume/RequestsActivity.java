@@ -59,7 +59,7 @@ public class RequestsActivity extends AppCompatActivity {
         if (mFirebaseUser == null) {
             Intent intent;
             boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-            if (isTablet) intent = new Intent(this, LoginActivityTablet.class);
+            if (isTablet) intent = new Intent(this, LoginActivity.class);
             else intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -112,7 +112,7 @@ public class RequestsActivity extends AppCompatActivity {
         userNameList.clear();
         userFlavourList.clear();
 
-        // Get a reference to the requests database and create the array lists for the name and icon
+        // Get a reference to the requests database and create the array lists for the title and icon
         if (mFirebaseUser != null) {
             final DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mFirebaseUser.getUid()).child("requests").getRef();
@@ -192,7 +192,7 @@ public class RequestsActivity extends AppCompatActivity {
         // This method is fired by the previous method after all the data is collected
         ArrayList<Peer> peerArrayList = new ArrayList<>();
         for (int i = 0; i < userIdList.size(); i++)
-            peerArrayList.add(new Peer(userIconList.get(i), userNameList.get(i)));
+            peerArrayList.add(new Peer(userIconList.get(i), userNameList.get(i), ""));
 
         ListView listView = (ListView) findViewById(R.id.listView);
         int layout;
@@ -208,12 +208,12 @@ public class RequestsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Class activity;
                 if (getResources().getBoolean(R.bool.isTablet))
-                    activity = AcceptPeerActivityTablet.class;
+                    activity = AcceptPeerActivity.class;
                 else activity = AcceptPeerActivity.class;
                 Intent intent = new Intent(RequestsActivity.this, activity);
                 intent.putExtra("requestingUserId", userIdList.get(i));
                 intent.putExtra("icon", userIconList.get(i));
-                intent.putExtra("name", userNameList.get(i));
+                intent.putExtra("title", userNameList.get(i));
                 intent.putExtra("flavour", userFlavourList.get(i));
                 startActivity(intent);
             }

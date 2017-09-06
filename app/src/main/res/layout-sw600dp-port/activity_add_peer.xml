@@ -10,6 +10,7 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/extended_appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
@@ -55,7 +56,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin">
 
             <TextView
-                android:id="@+id/whichClasses"
+                android:id="@+id/header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
@@ -71,6 +72,28 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/splash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginTop="24dp"
+                android:layout_centerInParent="true"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="172dp"
+                    android:layout_height="172dp"
+                    android:src="@drawable/splash_no_completed_tasks"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/gray_700"
+                    android:textSize="20sp"
+                    android:layout_marginTop="16dp"/>
+            </LinearLayout>
 
             <ProgressBar
                 android:id="@+id/progressBar"

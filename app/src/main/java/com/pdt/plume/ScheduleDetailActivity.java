@@ -170,7 +170,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             }
         });
 
-        mRevealBackgroundView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        int primaryColor = PreferenceManager.getDefaultSharedPreferences(ScheduleDetailActivity.this)
+                .getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+        mRevealBackgroundView.setBackgroundColor(primaryColor);
         animator2.setDuration(450);
         animator2.start();
         mRevealView.setVisibility(View.VISIBLE);
@@ -187,6 +189,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         else transitioning = true;
         if (isLandscape) transitioning = false;
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) transitioning = false;
+        if (getIntent().getBooleanExtra(getString(R.string.INTENT_FLAG_NO_TRANSITION), false)) transitioning = false;
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -201,6 +204,18 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         final String icon = getIntent().getStringExtra("icon");
         ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
         if (isLandscape) findViewById(R.id.temp_icon).setVisibility(View.INVISIBLE);
+
+        if (!getResources().getBoolean(R.bool.isTablet)) {
+            mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
+            mRevealView = findViewById(R.id.reveal);
+            mRevealBackgroundView = findViewById(R.id.revealBackground);
+            mToolbar = (AppBarLayout) findViewById(R.id.appbar);
+            mRevealView2 = findViewById(R.id.reveal2);
+
+            mRevealView.setBackgroundColor(mPrimaryColor);
+            mRevealBackgroundView.setBackgroundColor(mPrimaryColor);
+            findViewById(R.id.collapsingToolbar).setBackgroundColor(mPrimaryColor);
+        }
 
         // Add a listener to the shared transition
         findViewById(R.id.temp_icon).setAlpha(0);
@@ -515,6 +530,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                 classRef.removeEventListener(this);
 
                                 // Initialise the theme variables
+                                mPrimaryColor = PreferenceManager.getDefaultSharedPreferences(ScheduleDetailActivity.this)
+                                        .getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
                                 Bitmap iconBitmap = null;
                                 try {
                                     iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
@@ -539,6 +556,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                             mainColour = Color.parseColor("#7B6A58");
                                         else if (iconUri.toString().contains("art_engineering_64dp"))
                                             mainColour = Color.parseColor("#9E9E9E");
+                                        else if (iconUri.toString().contains("art_geography_64dp"))
+                                            mainColour = Color.parseColor("#E9542A");
                                         else if (iconUri.toString().contains("art_ict_64dp"))
                                             mainColour = Color.parseColor("#936037");
                                         else if (iconUri.toString().contains("art_media_64dp"))
@@ -683,6 +702,8 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     }
 
                     // Initialise the theme variables
+                    mPrimaryColor = PreferenceManager.getDefaultSharedPreferences(ScheduleDetailActivity.this)
+                            .getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), getResources().getColor(R.color.colorPrimary));
                     Bitmap iconBitmap = null;
                     try {
                         iconBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), iconUri);
@@ -842,18 +863,25 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 if (mFirebaseUser != null) {
                                     // Delete data from Firebase
-                                    FirebaseDatabase.getInstance().getReference()
+                                    final DatabaseReference classRef = FirebaseDatabase.getInstance().getReference()
                                             .child("users").child(mUserId).child("classes")
-                                            .child(title).removeValue();
+                                            .child(title);
+
+                                    // Delete from storage
+                                    StorageReference iconRef = FirebaseStorage.getInstance().getReference()
+                                            .child(mUserId).child("classes").child(title);
+                                    iconRef.delete();
+                                    classRef.removeValue();
+
+                                    // Navigate back to MainActivity
+                                    Intent intent = new Intent(ScheduleDetailActivity.this, MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                    startActivity(intent);
                                 } else {
                                     // Delete data from SQLite
                                     DbHelper dbHelper = new DbHelper(ScheduleDetailActivity.this);
                                     dbHelper.deleteScheduleItemByTitle(title);
                                 }
-
-                                Intent intent = new Intent(ScheduleDetailActivity.this, MainActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                                startActivity(intent);
                             }
                         })
                         .setNegativeButton(getString(R.string.cancel), null)
@@ -984,9 +1012,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             // Set the title and colour of the contextual action bar
             mode.setTitle("Select Items");
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//            getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-
             int colorFrom = getResources().getColor(R.color.colorPrimary);
             int colorTo = getResources().getColor(R.color.gray_500);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
@@ -1008,7 +1033,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
             // Checks the count of items selected.
             // If it is one, show the edit menu action.
-            // If it is more than one, hide the edit menu action.
+            // If it is delete than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
             if (mOptionsMenuCount == 0)
                 menuItem.setVisible(true);
@@ -1042,9 +1067,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         public void onDestroyActionMode(android.view.ActionMode mode) {
             // Clear the array list of selected items and revert the window colour back to normal
             CAMselectedItemsList.clear();
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//            getWindow().setStatusBarColor(darkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
             int colorTo = getResources().getColor(R.color.colorPrimary);
@@ -1151,9 +1173,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 }
             }
 
-            // If more than one item was selected, throw a warning log
+            // If delete than one item was selected, throw a warning log
             else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+                Log.w(LOG_TAG, "Cancelling event due to delete than one item selected");
             }
         }
 
@@ -1225,9 +1247,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             // Set the title and colour of the contextual action bar
             mode.setTitle("Select Items");
 
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                getWindow().setStatusBarColor(getResources().getColor(R.color.gray_700));
-
             int colorFrom = getResources().getColor(R.color.colorPrimary);
             int colorTo = getResources().getColor(R.color.gray_500);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
@@ -1249,7 +1268,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
             // Checks the count of items selected.
             // If it is one, show the edit menu action.
-            // If it is more than one, hide the edit menu action.
+            // If it is delete than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
             if (mOptionsMenuCount == 0)
                 menuItem.setVisible(true);
@@ -1283,9 +1302,6 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         public void onDestroyActionMode(android.view.ActionMode mode) {
             // Clear the array list of selected items and revert the window colour back to normal
             CAMselectedItemsList.clear();
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                getWindow().setStatusBarColor(darkColor);
 
             int colorFrom = getResources().getColor(R.color.gray_500);
             int colorTo = getResources().getColor(R.color.colorPrimary);
@@ -1392,9 +1408,9 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                 }
             }
 
-            // If more than one item was selected, throw a warning log
+            // If delete than one item was selected, throw a warning log
             else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+                Log.w(LOG_TAG, "Cancelling event due to delete than one item selected");
             }
         }
 

@@ -19,7 +19,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -155,10 +154,15 @@ public class TasksDetailFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if (mFirebaseUser != null) {
-                                    // Delete from Firebase
-                                    FirebaseDatabase.getInstance().getReference()
+                                    final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                                             .child("users").child(mUserId).child("tasks")
-                                            .child(firebaseID).removeValue();
+                                            .child(firebaseID);
+                                    final StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+
+                                    // Delete icon/photos from storage if applicable
+                                    StorageReference iconRef = storageRef.child(mUserId).child("tasks").child(firebaseID);
+                                    iconRef.delete();
+                                    taskRef.removeValue();
                                 } else {
                                     // Delete from SQLite
                                     DbHelper dbHelper = new DbHelper(getContext());
@@ -336,7 +340,7 @@ public class TasksDetailFragment extends Fragment {
                                 photo.setLayoutParams(new CardView.LayoutParams
                                         (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                                 photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                photo.setId(Utility.generateViewId());
+                                photo.setId(Utility.generateUniqueId());
                                 cardView.addView(photo);
 
                                 photosLayout.setVisibility(View.VISIBLE);
@@ -388,7 +392,7 @@ public class TasksDetailFragment extends Fragment {
                                         int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
                                         photo.setLayoutParams(new LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
                                         photo.setPadding(4, 0, 4, 0);
-                                        photo.setId(Utility.generateViewId());
+                                        photo.setId(Utility.generateUniqueId());
                                         photosLayout.addView(photo);
                                         photosLayout.setVisibility(View.VISIBLE);
 
@@ -462,7 +466,7 @@ public class TasksDetailFragment extends Fragment {
                             photo.setLayoutParams(new CardView.LayoutParams
                                     (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                             photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                            photo.setId(Utility.generateViewId());
+                            photo.setId(Utility.generateUniqueId());
                             cardView.addView(photo);
 
                             photosLayout.setVisibility(View.VISIBLE);

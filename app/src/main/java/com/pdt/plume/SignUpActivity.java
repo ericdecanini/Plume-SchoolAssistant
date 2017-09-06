@@ -52,9 +52,17 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getResources().getBoolean(R.bool.isTablet)) {
+
+        } else {
+            setTheme(R.style.AppTheme_NoActionBar);
+        }
+
         setContentView(R.layout.activity_sign_up);
 
         // Initialise the back button
+        if (!getResources().getBoolean(R.bool.isTablet))
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

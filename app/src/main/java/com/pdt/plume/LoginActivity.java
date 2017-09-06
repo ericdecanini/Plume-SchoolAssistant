@@ -41,10 +41,8 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -115,7 +113,22 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
-        setContentView(R.layout.activity_login);
+
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+
+        // Initialise the back button
+        if (!isTablet) {
+            setTheme(R.style.AppTheme_NoActionBar);
+            setContentView(R.layout.activity_login);
+            findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+                }
+            });
+        } else setContentView(R.layout.activity_login);
+
+
 
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
@@ -132,16 +145,6 @@ public class LoginActivity extends AppCompatActivity {
 
         }
 
-        isTablet = getResources().getBoolean(R.bool.isTablet);
-
-        // Initialise the back button
-        if (!isTablet)
-            findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
 
         // Initialize FirebaseAuth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -221,148 +224,14 @@ public class LoginActivity extends AppCompatActivity {
                     visibleIcon.setEnabled(false);
                     spinner.setVisibility(View.VISIBLE);
 
+                    getWindow().getDecorView().findViewById(android.R.id.content).setEnabled(false);
                     mFirebaseAuth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull com.google.android.gms.tasks.Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
-                                        // Cancel all SQLite Fired Notifications
-                                        new Utility().cancelOfflineClassNotifications(LoginActivity.this);
-                                        DbHelper dbHelper = new DbHelper(LoginActivity.this);
-                                        Cursor tasksCursor = dbHelper.getTaskData();
-                                        tasksCursor.moveToFirst();
-                                        for (int i = 0; i < tasksCursor.getCount(); i++) {
-                                            // Get the data
-                                            tasksCursor.moveToPosition(i);
-                                            String title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-                                            String icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
-
-                                            // Rebuild the notification
-                                            final android.support.v4.app.NotificationCompat.Builder builder
-                                                    = new NotificationCompat.Builder(LoginActivity.this);
-                                            Bitmap largeIcon = null;
-                                            try {
-                                                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender
-                                                    = new NotificationCompat.WearableExtender().setBackground(largeIcon);
-
-                                            Intent contentIntent = new Intent(LoginActivity.this, TasksDetailActivity.class);
-                                            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
-                                            TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
-                                            stackBuilder.addParentStack(TasksDetailActivity.class);
-                                            stackBuilder.addNextIntent(contentIntent);
-                                            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-                                            builder.setContentIntent(contentPendingIntent)
-                                                    .setSmallIcon(R.drawable.ic_assignment)
-                                                    .setColor(getResources().getColor(R.color.colorPrimary))
-                                                    .setContentTitle(getString(R.string.notification_message_reminder))
-                                                    .setContentText(title)
-                                                    .setAutoCancel(true)
-                                                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                                                    .extend(wearableExtender)
-                                                    .setDefaults(Notification.DEFAULT_ALL);
-
-                                            Notification notification = builder.build();
-
-                                            Intent notificationIntent = new Intent(LoginActivity.this, TaskNotificationPublisher.class);
-                                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                                            final PendingIntent pendingIntent = PendingIntent.getBroadcast
-                                                    (LoginActivity.this, REQUEST_NOTIFICATION_ALARM,
-                                                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                                            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                                            alarmManager.cancel(pendingIntent);
-                                        }
-                                        tasksCursor.close();
-
-                                        // Reschedule all Account based notifications
-                                        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-                                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                                        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
-                                                .child("users").child(firebaseUser.getUid()).child("tasks");
-                                        tasksRef.addChildEventListener(new ChildEventListener() {
-                                            @Override
-                                            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                                                // Get the data
-                                                String title = dataSnapshot.child("title").getValue(String.class);
-                                                String icon = dataSnapshot.child("icon").getValue(String.class);
-                                                ArrayList reminderDateMillis = dataSnapshot.child("reminderdate").getValue(ArrayList.class);
-                                                ArrayList reminderTimeSeconds = dataSnapshot.child("remindertime").getValue(ArrayList.class);
-                                                Calendar c = Calendar.getInstance();
-                                                if (reminderDateMillis != null)
-                                                    for (int i = 0; i < reminderDateMillis.size(); i++) {
-                                                        // Rebuild the notification
-                                                        c.setTimeInMillis(((long) reminderDateMillis.get(i)));
-                                                        int hour = (int) ((long) reminderTimeSeconds.get(i)) / 3600;
-                                                        int minute = (int) (((long) reminderTimeSeconds.get(i)) - hour * 3600) / 60;
-                                                        c.set(Calendar.HOUR_OF_DAY, hour);
-                                                        c.set(Calendar.MINUTE, minute);
-                                                        long notificationMillis = (c.getTimeInMillis());
-
-                                                        // Rebuild the notification
-                                                        final android.support.v4.app.NotificationCompat.Builder builder
-                                                                = new NotificationCompat.Builder(LoginActivity.this);
-                                                        Bitmap largeIcon = null;
-                                                        try {
-                                                            largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-                                                        } catch (IOException e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                        final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                                                                .setBackground(largeIcon);
-
-                                                        Intent contentIntent = new Intent(LoginActivity.this, TasksDetailActivity.class);
-                                                        contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
-                                                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
-                                                        stackBuilder.addParentStack(TasksDetailActivity.class);
-                                                        stackBuilder.addNextIntent(contentIntent);
-                                                        final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-                                                        builder.setContentIntent(contentPendingIntent)
-                                                                .setSmallIcon(R.drawable.ic_assignment)
-                                                                .setColor(getResources().getColor(R.color.colorPrimary))
-                                                                .setContentTitle(getString(R.string.notification_message_reminder))
-                                                                .setContentText(title)
-                                                                .setAutoCancel(true)
-                                                                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                                                                .extend(wearableExtender)
-                                                                .setDefaults(Notification.DEFAULT_ALL);
-
-                                                        Notification notification = builder.build();
-
-                                                        Intent notificationIntent = new Intent(LoginActivity.this, TaskNotificationPublisher.class);
-                                                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                                                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                                                        final PendingIntent pendingIntent = PendingIntent.getBroadcast
-                                                                (LoginActivity.this, REQUEST_NOTIFICATION_ALARM,
-                                                                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                                                        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                                                        if (((long) reminderDateMillis.get(i)) > 0)
-                                                            alarmManager.set(AlarmManager.RTC, new Date(notificationMillis).getTime(), pendingIntent);
-                                                    }
-
-                                            }
-
-                                            @Override
-                                            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                                            }
-
-                                            @Override
-                                            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                                            }
-
-                                            @Override
-                                            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-                                            }
-                                        });
+                                        // Cancel offline notifications
+                                        Utility.rescheduleNotifications(LoginActivity.this, true);
 
                                         // Start MainActivity.class
                                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -372,6 +241,7 @@ public class LoginActivity extends AppCompatActivity {
                                         startActivity(intent);
                                     } else {
                                         // Unhide/Undisable the buttons and fields
+                                        getWindow().getDecorView().findViewById(android.R.id.content).setEnabled(false);
                                         logInButton.setVisibility(View.VISIBLE);
                                         signUpTextView.setVisibility(View.VISIBLE);
                                         emailEditText.setEnabled(true);
@@ -414,27 +284,27 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // Init Google
-        final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.google_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        // TODO: Handle unsuccessful sign in
-                    }
-                }).addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        SignInButton googleLoginButton = (SignInButton) findViewById(R.id.googleLoginButton);
-        googleLoginButton.setSize(SignInButton.SIZE_STANDARD);
-        googleLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult(intent, REQUEST_GOOGLE_SIGNIN);
-            }
-        });
+//        final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestIdToken(getString(R.string.google_web_client_id))
+//                .requestEmail()
+//                .build();
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+//                    @Override
+//                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//                        // TODO: Handle unsuccessful sign in
+//                    }
+//                }).addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+//                .build();
+//        SignInButton googleLoginButton = (SignInButton) findViewById(R.id.googleLoginButton);
+//        googleLoginButton.setSize(SignInButton.SIZE_STANDARD);
+//        googleLoginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+//                startActivityForResult(intent, REQUEST_GOOGLE_SIGNIN);
+//            }
+//        });
 
     }
 
@@ -455,21 +325,22 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_GOOGLE_SIGNIN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                GoogleSignInAccount account = result.getSignInAccount();
-                firebaseAuthWithGoogle(account);
-            } else {
-                // Signed out, show unauthenticated UI.
-                Log.v(LOG_TAG, "Result message: " + result.getStatus().getStatusMessage());
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.login_error_title))
-                        .setMessage(result.getStatus().getStatusMessage())
-                        .setPositiveButton(getString(R.string.ok), null)
-                        .show();
-            }
-        } else {
+//        if (requestCode == REQUEST_GOOGLE_SIGNIN) {
+//            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+//            if (result.isSuccess()) {
+//                GoogleSignInAccount account = result.getSignInAccount();
+//                firebaseAuthWithGoogle(account);
+//            } else {
+//                // Signed out, show unauthenticated UI.
+//                Log.v(LOG_TAG, "Result message: " + result.getStatus().getStatusMessage());
+//                new AlertDialog.Builder(this)
+//                        .setTitle(getString(R.string.login_error_title))
+//                        .setMessage(result.getStatus().getStatusMessage())
+//                        .setPositiveButton(getString(R.string.ok), null)
+//                        .show();
+//            }
+//        } else
+            {
             // Pass the activity result back to the Facebook SDK
             mCallbackManager.onActivityResult(requestCode, resultCode, data);
         }
@@ -519,8 +390,9 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onCompleted(JSONObject object, GraphResponse response) {
                                             // Application code
+                                            if (object == null) return;
                                             try {
-                                                final String name = object.getString("name");
+                                                final String name = object.getString("title");
                                                 FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
                                                 String uid = firebaseUser.getUid();
 
@@ -545,7 +417,7 @@ public class LoginActivity extends AppCompatActivity {
                                         }
                                     });
                             Bundle parameters = new Bundle();
-                            parameters.putString("fields", "id,name");
+                            parameters.putString("fields", "id,title");
                             request.setParameters(parameters);
                             request.executeAsync();
 

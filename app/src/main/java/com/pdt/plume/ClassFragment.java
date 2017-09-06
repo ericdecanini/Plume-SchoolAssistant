@@ -105,9 +105,9 @@ public class ClassFragment extends Fragment{
             mUserId = mFirebaseUser.getUid();
 
         // Apply the list data to the listview mTasksAdapter
-        querySchedule();
         mScheduleAdapter = new ScheduleAdapter(getContext(),
                 R.layout.list_item_schedule, mScheduleList);
+        querySchedule();
 
         // Set the mTasksAdapter and listeners of the list view
         if (listView != null) {
@@ -186,7 +186,8 @@ public class ClassFragment extends Fragment{
             ArrayList<Schedule> newSchedules = dbHelper.getAllClassesArray(getContext());
             mScheduleList.clear();
             mScheduleList.addAll(newSchedules);
-            mScheduleAdapter.notifyDataSetChanged();
+            if (mScheduleAdapter != null)
+                mScheduleAdapter.notifyDataSetChanged();
             spinner.setVisibility(View.GONE);
         }
 
@@ -375,7 +376,7 @@ public class ClassFragment extends Fragment{
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
             // Checks the count of items selected.
             // If it is one, show the edit menu action.
-            // If it is more than one, hide the edit menu action.
+            // If it is delete than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
             if (mOptionMenuCount == 0)
                 menuItem.setVisible(true);
@@ -500,9 +501,9 @@ public class ClassFragment extends Fragment{
                 startActivity(intent);
             }
 
-            // If more than one item was selected, throw a warning log
+            // If delete than one item was selected, throw a warning log
             else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+                Log.w(LOG_TAG, "Cancelling event due to delete than one item selected");
             }
         }
     }

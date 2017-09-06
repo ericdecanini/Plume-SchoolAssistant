@@ -16,7 +16,7 @@
     <item
         android:id="@+id/intro"
         android:orderInCategory="50"
-        android:title="Play Intro"
+        android:title="Match classes"
         app:showAsAction="never"
         android:visible="false"/>
 

@@ -10,15 +10,17 @@ public class Peer {
 
     public String peerIcon;
     public String peerName;
+    public String id;
 
     public Peer() {
         super();
     }
 
-    public Peer(String icon, String name) {
+    public Peer(String icon, String name, String id) {
         super();
         this.peerIcon = icon;
         this.peerName = name;
+        this.id = id;
     }
 
 }

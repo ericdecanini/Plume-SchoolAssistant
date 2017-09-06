@@ -586,10 +586,36 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if (mFirebaseUser != null) {
-                                    // Delete from Firebase
-                                    FirebaseDatabase.getInstance().getReference()
+                                    getWindow().getDecorView().findViewById(android.R.id.content).setEnabled(false);
+                                    final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
                                             .child("users").child(mUserId).child("tasks")
-                                            .child(firebaseID).removeValue();
+                                            .child(firebaseID);
+                                    final StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+                                    // Delete icon/photos from storage if applicable
+                                    taskRef.child(firebaseID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            String icon = dataSnapshot.child("icon").getValue(String.class);
+                                            if (icon.contains("art_")) {
+                                                // Delete from storage
+                                                StorageReference iconRef = storageRef.child(mUserId).child("tasks").child(firebaseID).child("icon");
+                                                iconRef.delete();
+                                            }
+                                            long photosCount = dataSnapshot.child("photos").getChildrenCount();
+                                            if (photosCount > 0)
+                                                for (DataSnapshot photoSnapshot: dataSnapshot.child("photos").getChildren()) {
+                                                    // Delete from storage
+                                                    storageRef.child(mUserId).child("tasks").child(firebaseID)
+                                                            .child("photos").child(photoSnapshot.getKey()).delete();
+                                                }
+                                            taskRef.removeValue();
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
                                 } else {
                                     // Delete from SQLite
                                     DbHelper dbHelper = new DbHelper(TasksDetailActivityTablet.this);

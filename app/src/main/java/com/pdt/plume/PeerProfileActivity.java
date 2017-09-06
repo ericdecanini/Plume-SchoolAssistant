@@ -4,17 +4,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,8 +24,6 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.api.model.StringList;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,7 +34,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
+
+import static com.pdt.plume.R.bool.isLandscape;
+import static com.pdt.plume.R.id.flavour;
 
 public class PeerProfileActivity extends AppCompatActivity {
 
@@ -50,21 +54,27 @@ public class PeerProfileActivity extends AppCompatActivity {
 
     // List Variables
     ListView listView;
-    ArrayList<Schedule> arrayList = new ArrayList<>();
-    ScheduleAdapter adapter;
+    ArrayList<Peer> arrayList = new ArrayList<>();
+    ArrayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) savedInstanceState.clear();
+
+        if (!getResources().getBoolean(R.bool.isTablet)) setTheme(R.style.AppTheme_NoActionBar);
         setContentView(R.layout.activity_peer_profile);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (!getResources().getBoolean(R.bool.isTablet))
+
+        if (!getResources().getBoolean(R.bool.isTablet)) {
+            setSupportActionBar(toolbar);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // Get reference to the views
         TextView nameView = (TextView) findViewById(R.id.name);
-        TextView flavourView = (TextView) findViewById(R.id.flavour);
+        TextView flavourView = (TextView) findViewById(flavour);
         final ImageView iconView = (ImageView) findViewById(R.id.icon);
 
         // Initialise the theme
@@ -77,13 +87,33 @@ public class PeerProfileActivity extends AppCompatActivity {
         mDarkColor = Color.HSVToColor(hsv);
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
         int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+
         ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
+        ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-        findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
+
+        if (getResources().getBoolean(R.bool.isTablet)) {
+            if (getResources().getBoolean(isLandscape)) {
+                findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+                findViewById(R.id.activity_people).setBackgroundColor(darkBackgroundColor);
+                findViewById(R.id.gradient_overlay).setBackgroundColor(mPrimaryColor);
+            } else {
+                findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+                getSupportActionBar().setElevation(0f);
+            }
+            findViewById(R.id.extended_appbar).setBackgroundColor(mPrimaryColor);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+        } else {
+            findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
+        }
+
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -98,9 +128,13 @@ public class PeerProfileActivity extends AppCompatActivity {
         // This data was what was taken from SQLite, not the cloud
         Intent intent = getIntent();
         uid = intent.getStringExtra("uid");
-        profileName = intent.getStringExtra("name");
-        profileIcon = intent.getStringExtra("icon").replace("icon", uid);
+        profileName = intent.getStringExtra("title");
+        profileIcon = intent.getStringExtra("icon");
         profileFlavour = intent.getStringExtra("flavour");
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(getString(R.string.TEMP_MANAGING_PEER), uid)
+                .apply();
 
         // Set the key data
         nameView.setText(profileName);
@@ -139,9 +173,33 @@ public class PeerProfileActivity extends AppCompatActivity {
 
         // Initialise and inflate the listview
         listView = (ListView) findViewById(R.id.listView);
-        adapter = new ScheduleAdapter(this, R.layout.list_item_schedule_with_menu, arrayList);
+        adapter = new PeerAdapter(PeerProfileActivity.this, R.layout.list_item_peer, arrayList);
         listView.setAdapter(adapter);
-        getPeerClassesArrayData();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(PeerProfileActivity.this, ScheduleDetailActivity.class);
+                intent.putExtra(getString(R.string.INTENT_EXTRA_CLASS), arrayList.get(i).peerName);
+                intent.putExtra("icon", arrayList.get(i).peerIcon);
+                intent.putExtra(getString(R.string.INTENT_FLAG_NO_TRANSITION), true);
+                startActivity(intent);
+            }
+        });
+
+        // Check if MANAGE_CLASSES mode must be instantiated
+        querySharedClasses();
+
+        // Initialise the fab
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                User user = new User(profileIcon, profileName, profileFlavour, uid);
+                Intent intent = new Intent(PeerProfileActivity.this, AddPeerActivity.class);
+                intent.putExtra("user", (Serializable) user);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -165,6 +223,44 @@ public class PeerProfileActivity extends AppCompatActivity {
                                         .child("users");
                                 usersRef.child(mUserId).child("peers").child(uid).removeValue();
                                 usersRef.child(uid).child("peers").child(mUserId).removeValue();
+
+                                // Remove the peer from each class
+                                final DatabaseReference classesRef = usersRef.child(mUserId).child("classes");
+                                classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                                            DatabaseReference peerRef = classesRef.child(classSnapshot.getKey())
+                                                    .child("peers").child(uid);
+                                            if (peerRef != null)
+                                                peerRef.removeValue();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                                final DatabaseReference classesRef1 = usersRef.child(uid).child("classes");
+                                classesRef1.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                                            DatabaseReference peerRef = classesRef1.child(classSnapshot.getKey())
+                                                    .child("peers").child(mUserId);
+                                            if (peerRef != null)
+                                                peerRef.removeValue();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
                                 Intent intent = new Intent(PeerProfileActivity.this, PeopleActivity.class);
                                 startActivity(intent);
                             }
@@ -175,31 +271,35 @@ public class PeerProfileActivity extends AppCompatActivity {
         return false;
     }
 
-    private void getPeerClassesArrayData() {
+    private void querySharedClasses() {
         // Get Array data from Firebase
-
+        getWindow().getDecorView().findViewById(android.R.id.content).setEnabled(false);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         String userId = firebaseUser.getUid();
         DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(userId).child("peers").child(uid).child("classes");
-
         classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                getWindow().getDecorView().findViewById(android.R.id.content).setEnabled(true);
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                     String title = userSnapshot.getKey();
-                    String iconUri = userSnapshot.getValue(String.class);
-                    Schedule schedule = new Schedule(PeerProfileActivity.this, iconUri, title,
-                            "", "", "", "", "");
-                    schedule.addExtra(uid);
+                    String iconUri = userSnapshot.child("icon").getValue(String.class);
+                    Peer schedule = new Peer(iconUri, title, "");
                     arrayList.add(schedule);
                     adapter.notifyDataSetChanged();
                 }
+
                 if (dataSnapshot.getChildrenCount() == 0) {
-                    ((TextView) findViewById(R.id.textView2)).setText(getString(R.string.splash_no_classes_shared));
+                    ((TextView) findViewById(R.id.textView1)).setText(getString(R.string.splash_no_classes_shared));
+                    findViewById(R.id.textView2).setVisibility(View.GONE);
+                    findViewById(R.id.splash).setVisibility(View.VISIBLE);
+                } else {
+                    findViewById(R.id.splash).setVisibility(View.GONE);
+                    findViewById(R.id.textView2).setVisibility(View.VISIBLE);
                 }
+
             }
 
             @Override

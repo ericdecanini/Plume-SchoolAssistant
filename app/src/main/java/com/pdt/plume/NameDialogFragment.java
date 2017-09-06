@@ -22,7 +22,7 @@ public class NameDialogFragment extends DialogFragment {
     public static NameDialogFragment newInstance(String name) {
         NameDialogFragment fragment = new NameDialogFragment();
         Bundle args = new Bundle();
-        args.putString("name", name);
+        args.putString("title", name);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,10 +58,10 @@ public class NameDialogFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_name, container, false);
         nameField = (EditText) rootView.findViewById(R.id.editText);
 
-        // Automatically inflate the EditText with the name
+        // Automatically inflate the EditText with the title
         Bundle args = getArguments();
         if (args != null) {
-            nameField.setText(args.getString("name"));
+            nameField.setText(args.getString("title"));
             nameField.setSelection(nameField.length());
         }
 

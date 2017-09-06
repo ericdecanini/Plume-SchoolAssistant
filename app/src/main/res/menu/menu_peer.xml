@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/action_remove"
-        android:orderInCategory="300"
+        android:orderInCategory="400"
         android:title="@string/remove_peer"
         app:showAsAction="never" />
 

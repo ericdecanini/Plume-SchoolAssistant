@@ -87,7 +87,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.completed_tasks_list);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        // Initialise the mScheduleAdapter of completed tasks
+        // Initialise the mClassAdapter of completed tasks
         // If no items were found, show the header
         mTasksList = new ArrayList<>();
         taskIDs = new ArrayList<>();
@@ -96,7 +96,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
         listView.setAdapter(mTasksAdapter);
         getCompletedTasksData();
 
-        // Inflate the listview with the mScheduleAdapter
+        // Inflate the listview with the mClassAdapter
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         listView.setMultiChoiceModeListener(new ModeCallback());
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -126,8 +126,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
 
                     // Add the animation
                     intent.putExtra("icon", mTasksList.get(position).peerIcon);
-                    View icon = view.findViewById(R.id.task_icon2);
-                    if (icon.getTag() == null) icon = view.findViewById(R.id.task_icon);
+                    View icon = view.findViewById(R.id.icon);
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
                             && ((String) icon.getTag()).contains("com.pdt.plume")) {
@@ -241,7 +240,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                             String description = taskSnapshot.child("description").getValue(String.class);
                             float duedate = taskSnapshot.child("duedate").getValue(float.class);
 
-                            mTasksList.add(new Peer(icon, title));
+                            mTasksList.add(new Peer(icon, title, ""));
                             taskFirebaseIDs.add(taskSnapshot.getKey());
                         }
                     }
@@ -265,16 +264,12 @@ public class CompletedTasksActivity extends AppCompatActivity {
                     String description = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_DESCRIPTION));
                     float duedate = cursor.getFloat(cursor.getColumnIndex(TasksEntry.COLUMN_DUEDATE));
 
-                    mTasksList.add(new Peer(icon, title));
+                    mTasksList.add(new Peer(icon, title, ""));
                     taskIDs.add(cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID)));
                 }
             }
+
             cursor.close();
-
-           // Automatically fill the list to match the whole screen
-            while (listView.getHeight() < getResources().getDisplayMetrics().heightPixels)
-                mTasksList.add(new Peer(null, ""));
-
 
         }
 

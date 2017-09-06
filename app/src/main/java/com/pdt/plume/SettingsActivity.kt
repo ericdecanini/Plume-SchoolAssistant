@@ -79,8 +79,11 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
                     .getString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "0")
             if (weekType == "0") {
                 findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).isEnabled = false
-            } else
+                findPreference(getString(R.string.KEY_WEEK_NUMBER)).isEnabled = false
+            } else {
                 findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).isEnabled = true
+                findPreference(getString(R.string.KEY_WEEK_NUMBER)).isEnabled = true
+            }
         }
         if (scheduleType != "0") {
             findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = false
@@ -176,8 +179,11 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
                     val weekType = listPreference.entryValues[prefIndex] as String
                     if (weekType == "0") {
                         findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).isEnabled = false
-                    } else
+                        findPreference(getString(R.string.KEY_WEEK_NUMBER)).isEnabled = false
+                    } else {
                         findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).isEnabled = true
+                        findPreference(getString(R.string.KEY_WEEK_NUMBER)).isEnabled = true
+                    }
                 }
 
                 // If 'Week number'

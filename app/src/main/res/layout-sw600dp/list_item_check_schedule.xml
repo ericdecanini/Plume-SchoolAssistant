@@ -4,19 +4,29 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="8dp"
     android:layout_marginStart="8dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
     android:descendantFocusability="blocksDescendants">
 
-    <com.pdt.plume.CircularImageView
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp"
-        android:id="@+id/schedule_icon"
-        android:minHeight="32dp"
-        android:minWidth="32dp"
         android:layout_gravity="center"
-        android:layout_width="48dp"
-        android:layout_height="48dp" />
+        android:layout_marginStart="8dp">
+
+        <com.pdt.plume.CircularImageView
+            android:id="@+id/icon"
+            android:minHeight="32dp"
+            android:minWidth="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+
+    </FrameLayout>
+
+
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -25,15 +35,16 @@
         android:paddingLeft="8dp"
         android:paddingRight="16dp">
         <TextView
-            android:id="@+id/schedule_lesson"
+            android:id="@+id/title"
             android:textColor="@color/black"
             android:textSize="15sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <CheckBox
-            android:id="@+id/checkbox"
+            android:id="@+id/check"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:alpha="0.8"
             android:layout_gravity="end" />
     </FrameLayout>
 

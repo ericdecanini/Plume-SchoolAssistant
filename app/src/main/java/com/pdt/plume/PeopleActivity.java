@@ -51,6 +51,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.common.primitives.Bytes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -65,6 +66,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
+import com.journeyapps.barcodescanner.Util;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
@@ -81,8 +83,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static android.R.attr.contentInsetStartWithNavigation;
 import static android.R.attr.data;
+import static android.R.attr.id;
 import static android.os.Build.ID;
+import static com.pdt.plume.R.id.back;
+import static com.pdt.plume.R.id.storage;
 import static com.pdt.plume.R.string.B;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
@@ -125,10 +131,7 @@ public class PeopleActivity extends AppCompatActivity
     ListView listView = null;
 
     // Item variables
-    ArrayList<String> uidList = new ArrayList<>();
-    ArrayList<String> nameList = new ArrayList<>();
     ArrayList<String> flavourList = new ArrayList<>();
-    ArrayList<String> iconList = new ArrayList<>();
 
     // Dialog item arrays
     private Integer[] mThumbIds = {
@@ -148,12 +151,23 @@ public class PeopleActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_people);
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (savedInstanceState != null) savedInstanceState.clear();
 
+        if (!getResources().getBoolean(R.bool.isTablet)) setTheme(R.style.AppTheme_NoActionBar);
+        setContentView(R.layout.activity_people);
+
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+        isLandscape = getResources().getBoolean(R.bool.isLandscape);
+
+        if (isTablet) {
+            if (!isLandscape)
+                getSupportActionBar().setElevation(0f);
+        } else {
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // Initialise AddPeerMethodsArray and mUserId
         addPeerMethodsArray[0] = getString(R.string.AddByUsername);
@@ -175,17 +189,41 @@ public class PeopleActivity extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.95f; // value component
+        int actionColor = Color.HSVToColor(hsv);
+
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
-        findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
         int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.black_0_54));
+
         ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
         ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
         ((TextView) findViewById(R.id.textView3)).setTextColor(textColor);
 
+        if (isTablet) {
+            if (isLandscape) {
+                findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+                findViewById(R.id.container).setBackgroundColor(darkBackgroundColor);
+                findViewById(R.id.gradient_overlay).setBackgroundColor(mPrimaryColor);
+            } else {
+                findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+            }
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(actionColor));
+            findViewById(R.id.extended_appbar).setBackgroundColor(mPrimaryColor);
+        } else {
+            findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
+            if (isLandscape) findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
+            else findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
         }
-        findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
         addPeersTextview.setTextColor(mPrimaryColor);
 
         // Set the click listeners of the views
@@ -197,7 +235,7 @@ public class PeopleActivity extends AppCompatActivity
                 NameDialogFragment fragment = NameDialogFragment.newInstance(selfName);
                 Bundle args = new Bundle();
                 Log.v(LOG_TAG, "SelfName: " + selfName);
-                args.putString("name", selfName);
+                args.putString("title", selfName);
                 fragment.setArguments(args);
                 fragment.show(getSupportFragmentManager(), "dialog");
             }
@@ -284,7 +322,7 @@ public class PeopleActivity extends AppCompatActivity
                         flavourData = flavour;
                     }
 
-                    // Data snapshot is the name
+                    // Data snapshot is the title
                     if (nicknameData != null) {
                         selfNameView.setText(nicknameData);
                         selfName = nicknameData;
@@ -321,14 +359,15 @@ public class PeopleActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String uid = uidList.get(i);
-                String name = nameList.get(i);
+                Peer peer = arrayList.get(i);
+                String uid = peer.id;
+                String name = peer.peerName;
                 String flavour = flavourList.get(i);
-                String iconUri = iconList.get(i);
+                String iconUri = peer.peerIcon;
                 // Make the intent to the profile activity
                 Intent intent = new Intent(PeopleActivity.this, PeerProfileActivity.class);
                 intent.putExtra("uid", uid)
-                        .putExtra("name", name)
+                        .putExtra("title", name)
                         .putExtra("icon", iconUri)
                         .putExtra("flavour", flavour);
                 startActivity(intent);
@@ -643,12 +682,12 @@ public class PeopleActivity extends AppCompatActivity
         selfName = name;
         selfNameView.setText(name);
 
-        // Save the name to SharedPreferences
+        // Save the title to SharedPreferences
         PreferenceManager.getDefaultSharedPreferences(this).edit()
                 .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), name)
                 .apply();
 
-        // Save the name to the cloud database
+        // Save the title to the cloud database
         mDatabase.child("users").child(mUserId).child("nickname").setValue(name);
     }
 
@@ -658,12 +697,12 @@ public class PeopleActivity extends AppCompatActivity
         this.flavour = flavour;
         flavourView.setText(flavour);
 
-        // Save the name to SharedPreferences
+        // Save the title to SharedPreferences
         PreferenceManager.getDefaultSharedPreferences(this).edit()
                 .putString(getString(R.string.KEY_PREFERENCES_FLAVOUR), flavour)
                 .apply();
 
-        // Save the name to the cloud database
+        // Save the title to the cloud database
         mDatabase.child("users").child(mUserId).child("flavour").setValue(flavour);
     }
 
@@ -687,298 +726,15 @@ public class PeopleActivity extends AppCompatActivity
     }
 
     private void logOut() {
-        // Disable any notifications
-        // CANCEL TASK REFERENCES
-        DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(mFirebaseUser.getUid()).child("tasks");
-        tasksRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Get the data
-                String title = dataSnapshot.child("title").getValue(String.class);
-                String icon = dataSnapshot.child("icon").getValue(String.class);
-
-                // Rebuild the notification
-                final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(PeopleActivity.this);
-                Bitmap largeIcon = null;
-                try {
-                    largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                        .setBackground(largeIcon);
-
-                Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
-                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
-                TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
-                stackBuilder.addParentStack(TasksDetailActivity.class);
-                stackBuilder.addNextIntent(contentIntent);
-                final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-                builder.setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(getResources().getColor(R.color.colorPrimary))
-                        .setContentTitle(getString(R.string.notification_message_reminder))
-                        .setContentText(title)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .extend(wearableExtender)
-                        .setDefaults(Notification.DEFAULT_ALL);
-
-                Notification notification = builder.build();
-
-                Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
-                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                alarmManager.cancel(pendingIntent);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        // CANCEL CLASS NOTIFICATIONS
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        final String weekNumber = preferences.getString(getString(R.string.KEY_WEEK_NUMBER), "0");
-        DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(mFirebaseUser.getUid()).child("classes");
-        classesRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Get the key data
-                String title = dataSnapshot.getKey();
-                String icon = dataSnapshot.child("icon").getValue(String.class);
-                String message = getString(R.string.class_notification_message,
-                        Integer.toString(preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)));
-
-                // Get the listed data
-                ArrayList<Integer> timeins = new ArrayList<>();
-                if (weekNumber.equals("0"))
-                    for (DataSnapshot timeinSnapshot : dataSnapshot.child("timein").getChildren())
-                        timeins.add(timeinSnapshot.getValue(int.class));
-                else
-                    for (DataSnapshot timeinaltSnapshot : dataSnapshot.child("timeinalt").getChildren())
-                        timeins.add(timeinaltSnapshot.getValue(int.class));
-
-                Calendar c = Calendar.getInstance();
-                for (int i = 0; i < timeins.size(); i++) {
-                    c.setTimeInMillis(timeins.get(i));
-
-                    // Rebuild the notification
-                    final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(PeopleActivity.this);
-                    Bitmap largeIcon = null;
-                    try {
-                        largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                            .setBackground(largeIcon);
-
-                    Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
-                    if (mFirebaseUser != null)
-                        contentIntent.putExtra("id", title);
-                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
-                    stackBuilder.addParentStack(ScheduleDetailActivity.class);
-                    stackBuilder.addNextIntent(contentIntent);
-                    final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-
-                    builder.setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
-                            .setColor(getResources().getColor(R.color.colorPrimary))
-                            .setContentTitle(title)
-                            .setContentText(message)
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .extend(wearableExtender)
-                            .setDefaults(Notification.DEFAULT_ALL);
-
-                    Notification notification = builder.build();
-
-                    Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.cancel(pendingIntent);
-                }
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        // Reschedule all SQLite based Task Notifications
-        DbHelper dbHelper = new DbHelper(PeopleActivity.this);
-        Cursor tasksCursor = dbHelper.getTaskData();
-        tasksCursor.moveToFirst();
-        for (int i = 0; i < tasksCursor.getCount(); i++) {
-            // Get the data
-            tasksCursor.moveToPosition(i);
-            String title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
-            String icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
-            long reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
-            long reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(reminderDateMillis);
-            int hour = (int) reminderTimeSeconds / 3600;
-            int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
-            c.set(Calendar.HOUR_OF_DAY, hour);
-            c.set(Calendar.MINUTE, minute);
-            long notificationMillis = (c.getTimeInMillis());
-
-            // Rebuild the notification
-            final android.support.v4.app.NotificationCompat.Builder builder
-                    = new NotificationCompat.Builder(PeopleActivity.this);
-            Bitmap largeIcon = null;
-            try {
-                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender
-                    = new NotificationCompat.WearableExtender().setBackground(largeIcon);
-
-            Intent contentIntent = new Intent(PeopleActivity.this, TasksDetailActivity.class);
-            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID);
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
-            stackBuilder.addParentStack(TasksDetailActivity.class);
-            stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-            builder.setContentIntent(contentPendingIntent)
-                    .setSmallIcon(R.drawable.ic_assignment)
-                    .setColor(getResources().getColor(R.color.colorPrimary))
-                    .setContentTitle(getString(R.string.notification_message_reminder))
-                    .setContentText(title)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .extend(wearableExtender)
-                    .setDefaults(Notification.DEFAULT_ALL);
-
-            Notification notification = builder.build();
-
-            Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-            final PendingIntent pendingIntent = PendingIntent.getBroadcast
-                    (PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (reminderDateMillis > 0)
-                alarmManager.set(AlarmManager.RTC, new Date(notificationMillis).getTime(), pendingIntent);
-        }
-        tasksCursor.close();
-
-        // Reschedule all SQLite based Class Notifications
-        Cursor classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
-        Calendar c = Calendar.getInstance();
-        final int forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
-        for (int i = 0; i < classesCursor.getCount(); i++) {
-            classesCursor.moveToPosition(i);
-            final String title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-            String icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-            int ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID));
-
-            long timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
-            c = Calendar.getInstance();
-            Calendar timeInCalendar = Calendar.getInstance();
-            timeInCalendar.setTimeInMillis(timeInValue);
-            c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1);
-            c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime);
-            Calendar current = Calendar.getInstance();
-            if (c.getTimeInMillis() < current.getTimeInMillis())
-                c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
-            c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
-
-            c.setTimeInMillis(timeInValue);
-            c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime);
-
-            final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-            Bitmap largeIcon = null;
-            try {
-                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(icon));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                    .setBackground(largeIcon);
-
-            Intent contentIntent = new Intent(PeopleActivity.this, ScheduleDetailActivity.class);
-            contentIntent.putExtra("_ID", ID);
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PeopleActivity.this);
-            stackBuilder.addParentStack(ScheduleDetailActivity.class);
-            stackBuilder.addNextIntent(contentIntent);
-            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
-
-            final Calendar finalC = c;
-            Palette.generateAsync(largeIcon, new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    builder.setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
-                            .setColor(getResources().getColor(R.color.colorPrimary))
-                            .setContentTitle(title)
-                            .setContentText(getString(R.string.class_notification_message, Integer.toString(forerunnerTime)))
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .extend(wearableExtender)
-                            .setDefaults(Notification.DEFAULT_ALL);
-
-                    Notification notification = builder.build();
-
-                    Intent notificationIntent = new Intent(PeopleActivity.this, TaskNotificationPublisher.class);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                    final PendingIntent pendingIntent = PendingIntent.getBroadcast(PeopleActivity.this, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, finalC.getTimeInMillis(), pendingIntent);
-                }
-            });
-        }
-        classesCursor.close();
+        // Cancel online notifications
+        Utility.rescheduleNotifications(this, false);
 
         // Execute the Sign Out Operation
         mFirebaseAuth.signOut();
         loggedIn = false;
         logInOut.setTitle(getString(R.string.action_login));
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
@@ -1083,16 +839,12 @@ public class PeopleActivity extends AppCompatActivity
         return null;
     }
 
-    private void addPeer() {
-
-    }
-
     private void getPeersArrayData() {
         // Get Array data from Firebase
-        final ArrayList<Peer> arrayList = new ArrayList<>();
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         String userId = firebaseUser.getUid();
+
         DatabaseReference peersRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(userId).child("peers");
         peersRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -1100,98 +852,36 @@ public class PeopleActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (final DataSnapshot peerSnapshot: dataSnapshot.getChildren()) {
                     final String name = peerSnapshot.child("nickname").getValue(String.class);
-                    String flavour = peerSnapshot.child("flavour").getValue(String.class);
-                    uidList.add(peerSnapshot.getKey());
-                    nameList.add(name);
-                    flavourList.add(flavour);
-                    final String iconUri = peerSnapshot.child("icon").getValue(String.class);
+                    final String flavour = peerSnapshot.child("flavour").getValue(String.class);
+                    String uid = peerSnapshot.getKey();
+                    final String iconUri = peerSnapshot.child("icon").getValue(String.class).replace("icon", uid);
 
                     // Check if iconUri points to a valid file
-                    final File file = new File(getFilesDir(), iconUri);
-                    if (file.exists() || iconUri.contains("android.resource://com.pdt.plume")) {
-                        iconList.add(iconUri);
-                        arrayList.add(new Peer(iconUri, name));
-                        final PeerAdapter adapter = new PeerAdapter(PeopleActivity.this, R.layout.list_item_peer, arrayList);
-                        listView.setAdapter(adapter);
-                        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                            @Override
-                            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                PopupMenu popupMenu = new PopupMenu(PeopleActivity.this, view);
-                                popupMenu.getMenuInflater().inflate(R.menu.menu_peer, popupMenu.getMenu());
-                                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                    @Override
-                                    public boolean onMenuItemClick(MenuItem item) {
-                                        if (item.getItemId() == R.id.action_remove) {
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(PeopleActivity.this);
-                                            builder.setMessage(getString(R.string.dialog_remove_peer, name))
-                                                    .setNegativeButton(getString(R.string.cancel), null)
-                                                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                                            // Remove the peer from the peers tab
-                                                            final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference()
-                                                                    .child("users");
-                                                            usersRef.child(mUserId).child("peers").child(peerSnapshot.getKey()).removeValue();
-                                                            usersRef.child(peerSnapshot.getKey()).child("peers").child(mUserId).removeValue();
-                                                            arrayList.remove(i);
-                                                            adapter.notifyDataSetChanged();
-                                                        }
-                                                    })
-                                                    .show();
-                                        }
-                                        return true;
-                                    }
-                                });
-                                popupMenu.show();
-                                return true;
-                            }
-                        });
+                    final File file = new File(getFilesDir(), uid + ".jpg");
+                    if (file.canRead() || iconUri.contains("art_")) {
+                        flavourList.add(flavour);
+                        arrayList.add(new Peer(iconUri, name, peerSnapshot.getKey()));
+                        adapter.notifyDataSetChanged();
                     } else {
                         // FILE DOESN'T EXIST: DOWNLOAD FROM CLOUD STORAGE
                         FirebaseStorage storage = FirebaseStorage.getInstance();
                         StorageReference storageRef = storage.getReference();
-                        StorageReference iconRef = storageRef.child(peerSnapshot.getKey()).child("icon");
-                        iconRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                // ADD THE LIST ITEM HERE
-                                arrayList.add(new Peer(iconUri, name));
-                                final PeerAdapter adapter = new PeerAdapter(PeopleActivity.this, R.layout.list_item_peer, arrayList);
-                                listView.setAdapter(adapter);
-                                listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                                    @Override
-                                    public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                        PopupMenu popupMenu = new PopupMenu(PeopleActivity.this, view);
-                                        popupMenu.getMenuInflater().inflate(R.menu.menu_peer, popupMenu.getMenu());
-                                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                            @Override
-                                            public boolean onMenuItemClick(MenuItem item) {
-                                                if (item.getItemId() == R.id.action_remove) {
-                                                    AlertDialog.Builder builder = new AlertDialog.Builder(PeopleActivity.this);
-                                                    builder.setMessage(getString(R.string.dialog_remove_peer, name))
-                                                            .setNegativeButton(getString(R.string.cancel), null)
-                                                            .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialogInterface, int i) {
-                                                                    // Remove the peer from the peers tab
-                                                                    final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference()
-                                                                            .child("users");
-                                                                    usersRef.child(mUserId).child("peers").child(peerSnapshot.getKey()).removeValue();
-                                                                    usersRef.child(peerSnapshot.getKey()).child("peers").child(mUserId).removeValue();
-                                                                    arrayList.remove(i);
-                                                                    adapter.notifyDataSetChanged();
-                                                                }
-                                                            })
-                                                            .show();
-                                                }
-                                                return true;
-                                            }
-                                        });
-                                        popupMenu.show();
-                                        return true;
-                                    }
-                                });
+                        StorageReference iconRef = storageRef.child(uid).child("icon");
 
+                        long ONE_MEGABYTE = 1024 * 1024;
+                        iconRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                            @Override
+                            public void onSuccess(byte[] bytes) {
+                                saveInternalFile(bytes, file.getName() + ".jpg");
+                                Log.v(LOG_TAG, "Download successful: " + file.getPath() + ".jpg");
+                                flavourList.add(flavour);
+                                arrayList.add(new Peer(iconUri, name, peerSnapshot.getKey()));
+                                adapter.notifyDataSetChanged();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.v(LOG_TAG, "Download failed: " + e.getMessage());
                             }
                         });
                     }
@@ -1205,6 +895,19 @@ public class PeopleActivity extends AppCompatActivity
 
             }
         });
+    }
+
+    private void saveInternalFile(byte[] bytes, String filepath) {
+        FileOutputStream fos = null;
+        try {
+            fos = openFileOutput(filepath, MODE_PRIVATE);
+            fos.write(bytes);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -21,6 +21,7 @@
     <color name="gray_400">#BDBDBD</color>
     <color name="gray_500">#9E9E9E</color>
     <color name="gray_700">#616161</color>
+    <color name="gray_800">#424242</color>
     <color name="gray_900">#212121</color>
 
     <color name="black_0.87">#DE000000</color>

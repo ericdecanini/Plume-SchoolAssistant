@@ -69,6 +69,15 @@
                 android:textColor="@color/gray_900"
                 android:textSize="18sp" />
 
+            <ImageView
+                android:id="@+id/delete_time"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:src="@drawable/ic_close_black_24dp"
+                android:tint="@color/gray_700"/>
+
         </LinearLayout>
 
         <TextView
@@ -126,6 +135,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="2dp"
                 android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginRight="56dp"
+                android:layout_marginEnd="56dp"
                 android:text="11:00"
                 android:textColor="@color/gray_900"
                 android:textSize="18sp" />
@@ -306,6 +318,15 @@
                 android:text="@string/eight"
                 android:textColor="@color/gray_900"
                 android:textSize="18sp" />
+
+            <ImageView
+                android:id="@+id/delete_period"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginStart="24dp"
+                android:src="@drawable/ic_close_black_24dp"
+                android:tint="@color/gray_700"/>
 
         </LinearLayout>
 

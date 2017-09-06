@@ -131,10 +131,6 @@ public class IntroSurface extends SurfaceView implements SurfaceHolder.Callback 
                     }
                 }
 
-                if (i == 0)
-                    Log.v(LOG_TAG, "Speed: " + speed + " Distance: " + distanceFromAnchor + " Max: " + maxDistance
-                            + " Boolean: " + floatingIcons[i].movingLeft);
-
                 if (floatingIcons[i].y <= 0 - (64 * density)) {
                     floatingIcons[i].generateLocation(width, height, height);
                 }

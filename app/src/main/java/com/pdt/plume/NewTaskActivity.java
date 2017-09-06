@@ -19,7 +19,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -50,7 +49,6 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -93,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 
 import static android.R.attr.id;
-import static android.R.attr.track;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_FILE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_CAPTURE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
@@ -347,6 +344,7 @@ public class NewTaskActivity extends AppCompatActivity
             if (extras != null) {
                 // Get the task data sent through the intent
                 String icon = extras.getString("icon");
+                if (icon == null) icon = iconUriString;
                 String title = extras.getString(getString(R.string.INTENT_EXTRA_TITLE));
                 String classTitle = extras.getString(getString(R.string.INTENT_EXTRA_CLASS));
                 String classType = extras.getString(getString(R.string.INTENT_EXTRA_TYPE));
@@ -479,7 +477,7 @@ public class NewTaskActivity extends AppCompatActivity
                             int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
                             photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
                             photo.setPadding(4, 0, 4, 0);
-                            photo.setId(Utility.generateViewId());
+                            photo.setId(Utility.generateUniqueId());
 
                             final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
                             photosLayout.setVisibility(View.VISIBLE);
@@ -611,7 +609,8 @@ public class NewTaskActivity extends AppCompatActivity
         ((ImageView) findViewById(R.id.imageView2)).setColorFilter(darkTextColor);
         findViewById(R.id.divider2).setBackgroundColor(darkTextColor);
         fieldSharedCheckbox.setTextColor(darkTextColor);
-        fieldSharedCheckbox.setButtonTintList(ColorStateList.valueOf(darkTextColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            fieldSharedCheckbox.setButtonTintList(ColorStateList.valueOf(darkTextColor));
         ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(darkTextColor);
         ((EditText) findViewById(R.id.field_new_task_description)).setTextColor(textColor);
         ((EditText) findViewById(R.id.field_new_task_description)).setHintTextColor(textColor);
@@ -693,7 +692,7 @@ public class NewTaskActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_new_detail, menu);
+        getMenuInflater().inflate(R.menu.menu_confirm, menu);
         return true;
     }
 
@@ -847,7 +846,7 @@ public class NewTaskActivity extends AppCompatActivity
         int width = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72, getResources().getDisplayMetrics()));
         photo.setLayoutParams(new RelativeLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
         photo.setPadding(4, 0, 4, 0);
-        photo.setId(Utility.generateViewId());
+        photo.setId(Utility.generateUniqueId());
 
         final LinearLayout photosLayout = (LinearLayout) findViewById(R.id.photos_layout);
         photosLayout.setVisibility(View.VISIBLE);
@@ -1388,6 +1387,7 @@ public class NewTaskActivity extends AppCompatActivity
     private boolean insertTaskDataIntoDatabase() throws IOException {
         // Get the data
         final String title = fieldTitle.getText().toString();
+        Log.v(LOG_TAG, "Title: " + title);
         final String description = fieldDescription.getText().toString();
 
         if (classTitle.equals(getString(R.string.none)))
@@ -1803,8 +1803,8 @@ public class NewTaskActivity extends AppCompatActivity
                 builder.setContentIntent(contentPendingIntent)
                         .setSmallIcon(R.drawable.ic_assignment)
                         .setColor(getResources().getColor(R.color.colorPrimary))
-                        .setContentTitle(title)
-                        .setContentText(message)
+                        .setContentText(title)
+                        .setContentTitle(message)
                         .setAutoCancel(true)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .extend(wearableExtender)
@@ -1862,7 +1862,7 @@ public class NewTaskActivity extends AppCompatActivity
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
+        // Create an image file title
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);

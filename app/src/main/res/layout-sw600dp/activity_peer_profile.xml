@@ -35,6 +35,14 @@
             android:layout_weight="3"
             android:background="@color/white">
 
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:src="@drawable/ic_add_white"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="32dp"/>
+
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -84,23 +92,41 @@
 
                     </LinearLayout>
 
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="32dp"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginTop="16dp">
-
                         <TextView
                             android:id="@+id/textView2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="24dp"
+                            android:layout_marginLeft="32dp"
+                            android:layout_marginStart="32dp"
+                            android:alpha="0.8"
                             android:text="@string/classes_you_share"
                             android:textColor="@color/black_0.54"
                             android:textSize="20sp" />
-                    </FrameLayout>
+
+                    <LinearLayout
+                        android:id="@+id/splash"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:layout_marginTop="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="172dp"
+                            android:layout_height="172dp"
+                            android:src="@drawable/splash_no_completed_tasks"
+                            android:layout_gravity="center_horizontal"/>
+                        <TextView
+                            android:id="@+id/textView1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/gray_700"
+                            android:alpha="0.8"
+                            android:textSize="20sp"
+                            android:layout_marginTop="16dp"/>
+                    </LinearLayout>
 
                     <com.pdt.plume.NonScrollListView
                         android:id="@+id/listView"
@@ -121,5 +147,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
     </LinearLayout>
+
+
 
 </FrameLayout>

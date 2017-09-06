@@ -265,6 +265,24 @@ public class PeriodAdapter extends ArrayAdapter {
                         timePickerDialog.show();
                     }
                 });
+
+                row.findViewById(R.id.delete_time).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        remove(item);
+                        notifyDataSetChanged();
+                    }
+                });
+                row.findViewById(R.id.delete_period).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        remove(item);
+                        notifyDataSetChanged();
+                    }
+                });
+            } else {
+                row.findViewById(R.id.delete_time).setVisibility(View.GONE);
+                row.findViewById(R.id.delete_period).setVisibility(View.GONE);
             }
 
         } else if (basis.equals("1")) {
@@ -441,7 +459,26 @@ public class PeriodAdapter extends ArrayAdapter {
                     });
                 }
 
+                row.findViewById(R.id.delete_time).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        remove(item);
+                        notifyDataSetChanged();
+                    }
+                });
+                row.findViewById(R.id.delete_period).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        remove(item);
+                        notifyDataSetChanged();
+                    }
+                });
+
+            } else {
+                row.findViewById(R.id.delete_time).setVisibility(View.GONE);
+                row.findViewById(R.id.delete_period).setVisibility(View.GONE);
             }
+
         } else if (basis.equals("2")) {
             row.findViewById(R.id.block_layout).setVisibility(View.VISIBLE);
             row.findViewById(R.id.period_layout).setVisibility(View.GONE);
@@ -614,35 +651,35 @@ public class PeriodAdapter extends ArrayAdapter {
 
         // The Periods
         if (!basis.equals("0")) {
-            String[] periodsArray = item.periods.split(":");
             int totalPeriods;
             if (basis.equals("1")) totalPeriods = 8;
             else totalPeriods = 4;
-            for (int i = 0; i < totalPeriods; i++) {
-                if (item.period[i]) {
-                    item.period[i] = true;
-                    holder.period[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                        holder.period[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                    holder.period[i].setTextColor(backgroundColor);
-                } else {
-                    item.period[i] = false;
-                    holder.period[i].setBackgroundDrawable(null);
-                    holder.period[i].setTextColor(textColor);
-                }
+            if (item.period != null)
+                for (int i = 0; i < totalPeriods; i++) {
+                    if (item.period[i]) {
+                        item.period[i] = true;
+                        holder.period[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                            holder.period[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                        holder.period[i].setTextColor(backgroundColor);
+                    } else {
+                        item.period[i] = false;
+                        holder.period[i].setBackgroundDrawable(null);
+                        holder.period[i].setTextColor(textColor);
+                    }
 
-                if (item.periodAlt[i]) {
-                    item.periodAlt[i] = true;
-                    holder.periodAlt[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
-                        holder.periodAlt[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-                    holder.periodAlt[i].setTextColor(backgroundColor);
-                } else {
-                    item.periodAlt[i] = false;
-                    holder.periodAlt[i].setBackgroundDrawable(null);
-                    holder.periodAlt[i].setTextColor(textColor);
+                    if (item.periodAlt[i]) {
+                        item.periodAlt[i] = true;
+                        holder.periodAlt[i].setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_period_button));
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                            holder.periodAlt[i].setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                        holder.periodAlt[i].setTextColor(backgroundColor);
+                    } else {
+                        item.periodAlt[i] = false;
+                        holder.periodAlt[i].setBackgroundDrawable(null);
+                        holder.periodAlt[i].setTextColor(textColor);
+                    }
                 }
-            }
         }
 
         if (basis.equals("1")) {

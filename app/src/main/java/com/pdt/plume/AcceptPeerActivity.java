@@ -34,10 +34,13 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-public class AcceptPeerActivity extends AppCompatActivity
-        implements MismatchDialog.MismatchDialogListener {
+import static com.pdt.plume.R.bool.isTablet;
+
+public class AcceptPeerActivity extends AppCompatActivity {
 
     String LOG_TAG = AcceptPeerActivity.class.getSimpleName();
 
@@ -53,6 +56,7 @@ public class AcceptPeerActivity extends AppCompatActivity
 
     // Target User Profile Variables
     String requestingUserId;
+    String icon;
     String iconUri;
     String name;
     String flavour;
@@ -62,23 +66,29 @@ public class AcceptPeerActivity extends AppCompatActivity
 
     // Listview variables
     ListView listView;
-    ScheduleAdapter mScheduleAdapter;
+    CheckScheduleAdapter mClassAdapter;
     ProgressBar spinner;
+    View splash;
 
     // Arrays and Lists
-    ArrayList<Schedule> mScheduleList = new ArrayList<>();
-    ArrayList<String> mismatchedClassesList = new ArrayList<>();
+    ArrayList<MatchingClass> mClassList = new ArrayList<>();
+    ArrayList<MatchingClass> mMatchingList = new ArrayList<>();
+    ArrayList<String> addedClasses = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) savedInstanceState.clear();
+
+        if (!getResources().getBoolean(R.bool.isTablet)) setTheme(R.style.AppTheme_NoActionBar);
         setContentView(R.layout.activity_accept_peer);
+
         boolean isTablet = getResources().getBoolean(R.bool.isTablet);
         boolean isLandscape = getResources().getBoolean(R.bool.isLandscape);
 
         if (isTablet) {
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
+            if (getResources().getBoolean(R.bool.isLandscape))
+                getSupportActionBar().setElevation(0f);
         } else {
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
@@ -88,6 +98,7 @@ public class AcceptPeerActivity extends AppCompatActivity
         // Initialise the Progress Bar
         spinner = (ProgressBar) findViewById(R.id.progressBar);
         spinner.setVisibility(View.VISIBLE);
+        splash = findViewById(R.id.splash);
 
         // Initialise the theme variables
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -97,7 +108,13 @@ public class AcceptPeerActivity extends AppCompatActivity
         Color.colorToHSV(tempColor, hsv);
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
+        Color.colorToHSV(tempColor, hsv);
+        hsv[2] *= 0.95f; // value component
+        int actionColor = Color.HSVToColor(hsv);
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+        Color.colorToHSV(backgroundColor, hsv);
+        hsv[2] *= 0.9f;
+        int darkBackgroundColor = Color.HSVToColor(hsv);
         findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
         int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
 
@@ -107,55 +124,51 @@ public class AcceptPeerActivity extends AppCompatActivity
         }
 
         if (isTablet) {
-            if (isLandscape)
+            if (isLandscape) {
                 findViewById(R.id.gradient_overlay).setBackgroundColor(mPrimaryColor);
+                findViewById(R.id.cardview).setBackgroundColor(backgroundColor);
+                findViewById(R.id.activity_people).setBackgroundColor(darkBackgroundColor);
+            } else {
+                findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(mDarkColor);
+                findViewById(R.id.accept).setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+            }
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(actionColor));
             findViewById(R.id.extended_appbar).setBackgroundColor(mPrimaryColor);
         } else {
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
             findViewById(R.id.appbar).setBackgroundColor(mPrimaryColor);
         }
 
-        mScheduleAdapter = new ScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_schedule_with_checkbox, mScheduleList);
+        mClassAdapter = new CheckScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_check_schedule, mClassList);
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        if (mFirebaseUser == null)
+        if (mFirebaseUser == null) {
             loadLogInView();
+            return;
+        }
         mUserId = mFirebaseUser.getUid();
 
         // Set the self ref data
         DatabaseReference selfRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mUserId);
-        selfRef.child("nickname").addValueEventListener(new ValueEventListener() {
+        selfRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                selfName = dataSnapshot.getValue(String.class);
+                splash.setVisibility(View.GONE);
+                selfName = dataSnapshot.child("nickname").getValue(String.class);
+                selfIcon = dataSnapshot.child("icon").getValue(String.class);
+                selfFlavour = dataSnapshot.child("flavour").getValue(String.class);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        selfRef.child("icon").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                selfIcon = dataSnapshot.getValue(String.class);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        selfRef.child("flavour").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                selfFlavour = dataSnapshot.getValue(String.class);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                spinner.setVisibility(View.GONE);
+                splash.setVisibility(View.VISIBLE);
+                ((TextView)findViewById(R.id.textView1)).setText(getString(R.string.check_internet));
             }
         });
 
@@ -172,7 +185,7 @@ public class AcceptPeerActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox);
+                CheckBox checkbox = (CheckBox) view.findViewById(R.id.check);
                 if (checkbox.isChecked())
                     checkbox.setChecked(false);
                 else checkbox.setChecked(true);
@@ -197,8 +210,9 @@ public class AcceptPeerActivity extends AppCompatActivity
         // Fill in the profile data from the cloud
         Intent intent = getIntent();
         requestingUserId = intent.getStringExtra("requestingUserId");
+        icon = intent.getStringExtra("icon");
         iconUri = intent.getStringExtra("icon").replace("icon", requestingUserId);
-        name = intent.getStringExtra("name");
+        name = intent.getStringExtra("title");
         flavour = intent.getStringExtra("flavour");
 
         nameView.setText(name);
@@ -245,42 +259,70 @@ public class AcceptPeerActivity extends AppCompatActivity
                     headerView.setVisibility(View.VISIBLE);
                 }
 
-                final long snapshotCount = dataSnapshot.getChildrenCount();
                 int i = 0;
+                final int snapshotCount = ((int) dataSnapshot.getChildrenCount());
                 for (final DataSnapshot requestClassSnapshot : dataSnapshot.getChildren()) {
                     i++;
                     headerView.setVisibility(View.VISIBLE);
+                    final String newTitle = requestClassSnapshot.child("newtitle").getValue(String.class);
 
                     // Match each requested class with the user's classes
                     final int finalI = i;
+
                     FirebaseDatabase.getInstance().getReference().child("users")
                             .child(mUserId).child("classes").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            int oldSize = mScheduleList.size();
+                            int classCount = ((int) dataSnapshot.getChildrenCount());
+                            int i1 = 0;
+                            int oldListSize = mClassList.size();
+
                             for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                                i1++;
+
                                 if (classSnapshot.getKey().equals(requestClassSnapshot.getKey())) {
                                     // CLASSES MATCHED: Add to schedule list
-                                    mScheduleList.add(new Schedule(AcceptPeerActivity.this,
+                                    mClassList.add(new MatchingClass(
                                             classSnapshot.child("icon").getValue(String.class),
-                                            classSnapshot.getKey(), "", "", "", "", ""));
+                                            classSnapshot.getKey(),
+                                            requestClassSnapshot.child("icon").getValue(String.class),
+                                            requestClassSnapshot.getKey()));
+
+                                    classesRef.child(requestClassSnapshot.getKey()).child("newtitle")
+                                            .setValue(requestClassSnapshot.getKey());
+                                    classesRef.child(requestClassSnapshot.getKey()).child("newicon")
+                                            .setValue(requestClassSnapshot.child("icon").getValue());
+
+                                    addedClasses.add(classSnapshot.getKey());
+                                } else if (newTitle != null && newTitle.equals(classSnapshot.getKey())) {
+                                    if (!addedClasses.contains(newTitle)) {
+                                        mClassList.add(new MatchingClass(
+                                                requestClassSnapshot.child("newicon").getValue(String.class),
+                                                requestClassSnapshot.child("newtitle").getValue(String.class),
+                                                requestClassSnapshot.child("icon").getValue(String.class),
+                                                requestClassSnapshot.getKey()));
+                                        addedClasses.add(requestClassSnapshot.child("newtitle").getValue(String.class));
+                                    }
+                                } else if (oldListSize == mClassList.size() && i1 == classCount) {
+                                    // CLASSES NOT MATCHED, send with empty icon and title
+                                    mMatchingList.add(new MatchingClass("","",
+                                            requestClassSnapshot.child("icon").getValue(String.class),
+                                            requestClassSnapshot.getKey()));
+
+                                    if (finalI == snapshotCount && mMatchingList.size() > 0) {
+                                        // Send the matching list to MatchClassActivity
+                                        Intent intent = new Intent(AcceptPeerActivity.this, MatchClassActivity.class);
+                                        intent.putExtra("matchingList", (mMatchingList));
+                                        intent.putExtra("id", requestingUserId);
+                                        intent.putExtra("name", name);
+                                        intent.putExtra("icon", icon);
+                                        intent.putExtra("flavour", flavour);
+                                        startActivity(intent);
+                                    }
                                 }
                             }
-                            if (oldSize == mScheduleList.size()) {
-                                // Size is the same, no classes matched, add to dialog
-                                mismatchedClassesList.add(requestClassSnapshot.getKey());
-                            }
-                            mScheduleAdapter.notifyDataSetChanged();
 
-                            // Show the mismatched dialog if applicable
-                            if (mismatchedClassesList.size() > 0 && finalI == snapshotCount - 1) {
-                                MismatchDialog dialog = MismatchDialog.newInstance();
-                                Bundle args = new Bundle();
-                                args.putString("uid", requestingUserId);
-                                args.putStringArrayList("mismatched", mismatchedClassesList);
-                                dialog.setArguments(args);
-                                dialog.show(getSupportFragmentManager(), "dialog");
-                            }
+                            mClassAdapter.notifyDataSetChanged();
                         }
 
                         @Override
@@ -289,8 +331,8 @@ public class AcceptPeerActivity extends AppCompatActivity
                         }
                     });
 
-                    mScheduleAdapter = new ScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_schedule_with_checkbox, mScheduleList);
-                    listView.setAdapter(mScheduleAdapter);
+                    mClassAdapter = new CheckScheduleAdapter(AcceptPeerActivity.this, R.layout.list_item_check_schedule, mClassList);
+                    listView.setAdapter(mClassAdapter);
                     spinner.setVisibility(View.GONE);
                 }
 
@@ -302,16 +344,6 @@ public class AcceptPeerActivity extends AppCompatActivity
             }
         });
 
-    }
-
-    @Override
-    public void OnClassesMatchedListener(ArrayList<Bundle> matchedClasses) {
-        for (int i = 0; i < matchedClasses.size(); i++) {
-            String title = matchedClasses.get(i).getString("title");
-            String icon = matchedClasses.get(i).getString("icon");
-            mScheduleList.add(new Schedule(this, icon, title, "", "", "", "", ""));
-        }
-        mScheduleAdapter.notifyDataSetChanged();
     }
 
     private void acceptPeerRequest() {
@@ -333,23 +365,47 @@ public class AcceptPeerActivity extends AppCompatActivity
         requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
         requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
 
-        for (int i = 0; i < mScheduleList.size(); i++)
-            if (((CheckBox) getViewByPosition(i, listView).findViewById(R.id.checkbox)).isChecked()) {
+        for (int i = 0; i < mClassList.size(); i++)
+            if (((CheckBox) getViewByPosition(i, listView).findViewById(R.id.check)).isChecked()) {
                 positions.add(i);
-                String title = mScheduleList.get(i).scheduleLesson;
-                String classIcon = mScheduleList.get(i).scheduleIcon;
+                String title = mClassList.get(i).title;
+                String icon = mClassList.get(i).icon;
+                String originalTitle = mClassList.get(i).originalTitle;
+                String originalIcon = mClassList.get(i).originalIcon;
 
                 // Insert into firebase
                 // User's peers ref
                 mUserPeersRef.child(requestingUserId).child("nickname").setValue(name);
                 mUserPeersRef.child(requestingUserId).child("icon").setValue(iconUri);
                 mUserPeersRef.child(requestingUserId).child("flavour").setValue(flavour);
-                mUserPeersRef.child(requestingUserId).child("classes").child(title).child("peers").child(mUserId).setValue("");
+
                 // Requesting user's peers ref
                 requestingUserPeersRef.child(mUserId).child("nickname").setValue(selfName);
                 requestingUserPeersRef.child(mUserId).child("icon").setValue(selfIcon);
                 requestingUserPeersRef.child(mUserId).child("flavour").setValue(selfFlavour);
-                requestingUserPeersRef.child(mUserId).child("classes").child("peers").child(requestingUserId).setValue("");
+
+                // User's class ref
+                DatabaseReference classRef = mUserClassesRef.child(title).child("peers").child(requestingUserId);
+                classRef.child("originalicon").setValue(originalIcon);
+                classRef.child("originaltitle").setValue(originalTitle);
+
+                // Requesting user's class ref
+                classRef = requestingUserClassesRef.child(originalTitle).child("peers").child(mUserId);
+                classRef.child("originalicon").setValue(icon);
+                classRef.child("originaltitle").setValue(title);
+
+                // User's peer class ref
+                classRef = mUserPeersRef.child(requestingUserId).child("classes").child(title);
+                classRef.child("icon").setValue(icon);
+                classRef.child("originalicon").setValue(originalIcon);
+                classRef.child("originaltitle").setValue(originalTitle);
+
+                // Requesting user's peer class ref
+                classRef = requestingUserPeersRef.child(mUserId).child("classes").child(originalTitle);
+                classRef.child("icon").setValue(originalIcon);
+                classRef.child("originalicon").setValue(icon);
+                classRef.child("originaltitle").setValue(title);
+
             }
     }
 

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -96,7 +97,8 @@ public class TaskAdapter extends ArrayAdapter {
         }
 
         if (getContext() instanceof ScheduleDetailActivity) {
-            holder.icon.setTransitionName(null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                holder.icon.setTransitionName(null);
         }
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
@@ -108,6 +110,9 @@ public class TaskAdapter extends ArrayAdapter {
             holder.sharer.setTextColor(textColor);
             holder.sharer.setAlpha(alpha);
         }
+
+        holder.taskClass.setTextColor(textColor);
+        holder.taskType.setTextColor(textColor);
 
         if (holder.date != null) {
             holder.date.setTextColor(textColor);

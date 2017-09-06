@@ -6,19 +6,15 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.content.res.Resources
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
-import android.opengl.Visibility
 import android.os.Build
 import android.preference.PreferenceManager
 import android.provider.MediaStore
@@ -30,7 +26,6 @@ import android.support.design.widget.TabLayout
 import android.support.v4.app.TaskStackBuilder
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -45,7 +40,6 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -67,16 +61,13 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.pdt.plume.data.DbContract
 import com.pdt.plume.data.DbHelper
 import com.pdt.plume.services.ClassNotificationReceiver
-import com.pdt.plume.services.ClassesActivityTablet
 
 import java.io.IOException
 import java.util.ArrayList
@@ -84,18 +75,14 @@ import java.util.Calendar
 import java.util.Date
 
 import android.os.Build.ID
-import android.support.v4.widget.SlidingPaneLayout
 import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM
-import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID
 import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT
 import com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION
 
 import com.pdt.plume.data.DbContract.TasksEntry
+import com.pdt.plume.services.ActiveNotificationService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.dialog_days.view.*
-import kotlinx.android.synthetic.main.fragment_schedule.*
-import kotlinx.android.synthetic.main.fragment_tasks.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, TasksDetailFragment.OnTaskCompleteListener, TasksDetailFragment.OnTaskDeleteListener, ScheduleDetailFragment.OnClassDeleteListener {
 
@@ -132,6 +119,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) savedInstanceState.clear()
         FacebookSdk.sdkInitialize(applicationContext)
         setContentView(R.layout.activity_main)
         if (findViewById(R.id.fab) != null)
@@ -423,8 +411,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         if (id == R.id.intro) {
-            val intent = Intent(this, IntroActivity::class.java)
-            startActivity(intent)
+//            val intent = Intent(this, MatchClassesActivity::class.java)
+//            startActivity(intent)
         }
 
         if (id == R.id.notification) {
@@ -511,7 +499,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             else
                 startActivity(Intent(this, ClassesActivity::class.java))
             R.id.nav_people -> if (isTablet)
-                startActivity(Intent(this, PeopleActivityTablet::class.java))
+                startActivity(Intent(this, PeopleActivity::class.java))
             else
                 startActivity(Intent(this, PeopleActivity::class.java))
             R.id.nav_requests -> startActivity(Intent(
@@ -553,11 +541,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         editor.putLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), c.timeInMillis)
 
-        // Trigger the notification service
+        // Trigger the notification services
         val notifIntent = Intent(this, ClassNotificationReceiver::class.java)
         notifIntent.action = "com.pdt.plume.NOTIFICATION"
         val pendingIntent = PendingIntent.getBroadcast(this,
                 57, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+        val activeNotifIntent = Intent(this, ActiveNotificationService::class.java)
+        activeNotifIntent.action = "com.pdt.plume.NOTIFICATION"
+        val activePendingIntent = PendingIntent.getBroadcast(this,
+                58, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT)
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = System.currentTimeMillis()
         calendar.set(Calendar.HOUR_OF_DAY, 1)
@@ -565,6 +557,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val alarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarm.cancel(pendingIntent)
         alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+        calendar.set(Calendar.HOUR_OF_DAY, 8)
+        calendar.set(Calendar.MINUTE, 0)
+        alarm.cancel(activePendingIntent)
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_DAY, activePendingIntent)
 
         // Commit the preferences
         editor.apply()
@@ -776,7 +772,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 0 -> return resources.getString(R.string.schedule)
                 1 -> return resources.getString(R.string.task)
                 else -> {
-                    Log.e(LOG_TAG, "Error setting tab name at getPageTitle")
+                    Log.e(LOG_TAG, "Error setting tab title at getPageTitle")
                     return null
                 }
             }
@@ -850,257 +846,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun loadLogInView() {
         if (isTablet)
-            startActivity(Intent(this, LoginActivityTablet::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
         else
             startActivity(Intent(this, LoginActivity::class.java))
     }
 
     private fun logOut() {
-        // Disable any notifications
-        // CANCEL TASK NOTIFICATIONS
-        val tasksRef = FirebaseDatabase.getInstance().reference
-                .child("users").child(mFirebaseUser!!.uid).child("tasks")
-        tasksRef.addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(dataSnapshot: DataSnapshot, s: String) {
-                // Get the data
-                val title = dataSnapshot.child("title").getValue(String::class.java)
-                val icon = dataSnapshot.child("icon").getValue(String::class.java)
-
-                // Rebuild the notification
-                val builder = NotificationCompat.Builder(this@MainActivity)
-                var largeIcon: Bitmap? = null
-                try {
-                    largeIcon = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(icon))
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-
-                val contentIntent = Intent(this@MainActivity, TasksDetailActivity::class.java)
-                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID)
-                val stackBuilder = TaskStackBuilder.create(this@MainActivity)
-                stackBuilder.addParentStack(TasksDetailActivity::class.java)
-                stackBuilder.addNextIntent(contentIntent)
-                val contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0)
-                builder.setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(resources.getColor(R.color.colorPrimary))
-                        .setContentTitle(getString(R.string.notification_message_reminder))
-                        .setContentText(title)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setDefaults(Notification.DEFAULT_ALL)
-
-                val notification = builder.build()
-
-                val notificationIntent = Intent(this@MainActivity, TaskNotificationPublisher::class.java)
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1)
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification)
-                val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, REQUEST_NOTIFICATION_ALARM,
-                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-                val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                if (pendingIntent != null)
-                    alarmManager.cancel(pendingIntent)
-            }
-
-            override fun onChildChanged(dataSnapshot: DataSnapshot, s: String) {}
-
-            override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
-
-            override fun onChildMoved(dataSnapshot: DataSnapshot, s: String) {}
-
-            override fun onCancelled(databaseError: DatabaseError) {}
-        })
-
-        // CANCEL CLASS NOTIFICATIONS
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val classesRef = FirebaseDatabase.getInstance().reference
-                .child("users").child(mFirebaseUser!!.uid).child("classes")
-        classesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                for (classSnapshot in dataSnapshot.children) {
-                    // Get the key data
-                    val title = classSnapshot.key
-                    val icon = classSnapshot.child("icon").getValue(String::class.java)
-                    val message = getString(R.string.class_notification_message,
-                            Integer.toString(preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)))
-
-                    // Get the listed data
-                    val timeins = ArrayList<Int>()
-                    if (weekSettings == "0")
-                        for (timeinSnapshot in classSnapshot.child("timein").children)
-                            timeins.add(timeinSnapshot.getValue(Int::class.javaPrimitiveType))
-                    else
-                        for (timeinaltSnapshot in classSnapshot.child("timeinalt").children)
-                            timeins.add(timeinaltSnapshot.getValue(Int::class.javaPrimitiveType))
-
-
-                    val c = Calendar.getInstance()
-                    for (i in timeins.indices) {
-                        // Rebuild the notification
-                        c.timeInMillis = timeins[i] as Long
-
-                        val builder = NotificationCompat.Builder(this@MainActivity)
-                        var largeIcon: Bitmap? = null
-                        try {
-                            largeIcon = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(icon))
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-
-
-                        val contentIntent = Intent(this@MainActivity, ScheduleDetailActivity::class.java)
-                        if (mFirebaseUser != null)
-                            contentIntent.putExtra("id", title)
-                        val stackBuilder = TaskStackBuilder.create(this@MainActivity)
-                        stackBuilder.addParentStack(ScheduleDetailActivity::class.java)
-                        stackBuilder.addNextIntent(contentIntent)
-                        val contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0)
-                        builder.setContentIntent(contentPendingIntent)
-                                .setSmallIcon(R.drawable.ic_assignment)
-                                .setColor(resources.getColor(R.color.colorPrimary))
-                                .setContentTitle(title)
-                                .setContentText(message)
-                                .setAutoCancel(true)
-                                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                                .setDefaults(Notification.DEFAULT_ALL)
-
-                        val notification = builder.build()
-
-                        val notificationIntent = Intent(this@MainActivity, TaskNotificationPublisher::class.java)
-                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, REQUEST_NOTIFICATION_ID)
-                        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification)
-                        val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, REQUEST_NOTIFICATION_ALARM,
-                                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-                        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                        alarmManager.cancel(pendingIntent)
-                    }
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {}
-        })
-
-        // Reschedule all SQLite based Task Notifications
-        val dbHelper = DbHelper(this@MainActivity)
-        val tasksCursor = dbHelper.taskData
-        tasksCursor.moveToFirst()
-        for (i in 0..tasksCursor.count - 1) {
-            // Get the data
-            tasksCursor.moveToPosition(i)
-            val title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE))
-            val icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON))
-            val reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE))
-            val reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME))
-            val c = Calendar.getInstance()
-            c.timeInMillis = reminderDateMillis
-            val hour = reminderTimeSeconds.toInt() / 3600
-            val minute = (reminderTimeSeconds - hour * 3600).toInt() / 60
-            c.set(Calendar.HOUR_OF_DAY, hour)
-            c.set(Calendar.MINUTE, minute)
-            val notificationMillis = c.timeInMillis
-
-            // Rebuild the notification
-            val builder = NotificationCompat.Builder(this@MainActivity)
-            var largeIcon: Bitmap? = null
-            try {
-                largeIcon = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(icon))
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-            val contentIntent = Intent(this@MainActivity, TasksDetailActivity::class.java)
-            contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID)
-            val stackBuilder = TaskStackBuilder.create(this@MainActivity)
-            stackBuilder.addParentStack(TasksDetailActivity::class.java)
-            stackBuilder.addNextIntent(contentIntent)
-            val contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0)
-            builder.setContentIntent(contentPendingIntent)
-                    .setSmallIcon(R.drawable.ic_assignment)
-                    .setColor(resources.getColor(R.color.colorPrimary))
-                    .setContentTitle(getString(R.string.notification_message_reminder))
-                    .setContentText(title)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setDefaults(Notification.DEFAULT_ALL)
-
-            val notification = builder.build()
-
-            val notificationIntent = Intent(this@MainActivity, TaskNotificationPublisher::class.java)
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1)
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification)
-            val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, REQUEST_NOTIFICATION_ALARM,
-                    notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (reminderDateMillis > 0)
-                alarmManager.set(AlarmManager.RTC, Date(notificationMillis).time, pendingIntent)
-        }
-        tasksCursor.close()
-
-        // Reschedule all SQLite based Class Notifications
-        val classesCursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this)
-        var c = Calendar.getInstance()
-        val forerunnerTime = preferences.getInt(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0)
-        if (classesCursor != null)
-            for (i in 0..classesCursor.count - 1) {
-                classesCursor.moveToPosition(i)
-                val title = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE))
-                val icon = classesCursor.getString(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON))
-                val ID = classesCursor.getInt(classesCursor.getColumnIndex(DbContract.ScheduleEntry._ID))
-
-                val timeInValue = classesCursor.getLong(classesCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN))
-                c = Calendar.getInstance()
-                val timeInCalendar = Calendar.getInstance()
-                timeInCalendar.timeInMillis = timeInValue
-                c.set(Calendar.HOUR, timeInCalendar.get(Calendar.HOUR) - 1)
-                c.set(Calendar.MINUTE, timeInCalendar.get(Calendar.MINUTE) - forerunnerTime)
-                val current = Calendar.getInstance()
-                if (c.timeInMillis < current.timeInMillis)
-                    c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1)
-                c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) - forerunnerTime)
-
-                // Build the notification
-                val builder = NotificationCompat.Builder(this)
-                var largeIcon: Bitmap? = null
-                try {
-                    largeIcon = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(icon))
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-
-                val contentIntent = Intent(this@MainActivity, ScheduleDetailActivity::class.java)
-                contentIntent.putExtra("_ID", ID)
-                val stackBuilder = TaskStackBuilder.create(this@MainActivity)
-                stackBuilder.addParentStack(ScheduleDetailActivity::class.java)
-                stackBuilder.addNextIntent(contentIntent)
-                val contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0)
-
-                val finalC = c
-                Palette.generateAsync(largeIcon!!) {
-                    builder.setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_assignment)
-                            .setColor(resources.getColor(R.color.colorPrimary))
-                            .setContentTitle(title)
-                            .setContentText(getString(R.string.class_notification_message, Integer.toString(forerunnerTime)))
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .setDefaults(Notification.DEFAULT_ALL)
-
-                    val notification = builder.build()
-
-                    val notificationIntent = Intent(this@MainActivity, TaskNotificationPublisher::class.java)
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 0)
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification)
-                    val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-                    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                    alarmManager.set(AlarmManager.RTC, finalC.timeInMillis, pendingIntent)
-                }
-            }
-        classesCursor?.close()
+        // Cancel online notifications
+        Utility.rescheduleNotifications(this, false)
 
         // Execute the Sign Out Operation
         mFirebaseAuth!!.signOut()
@@ -1111,7 +864,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         LoginManager.getInstance().logOut()
 
         val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }

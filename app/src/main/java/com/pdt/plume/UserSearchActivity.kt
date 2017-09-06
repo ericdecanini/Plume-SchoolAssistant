@@ -13,12 +13,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.ProgressBar
 
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
@@ -41,6 +35,11 @@ import java.io.IOException
 import java.util.ArrayList
 
 import android.R.attr.editable
+import android.content.DialogInterface
+import android.os.Parcelable
+import android.support.v7.app.AlertDialog
+import android.widget.*
+import java.io.Serializable
 
 class UserSearchActivity : AppCompatActivity() {
 
@@ -60,13 +59,13 @@ class UserSearchActivity : AppCompatActivity() {
     lateinit internal var textWatcher: TextWatcher
 
     // UI Data
-    lateinit internal var adapter: PeerAdapter
+    lateinit internal var adapter: UserAdapter
 
     // Arrays
-    internal var searchResults = ArrayList<Peer>()
+    internal var searchResults = ArrayList<User>()
     internal var searchResultIDs = ArrayList<String>()
     internal var userNames = ArrayList<String>()
-    internal var userList = ArrayList<Peer>()
+    internal var userList = ArrayList<User>()
     internal var userIDs = ArrayList<String>()
     internal var peerIDs = ArrayList<String>()
 
@@ -88,20 +87,50 @@ class UserSearchActivity : AppCompatActivity() {
         spinner.visibility = View.GONE
 
         listView = findViewById(R.id.listView) as ListView
-        adapter = PeerAdapter(this, R.layout.list_item_search_result, searchResults)
+        adapter = UserAdapter(this, R.layout.list_item_user, searchResults)
         listView.adapter = adapter
 
         // Set the listeners of the views
         homeButton.setOnClickListener { onBackPressed() }
         listView.onItemClickListener = AdapterView.OnItemClickListener { adapterView, view, i, l ->
             val activity: Class<*>
+
             if (resources.getBoolean(R.bool.isTablet))
-                activity = AddPeerActivityTablet::class.java
-            else
                 activity = AddPeerActivity::class.java
+            else activity = AddPeerActivity::class.java
             val intent = Intent(this@UserSearchActivity, activity)
-            intent.putExtra("id", searchResultIDs[i])
-            startActivity(intent)
+            intent.putExtra("user", searchResults[i] as Serializable)
+
+            // Check if there is a request still pending to that user
+            getWindow().getDecorView().findViewById(android.R.id.content).isEnabled = false
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(searchResults[i].id).child("requests")
+                    .child(mUserId).addListenerForSingleValueEvent(object: ValueEventListener {
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    val snapshotCount = p0!!.childrenCount
+                    getWindow().getDecorView().findViewById(android.R.id.content).isEnabled = true
+                    if (snapshotCount > 0) {
+                        AlertDialog.Builder(this@UserSearchActivity)
+                                .setTitle(getString(R.string.request_pending_title))
+                                .setMessage(getString(R.string.request_pending_text))
+                                .setNegativeButton(getString(R.string.cancel), null)
+                                .setPositiveButton(getString(R.string.ok), DialogInterface.OnClickListener { _, _ ->
+                                    FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(searchResults[i].id).child("requests")
+                                            .child(mUserId).removeValue()
+                                    startActivity(intent)
+                                }).show()
+                    } else {
+                        startActivity(intent)
+                    }
+                }
+
+                override fun onCancelled(p0: DatabaseError?) {
+                    getWindow().getDecorView().findViewById(android.R.id.content).isEnabled = true
+                    Toast.makeText(this@UserSearchActivity, getString(R.string.check_internet), Toast.LENGTH_SHORT)
+                }
+            })
         }
 
         // This listener sets the behavior of the clear button's visibility
@@ -148,8 +177,11 @@ class UserSearchActivity : AppCompatActivity() {
                                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                                     for (userSnapshot in dataSnapshot.children) {
                                         if (peerIDs.contains(userSnapshot.key)) continue
+
                                         val name = userSnapshot.child("nickname").getValue(String::class.java)
                                         var iconUri: String? = userSnapshot.child("icon").getValue(String::class.java)
+                                        val flavour = userSnapshot.child("flavour").getValue(String::class.java)
+
                                         if (name != null && iconUri != null) {
                                             iconUri = iconUri.replace("icon", userSnapshot.key)
                                             if (!iconUri.contains("android.resource://")) {
@@ -158,7 +190,7 @@ class UserSearchActivity : AppCompatActivity() {
                                                 if (file.exists()) {
                                                     // ADD THE LIST ITEM HERE
                                                     userIDs.add(userSnapshot.key)
-                                                    userList.add(Peer(iconUri, name))
+                                                    userList.add(User(iconUri, name, flavour, userSnapshot.key))
                                                     userNames.add(name)
                                                 } else {
                                                     // File doesn't exist: Download from storage
@@ -172,14 +204,14 @@ class UserSearchActivity : AppCompatActivity() {
                                                     iconRef.getFile(file).addOnSuccessListener {
                                                         // ADD THE LIST ITEM HERE
                                                         userIDs.add(userSnapshot.key)
-                                                        userList.add(Peer(finalIconUri, name))
+                                                        userList.add(User(finalIconUri, name, flavour, userSnapshot.key))
                                                         userNames.add(name)
                                                     }
                                                 }
                                             } else {
                                                 // Drawable being used
                                                 userIDs.add(userSnapshot.key)
-                                                userList.add(Peer(iconUri, name))
+                                                userList.add(User(iconUri, name, flavour, userSnapshot.key))
                                                 userNames.add(name)
                                             }
                                         }

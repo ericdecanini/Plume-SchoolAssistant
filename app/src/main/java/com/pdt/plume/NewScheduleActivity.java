@@ -3,8 +3,6 @@ package com.pdt.plume;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,13 +15,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
-import java.lang.reflect.Array;
 import java.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -31,7 +26,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -44,7 +38,6 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,10 +64,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static android.R.attr.data;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
@@ -426,13 +417,16 @@ public class NewScheduleActivity extends AppCompatActivity
         Color.colorToHSV(titleColor, hsv);
         hsv[2] *= 0.8f;
         int darkTitleColor = Color.HSVToColor(hsv);
-        fieldTeacher.setTextColor(titleColor);
-        fieldTeacher.setHintTextColor(darkTitleColor);
+        if (fieldTeacher != null) {
+            fieldTeacher.setTextColor(titleColor);
+            fieldTeacher.setHintTextColor(darkTitleColor);
+        }
         ((ImageView) findViewById(R.id.field_new_schedule_teacher_icon)).setColorFilter(darkTitleColor);
-        fieldRoom.setTextColor(titleColor);
-        fieldRoom.setHintTextColor(darkTitleColor);
+        if (fieldRoom != null) {
+            fieldRoom.setTextColor(titleColor);
+            fieldRoom.setHintTextColor(darkTitleColor);
+        }
         ((ImageView) findViewById(R.id.field_new_schedule_room_icon)).setColorFilter(darkTitleColor);
-
 
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
@@ -473,7 +467,7 @@ public class NewScheduleActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_detail, menu);
+        getMenuInflater().inflate(R.menu.menu_confirm, menu);
         return true;
     }
 

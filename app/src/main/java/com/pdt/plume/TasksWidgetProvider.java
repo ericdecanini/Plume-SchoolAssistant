@@ -24,7 +24,7 @@ public class TasksWidgetProvider extends AppWidgetProvider {
 
 /*int[] appWidgetIds holds ids of multiple instance
  * of your widget
- * meaning you are placing more than one widgets on
+ * meaning you are placing delete than one widgets on
  * your homescreen*/
         final int N = appWidgetIds.length;
         for (int i = 0; i < N; ++i) {

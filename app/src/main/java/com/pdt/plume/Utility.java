@@ -20,11 +20,15 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Spinner;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,6 +38,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
+import com.pdt.plume.services.ClassNotificationService;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,8 +50,10 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.os.Build.ID;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
@@ -138,7 +145,7 @@ public class Utility {
         return byteBuffer.toByteArray();
     }
 
-    public static int generateViewId() {
+    public static int generateUniqueId() {
         for (; ; ) {
             final int result = sNextGeneratedId.get();
             // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
@@ -180,6 +187,174 @@ public class Utility {
             }
         }
         return builder.toString();
+    }
+
+    public static void rescheduleNotifications(final Context context, final boolean loggingIn) {
+        // Toggle Class Notifications
+        Intent intent = new Intent(context, ClassNotificationService.class);
+        if (!loggingIn)
+            intent.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
+        context.startService(intent);
+
+
+        Intent intent1 = new Intent(context, ClassNotificationService.class);
+        if (loggingIn) intent1.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
+        context.startService(intent1);
+
+        // Toggle Firebase Task Notifications
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mFirebaseUser != null) {
+            DatabaseReference tasksRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mFirebaseUser.getUid()).child("tasks");
+            tasksRef.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // Get the data
+                    String title = dataSnapshot.child("title").getValue(String.class);
+                    String icon = dataSnapshot.child("icon").getValue(String.class);
+                    ArrayList reminderDateMillis = dataSnapshot.child("reminderdate").getValue(ArrayList.class);
+                    ArrayList reminderTimeSeconds = dataSnapshot.child("remindertime").getValue(ArrayList.class);
+                    Calendar c = Calendar.getInstance();
+                    if (reminderDateMillis != null)
+                        for (int i = 0; i < reminderDateMillis.size(); i++) {
+                            // Rebuild the notification
+                            c.setTimeInMillis(((long) reminderDateMillis.get(i)));
+                            int hour = (int) ((long) reminderTimeSeconds.get(i)) / 3600;
+                            int minute = (int) (((long) reminderTimeSeconds.get(i)) - hour * 3600) / 60;
+                            c.set(Calendar.HOUR_OF_DAY, hour);
+                            c.set(Calendar.MINUTE, minute);
+                            long notificationMillis = (c.getTimeInMillis());
+
+                            // Rebuild the notification
+                            final android.support.v4.app.NotificationCompat.Builder builder
+                                    = new NotificationCompat.Builder(context);
+                            Bitmap largeIcon = null;
+                            try {
+                                largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
+                                    .setBackground(largeIcon);
+
+                            boolean isTablet = context.getResources().getBoolean(R.bool.isTablet);
+                            Intent contentIntent;
+                            if (isTablet) {
+                                contentIntent = new Intent(context, MainActivity.class);
+                                contentIntent.putExtra(context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), true);
+                            }
+                            else {
+                                contentIntent = new Intent(context, TasksDetailActivity.class);
+                                contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_ID), ID);
+                            }
+                            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+                            stackBuilder.addParentStack(TasksDetailActivity.class);
+                            stackBuilder.addNextIntent(contentIntent);
+                            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
+                            builder.setContentIntent(contentPendingIntent)
+                                    .setSmallIcon(R.drawable.ic_assignment)
+                                    .setColor(context.getResources().getColor(R.color.colorPrimary))
+                                    .setContentTitle(context.getString(R.string.notification_message_reminder))
+                                    .setContentText(title)
+                                    .setAutoCancel(true)
+                                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                                    .extend(wearableExtender)
+                                    .setDefaults(Notification.DEFAULT_ALL);
+
+                            Notification notification = builder.build();
+
+                            Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
+                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                            final PendingIntent pendingIntent = PendingIntent.getBroadcast
+                                    (context, REQUEST_NOTIFICATION_ALARM,
+                                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                            if (loggingIn && ((long) reminderDateMillis.get(i)) > 0)
+                                alarmManager.set(AlarmManager.RTC, new Date(notificationMillis).getTime(), pendingIntent);
+                            else alarmManager.cancel(pendingIntent);
+                        }
+                }
+
+                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
+                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+                @Override public void onCancelled(DatabaseError databaseError) {}});
+        }
+
+        // Toggle SQLite Task Notifications
+        DbHelper dbHelper = new DbHelper(context);
+        Cursor tasksCursor = dbHelper.getTaskData();
+        tasksCursor.moveToFirst();
+        for (int i = 0; i < tasksCursor.getCount(); i++) {
+            // Get the data
+            tasksCursor.moveToPosition(i);
+            String title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE));
+            String icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON));
+            long reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE));
+            long reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME));
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(reminderDateMillis);
+            int hour = (int) reminderTimeSeconds / 3600;
+            int minute = (int) (reminderTimeSeconds - hour * 3600) / 60;
+            c.set(Calendar.HOUR_OF_DAY, hour);
+            c.set(Calendar.MINUTE, minute);
+            long notificationMillis = (c.getTimeInMillis());
+
+            // Build the notification
+            final android.support.v4.app.NotificationCompat.Builder builder
+                    = new NotificationCompat.Builder(context);
+            Bitmap largeIcon = null;
+            try {
+                largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            final android.support.v4.app.NotificationCompat.WearableExtender wearableExtender
+                    = new NotificationCompat.WearableExtender().setBackground(largeIcon);
+
+            boolean isTablet = context.getResources().getBoolean(R.bool.isTablet);
+            Intent contentIntent;
+            if (isTablet) {
+                contentIntent = new Intent(context, MainActivity.class);
+                contentIntent.putExtra(context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), true);
+            }
+            else {
+                contentIntent = new Intent(context, MainActivity.class);
+                contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_ID), ID);
+            }
+
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+            stackBuilder.addParentStack(TasksDetailActivity.class);
+            stackBuilder.addNextIntent(contentIntent);
+            final PendingIntent contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0);
+            builder.setContentIntent(contentPendingIntent)
+                    .setSmallIcon(R.drawable.ic_assignment)
+                    .setColor(context.getResources().getColor(R.color.colorPrimary))
+                    .setContentTitle(context.getString(R.string.notification_message_reminder))
+                    .setContentText(title)
+                    .setAutoCancel(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .extend(wearableExtender)
+                    .setDefaults(Notification.DEFAULT_ALL);
+
+            Notification notification = builder.build();
+
+            Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
+            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
+            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+            final PendingIntent pendingIntent = PendingIntent.getBroadcast
+                    (context, REQUEST_NOTIFICATION_ALARM,
+                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (reminderDateMillis > 0 && !loggingIn)
+                alarmManager.set(AlarmManager.RTC, new Date(notificationMillis).getTime(), pendingIntent);
+            else alarmManager.cancel(pendingIntent);
+        }
+        tasksCursor.close();
+
     }
 
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap) {
@@ -371,6 +546,7 @@ public class Utility {
     public ArrayList<String> createSetPeriodsArrayList(String periods, String weekNumber, String weekType) {
         String[] splitPeriods = periods.split(":");
         ArrayList<String> periodList = new ArrayList<>();
+        Log.v(LOG_TAG, "Split periods size: " + splitPeriods.length);
 
         // Week 1: Get regular data
         if (weekNumber.equals("0") || weekType.equals("0")) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdt.plume"
-    android:versionCode="12">
+    android:versionCode="19">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.READ_DATABASE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".App"
@@ -41,7 +42,7 @@
         </provider>
         <provider
             android:name=".ContentProvider"
-            android:authorities="de.pdt.plume"
+            android:authorities="com.pdt.plume"
             android:exported="true"
             android:grantUriPermissions="true"
             android:label="ContentProvider"
@@ -67,6 +68,9 @@
             android:configChanges="orientation"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ClassesActivityTablet"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".TasksDetailActivityTablet"
             android:parentActivityName=".MainActivity" />
@@ -103,11 +107,6 @@
         <activity
             android:name=".ClassesActivity"
             android:label="@string/activity_classes_label"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".services.ClassesActivityTablet"
-            android:label="@string/activity_classes_label"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SettingsActivity"
@@ -142,11 +141,10 @@
         </service>
 
         <receiver android:name=".TaskNotificationPublisher" />
-
         <receiver android:name=".services.ClassNotificationReceiver">
             <intent-filter>
-                <action android:name="com.pdt.plume.NOTIFICATION"/>
-                <action android:name="com.pdt.plume.NOTIFICATION2"/>
+                <action android:name="com.pdt.plume.NOTIFICATION" />
+                <action android:name="com.pdt.plume.NOTIFICATION2" />
             </intent-filter>
         </receiver>
 
@@ -190,27 +188,12 @@
         <activity
             android:name=".PeopleActivity"
             android:label="@string/nav_people"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".PeopleActivityTablet"
-            android:label="@string/nav_people"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".LoginActivity"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".LoginActivityTablet"
-            android:label="@string/action_login"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SignUpActivity"
-            android:parentActivityName=".LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".SignUpActivityTablet"
-            android:label="@string/title_activity_login"
             android:parentActivityName=".LoginActivity" />
         <activity
             android:name=".RequestsActivity"
@@ -220,32 +203,17 @@
             android:name=".UserSearchActivity"
             android:label=""
             android:parentActivityName=".PeopleActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".AddPeerActivity"
-            android:label=""
-            android:parentActivityName=".UserSearchActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".AddPeerActivityTablet"
             android:label=""
             android:parentActivityName=".UserSearchActivity" />
         <activity
             android:name=".AcceptPeerActivity"
             android:label=""
-            android:parentActivityName=".RequestsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".AcceptPeerActivityTablet"
-            android:label=""
             android:parentActivityName=".RequestsActivity" />
         <activity
             android:name=".PeerProfileActivity"
-            android:label=""
-            android:parentActivityName=".PeopleActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".PeerProfileActivityTablet"
             android:label=""
             android:parentActivityName=".PeopleActivity" />
         <activity
@@ -273,6 +241,16 @@
             android:name=".services.ClassNotificationService"
             android:enabled="true"
             android:exported="false" />
+
+        <service
+            android:name=".services.ActiveNotificationService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity android:name=".MatchClassActivity"
+            android:label="@string/match_classes"
+            android:parentActivityName=".RequestsActivity"/>
+
     </application>
 
 </manifest>

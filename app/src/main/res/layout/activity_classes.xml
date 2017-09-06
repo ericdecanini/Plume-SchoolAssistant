@@ -72,28 +72,37 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/splash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="172dp"
+            android:layout_height="172dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/splash_no_completed_tasks" />
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/gray_700"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <TextView
-            android:id="@+id/header_textview"
-            android:visibility="gone"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="40dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginEnd="40dp"
-            android:text="@string/activity_classes_splash_no_classes"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginBottom="8dp"
-            android:drawableLeft="@drawable/ic_error_outline_black_24dp"
-            android:drawableStart="@drawable/ic_error_outline_black_24dp"
-            android:drawablePadding="4dp"
-            android:textSize="16sp"
-            android:textColor="@color/gray_900"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
         <ProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"

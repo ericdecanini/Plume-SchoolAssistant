@@ -56,7 +56,7 @@ public class FlavourDialogFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_flavour, container, false);
         flavourField = (EditText) rootView.findViewById(R.id.editText);
 
-        // Automatically inflate the EditText with the name
+        // Automatically inflate the EditText with the title
         Bundle args = getArguments();
         if (args != null) {
             flavourField.setText(args.getString("flavour"));

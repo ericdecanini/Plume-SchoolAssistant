@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -90,6 +91,7 @@ public class ScheduleFragment extends Fragment {
     FirebaseUser mFirebaseUser;
     String mUserId;
     DatabaseReference classesRef;
+    ChildEventListener childEventListener = null;
 
     // Required empty public constructor
     public ScheduleFragment() {
@@ -150,7 +152,7 @@ public class ScheduleFragment extends Fragment {
             if (getArguments() != null) {
                 int position = getArguments().getInt(getString(R.string.INTENT_EXTRA_POSITION), 0);
                 String RETURN_TO_SCHEDULE = getArguments().getString(getString(R.string.INTENT_FLAG_RETURN_TO_SCHEDULE));
-                if (isTablet && RETURN_TO_SCHEDULE != null && position > -1) {
+                if (isTablet && RETURN_TO_SCHEDULE != null && position > -1 && mScheduleList.size() > 0) {
                     listView.performItemClick(listView.getChildAt(position), position, listView.getItemIdAtPosition(position));
                 }
             }
@@ -185,6 +187,7 @@ public class ScheduleFragment extends Fragment {
     void querySchedule() {
         if (mFirebaseUser != null) {
             getCurrentDayScheduleFromFirebase();
+
             // Check if the classes ref doesn't exist
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId);
@@ -197,15 +200,14 @@ public class ScheduleFragment extends Fragment {
                         noItems = true;
                     }
 
-                    if (mScheduleList.size() == 0)
-                    {
+                    if (mScheduleList.size() == 0) {
                         splash.setVisibility(View.VISIBLE);
                         noItems = true;
-                    }
-                    else {
+                    } else {
                         splash.setVisibility(View.GONE);
                         noItems = false;
-                        listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
+                        if (isTablet && mScheduleList.size() > 0)
+                            listView.performItemClick(listView.getChildAt(0), 0, listView.getFirstVisiblePosition());
                     }
 
                     mScheduleAdapter.notifyDataSetChanged();
@@ -215,6 +217,7 @@ public class ScheduleFragment extends Fragment {
                 public void onCancelled(DatabaseError databaseError) {
                 }
             });
+
         } else {
             // Get the schedule data from SQLite
             DbHelper dbHelper = new DbHelper(getContext());
@@ -231,12 +234,10 @@ public class ScheduleFragment extends Fragment {
 
         // Set the splash text if there's no classes queried and update the Adapter
         if (splash != null) {
-            if (mScheduleList.size() == 0)
-            {
+            if (mScheduleList.size() == 0) {
                 splash.setVisibility(View.VISIBLE);
                 noItems = true;
-            }
-            else {
+            } else {
                 splash.setVisibility(View.GONE);
                 noItems = false;
             }
@@ -246,6 +247,14 @@ public class ScheduleFragment extends Fragment {
             mScheduleAdapter.notifyDataSetChanged();
         }
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (childEventListener != null)
+            FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserId).removeEventListener(childEventListener);
     }
 
     @Override
@@ -312,7 +321,7 @@ public class ScheduleFragment extends Fragment {
                     intent.putExtra("icon", icon);
 
                     // Add a transition if the device is Lollipop or above
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && view != null) {
                         // First check if a shared element transition is appropriate
                         // Shared element transition
                         ImageView iconView = (ImageView) view.findViewById(R.id.schedule_icon);
@@ -361,143 +370,131 @@ public class ScheduleFragment extends Fragment {
             String userId = firebaseUser.getUid();
             classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
-            classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
+            childEventListener = new ChildEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    long n = 0;
-                    long snapshotCount = dataSnapshot.getChildrenCount();
-                    for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
-                        // Hide the progress bar if the query is done
-                        n++;
-                        if (n == snapshotCount) spinner.setVisibility(View.GONE);
+                public void onChildAdded(DataSnapshot classSnapshot, String s) {
+                    final String title = classSnapshot.getKey();
+                    final String teacher = classSnapshot.child("teacher").getValue(String.class);
+                    final String room = classSnapshot.child("room").getValue(String.class);
+                    final String iconUri = classSnapshot.child("icon").getValue(String.class);
 
-                        final String title = classSnapshot.getKey();
-                        final String teacher = classSnapshot.child("teacher").getValue(String.class);
-                        final String room = classSnapshot.child("room").getValue(String.class);
-                        final String iconUri = classSnapshot.child("icon").getValue(String.class);
-
-                        int i1 = 0;
-                        final ArrayList<String> occurrences = new ArrayList<>();
-                        for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren()) {
-                            String occurrence = occurrenceSnapshot.getValue(String.class);
-                            if (occurrence.equals("")) {
-                                occurrence = occurrenceSnapshot.getKey();
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child("users").child(mUserId).child("classes")
-                                        .child(title).child("occurrence").child(occurrenceSnapshot.getKey())
-                                        .removeValue();
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child("users").child(mUserId).child("classes")
-                                        .child(title).child("occurrence").child(String.valueOf(i1))
-                                        .setValue(occurrence);
-                                occurrences.add(occurrence);
-                            } else occurrences.add(occurrenceSnapshot.getValue(String.class));
-                            mOccurrenceIndexList.add(String.valueOf(i1));
-                            i1++;
-                        }
-                        final ArrayList<Integer> timeins = new ArrayList<>();
-                        for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
-                            timeins.add(timeinSnapshot.getValue(int.class));
-                        final ArrayList<Integer> timeouts = new ArrayList<>();
-                        for (DataSnapshot timeoutSnapshot : classSnapshot.child("timeout").getChildren())
-                            timeouts.add(timeoutSnapshot.getValue(int.class));
-                        final ArrayList<Integer> timeinalts = new ArrayList<>();
-                        for (DataSnapshot timeinaltSnapshot : classSnapshot.child("timeinalt").getChildren())
-                            timeinalts.add(timeinaltSnapshot.getValue(int.class));
-                        final ArrayList<Integer> timeoutalts = new ArrayList<>();
-                        for (DataSnapshot timeoutaltSnapshot : classSnapshot.child("timeoutalt").getChildren())
-                            timeoutalts.add(timeoutaltSnapshot.getValue(int.class));
-                        final ArrayList<String> periods = new ArrayList<>();
-                        int i2 = 0;
-                        for (DataSnapshot periodsSnapshot : classSnapshot.child("periods").getChildren()) {
-                            String period = periodsSnapshot.getValue(String.class);
-                            if (period.equals("")) {
-                                period = periodsSnapshot.getKey();
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child("users").child(mUserId).child("classes")
-                                        .child(title).child("periods").child(periodsSnapshot.getKey())
-                                        .removeValue();
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child("users").child(mUserId).child("classes")
-                                        .child(title).child("periods").child(String.valueOf(i2))
-                                        .setValue(period);
-                                periods.add(period);
-                            } else periods.add(periodsSnapshot.getValue(String.class));
-                            i2++;
-                        }
-
-                        for (int i3 = 0; i3 < occurrences.size(); i3++) {
-                            mOccurrenceList.add(occurrences.get(i3));
-
-                            // Check if the iconUri points to an existing file
-                            if (iconUri == null) return;
-
-                            if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
-                                    periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
-                                ArrayList<String> periodsList = new ArrayList<>();
-                                periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
-                                        occurrences.get(occurrences.size() - 1).split(":")[1]));
+                    final ArrayList<String> occurrences = new ArrayList<>();
+                    for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren())
+                        occurrences.add(occurrenceSnapshot.getValue(String.class));
+                    final ArrayList<Integer> timeins = new ArrayList<>();
+                    for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
+                        timeins.add(timeinSnapshot.getValue(int.class));
+                    final ArrayList<Integer> timeouts = new ArrayList<>();
+                    for (DataSnapshot timeoutSnapshot : classSnapshot.child("timeout").getChildren())
+                        timeouts.add(timeoutSnapshot.getValue(int.class));
+                    final ArrayList<Integer> timeinalts = new ArrayList<>();
+                    for (DataSnapshot timeinaltSnapshot : classSnapshot.child("timeinalt").getChildren())
+                        timeinalts.add(timeinaltSnapshot.getValue(int.class));
+                    final ArrayList<Integer> timeoutalts = new ArrayList<>();
+                    for (DataSnapshot timeoutaltSnapshot : classSnapshot.child("timeoutalt").getChildren())
+                        timeoutalts.add(timeoutaltSnapshot.getValue(int.class));
+                    final ArrayList<String> periods = new ArrayList<>();
+                    for (DataSnapshot periodsSnapshot : classSnapshot.child("periods").getChildren())
+                        periods.add(periodsSnapshot.getValue(String.class));
 
 
-                                File file = new File(getContext().getFilesDir(), title + ".jpg");
-                                if (file.exists() || iconUri.contains("art_")) {
-                                    if (periodsList.size() != 0) {
-                                        for (int i = 0; i < periodsList.size(); i++) {
+                    for (int i3 = 0; i3 < occurrences.size(); i3++) {
+                        mOccurrenceList.add(occurrences.get(i3));
+
+                        // Check if the iconUri points to an existing file
+                        if (iconUri == null) return;
+
+                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
+                                periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
+                            ArrayList<String> periodsList = new ArrayList<>();
+                            periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
+                                    occurrences.get(i3).split(":")[1]));
+
+
+                            File file = new File(getContext().getFilesDir(), title + ".jpg");
+                            if (file.exists() || iconUri.contains("art_")) {
+                                if (periodsList.size() != 0) {
+                                    for (int i = 0; i < periodsList.size(); i++) {
+                                        if (weekNumber.equals("0"))
+                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                    utility.millisToHourTime(timeins.get(i)),
+                                                    utility.millisToHourTime(timeouts.get(i)),
+                                                    periodsList.get(i)));
+                                        else
+                                            mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                    utility.millisToHourTime(timeinalts.get(i)),
+                                                    utility.millisToHourTime(timeoutalts.get(i)),
+                                                    periodsList.get(i)));
+                                        Collections.sort(mScheduleList, new ScheduleComparator());
+                                        mScheduleAdapter.notifyDataSetChanged();
+                                    }
+                                } else {
+                                    if (weekNumber.equals("0"))
+                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                utility.millisToHourTime(timeins.get(i3)),
+                                                utility.millisToHourTime(timeouts.get(i3)),
+                                                ""));
+                                    else
+                                        mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
+                                                utility.millisToHourTime(timeinalts.get(i3)),
+                                                utility.millisToHourTime(timeoutalts.get(i3)),
+                                                ""));
+                                }
+                            } else {
+                                // File is non existent, download from storage
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReference();
+                                StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
+
+                                iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                        for (int i = 0; i < occurrences.size(); i++) {
                                             if (weekNumber.equals("0"))
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                         utility.millisToHourTime(timeins.get(i)),
                                                         utility.millisToHourTime(timeouts.get(i)),
-                                                        periodsList.get(i)));
+                                                        periods.get(i)));
                                             else
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                         utility.millisToHourTime(timeinalts.get(i)),
                                                         utility.millisToHourTime(timeoutalts.get(i)),
-                                                        periodsList.get(i)));
+                                                        periods.get(i)));
                                             Collections.sort(mScheduleList, new ScheduleComparator());
                                             mScheduleAdapter.notifyDataSetChanged();
                                         }
+                                        querySchedule();
                                     }
-                                } else {
-                                    // File is non existent, download from storage
-                                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReference();
-                                    StorageReference iconsRef = storageRef.child(mUserId + "/classes/" + title);
-
-                                    iconsRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                            for (int i = 0; i < occurrences.size(); i++) {
-                                                if (weekNumber.equals("0"))
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                            utility.millisToHourTime(timeins.get(i)),
-                                                            utility.millisToHourTime(timeouts.get(i)),
-                                                            periods.get(i)));
-                                                else
-                                                    mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                            utility.millisToHourTime(timeinalts.get(i)),
-                                                            utility.millisToHourTime(timeoutalts.get(i)),
-                                                            periods.get(i)));
-                                                Collections.sort(mScheduleList, new ScheduleComparator());
-                                                mScheduleAdapter.notifyDataSetChanged();
-                                            }
-                                            querySchedule();
-                                        }
-                                    });
-                                }
+                                });
                             }
                         }
                     }
 
-                    if (mScheduleList.size() == 0)
-                    {
+                    if (mScheduleList.size() == 0) {
                         splash.setVisibility(View.VISIBLE);
+                        spinner.setVisibility(View.GONE);
                         noItems = true;
-                    }
-                    else {
+                    } else {
                         splash.setVisibility(View.GONE);
+                        spinner.setVisibility(View.GONE);
                         noItems = false;
                     }
                     mScheduleAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
                 }
 
@@ -508,7 +505,9 @@ public class ScheduleFragment extends Fragment {
                     noItems = true;
                     headerTextView.setText(getString(R.string.check_internet));
                 }
-            });
+            };
+
+            classesRef.addChildEventListener(childEventListener);
         }
     }
 
@@ -591,7 +590,7 @@ public class ScheduleFragment extends Fragment {
         public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
             // Checks the count of items selected.
             // If it is one, show the edit menu action.
-            // If it is more than one, hide the edit menu action.
+            // If it is delete than one, hide the edit menu action.
             MenuItem menuItem = mActionMenu.findItem(R.id.action_edit);
             if (mOptionMenuCount == 0)
                 menuItem.setVisible(true);
@@ -644,19 +643,16 @@ public class ScheduleFragment extends Fragment {
 
                 Collections.sort(indexes);
                 for (int i = indexes.size() - 1; i > -1; i--) {
-                    Log.v(LOG_TAG, "Index: " + mOccurrenceIndexList.get(indexes.get(i)));
                     classesRef.child(mScheduleList.get(indexes.get(i)).scheduleLesson).child("occurrence")
                             .child(mOccurrenceIndexList.get(indexes.get(i))).removeValue();
                     mScheduleList.remove((int) indexes.get(i));
                 }
 
                 // Set the splash text if there's no classes queried
-                if (mScheduleList.size() == 0)
-                {
+                if (mScheduleList.size() == 0) {
                     splash.setVisibility(View.VISIBLE);
                     noItems = true;
-                }
-                else {
+                } else {
                     splash.setVisibility(View.GONE);
                     noItems = false;
                 }
@@ -724,9 +720,9 @@ public class ScheduleFragment extends Fragment {
                 startActivity(intent);
             }
 
-            // If more than one item was selected, throw a warning log
+            // If delete than one item was selected, throw a warning log
             else {
-                Log.w(LOG_TAG, "Cancelling event due to more than one item selected");
+                Log.w(LOG_TAG, "Cancelling event due to delete than one item selected");
             }
         }
     }
