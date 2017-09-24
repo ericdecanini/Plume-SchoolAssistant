@@ -118,9 +118,12 @@ public class NewScheduleActivity extends AppCompatActivity
             R.drawable.art_computing_64dp,
             R.drawable.art_cooking_64dp,
             R.drawable.art_creativestudies_64dp,
+            R.drawable.art_dance_64dp,
             R.drawable.art_drama_64dp,
+            R.drawable.art_electronics_64dp,
             R.drawable.art_engineering_64dp,
             R.drawable.art_english_64dp,
+            R.drawable.art_environment_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
             R.drawable.art_graphics_64dp,
@@ -130,6 +133,7 @@ public class NewScheduleActivity extends AppCompatActivity
             R.drawable.art_maths_64dp,
             R.drawable.art_media_64dp,
             R.drawable.art_music_64dp,
+            R.drawable.art_music2_64dp,
             R.drawable.art_pe_64dp,
             R.drawable.art_physics_64dp,
             R.drawable.art_psychology_64dp,
@@ -365,7 +369,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 int minute = c.get(Calendar.MINUTE);
                 if (minute >= 15 && minute < 45)
                     minute = 30;
-                if (minute >= 45) {
+                if (minute >= 45 || minute < 15) {
                     minute = 0;
                     hour++;
                 }
@@ -415,16 +419,16 @@ public class NewScheduleActivity extends AppCompatActivity
 
         int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(titleColor, hsv);
-        hsv[2] *= 0.8f;
+        hsv[1] *= 0.2f;
         int darkTitleColor = Color.HSVToColor(hsv);
         if (fieldTeacher != null) {
             fieldTeacher.setTextColor(titleColor);
-            fieldTeacher.setHintTextColor(darkTitleColor);
+//            fieldTeacher.setHintTextColor(darkTitleColor);
         }
         ((ImageView) findViewById(R.id.field_new_schedule_teacher_icon)).setColorFilter(darkTitleColor);
         if (fieldRoom != null) {
             fieldRoom.setTextColor(titleColor);
-            fieldRoom.setHintTextColor(darkTitleColor);
+//            fieldRoom.setHintTextColor(darkTitleColor);
         }
         ((ImageView) findViewById(R.id.field_new_schedule_room_icon)).setColorFilter(darkTitleColor);
 

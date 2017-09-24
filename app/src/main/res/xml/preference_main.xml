@@ -3,8 +3,28 @@
 
     <com.pdt.plume.ColouredPreferenceCategory
         android:key="@string/KEY_SETTINGS_CATEGORY_GENERAL"
-        android:title="@string/preference_category_general"
-        android:id="@+id/colouredPreferenceCategory">
+        android:title="@string/preference_category_general">
+
+        <com.pdt.plume.NumberPickerPreference
+            android:defaultValue="30"
+            android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
+            android:title="@string/settings_class_notification_title"
+            android:dialogTitle="@string/settings_class_notification_dialog_title"/>
+
+        <CheckBoxPreference
+            android:key="@string/KEY_SETTINGS_TASK_NOTIFICATION"
+            android:title="@string/settings_task_notification_title"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="@string/KEY_SETTINGS_CLASS_MUTE"
+            android:title="@string/settings_class_mute_title" />
+
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:key="@string/KEY_SETTINGS_CATEGORY_SCHEDULE"
+        android:title="@string/preference_category_schedule">
 
         <ListPreference
             android:key="@string/KEY_PREFERENCE_BASIS"
@@ -27,17 +47,8 @@
             android:entryValues="@array/settings_week_number_values"
             android:defaultValue="0" />
 
-        <com.pdt.plume.NumberPickerPreference
-            android:defaultValue="30"
-            android:key="@string/KEY_SETTINGS_CLASS_NOTIFICATION"
-            android:title="@string/settings_class_notification_title"
-            android:dialogTitle="@string/settings_class_notification_dialog_title"/>
-
-        <CheckBoxPreference
-            android:key="@string/KEY_SETTINGS_CLASS_MUTE"
-            android:title="@string/settings_class_mute_title" />
-
     </com.pdt.plume.ColouredPreferenceCategory>
+
     <com.pdt.plume.ColouredPreferenceCategory
         android:title="@string/preference_category_appearance"
         android:key="@string/KEY_SETTINGS_CATEGORY_APPEARANCE">

@@ -140,7 +140,7 @@ public class NewTaskActivity extends AppCompatActivity
     String classTitle = "None";
     String classType = "None";
 
-    float dueDateMillis;
+    long dueDateMillis;
     long reminderDateMillis;
     long reminderTimeMillis;
 
@@ -175,9 +175,12 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_computing_64dp,
             R.drawable.art_cooking_64dp,
             R.drawable.art_creativestudies_64dp,
+            R.drawable.art_dance_64dp,
             R.drawable.art_drama_64dp,
+            R.drawable.art_electronics_64dp,
             R.drawable.art_engineering_64dp,
             R.drawable.art_english_64dp,
+            R.drawable.art_environment_64dp,
             R.drawable.art_french_64dp,
             R.drawable.art_geography_64dp,
             R.drawable.art_graphics_64dp,
@@ -187,6 +190,7 @@ public class NewTaskActivity extends AppCompatActivity
             R.drawable.art_maths_64dp,
             R.drawable.art_media_64dp,
             R.drawable.art_music_64dp,
+            R.drawable.art_music2_64dp,
             R.drawable.art_pe_64dp,
             R.drawable.art_physics_64dp,
             R.drawable.art_psychology_64dp,
@@ -350,7 +354,7 @@ public class NewTaskActivity extends AppCompatActivity
                 String classType = extras.getString(getString(R.string.INTENT_EXTRA_TYPE));
                 String description = extras.getString(getString(R.string.INTENT_EXTRA_DESCRIPTION));
                 String attachment = "";
-                float dueDate = extras.getFloat(getString(R.string.INTENT_EXTRA_DUEDATE));
+                long dueDate = ((long) extras.getFloat(getString(R.string.INTENT_EXTRA_DUEDATE)));
                 long reminderDate = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_DATE));
                 long reminderTime = extras.getLong(getString(R.string.INTENT_EXTRA_ALARM_TIME));
 
@@ -613,7 +617,6 @@ public class NewTaskActivity extends AppCompatActivity
             fieldSharedCheckbox.setButtonTintList(ColorStateList.valueOf(darkTextColor));
         ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(darkTextColor);
         ((EditText) findViewById(R.id.field_new_task_description)).setTextColor(textColor);
-        ((EditText) findViewById(R.id.field_new_task_description)).setHintTextColor(textColor);
         ((TextView) findViewById(R.id.field_new_task_duedate_textview)).setTextColor(textColor);
         ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(textColor);
         ((TextView) findViewById(R.id.field_new_task_reminder_date_textview)).setTextColor(darkTextColor);
@@ -1180,25 +1183,14 @@ public class NewTaskActivity extends AppCompatActivity
                     case R.id.field_new_task_duedate:
                     case R.id.field_new_task_duedate_textview:
                         Calendar c_duedate = Calendar.getInstance();
-                        Date date_duedate = new Date();
-                        c_duedate.setTime(date_duedate);
+                        c_duedate.setTimeInMillis(dueDateMillis);
                         int year_duedate = c_duedate.get(Calendar.YEAR);
                         int month_duedate = c_duedate.get(Calendar.MONTH);
-                        int day_duedate = c_duedate.get(Calendar.DAY_OF_MONTH) + 1;
+                        int day_duedate = c_duedate.get(Calendar.DAY_OF_MONTH);
                         DatePickerDialog datePickerDialog_duedate = new DatePickerDialog(NewTaskActivity.this, dueDateSetListener(), year_duedate, month_duedate, day_duedate);
                         datePickerDialog_duedate.show();
                         break;
-//                    case R.id.field_new_task_attach:
-//                        if (mFirebaseUser != null)
-//                            Toast.makeText(NewTaskActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
-//                        else {
-//                            Intent attach_intent = new Intent(Intent.ACTION_PICK);
-//                            attach_intent.setType("*/*");
-//                            attach_intent.setAction(Intent.ACTION_GET_CONTENT);
-//                            attach_intent.addCategory(Intent.CATEGORY_OPENABLE);
-//                            startActivityForResult(attach_intent, REQUEST_FILE_GET);
-//                        }
-//                        break;
+
                     case R.id.take_photo_text:
                     case R.id.take_photo_icon:
                         // Request all permissions (for API 23+)
@@ -1398,13 +1390,14 @@ public class NewTaskActivity extends AppCompatActivity
         // Insert the data based on the user
         if (mFirebaseUser != null) {
             // Insert into Firebase
+            debounce("duetasksonline");
             final DatabaseReference taskRef;
             if (FLAG_EDIT)
                 taskRef = FirebaseDatabase.getInstance().getReference()
                         .child("users").child(mUserId).child("tasks").child(firebaseEditId);
             else taskRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mUserId).child("tasks").push();
-            Map<String, Float> duedateMap = new HashMap<>();
+            Map<String, Long> duedateMap = new HashMap<>();
             duedateMap.put("duedate", dueDateMillis);
             taskRef.setValue(duedateMap);
             taskRef.child("title").setValue(title);
@@ -1696,6 +1689,7 @@ public class NewTaskActivity extends AppCompatActivity
                 }
             } else {
                 // Insert a new database row
+                debounce("duetasksoffline");
                 int id = (int) dbHelper.insertTask(this, title, classTitle, classType, description, attachedFileUriString,
                         dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false);
 
@@ -1901,6 +1895,21 @@ public class NewTaskActivity extends AppCompatActivity
             byteBuffer.write(buffer, 0, len);
         }
         return byteBuffer.toByteArray();
+    }
+
+    boolean debounce(String tag) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        long lastCheckDate = preferences.getLong("lastCheckDate$tag", 0);
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(lastCheckDate);
+        int second = c.get(Calendar.SECOND);
+        Calendar cc = Calendar.getInstance();
+        cc.setTimeInMillis(System.currentTimeMillis());
+        int cSecond = cc.get(Calendar.SECOND);
+
+        preferences.edit().putLong("lastCheckDate" + tag, System.currentTimeMillis()).apply();
+
+        return cSecond > second + 5;
     }
 
 }

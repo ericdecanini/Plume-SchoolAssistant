@@ -88,7 +88,6 @@ public class TasksFragment extends Fragment {
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
-    ArrayList<String> FirebaseIdList = new ArrayList<>();
     DatabaseReference tasksRef;
     ChildEventListener childEventListener = null;
 
@@ -192,7 +191,6 @@ public class TasksFragment extends Fragment {
 
     private void queryTasks() {
         mTasksList.clear();
-        FirebaseIdList.clear();
         // Get a reference to the list view and create its mTasksAdapter
         // using the current day schedule data
         if (mFirebaseUser != null) {
@@ -225,14 +223,16 @@ public class TasksFragment extends Fragment {
                     if (file.exists() || icon.contains("art_")) {
                         if (!completed && duedate != null) {
                             Log.v(LOG_TAG, "(OnFileExists) Task " + title + " added with icon " + icon);
-                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
-                            FirebaseIdList.add(dataSnapshot.getKey());
+                            mTasksList.add(new Task(dataSnapshot.getKey(), icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
+
+                            Collections.sort(mTasksList, new TaskComparator());
 
                             // The header text view will only be visible if there is no items in the task mClassAdapter
                             if (mTasksAdapter.getCount() == 0) {
                                 splash.setVisibility(View.VISIBLE);
+                                spinner.setVisibility(View.GONE);
                                 noItems = true;
                             } else {
                                 splash.setVisibility(View.GONE);
@@ -265,14 +265,14 @@ public class TasksFragment extends Fragment {
                                     String iconUri = file.getPath();
                                     FirebaseDatabase.getInstance().getReference().child("users").child(mUserId).child("tasks")
                                             .child(dataSnapshot.getKey()).child("icon").setValue(iconUri);
-                                    mTasksList.add(new Task(iconUri, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
-                                    FirebaseIdList.add(dataSnapshot.getKey());
+                                    mTasksList.add(new Task(dataSnapshot.getKey(), iconUri, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
                                     mTasksAdapter.notifyDataSetChanged();
                                     spinner.setVisibility(View.GONE);
 
                                     // The header text view will only be visible if there is no items in the task mClassAdapter
                                     if (mTasksAdapter.getCount() == 0) {
                                         splash.setVisibility(View.VISIBLE);
+                                        spinner.setVisibility(View.GONE);
                                         noItems = true;
                                     } else {
                                         splash.setVisibility(View.GONE);
@@ -312,6 +312,7 @@ public class TasksFragment extends Fragment {
                 public void onCancelled(DatabaseError databaseError) {
                     spinner.setVisibility(View.GONE);
                     splash.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.GONE);
                     noItems = true;
                     headerTextview.setText(getString(R.string.check_internet));
                 }
@@ -346,6 +347,7 @@ public class TasksFragment extends Fragment {
         // The header text view will only be visible if there is no items in the task mClassAdapter
         if (mTasksList.size() == 0) {
             splash.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.GONE);
             noItems = true;
         }
     }
@@ -391,7 +393,7 @@ public class TasksFragment extends Fragment {
                     TasksDetailFragment fragment = new TasksDetailFragment();
                     Bundle args = new Bundle();
                     if (mFirebaseUser != null) {
-                        args.putString("id", FirebaseIdList.get(position));
+                        args.putString("id", mTasksList.get(position).fID);
                     } else {
                         args.putInt(getString(R.string.INTENT_EXTRA_ID), position);
                     }
@@ -416,7 +418,7 @@ public class TasksFragment extends Fragment {
                     }, 1000);
                     final Intent intent = new Intent(getActivity(), TasksDetailActivity.class);
                     if (mFirebaseUser != null) {
-                        intent.putExtra("id", FirebaseIdList.get(position));
+                        intent.putExtra("id", mTasksList.get(position).fID);
 //                        tasksRef.removeEventListener(tasksListener);
                     } else {
                         intent.putExtra(getString(R.string.INTENT_EXTRA_ID), position);
@@ -580,13 +582,12 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(indexes);
                 for (int i = indexes.size() - 1; i > -1; i--) {
-                    final String firebaseId = FirebaseIdList.get(indexes.get(i));
+                    final String firebaseId = mTasksList.get(indexes.get(i)).fID;
                     // Delete stored icon and photos if applicable
                     final StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                     StorageReference iconRef = storageRef.child(mUserId).child("tasks").child(firebaseId).child("icon");
                     iconRef.delete();
-                    tasksRef.child(FirebaseIdList.get(indexes.get(i))).removeValue();
-                    FirebaseIdList.remove(((int) indexes.get(i)));
+                    tasksRef.child(mTasksList.get(indexes.get(i)).fID).removeValue();
                     mTasksList.remove(((int) indexes.get(i)));
                 }
 
@@ -594,6 +595,7 @@ public class TasksFragment extends Fragment {
                 mTasksAdapter.notifyDataSetChanged();
                 if (mTasksAdapter.getCount() == 0) {
                     splash.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.GONE);
                     noItems = true;
                 } else {
                     splash.setVisibility(View.GONE);
@@ -621,6 +623,7 @@ public class TasksFragment extends Fragment {
                 mTasksAdapter.notifyDataSetChanged();
                 if (mTasksList.size() == 0) {
                     splash.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.GONE);
                     noItems = true;
                 } else {
                     splash.setVisibility(View.GONE);
@@ -654,7 +657,7 @@ public class TasksFragment extends Fragment {
                 if (mFirebaseUser != null) {
                     // Get the data from Firebase
                     final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference()
-                            .child("users").child(mUserId).child("tasks").child(FirebaseIdList.get(CAMselectedItemsList.get(0)));
+                            .child("users").child(mUserId).child("tasks").child(mTasksList.get(CAMselectedItemsList.get(0)).fID);
                     taskRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {

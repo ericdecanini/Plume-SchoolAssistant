@@ -93,6 +93,11 @@ public class ScheduleFragment extends Fragment {
     DatabaseReference classesRef;
     ChildEventListener childEventListener = null;
 
+    // Date Variables
+    int year = -1;
+    int month = -1;
+    int day = -1;
+
     // Required empty public constructor
     public ScheduleFragment() {
         // Required empty public constructor
@@ -109,6 +114,20 @@ public class ScheduleFragment extends Fragment {
         if (firstLaunch) {
             init();
             return rootView;
+        }
+
+        // Initialise the date
+        Calendar c = Calendar.getInstance();
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("year")) {
+            year = args.getInt("year");
+            month = args.getInt("month");
+            day = args.getInt("day");
+        } else {
+            year = c.get(Calendar.YEAR);
+            month = c.get(Calendar.MONTH);
+            day  = c.get(Calendar.DAY_OF_MONTH);
+
         }
 
         // Get references to the views
@@ -185,6 +204,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     void querySchedule() {
+        mScheduleList.clear();
         if (mFirebaseUser != null) {
             getCurrentDayScheduleFromFirebase();
 
@@ -202,6 +222,7 @@ public class ScheduleFragment extends Fragment {
 
                     if (mScheduleList.size() == 0) {
                         splash.setVisibility(View.VISIBLE);
+                        spinner.setVisibility(View.GONE);
                         noItems = true;
                     } else {
                         splash.setVisibility(View.GONE);
@@ -222,7 +243,7 @@ public class ScheduleFragment extends Fragment {
             // Get the schedule data from SQLite
             DbHelper dbHelper = new DbHelper(getContext());
             try {
-                ArrayList<Schedule> newSchedules = dbHelper.getCurrentDayScheduleArray(getContext());
+                ArrayList<Schedule> newSchedules = dbHelper.getCurrentDayScheduleArray(getContext(), year, month, day);
                 mScheduleList.clear();
                 mScheduleList.addAll(newSchedules);
                 if (spinner != null)
@@ -236,6 +257,7 @@ public class ScheduleFragment extends Fragment {
         if (splash != null) {
             if (mScheduleList.size() == 0) {
                 splash.setVisibility(View.VISIBLE);
+                spinner.setVisibility(View.GONE);
                 noItems = true;
             } else {
                 splash.setVisibility(View.GONE);
@@ -254,7 +276,8 @@ public class ScheduleFragment extends Fragment {
         super.onStop();
         if (childEventListener != null)
             FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(mUserId).removeEventListener(childEventListener);
+                    .child("users").child(mUserId).child("classes")
+                    .removeEventListener(childEventListener);
     }
 
     @Override
@@ -350,6 +373,7 @@ public class ScheduleFragment extends Fragment {
         if (splash != null) {
             headerTextView.setText(getString(R.string.activity_classes_splash_no_classes));
             splash.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.GONE);
             noItems = true;
         }
     }
@@ -358,6 +382,7 @@ public class ScheduleFragment extends Fragment {
         // Get the calendar data for the week number
         mScheduleList.clear();
         Calendar c = Calendar.getInstance();
+        c.set(year, month, day);
         final String weekNumber = PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(getString(R.string.KEY_WEEK_NUMBER), "0");
         final int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
@@ -408,38 +433,46 @@ public class ScheduleFragment extends Fragment {
                         if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
                                 periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
                             ArrayList<String> periodsList = new ArrayList<>();
-                            periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
-                                    occurrences.get(i3).split(":")[1]));
+                            if (periods.size() < i3)
+                                periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
+                                        occurrences.get(i3).split(":")[1]));
 
 
                             File file = new File(getContext().getFilesDir(), title + ".jpg");
                             if (file.exists() || iconUri.contains("art_")) {
                                 if (periodsList.size() != 0) {
                                     for (int i = 0; i < periodsList.size(); i++) {
-                                        if (weekNumber.equals("0"))
+                                        if (weekNumber.equals("0") || occurrences.get(i).split(":")[1].equals("0")) {
                                             mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                     utility.millisToHourTime(timeins.get(i)),
                                                     utility.millisToHourTime(timeouts.get(i)),
                                                     periodsList.get(i)));
-                                        else
+                                        }
+                                        else {
                                             mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                     utility.millisToHourTime(timeinalts.get(i)),
                                                     utility.millisToHourTime(timeoutalts.get(i)),
                                                     periodsList.get(i)));
+                                        }
+
                                         Collections.sort(mScheduleList, new ScheduleComparator());
                                         mScheduleAdapter.notifyDataSetChanged();
                                     }
                                 } else {
-                                    if (weekNumber.equals("0"))
+                                    if (weekNumber.equals("0") || occurrences.get(i3).split(":")[1].equals("0")) {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                 utility.millisToHourTime(timeins.get(i3)),
                                                 utility.millisToHourTime(timeouts.get(i3)),
                                                 ""));
-                                    else
+                                    }
+                                    else {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                 utility.millisToHourTime(timeinalts.get(i3)),
                                                 utility.millisToHourTime(timeoutalts.get(i3)),
                                                 ""));
+                                    }
+                                    Collections.sort(mScheduleList, new ScheduleComparator());
+                                    mScheduleAdapter.notifyDataSetChanged();
                                 }
                             } else {
                                 // File is non existent, download from storage
@@ -451,7 +484,7 @@ public class ScheduleFragment extends Fragment {
                                     @Override
                                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                         for (int i = 0; i < occurrences.size(); i++) {
-                                            if (weekNumber.equals("0"))
+                                            if (weekNumber.equals("0") || occurrences.get(i).split(":")[1].equals("0"))
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
                                                         utility.millisToHourTime(timeins.get(i)),
                                                         utility.millisToHourTime(timeouts.get(i)),
@@ -651,6 +684,7 @@ public class ScheduleFragment extends Fragment {
                 // Set the splash text if there's no classes queried
                 if (mScheduleList.size() == 0) {
                     splash.setVisibility(View.VISIBLE);
+                    spinner.setVisibility(View.GONE);
                     noItems = true;
                 } else {
                     splash.setVisibility(View.GONE);
@@ -661,7 +695,7 @@ public class ScheduleFragment extends Fragment {
             } else {
                 // Delete the data from SQLite
                 DbHelper db = new DbHelper(getActivity());
-                Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity());
+                Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity(), year, month, day);
 
                 // Delete all the selected items based on the itemIDs
                 // Stored in the array list
@@ -697,7 +731,7 @@ public class ScheduleFragment extends Fragment {
                     // Get the data from SQLite
                     // Get a cursor of the current day schedule data
                     DbHelper db = new DbHelper(getActivity());
-                    Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity());
+                    Cursor cursor = db.getCurrentDayScheduleDataFromSQLite(getActivity(), year, month, day);
 
                     // Move the cursor to the position of the selected item
                     if (cursor.moveToPosition(CAMselectedItemsList.get(0))) {

@@ -204,6 +204,8 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
                 numberPickerPreference.dialogMessage = getString(R.string.settings_class_notification_dialog_message)
             } else if (prefKey == getString(R.string.KEY_SETTINGS_CLASS_MUTE)) {
                 editor.putBoolean(getString(R.string.KEY_SETTINGS_CLASS_MUTE), (preference as CheckBoxPreference).isChecked)
+            } else if (prefKey == getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION)) {
+                editor.putBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), (preference as CheckBoxPreference).isChecked)
             } else {
                 // For other preferences, set the summary to the value's simple string representation.
                 preference.summary = stringValue

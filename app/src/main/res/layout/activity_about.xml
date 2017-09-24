@@ -257,7 +257,6 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                android:autoLink="web"
                 android:linksClickable="true"
                 android:text="@string/Icons8"
                 android:textAppearance="?android:attr/textAppearanceSmall"

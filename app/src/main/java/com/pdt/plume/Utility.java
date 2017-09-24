@@ -64,75 +64,6 @@ public class Utility {
 
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
-    public void cancelOfflineClassNotifications(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int mPrimaryColor = preferences.getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                context.getResources().getColor(R.color.colorPrimary));
-        DbHelper dbHelper = new DbHelper(context);
-        Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(context);
-        if (cursor != null)
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                String title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
-                String icon = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_ICON));
-                String occurrence = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_OCCURRENCE));
-                long timeIn;
-                if (preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0").equals("0"))
-                    timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN));
-                else
-                    timeIn = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEIN_ALT));
-
-                Calendar c = Calendar.getInstance();
-                Calendar timeInC = Calendar.getInstance();
-                timeInC.setTimeInMillis(timeIn);
-                int hour = timeInC.get(Calendar.HOUR_OF_DAY);
-                int minute = timeInC.get(Calendar.MINUTE);
-                c.set(Calendar.HOUR_OF_DAY, hour);
-                c.set(Calendar.MINUTE, minute);
-                long alarmTime = c.getTimeInMillis();
-
-
-                if (occurrence.split(":")[0].equals("0")) {
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-                    Bitmap largeIcon = null;
-                    try {
-                        largeIcon = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(icon));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    android.support.v4.app.NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender()
-                            .setBackground(largeIcon);
-
-                    Intent contentIntent = new Intent(context, ScheduleDetailActivity.class);
-                    contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_CLASS), title);
-                    PendingIntent contentPendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_INTENT,
-                            contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    Notification notification = builder
-                            .setContentIntent(contentPendingIntent)
-                            .setSmallIcon(R.drawable.ic_class_white)
-                            .setColor(mPrimaryColor)
-                            .setContentTitle(title)
-                            .setContentText(context.getString(R.string.schedule_notification_message))
-                            .setWhen(System.currentTimeMillis())
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .extend(wearableExtender)
-                            .setDefaults(Notification.DEFAULT_ALL)
-                            .build();
-
-                    Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
-                    ;
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                    notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_NOTIFICATION_ALARM,
-                            notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.cancel(pendingIntent);
-                }
-            }
-    }
-
     public byte[] getBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
         int bufferSize = 1024;
@@ -400,13 +331,10 @@ public class Utility {
         if (millis == -1)
             return "";
         millis /= 1000;
-        // Get the hour by dividing with decimals disregarded
+
         int hourOfDay = (int) millis / 3600;
-        // Get the minutes by formula as a float to
-        // allow for decimals to be computed
         float floatMinute = millis - hourOfDay * 3600;
         floatMinute = (floatMinute / 3600) * 60;
-        // Convert minute from float to int
         int minute = (int) floatMinute;
 
         if (hourOfDay == 24)
@@ -441,12 +369,16 @@ public class Utility {
     }
 
     public int getHour(float millis) {
-        return (int) (millis * 1000) * 3600;
+        return (int) (millis / 1000) / 3600;
     }
 
     public int getMinute(float millis) {
-        int hour = (int) (millis * 1000) * 3600;
-        int minute = (int) millis - (hour * 1000 * 3600);
+        int hour = (int) (millis / 1000) / 3600;
+        Log.v(LOG_TAG, "Millis: " + millis);
+        Log.v(LOG_TAG, "Hour: " + hour);
+        int minuteMillis = (int) millis - (hour * 3600 * 1000);
+        Log.v(LOG_TAG, "Minute millis: " + minuteMillis);
+        int minute = (int) minuteMillis / 1000 / 60;
         return minute;
     }
 
@@ -786,10 +718,32 @@ public class Utility {
         return false;
     }
 
+    public boolean datesMatch(Calendar c1, Calendar c2) {
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
+                && c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH)
+                && c1.get(Calendar.DAY_OF_MONTH) == c2.get(Calendar.DAY_OF_MONTH);
+    }
+
     public String formatDateString(Context context, int year, int monthOfYear, int dayOfMonth) {
         // Get the current time and day of the week
         Calendar c = Calendar.getInstance();
         c.set(year, monthOfYear, dayOfMonth);
+
+        Calendar current = Calendar.getInstance();
+        if (context instanceof MainActivity) {
+            if (datesMatch(c, current)) {
+                SimpleDateFormat formatter = new SimpleDateFormat(context.getString(R.string.date_format_day), java.util.Locale.getDefault());
+                String day = formatter.format(c.getTime());
+                return context.getString(R.string.date_format_today, day);
+            } else {
+                current.set(Calendar.DAY_OF_MONTH, current.get(Calendar.DAY_OF_MONTH) + 1);
+                if (datesMatch(c, current)) {
+                    SimpleDateFormat formatter = new SimpleDateFormat(context.getString(R.string.date_format_day_small), java.util.Locale.getDefault());
+                    String day = formatter.format(c.getTime());
+                    return context.getString(R.string.date_format_tomorrow, day);
+                }
+            }
+        }
 
         // Create a date formatter and create a new string with the formatted date
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

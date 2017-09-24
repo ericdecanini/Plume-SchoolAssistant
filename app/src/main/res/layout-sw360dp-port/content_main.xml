@@ -26,17 +26,36 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="56dp"
                 android:layout_gravity="center"
                 android:foregroundGravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="56dp">
 
-                <TextView
-                    android:id="@+id/header"
+                <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/reset"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_gravity="center_vertical"
+                        android:visibility="gone"
+                        android:src="@drawable/ic_arrow_back_white_24dp" />
+
+                    <TextView
+                        android:id="@+id/header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical"
+                        android:textColor="@color/white"
+                        android:textSize="28dp" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/subheader"

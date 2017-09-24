@@ -338,7 +338,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     if (file.exists()) {
                                         if (!completed) {
                                             taskFirebaseIDs.add(id);
-                                            mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
+                                            mTasksList.add(new Task(null, icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
                                             ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
                                         }
                                     } else {
@@ -352,7 +352,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                                 if (!completed) {
                                                     taskFirebaseIDs.add(id);
-                                                    mTasksList.add(new Task(icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
+                                                    mTasksList.add(new Task(null, icon, title, sharer, taskClass, tasktType, description, "", duedate, -1, null));
                                                     ScheduleDetailActivity.this.mTasksAdapter.notifyDataSetChanged();
                                                 }
                                             }
@@ -667,7 +667,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                     if (tasksCursor.moveToFirst()) {
                         for (int i = 0; i < tasksCursor.getCount(); i++) {
-                            mTasksList.add(new Task(
+                            mTasksList.add(new Task(null,
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON)),
                                     tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE)),
                                     "",

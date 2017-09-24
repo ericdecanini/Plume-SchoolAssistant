@@ -175,7 +175,7 @@ public class PictureActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        getWindow().setStatusBarColor(getColor(R.color.black_0_87));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.black_0_87));
     }
 
     @Override

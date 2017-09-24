@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import static android.R.attr.description;
 
 public class Task {
+    public String fID;
     public String taskIcon;
     public String taskTitle;
     public String taskShared;
@@ -22,10 +23,11 @@ public class Task {
 
     // The global variables are accessed by the mTasksAdapter
     // Set them using the input parameters
-    public Task(String icon, String title, String sharer, String taskClass, String taskType,
+    public Task(@Nullable String fID, String icon, String title, String sharer, String taskClass, String taskType,
                 String description, String attachment, float dueDate, float alarmTime,
                 @Nullable Bitmap customIcon) {
         super();
+        this.fID = fID;
         this.taskIcon = icon;
         this.taskTitle = title;
         this.taskShared = sharer;

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static android.R.attr.textColor;
+import static com.pdt.plume.R.string.due;
 import static com.pdt.plume.R.string.schedule;
 
 public class TaskAdapter extends ArrayAdapter {
@@ -99,6 +102,21 @@ public class TaskAdapter extends ArrayAdapter {
         if (getContext() instanceof ScheduleDetailActivity) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 holder.icon.setTransitionName(null);
+        }
+
+        if (context instanceof MainActivity) {
+            View v = row.findViewById(R.id.master_layout);
+            float duedate = task.taskDueDate;
+            Calendar c = Calendar.getInstance();
+            c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH) + 1);
+            Calendar c1 = Calendar.getInstance();
+            c1.setTimeInMillis(((long) duedate));
+            Log.v(LOG_TAG, "C: " + c.get(Calendar.DAY_OF_MONTH) + " C1: " + c1.get(Calendar.DAY_OF_MONTH));
+            if (c1.get(Calendar.DAY_OF_MONTH) < c.get(Calendar.DAY_OF_MONTH))
+                v.setBackground(context.getDrawable(R.drawable.touch_selector_red));
+            else if (c1.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH))
+                v.setBackground(context.getDrawable(R.drawable.touch_selector_yellow));
+            else v.setBackground(context.getDrawable(R.drawable.touch_selector));
         }
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)

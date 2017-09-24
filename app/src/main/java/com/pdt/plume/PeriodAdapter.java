@@ -162,6 +162,9 @@ public class PeriodAdapter extends ArrayAdapter {
                             hour++;
                         }
 
+                        hour = utility.getHour(item.timeinValue);
+                        minute = utility.getMinute(item.timeinValue);
+
                         TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
@@ -193,6 +196,9 @@ public class PeriodAdapter extends ArrayAdapter {
                             hour++;
                         }
 
+                        hour = utility.getHour(item.timeoutValue);
+                        minute = utility.getMinute(item.timeoutValue);
+
                         TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
@@ -222,6 +228,9 @@ public class PeriodAdapter extends ArrayAdapter {
                             minute = 0;
                             hour++;
                         }
+
+                        hour = utility.getHour(item.timeinaltValue);
+                        minute = utility.getMinute(item.timeinaltValue);
 
                         TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
@@ -254,6 +263,9 @@ public class PeriodAdapter extends ArrayAdapter {
                             hour++;
                         }
 
+                        hour = utility.getHour(item.timeoutaltValue);
+                        minute = utility.getMinute(item.timeinaltValue);
+
                         TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
@@ -281,8 +293,10 @@ public class PeriodAdapter extends ArrayAdapter {
                     }
                 });
             } else {
-                row.findViewById(R.id.delete_time).setVisibility(View.GONE);
-                row.findViewById(R.id.delete_period).setVisibility(View.GONE);
+                if (row.findViewById(R.id.delete_time) != null)
+                    row.findViewById(R.id.delete_time).setVisibility(View.GONE);
+                if (row.findViewById(R.id.delete_period) != null)
+                    row.findViewById(R.id.delete_period).setVisibility(View.GONE);
             }
 
         } else if (basis.equals("1")) {
@@ -475,8 +489,10 @@ public class PeriodAdapter extends ArrayAdapter {
                 });
 
             } else {
-                row.findViewById(R.id.delete_time).setVisibility(View.GONE);
-                row.findViewById(R.id.delete_period).setVisibility(View.GONE);
+                if (row.findViewById(R.id.delete_time) != null)
+                    row.findViewById(R.id.delete_time).setVisibility(View.GONE);
+                if (row.findViewById(R.id.delete_period) != null)
+                    row.findViewById(R.id.delete_period).setVisibility(View.GONE);
             }
 
         } else if (basis.equals("2")) {

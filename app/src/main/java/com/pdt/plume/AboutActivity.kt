@@ -23,6 +23,8 @@ class AboutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
 
+        disclaimer.movementMethod = LinkMovementMethod.getInstance()
+
         // Initialise the theme variables
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), resources.getColor(R.color.colorPrimary))

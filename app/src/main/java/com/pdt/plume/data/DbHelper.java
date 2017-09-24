@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
@@ -146,7 +147,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 ScheduleEntry.COLUMN_TITLE + " ASC");
     }
 
-    public Cursor getCurrentDayScheduleDataFromSQLite(Context context) {
+    public Cursor getCurrentDayScheduleDataFromSQLite(Context context, int year, int month, int day) {
         SQLiteDatabase db = this.getReadableDatabase();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String weekNumber = preferences.getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -171,6 +172,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // Next, match each class against their occurrences
         ArrayList<String> returningRowIDs = new ArrayList<>();
         Calendar c = Calendar.getInstance();
+        c.set(year, month, day);
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
@@ -221,15 +223,23 @@ public class DbHelper extends SQLiteOpenHelper {
         return currentDayCursor;
     }
 
-    public ArrayList<Schedule> getCurrentDayScheduleArray(Context context) throws IOException {
+    public ArrayList<Schedule> getCurrentDayScheduleArray(Context context, @Nullable Integer year,
+                                                          @Nullable Integer month, @Nullable Integer day) throws IOException {
+        Calendar c = Calendar.getInstance();
+        if (year == null)
+            year = c.get(Calendar.YEAR);
+        if (month == null)
+            month = c.get(Calendar.MONTH);
+        if (day == null)
+            day = c.get(Calendar.DAY_OF_MONTH);
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         int forerunnerTime = preferences.getInt(context.getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
-        Calendar c = Calendar.getInstance();
         String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
 
         // Query the cursor
-        Cursor cursor = getCurrentDayScheduleDataFromSQLite(context);
+        Cursor cursor = getCurrentDayScheduleDataFromSQLite(context, year, month, day);
         ArrayList<Schedule> arrayList = new ArrayList<>();
 
         // If no classes were matched, return a blank array list
@@ -567,7 +577,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null,
-                null);
+                TasksEntry.COLUMN_DUEDATE + " DESC");
     }
 
     public Cursor getTaskById(int _ID) {
@@ -597,7 +607,7 @@ public class DbHelper extends SQLiteOpenHelper {
         ArrayList<Task> arrayList = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
-                arrayList.add(i, new Task(
+                arrayList.add(i, new Task(null,
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",
@@ -630,7 +640,7 @@ public class DbHelper extends SQLiteOpenHelper {
         ArrayList<Task> arrayList = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
-                arrayList.add(i, new Task(
+                arrayList.add(i, new Task(null,
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",
@@ -663,7 +673,7 @@ public class DbHelper extends SQLiteOpenHelper {
         ArrayList<Task> arrayList = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
             if (cursor.moveToPosition(i)) {
-                arrayList.add(i, new Task(
+                arrayList.add(i, new Task(null,
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_ICON)),
                         cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE)),
                         "",

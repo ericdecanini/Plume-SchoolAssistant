@@ -1,9 +1,6 @@
 package com.pdt.plume
 
-import android.app.AlarmManager
-import android.app.Notification
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -75,6 +72,7 @@ import java.util.Calendar
 import java.util.Date
 
 import android.os.Build.ID
+import android.support.v4.view.PagerAdapter
 import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM
 import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT
 import com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION
@@ -117,6 +115,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     var spinnerPosition = 0
 
+    // Date Variables
+    var year = -1
+    var month = -1
+    var day = -1
+    val dateArgs = Bundle()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) savedInstanceState.clear()
@@ -126,6 +130,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             fab = findViewById(R.id.fab) as FloatingActionButton
         isLandscape = resources.getBoolean(R.bool.isLandscape)
         updateWeekNumber()
+
+        // Initialise Date
+        val c = Calendar.getInstance()
+        year = c.get(Calendar.YEAR)
+        month = c.get(Calendar.MONTH)
+        day = c.get(Calendar.DAY_OF_MONTH)
 
         // Initialise Facebook
         val callbackManager = CallbackManager.Factory.create()
@@ -164,7 +174,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // If a week has passed since using the app, let the user give the app a good rating
         val firstLaunch = Calendar.getInstance()
-        val c = Calendar.getInstance()
         val firstLaunchMillis = preferences.getLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), 0)
         firstLaunch.timeInMillis = firstLaunchMillis
         val day1 = firstLaunch.get(Calendar.DAY_OF_YEAR)
@@ -235,6 +244,66 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 requestsRef.addValueEventListener(requestsListener)
             }
         }
+
+        // View other day schedules
+        if (header != null)
+            header.setOnClickListener(View.OnClickListener {
+                val datePickerDialog = DatePickerDialog(this@MainActivity, DatePickerDialog.OnDateSetListener { datePicker, y, m, d ->
+                    val c = Calendar.getInstance()
+                    c.set(y, m ,d)
+                    val current = Calendar.getInstance()
+                    if (utility.datesMatch(c, current))
+                        reset.visibility = View.GONE
+                    else reset.visibility = View.VISIBLE
+                    year = y
+                    month = m
+                    day = d
+                    dateArgs.putInt("year", y)
+                    dateArgs.putInt("month", m)
+                    dateArgs.putInt("day", d)
+                    header.text = utility.formatDateString(this@MainActivity, y, m, d)
+                    if (isTablet) {
+                        val fragment = ScheduleFragment()
+                        fragment.arguments = dateArgs
+                        supportFragmentManager.beginTransaction()
+                                .replace(R.id.container, fragment)
+                                .commit()
+                    } else {
+                        if (mSectionsPagerAdapter != null) {
+                            mSectionsPagerAdapter!!.notifyDataSetChanged()
+                        }
+
+                    }
+                },
+                        year, month, day)
+                datePickerDialog.show()
+            })
+
+        if (!isTablet)
+            reset.setOnClickListener({
+                reset.visibility = View.GONE
+                val c = Calendar.getInstance()
+                year = c.get(Calendar.YEAR)
+                month = c.get(Calendar.MONTH)
+                day = c.get(Calendar.DAY_OF_MONTH)
+                dateArgs.putInt("year", year)
+                dateArgs.putInt("month", month)
+                dateArgs.putInt("day", day)
+                header.text = utility.formatDateString(this@MainActivity, year, month, day)
+                if (isTablet) {
+                    val fragment = ScheduleFragment()
+                    fragment.arguments = dateArgs
+                    supportFragmentManager.beginTransaction()
+                            .replace(R.id.container, fragment)
+                            .commit()
+                } else {
+                    if (mSectionsPagerAdapter != null) {
+                        mSectionsPagerAdapter!!.notifyDataSetChanged()
+                    }
+
+                }
+            })
+
     }
 
     override fun onStop() {
@@ -252,18 +321,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (mSectionsPagerAdapter != null)
             mSectionsPagerAdapter!!.notifyDataSetChanged()
 
+        Log.v(LOG_TAG, "Day: " + day)
+
         updateWeekNumber()
 
         // Set the header date
         if (!isTablet) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-            val c = Calendar.getInstance()
             val headerTextView = findViewById(R.id.header) as TextView
             val subheader = findViewById(R.id.subheader) as TextView
             val weekType = preferences.getString(getString(R.string.KEY_PREFERENCE_WEEKTYPE), "0")
             if (weekType == "0") subheader.visibility = View.GONE
-            headerTextView.text = utility.formatDateString(this, c.get(Calendar.YEAR),
-                    c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH))
+            headerTextView.text = utility.formatDateString(this, year,
+                    month, day)
             val basis = PreferenceManager.getDefaultSharedPreferences(this)
                     .getString(getString(R.string.KEY_PREFERENCE_BASIS), "0")
             if (basis == "2") {
@@ -337,10 +407,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Initialise the fab
         if (fab != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             fab!!.backgroundTintList = ColorStateList.valueOf(mSecondaryColor)
-    }
-
-    override fun onResume() {
-        super.onResume()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -749,11 +815,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     inner class TabsPagerAdapter// Default public constructor
     (fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
+        override fun getItemPosition(`object`: Any?): Int = PagerAdapter.POSITION_NONE
+
         // getItem is called to instantiate the fragment for the given page.
         // and return the corresponding fragment.
         override fun getItem(position: Int): Fragment? {
+            Log.v(LOG_TAG, "getItem")
+            val scheduleFragment = ScheduleFragment()
+            scheduleFragment.arguments = dateArgs
             when (position) {
-                0 -> return ScheduleFragment()
+                0 -> return scheduleFragment
                 1 -> return TasksFragment()
                 else -> {
                     Log.e(LOG_TAG, "Error creating new fragment at getItem")

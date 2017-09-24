@@ -249,6 +249,8 @@
     <string name="not_now">Not now</string>
     <string name="notes_note_hint">Note</string>
     <string name="notes_title_hint">Title</string>
+    <string name="notification_task_due_title">%1$s is due tomorrow!</string>
+    <string name="notification_task_due_text">Touch for more details.</string>
     <string name="notification_shared_task_title">%1$s shared by %2$s</string>
     <string name="notification_shared_task_text">Click here for more details</string>
     <string name="notification_message_reminder">Touch for more details.</string>
@@ -256,6 +258,7 @@
     <string name="planner">Planner</string>
     <string name="preference_category_appearance">Appearance settings</string>
     <string name="preference_category_general">General settings</string>
+    <string name="preference_category_schedule">Schedule settings</string>
     <string name="qrScanPrompt">Scan a peer\'s QR code</string>
     <string name="rate">Rate</string>
     <string name="recommendation">Try out this Digital School Planner</string>
@@ -307,6 +310,7 @@
     <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
     <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
     <string name="settings_class_notification_title">Class notifications</string>
+    <string name="settings_task_notification_title">Task notifications</string>
     <string name="settings_date_format_title">Date format</string>
     <string name="settings_theme_background">Background Colour</string>
     <string name="settings_theme_description_colour">Description Text Colour</string>
@@ -354,7 +358,7 @@
     <string name="about_activity_label">About Class-ify</string>
     <string name="Classify" translatable="false">Class-ify</string>
     <string name="Assistant">School Assistant and Planner</string>
-    <string name="Version">Version 1.3.5</string>
+    <string name="Version">Version 1.4.1</string>
     <string name="Weblink" translatable="false">https://class-ify.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -377,6 +381,11 @@
 
     <string name="changelog_title">%1$s Changelog</string>
     <string name="changelog">BLANK FOR INITIAL RELEASE</string>
+
+    <string name="date_format_day">EEEE</string>
+    <string name="date_format_day_small">EEE</string>
+    <string name="date_format_today">%1$s, Today</string>
+    <string name="date_format_tomorrow">%1$s, Tomorrow</string>
 
 
     <string-array name="new_schedule_icon_list_array">
@@ -429,19 +438,15 @@
     </string-array>
 
     <string-array name="settings_date_format_entries">
-        <item>Mon, January 5 2000</item>
-        <item>Monday, January 5 2000</item>
-        <item>Mon 5th January 2000</item>
-        <item>Monday 5th January 2000</item>
+        <item>Mon, Jan 5 2000</item>
+        <item>Mon 5 Jan 2000</item>
         <item>01/05/2000</item>
         <item>05/01/2000</item>
     </string-array>
 
     <string-array name="settings_date_format_values">
-        <item>EEE, MMMM d yyyy</item>
-        <item>EEEE, MMMM d yyyy</item>
-        <item>EEE :d: MMMM yyyy</item>
-        <item>EEEE :d: MMMM yyyy</item>
+        <item>EEE, MMM d yyyy</item>
+        <item>EEE d MMM yyyy</item>
         <item>MM/dd/yyyy</item>
         <item>dd/MM/yyyy</item>
     </string-array>
@@ -512,6 +517,7 @@
     <string name="KEY_PREFERENCE_BASIS" translatable="false">KEY_PREFERENCE_BASIS</string>
     <string name="KEY_PREFERENCE_WEEKTYPE" translatable="false">KEY_PREFERENCE_KEY</string>
     <string name="KEY_SETTINGS_CLASS_NOTIFICATION" translatable="false">KEY_SETTINGS_CLASS_NOTIFICATION</string>
+    <string name="KEY_SETTINGS_TASK_NOTIFICATION" translatable="false">KEY_SETTINGS_TASK_NOTIFICATION</string>
     <string name="KEY_THEME_CATEGORY_GENERAL" translatable="false">KEY_THEME_CATEGORY_GENERAL</string>
     <string name="KEY_THEME_CATEGORY_PLANNER" translatable="false">KEY_THEME_CATEGORY_PLANNER</string>
     <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
@@ -538,6 +544,7 @@
     <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
     <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>
     <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
+    <string name="KEY_SETTINGS_CATEGORY_SCHEDULE" translatable="false">KEY_SETTINGS_CATEGORY_SCHEDULE</string>
 
     <string name="KEY_PREFERENCES_FLAVOUR" translatable="false">KEY_PREFERENCES_FLAVOUR</string>
     <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>

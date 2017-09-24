@@ -255,12 +255,12 @@
                 android:textColor="@color/gray_900" />
 
             <TextView
+                android:id="@+id/disclaimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                android:autoLink="web"
                 android:linksClickable="true"
                 android:text="@string/Icons8"
                 android:textSize="18sp"

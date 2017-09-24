@@ -153,8 +153,12 @@ public class ClassNotificationService extends Service {
                     });
         } else {
             // SQLite
+            Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
             DbHelper dbHelper = new DbHelper(this);
-            Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this);
+            Cursor cursor = dbHelper.getCurrentDayScheduleDataFromSQLite(this, year, month, day);
             if (cursor != null)
                 for (int i = 0; i < cursor.getCount() - 1; i++) {
                     String title = cursor.getString(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
@@ -171,7 +175,6 @@ public class ClassNotificationService extends Service {
                     else
                         timeOut = cursor.getLong(cursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TIMEOUT_ALT));
 
-                    Calendar c = Calendar.getInstance();
                     Calendar timeInC = Calendar.getInstance();
                     timeInC.setTimeInMillis(timeIn);
                     int hour = timeInC.get(Calendar.HOUR_OF_DAY);

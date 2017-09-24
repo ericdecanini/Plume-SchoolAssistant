@@ -49,7 +49,9 @@ class MatchClassActivity : AppCompatActivity() {
         requestingUserId = intent.getStringExtra("id")
         name = intent.getStringExtra("name")
         icon = intent.getStringExtra("icon")
-        flavour = intent.getStringExtra("flavour")
+        flavour = if (intent.hasExtra("flavour"))
+            intent.getStringExtra("flavour")
+        else ""
 
         val classesRef = FirebaseDatabase.getInstance().reference
                 .child("users").child(mUserId).child("requests")

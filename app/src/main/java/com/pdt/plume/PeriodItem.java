@@ -51,7 +51,16 @@ public class PeriodItem implements Parcelable {
         this.timeoutaltValue = timeOutAlt;
 
         Calendar c = Calendar.getInstance();
-        c.set(0, 0, 0, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+        if (minute >= 15 && minute < 45)
+            minute = 30;
+        if (minute >= 45 || minute < 15) {
+            minute = 0;
+            hour++;
+        }
+        c.set(0, 0, 0, hour, minute);
+
         if (timeinValue == -1)
             timeinValue = ((int)c.getTimeInMillis());
         if (timeinaltValue == -1)
