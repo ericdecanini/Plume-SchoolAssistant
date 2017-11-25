@@ -24,9 +24,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-import static android.R.attr.textColor;
-import static com.pdt.plume.R.bool.isLandscape;
-
 public class RequestsActivity extends AppCompatActivity {
 
     String LOG_TAG = RequestsActivity.class.getSimpleName();
@@ -82,7 +79,7 @@ public class RequestsActivity extends AppCompatActivity {
         hsv[2] *= 0.8f; // value component
         mDarkColor = Color.HSVToColor(hsv);
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         if (splash != null) ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
 
         if (getResources().getBoolean(R.bool.isTablet)) {
@@ -112,7 +109,7 @@ public class RequestsActivity extends AppCompatActivity {
         userNameList.clear();
         userFlavourList.clear();
 
-        // Get a reference to the requests database and create the array lists for the title and icon
+        // Get a reference to the requests database and create the array lists for the category and icon
         if (mFirebaseUser != null) {
             final DatabaseReference requestsRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mFirebaseUser.getUid()).child("requests").getRef();

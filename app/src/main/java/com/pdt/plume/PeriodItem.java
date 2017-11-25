@@ -71,10 +71,10 @@ public class PeriodItem implements Parcelable {
         if (timeoutaltValue == -1)
             timeoutaltValue = ((int)c.getTimeInMillis());
 
-        this.timein = utility.millisToHourTime(timeIn);
-        this.timeout = utility.millisToHourTime(timeOut);
-        this.timeinalt = utility.millisToHourTime(timeInAlt);
-        this.timeoutalt = utility.millisToHourTime(timeOutAlt);
+        this.timein = utility.millisToHourTime(context, timeIn);
+        this.timeout = utility.millisToHourTime(context, timeOut);
+        this.timeinalt = utility.millisToHourTime(context, timeInAlt);
+        this.timeoutalt = utility.millisToHourTime(context, timeOutAlt);
 
         this.periods = periods;
         String[] periodsArray = periods.split(":");

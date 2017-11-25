@@ -1,10 +1,8 @@
 package com.pdt.plume;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,20 +10,27 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.DrawableRes;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
+import android.view.View;
 import android.widget.Spinner;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -33,18 +38,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
-import com.pdt.plume.services.ClassNotificationService;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -88,6 +85,19 @@ public class Utility {
         }
     }
 
+    public static Bitmap scaleDown(Bitmap realImage, float maxImageSize,
+                                   boolean filter) {
+        float ratio = Math.min(
+                (float) maxImageSize / realImage.getWidth(),
+                (float) maxImageSize / realImage.getHeight());
+        int width = Math.round((float) ratio * realImage.getWidth());
+        int height = Math.round((float) ratio * realImage.getHeight());
+
+        Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
+                height, filter);
+        return newBitmap;
+    }
+
     public static String getReadablePeriodsString(String periods) {
         StringBuilder builder = new StringBuilder();
         String[] periodsArray = periods.split(":");
@@ -122,15 +132,15 @@ public class Utility {
 
     public static void rescheduleNotifications(final Context context, final boolean loggingIn) {
         // Toggle Class Notifications
-        Intent intent = new Intent(context, ClassNotificationService.class);
-        if (!loggingIn)
-            intent.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
-        context.startService(intent);
-
-
-        Intent intent1 = new Intent(context, ClassNotificationService.class);
-        if (loggingIn) intent1.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
-        context.startService(intent1);
+//        Intent intent = new Intent(context, ClassNotificationService.class);
+//        if (!loggingIn)
+//            intent.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
+//        context.startService(intent);
+//
+//
+//        Intent intent1 = new Intent(context, ClassNotificationService.class);
+//        if (loggingIn) intent1.putExtra("FLAG_CANCEL_NOTIFICATIONS", true);
+//        context.startService(intent1);
 
         // Toggle Firebase Task Notifications
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -173,8 +183,7 @@ public class Utility {
                             if (isTablet) {
                                 contentIntent = new Intent(context, MainActivity.class);
                                 contentIntent.putExtra(context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), true);
-                            }
-                            else {
+                            } else {
                                 contentIntent = new Intent(context, TasksDetailActivity.class);
                                 contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_ID), ID);
                             }
@@ -194,9 +203,9 @@ public class Utility {
 
                             Notification notification = builder.build();
 
-                            Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
-                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-                            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                            Intent notificationIntent = new Intent(context, NotificationPublisher.class);
+                            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+                            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
                             final PendingIntent pendingIntent = PendingIntent.getBroadcast
                                     (context, REQUEST_NOTIFICATION_ALARM,
                                             notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -208,10 +217,22 @@ public class Utility {
                         }
                 }
 
-                @Override public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                @Override public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                @Override public void onCancelled(DatabaseError databaseError) {}});
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
         }
 
         // Toggle SQLite Task Notifications
@@ -250,8 +271,7 @@ public class Utility {
             if (isTablet) {
                 contentIntent = new Intent(context, MainActivity.class);
                 contentIntent.putExtra(context.getString(R.string.INTENT_FLAG_RETURN_TO_TASKS), true);
-            }
-            else {
+            } else {
                 contentIntent = new Intent(context, MainActivity.class);
                 contentIntent.putExtra(context.getString(R.string.INTENT_EXTRA_ID), ID);
             }
@@ -272,9 +292,9 @@ public class Utility {
 
             Notification notification = builder.build();
 
-            Intent notificationIntent = new Intent(context, TaskNotificationPublisher.class);
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-            notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+            Intent notificationIntent = new Intent(context, NotificationPublisher.class);
+            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
             final PendingIntent pendingIntent = PendingIntent.getBroadcast
                     (context, REQUEST_NOTIFICATION_ALARM,
                             notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -326,7 +346,7 @@ public class Utility {
     }
 
     // Helper method for converting millis into a time string
-    public String millisToHourTime(long millis) {
+    public String millisToHourTime(Context c, long millis) {
         // Return a blank string if there is no time data
         if (millis == -1)
             return "";
@@ -340,11 +360,39 @@ public class Utility {
         if (hourOfDay == 24)
             hourOfDay = 0;
 
+        // Check if clock format is 24-hours or not
+        String suffix = "";
+        int hourOfDayB = 0;
+        if (hourOfDay > 12) {
+            hourOfDayB = hourOfDay - 12;
+            if (hourOfDayB == 0)
+                hourOfDayB = 12;
+            suffix = "pm";
+        } else {
+            hourOfDayB = hourOfDay;
+            if (hourOfDayB == 0)
+                hourOfDayB = 12;
+            suffix = "am";
+        }
+
         // If minute is less than 10, add a 0 to improve visual impact
+        StringBuilder builder = new StringBuilder();
+        if (hourOfDay < 10)
+            builder.append("0");
+        builder.append(hourOfDay)
+                .append(":");
         if (minute < 10)
-            return hourOfDay + ":0" + minute;
-        else
-            return hourOfDay + ":" + minute;
+            builder.append("0");
+        builder.append(minute)
+                .append(";")
+                .append(hourOfDayB)
+                .append(":");
+        if (minute < 10)
+            builder.append("0");
+        builder.append(minute)
+                .append(suffix);
+
+        return builder.toString();
     }
 
     // Helper method for converting seconds into a time string
@@ -369,17 +417,17 @@ public class Utility {
     }
 
     public int getHour(float millis) {
-        return (int) (millis / 1000) / 3600;
+        return (int) Math.floor(millis / 1000 / 3600);
     }
 
-    public int getMinute(float millis) {
-        int hour = (int) (millis / 1000) / 3600;
-        Log.v(LOG_TAG, "Millis: " + millis);
-        Log.v(LOG_TAG, "Hour: " + hour);
+    public int getMinute(long millis) {
+        int hour = getHour(millis);
         int minuteMillis = (int) millis - (hour * 3600 * 1000);
-        Log.v(LOG_TAG, "Minute millis: " + minuteMillis);
-        int minute = (int) minuteMillis / 1000 / 60;
-        return minute;
+        return minuteMillis / 1000 / 60;
+    }
+
+    public int getMinuteIgnoringHours(long millis) {
+        return ((int) millis / 1000 / 60);
     }
 
     // Array List update at position helper methods
@@ -622,37 +670,37 @@ public class Utility {
             String[] splitBlockFormat = blockFormat.split(":");
             // Day A Check
             if (splitPeriods[0].equals("1") || splitPeriods[0].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("1")) {
                     return true;
                 }
             if (splitPeriods[1].equals("1") || splitPeriods[1].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("1")) {
                     return true;
                 }
             if (splitPeriods[2].equals("1") || splitPeriods[2].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("1")) {
                     return true;
                 }
             if (splitPeriods[3].equals("1") || splitPeriods[3].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("1")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("1")) {
                     return true;
                 }
 
             // Day B Check
             if (splitPeriods[0].equals("2") || splitPeriods[0].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("2")) {
                     return true;
                 }
             if (splitPeriods[1].equals("2") || splitPeriods[1].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("2")) {
                     return true;
                 }
             if (splitPeriods[2].equals("2") || splitPeriods[2].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("2")) {
                     return true;
                 }
             if (splitPeriods[3].equals("2") || splitPeriods[3].equals("3"))
-                if (splitBlockFormat[dayOfWeek - 1].equals("2")) {
+                if (dayOfWeek != 0 && splitBlockFormat[dayOfWeek - 1].equals("2")) {
                     return true;
                 }
         }
@@ -832,20 +880,113 @@ public class Utility {
         return inSampleSize;
     }
 
-    public static Bitmap decodeSampledBitmapFromFile(String filePath,
-                                                     int reqWidth, int reqHeight) {
+    public static Bitmap convertDrawableResToBitmap(Context context, @DrawableRes int drawableId, Integer width, Integer height) {
+        Drawable d = context.getResources().getDrawable(drawableId);
 
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
+        if (d instanceof BitmapDrawable) {
+            return ((BitmapDrawable) d).getBitmap();
+        }
 
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        if (d instanceof GradientDrawable) {
+            GradientDrawable g = (GradientDrawable) d;
 
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(filePath, options);
+            int w = d.getIntrinsicWidth() > 0 ? d.getIntrinsicWidth() : width;
+            int h = d.getIntrinsicHeight() > 0 ? d.getIntrinsicHeight() : height;
+
+            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            g.setBounds(0, 0, w, h);
+            g.setStroke(1, Color.BLACK);
+            g.setFilterBitmap(true);
+            g.draw(canvas);
+            return bitmap;
+        }
+
+        Bitmap bit = BitmapFactory.decodeResource(context.getResources(), drawableId);
+        return bit.copy(Bitmap.Config.ARGB_8888, true);
+    }
+
+    public static float getFittedTextSize(Context context, View view) {
+        float density = context.getResources().getDisplayMetrics().density;
+
+        if (view.getHeight() * density < 16)
+            return 6;
+        else return 12;
+    }
+
+    public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+
+    static public int getColorFromIcon(Context context, String iconUri) {
+        final Uri ParsedIconUri = Uri.parse(iconUri);
+        if (ParsedIconUri == null)
+            return -1;
+
+        Bitmap iconBitmap = null;
+        try {
+            iconBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), ParsedIconUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Get the primary colour from shared preference in case default needs to be used
+        int primaryColour = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                        context.getResources().getColor(R.color.colorPrimary));
+
+        int colour;
+        Palette palette = Palette.generate(iconBitmap);
+        if (iconUri.contains("art_")) {
+
+            if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
+                colour = Color.parseColor("#29235C");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
+                colour = Color.parseColor("#575756");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
+                colour = Color.parseColor("#006838");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
+                colour = Color.parseColor("#A48A7B");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
+                colour = Color.parseColor("#7B6A58");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_electronics_64dp")))
+                colour = Color.parseColor("#769CD2");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
+                colour = Color.parseColor("#9E9E9E");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
+                colour = Color.parseColor("#936037");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
+                colour = Color.parseColor("#F39200");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
+                colour = Color.parseColor("#4A3428");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
+                colour = Color.parseColor("#D35095");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music2_64dp")))
+                colour = Color.parseColor("#944437");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
+                colour = Color.parseColor("#1D1D1B");
+            else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
+                colour = Color.parseColor("#424242");
+            else {
+                colour = palette.getVibrantColor(primaryColour);
+            }
+        } else { // Return default primary colour for custom icons
+            colour = primaryColour;
+        }
+
+        return colour;
     }
 
 }

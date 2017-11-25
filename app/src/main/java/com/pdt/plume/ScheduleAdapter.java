@@ -3,16 +3,11 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +23,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ScheduleAdapter extends ArrayAdapter {
@@ -84,7 +78,7 @@ public class ScheduleAdapter extends ArrayAdapter {
         }
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR), context.getResources().getColor(R.color.gray_900));
         float alpha = 0.7f;
         if (holder.lesson != null)
             holder.lesson.setTextColor(textColor);
@@ -125,6 +119,10 @@ public class ScheduleAdapter extends ArrayAdapter {
             holder.teacher.setText(schedule.scheduleTeacher);
             holder.room.setText(schedule.scheduleRoom);
 
+            boolean twentyFourHours = PreferenceManager.getDefaultSharedPreferences(context)
+                    .getBoolean(context.getString(R.string.KEY_SETTINGS_CLOCK_FORMAT), true);
+            int index = twentyFourHours ? 0 : 1;
+
             if (schedule.scheduleTimeOut.equals("period")) {
                 // Period based format
                 holder.timeIn.setText(context.getString(R.string.format_period,
@@ -134,7 +132,7 @@ public class ScheduleAdapter extends ArrayAdapter {
             else {
                 // Time based format
                 holder.timeIn.setText(context.getString(R.string.format_time,
-                        schedule.scheduleTimeIn, schedule.scheduleTimeOut));
+                        schedule.scheduleTimeIn.split(";")[index], schedule.scheduleTimeOut.split(";")[index]));
             }
 
         }

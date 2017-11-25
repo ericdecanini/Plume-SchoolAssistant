@@ -3,14 +3,11 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,7 +16,6 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
@@ -66,7 +62,7 @@ public class ManagePeerAdapter extends ArrayAdapter {
         final Peer peer = data.get(position);
         holder.name.setText(peer.peerName);
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR), context.getResources().getColor(R.color.gray_900));
         holder.name.setTextColor(textColor);
 
         // Set the icon

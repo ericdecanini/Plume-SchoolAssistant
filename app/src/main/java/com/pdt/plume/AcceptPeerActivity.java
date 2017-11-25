@@ -11,7 +11,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -34,11 +33,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
-import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-
-import static com.pdt.plume.R.bool.isTablet;
 
 public class AcceptPeerActivity extends AppCompatActivity {
 
@@ -116,7 +111,7 @@ public class AcceptPeerActivity extends AppCompatActivity {
         hsv[2] *= 0.9f;
         int darkBackgroundColor = Color.HSVToColor(hsv);
         findViewById(R.id.activity_people).setBackgroundColor(backgroundColor);
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(mDarkColor);
@@ -304,7 +299,7 @@ public class AcceptPeerActivity extends AppCompatActivity {
                                         addedClasses.add(requestClassSnapshot.child("newtitle").getValue(String.class));
                                     }
                                 } else if (oldListSize == mClassList.size() && i1 == classCount) {
-                                    // CLASSES NOT MATCHED, send with empty icon and title
+                                    // CLASSES NOT MATCHED, send with empty icon and category
                                     mMatchingList.add(new MatchingClass("","",
                                             requestClassSnapshot.child("icon").getValue(String.class),
                                             requestClassSnapshot.getKey()));

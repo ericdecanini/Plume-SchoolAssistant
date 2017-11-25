@@ -44,7 +44,7 @@ public class NotesAdapter extends ArrayAdapter {
         } else holder = ((ViewHolder) row.getTag());
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR),
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR),
                         getContext().getResources().getColor(R.color.gray_900));
         if (holder.textView != null) {
             holder.textView.setTextColor(textColor);

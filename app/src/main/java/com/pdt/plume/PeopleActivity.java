@@ -1,18 +1,13 @@
 package com.pdt.plume;
 
 import android.Manifest;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,39 +17,29 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.common.primitives.Bytes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -66,11 +51,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
-import com.journeyapps.barcodescanner.Util;
-import com.pdt.plume.data.DbContract;
-import com.pdt.plume.data.DbHelper;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -79,22 +60,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
-import static android.R.attr.contentInsetStartWithNavigation;
-import static android.R.attr.data;
-import static android.R.attr.id;
-import static android.os.Build.ID;
-import static com.pdt.plume.R.id.back;
-import static com.pdt.plume.R.id.storage;
-import static com.pdt.plume.R.string.B;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_MANAGE_DOCUMENTS;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_SCAN_QR_CODE;
 
@@ -132,6 +99,7 @@ public class PeopleActivity extends AppCompatActivity
 
     // Item variables
     ArrayList<String> flavourList = new ArrayList<>();
+    AlertDialog dialog;
 
     // Dialog item arrays
     private Integer[] mThumbIds = {
@@ -142,6 +110,18 @@ public class PeopleActivity extends AppCompatActivity
             R.drawable.art_profile_blazer_female,
             R.drawable.art_profile_mustache,
             R.drawable.art_profile_pandakun
+    };
+
+    private Integer[] mThumbIdsHalloween = {
+            R.drawable.art_profile_catgirl,
+            R.drawable.art_profile_jason,
+            R.drawable.art_profile_morty,
+            R.drawable.art_profile_pennywise,
+            R.drawable.art_profile_pumpkin,
+            R.drawable.art_profile_skull,
+            R.drawable.art_profile_vampire,
+            R.drawable.art_profile_witch,
+            R.drawable.art_profile_zombie
     };
 
     private CharSequence[] addPeerMethodsArray = {"", ""};
@@ -199,7 +179,7 @@ public class PeopleActivity extends AppCompatActivity
         Color.colorToHSV(backgroundColor, hsv);
         hsv[2] *= 0.9f;
         int darkBackgroundColor = Color.HSVToColor(hsv);
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.black_0_54));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.black_0_54));
 
         ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);
         ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
@@ -234,7 +214,6 @@ public class PeopleActivity extends AppCompatActivity
             public void onClick(View view) {
                 NameDialogFragment fragment = NameDialogFragment.newInstance(selfName);
                 Bundle args = new Bundle();
-                Log.v(LOG_TAG, "SelfName: " + selfName);
                 args.putString("title", selfName);
                 fragment.setArguments(args);
                 fragment.show(getSupportFragmentManager(), "dialog");
@@ -322,7 +301,7 @@ public class PeopleActivity extends AppCompatActivity
                         flavourData = flavour;
                     }
 
-                    // Data snapshot is the title
+                    // Data snapshot is the category
                     if (nicknameData != null) {
                         selfNameView.setText(nicknameData);
                         selfName = nicknameData;
@@ -682,12 +661,12 @@ public class PeopleActivity extends AppCompatActivity
         selfName = name;
         selfNameView.setText(name);
 
-        // Save the title to SharedPreferences
+        // Save the category to SharedPreferences
         PreferenceManager.getDefaultSharedPreferences(this).edit()
                 .putString(getString(R.string.KEY_PREFERENCES_SELF_NAME), name)
                 .apply();
 
-        // Save the title to the cloud database
+        // Save the category to the cloud database
         mDatabase.child("users").child(mUserId).child("nickname").setValue(name);
     }
 
@@ -697,12 +676,12 @@ public class PeopleActivity extends AppCompatActivity
         this.flavour = flavour;
         flavourView.setText(flavour);
 
-        // Save the title to SharedPreferences
+        // Save the category to SharedPreferences
         PreferenceManager.getDefaultSharedPreferences(this).edit()
                 .putString(getString(R.string.KEY_PREFERENCES_FLAVOUR), flavour)
                 .apply();
 
-        // Save the title to the cloud database
+        // Save the category to the cloud database
         mDatabase.child("users").child(mUserId).child("flavour").setValue(flavour);
     }
 
@@ -767,26 +746,14 @@ public class PeopleActivity extends AppCompatActivity
     }
 
     private void showBuiltInIconsDialog() {
-        // Prepare grid view
-        GridView gridView = new GridView(this);
-        final AlertDialog dialog;
+        // Prepare an array list of grid categories containing a string and a grid adapter
+        ArrayList<GridCategory> gridCategories = new ArrayList<>();
 
-        int[] builtinIcons = getResources().getIntArray(R.array.builtin_icons);
-        List<Integer> mList = new ArrayList<>();
-        for (int i = 1; i < builtinIcons.length; i++) {
-            mList.add(builtinIcons[i]);
-        }
+        // Initialise the adapters and listeners and add them to a list of grid categories
+        BuiltInProfileIconsAdapter adapter = new BuiltInProfileIconsAdapter(this, 0);
+        BuiltInProfileIconsAdapter adapterHalloween = new BuiltInProfileIconsAdapter(this, 1);
 
-        gridView.setAdapter(new BuiltInProfileIconsAdapter(this));
-        gridView.setNumColumns(4);
-        gridView.setPadding(0, 16, 0, 16);
-        gridView.setGravity(Gravity.CENTER);
-        // Set grid view to alertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(gridView);
-        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
-        dialog = builder.show();
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Set the image resource and save the URI as a global variable
@@ -805,10 +772,51 @@ public class PeopleActivity extends AppCompatActivity
                 // Save the selected icon in the Cloud Database
                 mDatabase.child("users").child(mUserId).child("icon").setValue(selfIconUri);
 
-                dialog.dismiss();
+                if (dialog != null)
+                    dialog.dismiss();
             }
-        });
+        };
+
+        AdapterView.OnItemClickListener listenerHalloween = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Set the image resource and save the URI as a global variable
+                int resId = mThumbIdsHalloween[position];
+                selfIconView.setImageResource(resId);
+                Resources resources = getResources();
+                Uri drawableUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resources.getResourcePackageName(resId)
+                        + '/' + resources.getResourceTypeName(resId) + '/' + resources.getResourceEntryName(resId));
+                selfIconUri = drawableUri.toString();
+
+                // Save the selected icon in SharedPreferences
+                PreferenceManager.getDefaultSharedPreferences(PeopleActivity.this).edit()
+                        .putString(getString(R.string.KEY_PREFERENCES_SELF_ICON), selfIconUri)
+                        .apply();
+
+                // Save the selected icon in the Cloud Database
+                mDatabase.child("users").child(mUserId).child("icon").setValue(selfIconUri);
+
+                if (dialog != null)
+                    dialog.dismiss();
+            }
+        };
+
+        gridCategories.add(new GridCategory(getString(R.string.Default), adapter, listener));
+        gridCategories.add(new GridCategory(getString(R.string.halloween), adapterHalloween, listenerHalloween));
+
+        // Create the listview and set its adapter
+        ListView listview = new ListView(this);
+        listview.setAdapter(new GridCategoryAdapter(this, R.layout.list_item_grid, gridCategories));
+
+        // Initialise the dialog and add the listview to the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.new_schedule_icon_builtin_title));
+        builder.setView(listview);
+        dialog = builder.show();
+
+        // Show the dialog
         dialog.show();
+
     }
 
     private Bitmap generateQRCode(String FirebaseID) {

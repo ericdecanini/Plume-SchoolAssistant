@@ -4,29 +4,22 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
-
-import static android.R.attr.textColor;
 
 
 public class MatchingClassAdapter extends ArrayAdapter {
@@ -69,7 +62,7 @@ public class MatchingClassAdapter extends ArrayAdapter {
         }
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR), context.getResources().getColor(R.color.gray_900));
         int mPrimaryColor = PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(context.getString(R.string.KEY_THEME_PRIMARY_COLOR), context.getResources().getColor(R.color.colorPrimary));
 

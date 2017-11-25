@@ -58,7 +58,7 @@ public class NameDialogFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_name, container, false);
         nameField = (EditText) rootView.findViewById(R.id.editText);
 
-        // Automatically inflate the EditText with the title
+        // Automatically inflate the EditText with the category
         Bundle args = getArguments();
         if (args != null) {
             nameField.setText(args.getString("title"));

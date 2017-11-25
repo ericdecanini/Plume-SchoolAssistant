@@ -14,7 +14,7 @@ class ColouredPreferenceCategory : PreferenceCategory {
 
     internal var c: Context
     lateinit var v: TextView
-    var initialised = false;
+    private var initialised = false
 
     constructor(context: Context) : super(context) {
         c = context

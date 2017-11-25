@@ -188,8 +188,10 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         if (savedInstanceState != null) transitioning = false;
         else transitioning = true;
         if (isLandscape) transitioning = false;
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) transitioning = false;
-        if (getIntent().getBooleanExtra(getString(R.string.INTENT_FLAG_NO_TRANSITION), false)) transitioning = false;
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
+            transitioning = false;
+        if (getIntent().getBooleanExtra(getString(R.string.INTENT_FLAG_NO_TRANSITION), false))
+            transitioning = false;
 
         // Initialise Firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -263,7 +265,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         collapsingToolbar.setTitle("");
 
-        // Get the class's data based on the title and fill in the fields
+        // Get the class's data based on the category and fill in the fields
         // Also inflate the tasks list
         Intent intent = getIntent();
         if (intent != null) {
@@ -539,97 +541,66 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                                     e.printStackTrace();
                                 }
 
-                                Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
-                                    @Override
-                                    public void onGenerated(Palette palette) {
-                                        int mainColour;
+                                // Set the primary color to that of the icon
+                                int mainColour = Utility.getColorFromIcon(ScheduleDetailActivity.this, iconUri.toString());
 
-                                        if (iconUri.toString().contains("art_arts_64dp"))
-                                            mainColour = Color.parseColor("#29235C");
-                                        else if (iconUri.toString().contains("art_business_64dp"))
-                                            mainColour = Color.parseColor("#575756");
-                                        else if (iconUri.toString().contains("art_chemistry_64dp"))
-                                            mainColour = Color.parseColor("#006838");
-                                        else if (iconUri.toString().contains("art_cooking_64dp"))
-                                            mainColour = Color.parseColor("#A48A7B");
-                                        else if (iconUri.toString().contains("art_drama_64dp"))
-                                            mainColour = Color.parseColor("#7B6A58");
-                                        else if (iconUri.toString().contains("art_engineering_64dp"))
-                                            mainColour = Color.parseColor("#9E9E9E");
-                                        else if (iconUri.toString().contains("art_geography_64dp"))
-                                            mainColour = Color.parseColor("#E9542A");
-                                        else if (iconUri.toString().contains("art_ict_64dp"))
-                                            mainColour = Color.parseColor("#936037");
-                                        else if (iconUri.toString().contains("art_media_64dp"))
-                                            mainColour = Color.parseColor("#F39200");
-                                        else if (iconUri.toString().contains("art_music_64dp"))
-                                            mainColour = Color.parseColor("#432918");
-                                        else if (iconUri.toString().contains("art_re_64dp"))
-                                            mainColour = Color.parseColor("#D35095");
-                                        else if (iconUri.toString().contains("art_science_64dp"))
-                                            mainColour = Color.parseColor("#1D1D1B");
-                                        else if (iconUri.toString().contains("art_woodwork_64dp"))
-                                            mainColour = Color.parseColor("#424242");
-                                        else {
-                                            // Set the action bar colour according to the theme
-                                            mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                                    getResources().getColor(R.color.colorPrimary)));
-                                            ColorStateList a = ColorStateList.valueOf(mainColour);
-                                            ColorStateList b = ColorStateList.valueOf(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                                    getResources().getColor(R.color.colorPrimary)));
-                                            if (a.equals(b))
-                                                findViewById(R.id.temp_icon).setVisibility(View.GONE);
-                                        }
-
-                                        if (!iconUri.toString().contains("art_"))
-                                            mainColour = mPrimaryColor;
-                                        mPrimaryColor = mainColour;
-                                        float[] hsv = new float[3];
-                                        int color = mainColour;
-                                        Color.colorToHSV(color, hsv);
-                                        hsv[2] *= 0.8f; // value component
-                                        mDarkColor = Color.HSVToColor(hsv);
-                                        mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
-
-                                        int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
-                                        findViewById(R.id.main_content).setBackgroundColor(backgroundColor);
-
-                                        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
-                                        ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
-                                        ((TextView) findViewById(R.id.notes_textview)).setTextColor(textColor);
-                                        ((TextView) findViewById(R.id.periods_textview)).setTextColor(textColor);
-                                        ((TextView) findViewById(R.id.teacher)).setTextColor(textColor);
-                                        ((TextView) findViewById(R.id.room)).setTextColor(textColor);
+                                // Set the action bar colour according to the theme
+                                ColorStateList a = ColorStateList.valueOf(mainColour);
+                                ColorStateList b = ColorStateList.valueOf(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
+                                        getResources().getColor(R.color.colorPrimary)));
+                                if (a.equals(b))
+                                    findViewById(R.id.temp_icon).setVisibility(View.GONE);
 
 
-                                        if (!transitioning) {
-                                            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                                if (!iconUri.toString().contains("art_"))
+                                    mainColour = mPrimaryColor;
+                                mPrimaryColor = mainColour;
+                                float[] hsv = new float[3];
+                                int color = mainColour;
+                                Color.colorToHSV(color, hsv);
+                                hsv[2] *= 0.8f; // value component
+                                mDarkColor = Color.HSVToColor(hsv);
+                                mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
 
-                                            mRevealView = findViewById(R.id.reveal);
-                                            mRevealView2 = findViewById(R.id.reveal2);
-                                            mRevealBackgroundView2 = findViewById(R.id.temp_icon);
-                                            mRevealBackgroundView = findViewById(R.id.revealBackground);
+                                int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
+                                findViewById(R.id.main_content).setBackgroundColor(backgroundColor);
 
-                                            mRevealView.setVisibility(View.INVISIBLE);
-                                            mRevealView2.setVisibility(View.INVISIBLE);
-                                            mRevealBackgroundView.setVisibility(View.INVISIBLE);
-                                            mRevealBackgroundView2.setVisibility(View.INVISIBLE);
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                                collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                                            } else {
-                                                collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                                            }
-                                        }
+                                int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
+                                ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
+                                ((TextView) findViewById(R.id.notes_textview)).setTextColor(textColor);
+                                ((TextView) findViewById(R.id.periods_textview)).setTextColor(textColor);
+                                ((TextView) findViewById(R.id.teacher)).setTextColor(textColor);
+                                ((TextView) findViewById(R.id.room)).setTextColor(textColor);
 
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                            getWindow().setStatusBarColor(mDarkColor);
-                                        }
 
-                                        // Initialise Notes and Tasks
-                                        TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
-                                        notesTextview.setTextColor(mPrimaryColor);
+                                if (!transitioning) {
+                                    getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+
+                                    mRevealView = findViewById(R.id.reveal);
+                                    mRevealView2 = findViewById(R.id.reveal2);
+                                    mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                                    mRevealBackgroundView = findViewById(R.id.revealBackground);
+
+                                    mRevealView.setVisibility(View.INVISIBLE);
+                                    mRevealView2.setVisibility(View.INVISIBLE);
+                                    mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                                    mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                        collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                                    } else {
+                                        collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
                                     }
-                                });
+                                }
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    getWindow().setStatusBarColor(mDarkColor);
+                                }
+
+                                // Initialise Notes and Tasks
+                                TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
+                                notesTextview.setTextColor(mPrimaryColor);
+
+
                             }
 
                             @Override
@@ -710,83 +681,48 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            int mainColour;
 
-                            if (iconUri.toString().contains("art_arts_64dp"))
-                                mainColour = Color.parseColor("#29235C");
-                            else if (iconUri.toString().contains("art_business_64dp"))
-                                mainColour = Color.parseColor("#575756");
-                            else if (iconUri.toString().contains("art_chemistry_64dp"))
-                                mainColour = Color.parseColor("#006838");
-                            else if (iconUri.toString().contains("art_cooking_64dp"))
-                                mainColour = Color.parseColor("#A48A7B");
-                            else if (iconUri.toString().contains("art_drama_64dp"))
-                                mainColour = Color.parseColor("#7B6A58");
-                            else if (iconUri.toString().contains("art_engineering_64dp"))
-                                mainColour = Color.parseColor("#9E9E9E");
-                            else if (iconUri.toString().contains("art_ict_64dp"))
-                                mainColour = Color.parseColor("#936037");
-                            else if (iconUri.toString().contains("art_media_64dp"))
-                                mainColour = Color.parseColor("#F39200");
-                            else if (iconUri.toString().contains("art_music_64dp"))
-                                mainColour = Color.parseColor("#432918");
-                            else if (iconUri.toString().contains("art_re_64dp"))
-                                mainColour = Color.parseColor("#D35095");
-                            else if (iconUri.toString().contains("art_science_64dp"))
-                                mainColour = Color.parseColor("#1D1D1B");
-                            else if (iconUri.toString().contains("art_woodwork_64dp"))
-                                mainColour = Color.parseColor("#424242");
-                            else {
-                                // Set the action bar colour according to the theme
-                                mainColour = palette.getVibrantColor(preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR),
-                                        getResources().getColor(R.color.colorPrimary)));
-                            }
-                            if (!iconUri.toString().contains("art_"))
-                                mainColour = mPrimaryColor;
-                            mPrimaryColor = mainColour;
-                            float[] hsv = new float[3];
-                            int color = mainColour;
-                            Color.colorToHSV(color, hsv);
-                            hsv[2] *= 0.8f; // value component
+                    // Set the primary color to that of the icon
+                    int mainColour = Utility.getColorFromIcon(ScheduleDetailActivity.this, iconUri.toString());
 
-                            mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
-                            mDarkColor = Color.HSVToColor(hsv);
+                    if (!iconUri.toString().contains("art_"))
+                        mainColour = mPrimaryColor;
+                    mPrimaryColor = mainColour;
+                    float[] hsv = new float[3];
+                    int color = mainColour;
+                    Color.colorToHSV(color, hsv);
+                    hsv[2] *= 0.8f; // value component
 
-//                            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
-//                                mPrimaryColor = getResources().getColor(R.color.colorPrimary);
+                    mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
+                    mDarkColor = Color.HSVToColor(hsv);
 
-                            collapsingToolbar.setBackgroundColor(mPrimaryColor);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                getWindow().setStatusBarColor(mDarkColor);
-                            }
+                    collapsingToolbar.setBackgroundColor(mPrimaryColor);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        getWindow().setStatusBarColor(mDarkColor);
+                    }
 
-                            if (!transitioning) {
-                                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+                    if (!transitioning) {
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
 
-                                mRevealView = findViewById(R.id.reveal);
-                                mRevealView2 = findViewById(R.id.reveal2);
-                                mRevealBackgroundView2 = findViewById(R.id.temp_icon);
-                                mRevealBackgroundView = findViewById(R.id.revealBackground);
+                        mRevealView = findViewById(R.id.reveal);
+                        mRevealView2 = findViewById(R.id.reveal2);
+                        mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                        mRevealBackgroundView = findViewById(R.id.revealBackground);
 
-                                mRevealView.setVisibility(View.INVISIBLE);
-                                mRevealView2.setVisibility(View.INVISIBLE);
-                                mRevealBackgroundView.setVisibility(View.INVISIBLE);
-                                mRevealBackgroundView2.setVisibility(View.INVISIBLE);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                                } else {
-                                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                                }
-                            }
-
-                            // Initialise Notes
-                            TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
-                            notesTextview.setTextColor(mPrimaryColor);
+                        mRevealView.setVisibility(View.INVISIBLE);
+                        mRevealView2.setVisibility(View.INVISIBLE);
+                        mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                        mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                        } else {
+                            collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
                         }
-                    });
+                    }
+
+                    // Initialise Notes
+                    TextView notesTextview = (TextView) findViewById(R.id.schedule_detail_notes_textview);
+                    notesTextview.setTextColor(mPrimaryColor);
                 }
             }
         }
@@ -815,7 +751,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             notesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()) {
+                    for (DataSnapshot noteSnapshot : dataSnapshot.getChildren()) {
                         String classTitle = noteSnapshot.child("scheduletitle").getValue(String.class);
                         if (classTitle != null && classTitle.equals(title)) {
                             notesArray.add(noteSnapshot.getKey());
@@ -875,12 +811,17 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
                                     // Navigate back to MainActivity
                                     Intent intent = new Intent(ScheduleDetailActivity.this, MainActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                 } else {
                                     // Delete data from SQLite
                                     DbHelper dbHelper = new DbHelper(ScheduleDetailActivity.this);
                                     dbHelper.deleteScheduleItemByTitle(title);
+
+                                    // Navigate back to MainActivity
+                                    Intent intent = new Intent(ScheduleDetailActivity.this, MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
                                 }
                             }
                         })
@@ -1009,7 +950,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
 
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle("Select Items");
 
             int colorFrom = getResources().getColor(R.color.colorPrimary);
@@ -1151,7 +1092,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     cursor.close();
 
                     // Create an intent to NewScheduleActivity and include the selected
-                    // item's id, title, and an edit flag as extras
+                    // item's id, category, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
@@ -1244,7 +1185,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
 
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle("Select Items");
 
             int colorFrom = getResources().getColor(R.color.colorPrimary);
@@ -1386,7 +1327,7 @@ public class ScheduleDetailActivity extends AppCompatActivity {
                     cursor.close();
 
                     // Create an intent to NewScheduleActivity and include the selected
-                    // item's id, title, and an edit flag as extras
+                    // item's id, category, and an edit flag as extras
                     Intent intent = new Intent(ScheduleDetailActivity.this, NewTaskActivity.class);
                     intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ID), id);
                     intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);

@@ -49,6 +49,7 @@ public class NewPeriodTwoActivity extends AppCompatActivity {
                 else intent = new Intent(NewPeriodTwoActivity.this, NewScheduleActivity.class);
 
                 preferences.edit().putBoolean(getString(R.string.KEY_FIRST_LAUNCH), false).apply();
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });

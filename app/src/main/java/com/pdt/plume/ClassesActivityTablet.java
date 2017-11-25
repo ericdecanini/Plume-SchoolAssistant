@@ -300,7 +300,7 @@ public class ClassesActivityTablet extends AppCompatActivity
                             startActivity(intent, bundle);
                         } else startActivity(intent);
                     } else {
-                        Log.w(LOG_TAG, "Error getting title of selected item");
+                        Log.w(LOG_TAG, "Error getting category of selected item");
                     }
                 }
             }
@@ -471,7 +471,7 @@ public class ClassesActivityTablet extends AppCompatActivity
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle(getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)

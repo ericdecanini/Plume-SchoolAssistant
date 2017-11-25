@@ -1,14 +1,10 @@
 package com.pdt.plume;
 
 import android.app.ActivityOptions;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
@@ -17,14 +13,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -55,20 +46,9 @@ import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-
-import static android.os.Build.ID;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ID;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
 
 public class ClassesActivity extends AppCompatActivity
     implements ScheduleDetailFragment.OnClassDeleteListener {
@@ -123,7 +103,7 @@ public class ClassesActivity extends AppCompatActivity
         mDarkColor = Color.HSVToColor(hsv);
         mSecondaryColor = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), getResources().getColor(R.color.colorAccent));
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.black_0_54));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.black_0_54));
         if (isTablet)
             findViewById(R.id.main_content).setBackgroundColor(backgroundColor);
         else {
@@ -359,7 +339,7 @@ public class ClassesActivity extends AppCompatActivity
                             startActivity(intent, bundle);
                         } else startActivity(intent);
                     } else {
-                        Log.w(LOG_TAG, "Error getting title of selected item");
+                        Log.w(LOG_TAG, "Error getting category of selected item");
                     }
                 }
             }
@@ -554,7 +534,7 @@ public class ClassesActivity extends AppCompatActivity
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle(getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)

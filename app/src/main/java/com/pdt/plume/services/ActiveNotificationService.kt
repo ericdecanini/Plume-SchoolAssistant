@@ -55,9 +55,9 @@ class ActiveNotificationService : Service() {
                                         for (requestSnapshot in p0.children) {
                                             if (requestSnapshot.child("nickname").value != null && requestSnapshot.child("icon").value != null
                                                     && requestSnapshot.child("flavour").value != null)
-                                                sendRequestNotificationSingle(p0.child("nickname").getValue(String::class.java),
-                                                        requestSnapshot.child("icon").getValue(String::class.java),
-                                                        requestSnapshot.child("flavour").getValue(String::class.java))
+                                                sendRequestNotificationSingle(p0.child("nickname").getValue(String::class.java)!!,
+                                                        requestSnapshot.child("icon").getValue(String::class.java)!!,
+                                                        requestSnapshot.child("flavour").getValue(String::class.java)!!)
                                             else Log.w(LOG_TAG, "Nickname or Icon returned null")
                                         }
                                     else sendRequestNotificationMultiple(p0.childrenCount.toInt())
@@ -104,28 +104,30 @@ class ActiveNotificationService : Service() {
             // Send the notifications for due tasks
             ref.child("users").child(mUserId).child("tasks").addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-                    val key = p0!!.key
-                    val duedate = p0.child("duedate").value as Long
-                    val c = Calendar.getInstance()
-                    c.timeInMillis = duedate
-                    val tomorrow = Calendar.getInstance()
-                    tomorrow.set(Calendar.DAY_OF_MONTH, tomorrow.get(Calendar.DAY_OF_MONTH + 1))
+                    if (debounce("duetasksonline")) {
+                        val key = p0!!.key
+                        val duedate = p0.child("duedate").value as Long
+                        val c = Calendar.getInstance()
+                        c.timeInMillis = duedate
+                        val tomorrow = Calendar.getInstance()
+                        tomorrow.set(Calendar.DAY_OF_MONTH, tomorrow.get(Calendar.DAY_OF_MONTH + 1))
 
-                    val c1 = Calendar.getInstance()
-                    val year = c1.get(Calendar.YEAR)
-                    val month = c1.get(Calendar.MONTH)
-                    val day = c1.get(Calendar.DAY_OF_MONTH)
+                        val c1 = Calendar.getInstance()
+                        val year = c1.get(Calendar.YEAR)
+                        val month = c1.get(Calendar.MONTH)
+                        val day = c1.get(Calendar.DAY_OF_MONTH)
 
-                    val preferences = PreferenceManager.getDefaultSharedPreferences(this@ActiveNotificationService)
-                    if (preferences.getString("duetask$key", "") != "$year$month$day"
-                            && preferences.getBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), false)) {
-                        if (c.get(Calendar.DAY_OF_MONTH) == tomorrow.get(Calendar.DAY_OF_MONTH)) {
-                            sendDueTaskNotification(-1, p0.key, p0.child("title").value as String,
-                                    p0.child("icon").value as String)
-                            preferences.edit().putString("duetask$key", "$year$month$day").apply()
+                        val preferences = PreferenceManager.getDefaultSharedPreferences(this@ActiveNotificationService)
+                        if (preferences.getString("duetask$key", "") != "$year$month$day"
+                                && preferences.getBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), false)) {
+                            if (c.get(Calendar.DAY_OF_MONTH) == tomorrow.get(Calendar.DAY_OF_MONTH)) {
+                                sendDueTaskNotification(-1, p0.key, p0.child("title").value as String,
+                                        p0.child("icon").value as String)
+                                preferences.edit().putString("duetask$key", "$year$month$day").apply()
+                            }
+
+
                         }
-
-
                     }
                 }
 
@@ -144,30 +146,32 @@ class ActiveNotificationService : Service() {
             })
         } else {
             // Send the notification for due tasks
-            val dbHelper = DbHelper(this)
-            val cursor = dbHelper.taskData
-            for (i in 0 until cursor.count) {
-                cursor.moveToPosition(i)
-                val id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID))
-                val icon = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON))
-                val title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE))
-                val duedate = cursor.getLong(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE))
-                val c = Calendar.getInstance()
-                c.timeInMillis = duedate
-                val tomorrow = Calendar.getInstance()
-                tomorrow.set(Calendar.DAY_OF_MONTH, tomorrow.get(Calendar.DAY_OF_MONTH + 1))
+            if (debounce("duetasksoffline")) {
+                val dbHelper = DbHelper(this)
+                val cursor = dbHelper.taskData
+                for (i in 0 until cursor.count) {
+                    cursor.moveToPosition(i)
+                    val id = cursor.getInt(cursor.getColumnIndex(DbContract.TasksEntry._ID))
+                    val icon = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON))
+                    val title = cursor.getString(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE))
+                    val duedate = cursor.getLong(cursor.getColumnIndex(DbContract.TasksEntry.COLUMN_DUEDATE))
+                    val c = Calendar.getInstance()
+                    c.timeInMillis = duedate
+                    val tomorrow = Calendar.getInstance()
+                    tomorrow.set(Calendar.DAY_OF_MONTH, tomorrow.get(Calendar.DAY_OF_MONTH + 1))
 
-                val c1 = Calendar.getInstance()
-                val year = c1.get(Calendar.YEAR)
-                val month = c1.get(Calendar.MONTH)
-                val day = c1.get(Calendar.DAY_OF_MONTH)
+                    val c1 = Calendar.getInstance()
+                    val year = c1.get(Calendar.YEAR)
+                    val month = c1.get(Calendar.MONTH)
+                    val day = c1.get(Calendar.DAY_OF_MONTH)
 
-                val preferences = PreferenceManager.getDefaultSharedPreferences(this@ActiveNotificationService)
-                if (preferences.getString("duetask$id", "") != "$year$month$day"
-                        && preferences.getBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), false)) {
-                    if (c.get(Calendar.DAY_OF_MONTH) == tomorrow.get(Calendar.DAY_OF_MONTH)) {
-                        sendDueTaskNotification(id, "", title, icon)
-                        preferences.edit().putString("duetask$id", "$year$month$day").apply()
+                    val preferences = PreferenceManager.getDefaultSharedPreferences(this@ActiveNotificationService)
+                    if (preferences.getString("duetask$id", "") != "$year$month$day"
+                            && preferences.getBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), false)) {
+                        if (c.get(Calendar.DAY_OF_MONTH) == tomorrow.get(Calendar.DAY_OF_MONTH)) {
+                            sendDueTaskNotification(id, "", title, icon)
+                            preferences.edit().putString("duetask$id", "$year$month$day").apply()
+                        }
                     }
                 }
             }

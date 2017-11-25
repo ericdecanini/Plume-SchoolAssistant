@@ -90,7 +90,7 @@ public class PeerProfileActivity extends AppCompatActivity {
         Color.colorToHSV(backgroundColor, hsv);
         hsv[2] *= 0.9f;
         int darkBackgroundColor = Color.HSVToColor(hsv);
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
 
         ((TextView) findViewById(R.id.textView2)).setTextColor(textColor);
         ((TextView) findViewById(R.id.textView1)).setTextColor(textColor);

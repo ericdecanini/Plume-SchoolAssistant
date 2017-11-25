@@ -56,7 +56,7 @@ public class CheckScheduleAdapter extends ArrayAdapter {
         }
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR), context.getResources().getColor(R.color.gray_900));
         float[] hsv = new float[3];
         Color.colorToHSV(textColor, hsv);
         hsv[1] *= 0.8;

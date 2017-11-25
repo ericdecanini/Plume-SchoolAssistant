@@ -1,10 +1,13 @@
 package com.pdt.plume;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -19,7 +22,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.icu.util.Calendar;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -38,6 +45,7 @@ import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.PopupMenu;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -46,6 +54,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -57,8 +66,19 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -84,24 +104,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.R.attr.id;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 import static com.pdt.plume.StaticRequestCodes.REQUEST_FILE_GET;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_CAPTURE;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_ICON;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_IMAGE_GET_PHOTO;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_CAMERA;
 import static com.pdt.plume.StaticRequestCodes.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE;
 
 public class NewTaskActivity extends AppCompatActivity
-        implements IconPromptDialog.iconDialogListener {
+        implements IconPromptDialog.iconDialogListener, EasyPermissions.PermissionCallbacks {
 
     // Constantly used variables
     String LOG_TAG = NewTaskActivity.class.getSimpleName();
@@ -114,7 +135,9 @@ public class NewTaskActivity extends AppCompatActivity
     // UI Elements
     EditText fieldTitle;
     View fieldShared;
+    View fieldCalendar;
     CheckBox fieldSharedCheckbox;
+    CheckBox fieldAddCalendar;
     EditText fieldDescription;
     ImageView fieldIcon;
 
@@ -163,6 +186,20 @@ public class NewTaskActivity extends AppCompatActivity
     FirebaseAuth mFirebaseAuth;
     FirebaseUser mFirebaseUser;
     String mUserId;
+
+    // Google Calendar Variables
+    static final int REQUEST_ACCOUNT_PICKER = 1000;
+    static final int REQUEST_AUTHORIZATION = 1001;
+    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    GoogleAccountCredential mCredential;
+    private TextView mOutputText;
+    private Button mCallApiButton;
+    ProgressDialog mProgress;
+    private static final String BUTTON_TEXT = "Call Google Calendar API";
+    private static final String PREF_ACCOUNT_NAME = "accountName";
+//    private static final String[] SCOPES = { CalendarScopes.CALENDAR_READONLY };
+
 
     // Built-in Icons
     private Integer[] mThumbIds = {
@@ -239,12 +276,16 @@ public class NewTaskActivity extends AppCompatActivity
         } else name = "";
 
         // Get references to the UI elements
+        mOutputText = (TextView) findViewById(R.id.output_text);
+        mCallApiButton = (Button) findViewById(R.id.calendar_button);
         fieldTitle = (EditText) findViewById(R.id.field_new_task_title);
         fieldIcon = (ImageView) findViewById(R.id.field_new_task_icon);
         fieldClassDropdown = findViewById(R.id.field_class_dropdown);
         fieldClassTextview = (TextView) findViewById(R.id.field_class_textview);
         fieldShared = findViewById(R.id.field_shared_layout);
         fieldSharedCheckbox = (CheckBox) findViewById(R.id.field_shared_checkbox);
+        fieldCalendar = findViewById(R.id.field_calendar);
+        fieldAddCalendar = (CheckBox) findViewById(R.id.field_add_to_calendar);
         fieldTypeDropdown = findViewById(R.id.field_type_dropdown);
         fieldTypeTextview = (TextView) findViewById(R.id.field_type_textview);
         fieldDescription = (EditText) findViewById(R.id.field_new_task_description);
@@ -260,6 +301,14 @@ public class NewTaskActivity extends AppCompatActivity
         else fieldSetReminderTime = findViewById(R.id.field_new_task_reminder_time_textview);
         fieldSetReminderTimeTextview = (TextView) findViewById(R.id.field_new_task_reminder_time_textview);
 
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Calling Google Calendar API ...");
+
+        // Initialize credentials and service object.
+//        mCredential = GoogleAccountCredential.usingOAuth2(
+//                getApplicationContext(), Arrays.asList(SCOPES))
+//                .setBackOff(new ExponentialBackOff());
+
         if (mFirebaseUser == null)
             if (!isTablet) fieldSharedCheckbox.setVisibility(View.GONE);
             else fieldShared.setVisibility(View.GONE);
@@ -274,6 +323,10 @@ public class NewTaskActivity extends AppCompatActivity
         // Initialise the dropdown box default data
         classTitle = getString(R.string.none);
         classType = getString(R.string.none);
+
+        // Initialise the Calendar checkbox
+        fieldAddCalendar.setChecked(PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(getString(R.string.KEY_SETTINGS_TASK_NOTIFICATION), false));
 
         // Set the listeners of the UI
         fieldIcon.setOnClickListener(showIconPrompt());
@@ -319,7 +372,7 @@ public class NewTaskActivity extends AppCompatActivity
             // Get schedule data from SQLite
             Cursor scheduleCursor = dbHelper.getAllScheduleData();
 
-            // Scan through the cursor and add in each class title into the array list
+            // Scan through the cursor and add in each class category into the array list
             if (scheduleCursor.moveToFirst()) {
                 for (int i = 0; i < scheduleCursor.getCount(); i++) {
                     String classTitle = scheduleCursor.getString(scheduleCursor.getColumnIndex(DbContract.ScheduleEntry.COLUMN_TITLE));
@@ -419,12 +472,12 @@ public class NewTaskActivity extends AppCompatActivity
                     } else {
                         fieldSetReminderDateTextview.setText(getString(R.string.none));
                         fieldSetReminderTime.setEnabled(false);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
+                        fieldSetReminderTimeTextview.setAlpha(0.5f);
                     }
 
 
                     if (reminderTime != 0f) {
-                        fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTime));
+                        fieldSetReminderTimeTextview.setText(utility.millisToHourTime(this, reminderTime));
                         this.reminderTimeMillis = reminderTime;
                     } else {
                         fieldSetReminderTimeTextview.setText(getString(R.string.none));
@@ -573,7 +626,7 @@ public class NewTaskActivity extends AppCompatActivity
         if (!isTablet)
             fieldSetReminderTime.setEnabled(false);
         else fieldSetReminderTimeTextview.setEnabled(false);
-        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
+        fieldSetReminderTimeTextview.setAlpha(0.5f);
         fieldSetReminderTimeTextview.setText(getString(R.string.none));
 
         // Dates
@@ -601,7 +654,7 @@ public class NewTaskActivity extends AppCompatActivity
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
 
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(textColor, hsv);
         hsv[2] *= 0.8f;
         int darkTextColor = Color.HSVToColor(hsv);
@@ -615,8 +668,12 @@ public class NewTaskActivity extends AppCompatActivity
         fieldSharedCheckbox.setTextColor(darkTextColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             fieldSharedCheckbox.setButtonTintList(ColorStateList.valueOf(darkTextColor));
+        fieldAddCalendar.setTextColor(darkTextColor);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            fieldAddCalendar.setButtonTintList(ColorStateList.valueOf(darkTextColor));
         ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(darkTextColor);
         ((EditText) findViewById(R.id.field_new_task_description)).setTextColor(textColor);
+        ((EditText) findViewById(R.id.field_new_task_description)).setHintTextColor(darkTextColor);
         ((TextView) findViewById(R.id.field_new_task_duedate_textview)).setTextColor(textColor);
         ((ImageView) findViewById(R.id.field_new_task_duedate_icon)).setColorFilter(textColor);
         ((TextView) findViewById(R.id.field_new_task_reminder_date_textview)).setTextColor(darkTextColor);
@@ -640,8 +697,8 @@ public class NewTaskActivity extends AppCompatActivity
             ((ImageView) findViewById(R.id.imageView3)).setColorFilter(darkTextColor);
             ((ImageView) findViewById(R.id.imageView4)).setColorFilter(darkTextColor);
             ((ImageView) findViewById(R.id.imageView6)).setColorFilter(darkTextColor);
+            ((ImageView) findViewById(R.id.imageView7)).setColorFilter(darkTextColor);
         }
-
 
 
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
@@ -663,7 +720,7 @@ public class NewTaskActivity extends AppCompatActivity
                 LAUNCHED_NEW_CLASS = false;
             }
 
-            // Auto-fill the title editText if there isn't any user-inputted title yet
+            // Auto-fill the category editText if there isn't any user-inputted category yet
             String titleText = fieldTitle.getText().toString();
             if (titleText.equals(""))
                 if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
@@ -679,7 +736,7 @@ public class NewTaskActivity extends AppCompatActivity
                 // Check if the taskType was set before the class
             else if (classTypeArray.contains(titleText))
                 fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
-                // Check if the title editText contains text as a result
+                // Check if the category editText contains text as a result
                 // of previously using the dropdown lists
             else {
                 String[] splitFieldTitle = titleText.split(" ");
@@ -709,7 +766,7 @@ public class NewTaskActivity extends AppCompatActivity
 
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
-                // Validate that the title field is not empty
+                // Validate that the category field is not empty
                 if (fieldTitle.getText().toString().equals("")) {
                     Toast.makeText(NewTaskActivity.this, getString(R.string.new_tasks_toast_validation_title_not_found), Toast.LENGTH_SHORT).show();
                     return false;
@@ -769,18 +826,19 @@ public class NewTaskActivity extends AppCompatActivity
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                 } else {
-
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.dialog_permission_denied_take_photo))
+                            .setPositiveButton(getString(R.string.ok), null)
+                            .show();
                 }
                 break;
 
-            case REQUEST_PERMISSION_CAMERA:
-                try {
-                    dispatchTakePictureIntent();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                EasyPermissions.onRequestPermissionsResult(
+                        requestCode, permissions, grantResults, this);
                 break;
         }
     }
@@ -836,6 +894,7 @@ public class NewTaskActivity extends AppCompatActivity
             photoUriList.add(imageData);
             addPhotoView(imageData);
         }
+
     }
 
     private void addPhotoView(final Uri imageUri) {
@@ -940,7 +999,7 @@ public class NewTaskActivity extends AppCompatActivity
                     return true;
                 }
 
-                // Auto-fill the title editText if there isn't any user-inputted title yet
+                // Auto-fill the category editText if there isn't any user-inputted category yet
                 String titleText = fieldTitle.getText().toString();
                 if (titleText.equals(""))
                     if (NewTaskActivity.this.classTitle.equals(getString(R.string.none)))
@@ -956,7 +1015,7 @@ public class NewTaskActivity extends AppCompatActivity
                     // Check if the taskType was set before the class
                 else if (classTypeArray.contains(titleText))
                     fieldTitle.setText(NewTaskActivity.this.classTitle + " " + titleText);
-                    // Check if the title editText contains text as a result
+                    // Check if the category editText contains text as a result
                     // of previously using the dropdown lists
                 else {
                     String[] splitFieldTitle = titleText.split(" ");
@@ -1020,7 +1079,7 @@ public class NewTaskActivity extends AppCompatActivity
                 // Set the data to be later saved into the database
                 NewTaskActivity.this.classType = item.getTitle().toString();
 
-                // Auto-fill the title editText if there isn't any user-inputted title yet
+                // Auto-fill the category editText if there isn't any user-inputted category yet
                 String titleText = fieldTitle.getText().toString();
                 if (titleText.equals("") && !NewTaskActivity.this.classType.equals(getString(R.string.none)))
                     fieldTitle.setText(NewTaskActivity.this.classType);
@@ -1035,7 +1094,7 @@ public class NewTaskActivity extends AppCompatActivity
                 else if (classTitleArray.contains(titleText)) {
                     fieldTitle.setText(titleText + " " + NewTaskActivity.this.classType);
                 }
-                // Check if the title editText contains text as a result
+                // Check if the category editText contains text as a result
                 // of previously using the dropdown lists
                 else {
                     String[] splitFieldTitle = titleText.split(" ");
@@ -1061,6 +1120,9 @@ public class NewTaskActivity extends AppCompatActivity
         PopupMenu popupMenu = new PopupMenu(this, fieldSetReminderDate);
         popupMenu.getMenuInflater().inflate(R.menu.popup_reminder_date, popupMenu.getMenu());
         final Calendar c = Calendar.getInstance();
+        final Calendar now = Calendar.getInstance();
+        if (reminderDateMillis <= 0) c.setTimeInMillis(now.getTimeInMillis());
+
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -1069,21 +1131,48 @@ public class NewTaskActivity extends AppCompatActivity
                         fieldSetReminderDateTextview.setText(getString(R.string.none));
                         reminderDateMillis = 0;
                         fieldSetReminderTime.setEnabled(false);
-                        fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_400));
+                        fieldSetReminderTimeTextview.setAlpha(0.5f);
                         break;
                     case R.id.dropdown_reminder_date_today:
-                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                        // Set the reminder date to 'today' with no time
+                        c.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), 0, 0);
                         fieldSetReminderDateTextview.setText(getString(R.string.today));
                         reminderDateMillis = c.getTimeInMillis();
+
+                        // Enable the reminder time field and set its colour accordingly
                         fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet)
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
+                        fieldSetReminderTimeTextview.setAlpha(1f);
+
+                        // If reminderTime has not been previously set, set it to 1 hour later
                         if (reminderTimeMillis == 0) {
-                            Calendar toGetTime = Calendar.getInstance();
-                            int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
-                            int minute = toGetTime.get(Calendar.MINUTE);
+                            int hourOfDay = now.get(Calendar.HOUR_OF_DAY) + 1;
+                            int minute = now.get(Calendar.MINUTE);
+
+                            Calendar c = Calendar.getInstance();
+                            c.set(0, 0, 0, hourOfDay, minute);
+                            reminderTimeMillis = utility.timeToMillis(hourOfDay, minute);
+
+                            if (minute < 10)
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":0" + minute);
+                            else
+                                fieldSetReminderTimeTextview.setText(hourOfDay + ":" + minute);
+                        }
+                        break;
+
+                    case R.id.dropdown_reminder_date_tomorrow:
+                        // Set the reminder date to 'tomorrow' and enable the reminder time field
+                        c.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH) + 1);
+                        fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
+                        reminderDateMillis = c.getTimeInMillis();
+
+                        // Set the reminder time colour accordingly
+                        fieldSetReminderTime.setEnabled(true);
+                        fieldSetReminderTimeTextview.setAlpha(1f);
+
+                        // If the reminder time has not been previously set, set the time to 1 hour later
+                        if (reminderTimeMillis == 0) {
+                            int hourOfDay = now.get(Calendar.HOUR_OF_DAY) + 1;
+                            int minute = now.get(Calendar.MINUTE);
                             reminderTimeMillis = utility.timeToMillis(hourOfDay, minute);
                             if (minute < 10)
                                 fieldSetReminderTimeTextview.setText(hourOfDay + ":0" + minute);
@@ -1091,32 +1180,13 @@ public class NewTaskActivity extends AppCompatActivity
                                 fieldSetReminderTimeTextview.setText(hourOfDay + ":" + minute);
                         }
                         break;
-                    case R.id.dropdown_reminder_date_tomorrow:
-                        c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH) + 1);
-                        fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
-                        reminderDateMillis = c.getTimeInMillis();
-                        fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet)
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
-                        if (reminderTimeMillis == 0) {
-                            Calendar toGetTime = Calendar.getInstance();
-                            int hourOfDay = toGetTime.get(Calendar.HOUR_OF_DAY) + 1;
-                            int minute = toGetTime.get(Calendar.MINUTE);
-                            reminderTimeMillis = utility.timeToMillis(hourOfDay, minute) * 1000;
-                            if (minute < 10)
-                                fieldSetReminderTimeTextview.setText(hourOfDay + ":0" + minute);
-                            else
-                                fieldSetReminderTimeTextview.setText(hourOfDay + ":" + minute);
-                        }
-                        break;
+
                     case R.id.dropdown_reminder_date_setdate:
+                        // Enable the reminder time field and set its colour accordingly
                         fieldSetReminderTime.setEnabled(true);
-                        if (!isTablet)
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.black_0_54));
-                        else
-                            fieldSetReminderTimeTextview.setTextColor(getResources().getColor(R.color.gray_900));
+                        fieldSetReminderTimeTextview.setAlpha(1);
+
+                        // Pass the current reminder date to the picker
                         int year = c.get(Calendar.YEAR);
                         int month = c.get(Calendar.MONTH);
                         int day = c.get(Calendar.DAY_OF_MONTH) + 1;
@@ -1135,7 +1205,6 @@ public class NewTaskActivity extends AppCompatActivity
     private void showReminderTimeDropdownMenu() {
         PopupMenu popupMenu = new PopupMenu(this, fieldSetReminderTime);
         popupMenu.getMenuInflater().inflate(R.menu.popup_reminder_time, popupMenu.getMenu());
-        final Calendar c = Calendar.getInstance();
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -1146,19 +1215,29 @@ public class NewTaskActivity extends AppCompatActivity
                         break;
                     case R.id.morning:
                         fieldSetReminderTimeTextview.setText(getString(R.string.morning));
-                        reminderTimeMillis = utility.timeToMillis(9, 0);
+                        reminderTimeMillis = 3600 * 9 * 1000;
                         break;
                     case R.id.afternoon:
                         fieldSetReminderTimeTextview.setText(getString(R.string.afternoon));
-                        reminderTimeMillis = utility.timeToMillis(14, 0);
+                        reminderTimeMillis = 3600 * 14 * 1000;
                         break;
                     case R.id.evening:
                         fieldSetReminderTimeTextview.setText(getString(R.string.evening));
-                        reminderTimeMillis = utility.timeToMillis(18, 0);
+                        reminderTimeMillis = 3600 * 18 * 1000;
                         break;
                     case R.id.custom:
-                        int hour = (int) (reminderTimeMillis / 1000) / 3600;
-                        int minute = (int) (((reminderTimeMillis / 1000) - (hour * 3600)) / 60);
+                        // If reminder time millis is set to none, pass the time +1 hour
+                        int hour, minute;
+                        if (reminderTimeMillis <= 0) {
+                            Calendar c = Calendar.getInstance();
+                            c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + 1);
+                            hour = c.get(Calendar.HOUR_OF_DAY);
+                            minute = c.get(Calendar.MINUTE);
+                        } else {
+                            hour = (int) reminderTimeMillis / 1000 / 3600;
+                            minute = (int) ((reminderTimeMillis / 1000) % 3600) / 60;
+                        }
+
                         TimePickerDialog timePickerFragment = new TimePickerDialog(NewTaskActivity.this, onTimeSetListener(), hour, minute, true);
                         timePickerFragment.show();
                         break;
@@ -1194,10 +1273,14 @@ public class NewTaskActivity extends AppCompatActivity
                     case R.id.take_photo_text:
                     case R.id.take_photo_icon:
                         // Request all permissions (for API 23+)
-                        int permissionCheck = ContextCompat.checkSelfPermission(NewTaskActivity.this,
+                        int permissionCheckStorage = ContextCompat.checkSelfPermission(NewTaskActivity.this,
                                 android.Manifest.permission.READ_EXTERNAL_STORAGE);
-                        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(NewTaskActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        int permissionCheckCamera = ContextCompat.checkSelfPermission(NewTaskActivity.this,
+                                Manifest.permission.CAMERA);
+
+                        if (permissionCheckStorage != PackageManager.PERMISSION_GRANTED
+                                || permissionCheckCamera != PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(NewTaskActivity.this, Manifest.permission.CAMERA)) {
                                 //Show permission explanation dialog...
                                 new AlertDialog.Builder(NewTaskActivity.this)
                                         .setMessage(getString(R.string.dialog_permission_rationale_take_photo))
@@ -1205,7 +1288,8 @@ public class NewTaskActivity extends AppCompatActivity
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 ActivityCompat.requestPermissions(NewTaskActivity.this,
-                                                        new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW},
+                                                        new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW,
+                                                                Manifest.permission.CAMERA},
                                                         REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
                                             }
                                         })
@@ -1216,27 +1300,33 @@ public class NewTaskActivity extends AppCompatActivity
                                             }
                                         })
                                         .show();
+                            } else {
+                                ActivityCompat.requestPermissions(NewTaskActivity.this,
+                                        new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW,
+                                                Manifest.permission.CAMERA},
+                                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
                             }
-                        }
-                        AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
-                        builder.setTitle(getString(R.string.field_new_photo_dialog_title))
-                                .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        switch (which) {
-                                            case 0:
-                                                try {
-                                                    dispatchTakePictureIntent();
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                }
-                                                break;
-                                            case 1:
-                                                dispatchSelectPhotoIntent();
-                                                break;
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NewTaskActivity.this);
+                            builder.setTitle(getString(R.string.field_new_photo_dialog_title))
+                                    .setItems(R.array.field_new_photo_dialog_items, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            switch (which) {
+                                                case 0:
+                                                    try {
+                                                        dispatchTakePictureIntent();
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    break;
+                                                case 1:
+                                                    dispatchSelectPhotoIntent();
+                                                    break;
+                                            }
                                         }
-                                    }
-                                }).show();
+                                    }).show();
+                        }
                         break;
                     case R.id.field_new_task_reminder_date:
                     case R.id.field_new_task_reminder_date_textview:
@@ -1269,17 +1359,17 @@ public class NewTaskActivity extends AppCompatActivity
         return new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                // Set reminder date to the chosen date
                 Calendar c = Calendar.getInstance();
-                c.set(year, monthOfYear, dayOfMonth);
+                c.set(year, monthOfYear, dayOfMonth, 0, 0);
                 reminderDateMillis = c.getTimeInMillis();
+
+                // Determine if the date corresponds to today or tomorrow
                 Calendar currentDate = Calendar.getInstance();
                 if (currentDate.getTimeInMillis() == reminderDateMillis)
                     fieldSetReminderDateTextview.setText(getString(R.string.today));
                 else {
-                    int currentYear = currentDate.get(Calendar.YEAR);
-                    int currentMonth = currentDate.get(Calendar.MONTH);
-                    int currentDay = currentDate.get(Calendar.DAY_OF_MONTH);
-                    currentDate.set(currentYear, currentMonth, currentDay + 1);
+                    currentDate.set(Calendar.DAY_OF_MONTH, currentDate.get(Calendar.DAY_OF_MONTH) + 1);
                     if (currentDate.getTimeInMillis() == reminderDateMillis)
                         fieldSetReminderDateTextview.setText(getString(R.string.tomorrow));
                     else
@@ -1294,8 +1384,8 @@ public class NewTaskActivity extends AppCompatActivity
         return new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                reminderTimeMillis = utility.timeToMillis(hourOfDay, minute) / 1000;
-                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(reminderTimeMillis * 1000));
+                reminderTimeMillis = utility.timeToMillis(hourOfDay, minute);
+                fieldSetReminderTimeTextview.setText(utility.millisToHourTime(NewTaskActivity.this, reminderTimeMillis));
             }
         };
     }
@@ -1379,7 +1469,6 @@ public class NewTaskActivity extends AppCompatActivity
     private boolean insertTaskDataIntoDatabase() throws IOException {
         // Get the data
         final String title = fieldTitle.getText().toString();
-        Log.v(LOG_TAG, "Title: " + title);
         final String description = fieldDescription.getText().toString();
 
         if (classTitle.equals(getString(R.string.none)))
@@ -1407,11 +1496,20 @@ public class NewTaskActivity extends AppCompatActivity
             taskRef.child("description").setValue(description);
             taskRef.child("completed").setValue(false);
 
+            // If FLAG_EDIT, attempt to delete custom icon if previously used
+            if (FLAG_EDIT) {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference();
+                StorageReference iconRef = storageRef.child(mUserId + "/tasks/" + taskRef.getKey());
+                iconRef.delete();
+            }
+
             if (customIconUploaded) {
                 // Copy the file to the app's directory
                 Uri imageUri = Uri.parse(iconUriString);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                String filename = imageUri.getLastPathSegment();
+                String filename = taskRef.getKey() + ".jpg";
+
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
@@ -1445,6 +1543,7 @@ public class NewTaskActivity extends AppCompatActivity
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             StorageReference iconRef = storageRef.child(mUserId + "/tasks/" + taskRef.getKey());
+
             if (customIconUploaded) {
                 fieldIcon.setDrawingCacheEnabled(true);
                 fieldIcon.buildDrawingCache();
@@ -1467,23 +1566,24 @@ public class NewTaskActivity extends AppCompatActivity
                 });
             }
 
+            // If FLAG_EDIT, delete all previous photos from database and storage
+            if (FLAG_EDIT) {
+                taskRef.child("photos").removeValue();
+                storageRef.child(mUserId + "/tasks/" + title + "/photos/").delete();
+            }
+
             // Photos upload
-            StorageReference photosRef = iconRef.child("photos");
             for (int i = 0; i < photoUriList.size(); i++) {
                 // Copy the photo into the app's local directory
                 Uri imageUri = photoUriList.get(i);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                String filename = taskRef.getKey() + ".jpg";
+                String filename = title + "safechar" + i + ".jpg";
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
-                try {
-                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                    outputStream.write(data);
-                    outputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(data);
+                outputStream.close();
 
                 // Image compression
                 Bitmap decodedBitmap = decodeFile(file);
@@ -1503,12 +1603,7 @@ public class NewTaskActivity extends AppCompatActivity
                 photoUriList.add(i, uri);
 
                 // Save the photos uri in the database
-                String savedUriString = uri.toString()
-                        .replace(".", "'dot'")
-                        .replace("/", "'slash'")
-                        .replace("#", "'hash'")
-                        .replace("&", "'ampers'");
-                taskRef.child("photos").child(savedUriString).setValue(uri);
+                taskRef.child("photos").child(Integer.toString(i)).setValue(uri);
 
                 // Upload the and photos
                 StorageReference iconRef1 = storageRef.child(mUserId + "/tasks/" + title + "/photos/" + String.valueOf(i));
@@ -1533,18 +1628,15 @@ public class NewTaskActivity extends AppCompatActivity
             }
 
             // Set the alarm for the notification
-            {
-                Calendar c = Calendar.getInstance();
-                c.setTimeInMillis(reminderDateMillis);
-                int hour = (int) reminderTimeMillis / 3600;
+            if (reminderDateMillis > 0)
+                ScheduleNotification(reminderDateMillis + reminderTimeMillis, -1, taskRef.getKey(), getString(R.string.notification_message_reminder), title, false);
 
-                int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
-                c.set(Calendar.HOUR_OF_DAY, hour);
-                c.set(Calendar.MINUTE, minute);
-                long notificationMillis = (c.getTimeInMillis());
-                if (reminderDateMillis > 0)
-                    ScheduleNotification(new Date(notificationMillis), -1, taskRef.getKey(), getString(R.string.notification_message_reminder), title, false);
+            // Add to Google Calendar if checked
+            if (fieldAddCalendar.isChecked()) {
+                // TODO: ADD CALENDAR FUNCTIONS
+                // Add title, description, and due date to calendar
             }
+
 
             // Share the task to peers if checked shared
             if (fieldSharedCheckbox.isChecked()) {
@@ -1585,11 +1677,47 @@ public class NewTaskActivity extends AppCompatActivity
             }
             return true;
         } else {
+            // Insert into SQLite and get the id of the task
+            DbHelper dbHelper = new DbHelper(this);
+            int id;
+
+            if (FLAG_EDIT) {
+                // Update database row
+                if (dbHelper.updateTaskItem(this, editId, title, classTitle, classType, description, attachedFileUriString,
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false)) {
+                    id = editId;
+
+                    // Cancel the old notification
+                    if (oldReminderDateMillis > 0)
+                        ScheduleNotification(reminderDateMillis + reminderTimeMillis, id, "", getString(R.string.notification_message_reminder), title, true);
+
+                    // Set the alarm for the notification
+                    if (reminderDateMillis > 0)
+                        ScheduleNotification(reminderDateMillis + reminderTimeMillis, editId, "",
+                                getString(R.string.notification_message_reminder), title, false);
+
+                    return true;
+                }
+            } else {
+                // Insert a new database row
+                debounce("duetasksoffline");
+                id = (int) dbHelper.insertTask(this, title, classTitle, classType, description, attachedFileUriString,
+                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false);
+
+                // Schedule a notification
+                if (reminderDateMillis > 0)
+                    ScheduleNotification(reminderDateMillis + reminderTimeMillis, id, "", getString(R.string.notification_message_reminder), title, false);
+
+                if (id > -1)
+                    return true;
+                else Log.d(LOG_TAG, "Task not inserted");
+            }
+
             // Copy the icon into a seperate file if custom
             if (customIconUploaded) {
                 Uri imageUri = Uri.parse(iconUriString);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                String filename = imageUri.getLastPathSegment();
+                String filename = editId + ".jpg";
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
@@ -1622,7 +1750,7 @@ public class NewTaskActivity extends AppCompatActivity
                 // Copy the photo into the app's local directory
                 Uri imageUri = photoUriList.get(i);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                String filename = i + ".jpg";
+                String filename = title + "safechar" + i + ".jpg";
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
@@ -1650,63 +1778,6 @@ public class NewTaskActivity extends AppCompatActivity
                 Uri uri = Uri.fromFile(file1);
                 photoUriList.remove(i);
                 photoUriList.add(i, uri);
-            }
-
-            // Insert into SQLite
-            DbHelper dbHelper = new DbHelper(this);
-
-            if (FLAG_EDIT) {
-                // Update database row
-                if (dbHelper.updateTaskItem(this, editId, title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false)) {
-                    // Cancel the old notification
-                    {
-                        Calendar c = Calendar.getInstance();
-                        c.setTimeInMillis(oldReminderDateMillis);
-                        int hour = (int) oldReminderTimeMillis / 3600;
-                        int minute = (int) (oldReminderTimeMillis - hour * 3600) / 60;
-                        c.set(Calendar.HOUR_OF_DAY, hour);
-                        c.set(Calendar.MINUTE, minute);
-                        long notificationMillis = (c.getTimeInMillis());
-                        if (oldReminderDateMillis > 0)
-                            ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title, true);
-                    }
-
-                    // Set the alarm for the notification
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis(reminderDateMillis);
-                    int hour = (int) reminderTimeMillis / 3600;
-
-                    int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
-                    c.set(Calendar.HOUR_OF_DAY, hour);
-                    c.set(Calendar.MINUTE, minute);
-                    long notificationMillis = (c.getTimeInMillis());
-                    if (reminderDateMillis > 0)
-                        ScheduleNotification(new Date(notificationMillis), editId, "",
-                                getString(R.string.notification_message_reminder), title, false);
-
-                    return true;
-                }
-            } else {
-                // Insert a new database row
-                debounce("duetasksoffline");
-                int id = (int) dbHelper.insertTask(this, title, classTitle, classType, description, attachedFileUriString,
-                        dueDateMillis, reminderDateMillis, reminderTimeMillis, iconUriString, photoUriList, false);
-
-                // Schedule a notification
-                Calendar c = Calendar.getInstance();
-                c.setTimeInMillis(reminderDateMillis);
-                int hour = (int) reminderTimeMillis / 3600;
-                int minute = (int) (reminderTimeMillis - hour * 3600) / 60;
-                c.set(Calendar.HOUR_OF_DAY, hour);
-                c.set(Calendar.MINUTE, minute);
-                long notificationMillis = (c.getTimeInMillis());
-                if (reminderDateMillis > 0)
-                    ScheduleNotification(new Date(notificationMillis), id, "", getString(R.string.notification_message_reminder), title, false);
-
-                if (id > -1)
-                    return true;
-                else Log.d(LOG_TAG, "Task not inserted");
             }
 
             return false;
@@ -1739,37 +1810,17 @@ public class NewTaskActivity extends AppCompatActivity
         return null;
     }
 
-
-    // Used for Attach File
-    void saveFile(Uri sourceuri) {
-        String sourceFilename = sourceuri.getPath();
-        String destinationFilename = android.os.Environment.getExternalStorageDirectory().getPath() + File.separatorChar + "abc.mp3";
-
-        BufferedInputStream bis = null;
-        BufferedOutputStream bos = null;
-
-        try {
-            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
-            bos = new BufferedOutputStream(new FileOutputStream(destinationFilename, false));
-            byte[] buf = new byte[1024];
-            bis.read(buf);
-            do {
-                bos.write(buf);
-            } while (bis.read(buf) != -1);
-        } catch (IOException e) {
-
-        } finally {
-            try {
-                if (bis != null) bis.close();
-                if (bos != null) bos.close();
-            } catch (IOException e) {
-
-            }
-        }
-    }
-
-    private void ScheduleNotification(final Date dateTime, final int ID, final String firebaseID,
+    private void ScheduleNotification(final long millis, final int ID, final String firebaseID,
                                       final String title, final String message, final boolean cancel) {
+        // TEST SEQUENCE
+        Calendar test = Calendar.getInstance();
+        test.setTimeInMillis(millis);
+        Log.v(LOG_TAG, "Notification scheduled for " + test.get(Calendar.DAY_OF_MONTH) + "/"
+                + test.get(Calendar.MONTH) + "/"
+                + test.get(Calendar.YEAR) + " "
+                + test.get(Calendar.HOUR_OF_DAY) + ":"
+                + test.get(Calendar.MINUTE));
+
         final android.support.v4.app.NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         Bitmap largeIcon = null;
         try {
@@ -1806,9 +1857,9 @@ public class NewTaskActivity extends AppCompatActivity
 
                 Notification notification = builder.build();
 
-                Intent notificationIntent = new Intent(NewTaskActivity.this, TaskNotificationPublisher.class);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 60);
-                notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+                Intent notificationIntent = new Intent(NewTaskActivity.this, NotificationPublisher.class);
+                notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 60);
+                notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
                 final PendingIntent pendingIntent = PendingIntent.getBroadcast(NewTaskActivity.this, REQUEST_NOTIFICATION_ALARM,
                         notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -1816,34 +1867,25 @@ public class NewTaskActivity extends AppCompatActivity
                 if (cancel)
                     alarmManager.cancel(pendingIntent);
                 else
-                    alarmManager.set(AlarmManager.RTC, dateTime.getTime(), pendingIntent);
+                    alarmManager.set(AlarmManager.RTC, millis, pendingIntent);
             }
         });
     }
 
     private void dispatchTakePictureIntent() throws IOException {
-        // Check if the CAMERA permission has been granted
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            // Request the permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    REQUEST_PERMISSION_CAMERA);
-        } else {
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            // Ensure that there's a camera activity to handle the intent
-            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                // Create the File where the photo should go
-                File photoFile = createImageFile();
-                // Continue only if the File was successfully created
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.pdt.plume.fileprovider",
-                            photoFile);
-                    mTempPhotoUri = photoURI;
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = createImageFile();
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.pdt.plume.fileprovider",
+                        photoFile);
+                mTempPhotoUri = photoURI;
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
         }
     }
@@ -1856,7 +1898,7 @@ public class NewTaskActivity extends AppCompatActivity
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file title
+        // Create an image file category
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -1910,6 +1952,16 @@ public class NewTaskActivity extends AppCompatActivity
         preferences.edit().putLong("lastCheckDate" + tag, System.currentTimeMillis()).apply();
 
         return cSecond > second + 5;
+    }
+
+    @Override
+    public void onPermissionsGranted(int i, List<String> list) {
+
+    }
+
+    @Override
+    public void onPermissionsDenied(int i, List<String> list) {
+
     }
 
 }

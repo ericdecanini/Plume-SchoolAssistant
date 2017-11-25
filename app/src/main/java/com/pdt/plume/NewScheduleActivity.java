@@ -16,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
 import java.util.Calendar;
+
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -213,7 +214,7 @@ public class NewScheduleActivity extends AppCompatActivity
         classTimeList.setAdapter(periodAdapter);
         periodAdapter.notifyDataSetChanged();
 
-        // Set the mTasksAdapter for the title auto-complete text view
+        // Set the mTasksAdapter for the category auto-complete text view
         String[] subjects = getResources().getStringArray(R.array.subjects);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, subjects);
         fieldTitle.setAdapter(autoCompleteAdapter);
@@ -227,7 +228,7 @@ public class NewScheduleActivity extends AppCompatActivity
             FLAG_EDIT = extras.getBoolean(getResources().getString(R.string.INTENT_FLAG_EDIT), false);
             STARTED_BY_NEWTASKACTIVITY = extras.getBoolean("STARTED_BY_NEWTASKACTIVITY", false);
         }
-        // Get schedule data in database based on the schedule title to auto-fill the fields in the UI element
+        // Get schedule data in database based on the schedule category to auto-fill the fields in the UI element
         if (FLAG_EDIT) {
             if (mFirebaseUser != null) {
                 // Get the data from Firebase
@@ -417,18 +418,18 @@ public class NewScheduleActivity extends AppCompatActivity
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.container).setBackgroundColor(backgroundColor);
 
-        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(titleColor, hsv);
-        hsv[1] *= 0.2f;
+        hsv[2] *= 0.8f;
         int darkTitleColor = Color.HSVToColor(hsv);
         if (fieldTeacher != null) {
             fieldTeacher.setTextColor(titleColor);
-//            fieldTeacher.setHintTextColor(darkTitleColor);
+            fieldTeacher.setHintTextColor(darkTitleColor);
         }
         ((ImageView) findViewById(R.id.field_new_schedule_teacher_icon)).setColorFilter(darkTitleColor);
         if (fieldRoom != null) {
             fieldRoom.setTextColor(titleColor);
-//            fieldRoom.setHintTextColor(darkTitleColor);
+            fieldRoom.setHintTextColor(darkTitleColor);
         }
         ((ImageView) findViewById(R.id.field_new_schedule_room_icon)).setColorFilter(darkTitleColor);
 
@@ -486,7 +487,7 @@ public class NewScheduleActivity extends AppCompatActivity
             // Validate input fields then
             // Insert inputted data into the database and terminate the activity
             case R.id.action_done:
-                // Check if the title field is empty, disallow insertion of it is
+                // Check if the category field is empty, disallow insertion of it is
                 if (fieldTitle != null && fieldTitle.getText() != null && fieldTitle.getText().toString().equals("")) {
                     Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_title_not_found),
                             Toast.LENGTH_SHORT).show();
@@ -554,14 +555,15 @@ public class NewScheduleActivity extends AppCompatActivity
                 mPeriodListSize = 0;
 
                 // Check for clashing titles from existing classes
-                title = fieldTitle.getText().toString();
+                if (fieldTitle != null)
+                    title = fieldTitle.getText().toString();
                 if (mFirebaseUser != null) {
                     FirebaseDatabase.getInstance().getReference()
                             .child("users").child(mUserId).child("classes")
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    for (DataSnapshot classSnapshot: dataSnapshot.getChildren()) {
+                                    for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
                                         if (classSnapshot.getKey().equals(title) && !FLAG_EDIT) {
                                             Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_clashing_title),
                                                     Toast.LENGTH_SHORT).show();
@@ -611,8 +613,7 @@ public class NewScheduleActivity extends AppCompatActivity
                         }
                         finish();
                         return true;
-                    }
-                    else {
+                    } else {
                         Toast.makeText(NewScheduleActivity.this, getString(R.string.new_schedule_toast_validation_clashing_title),
                                 Toast.LENGTH_SHORT).show();
                         return false;
@@ -684,8 +685,16 @@ public class NewScheduleActivity extends AppCompatActivity
                 classRef.child("occurrence").child(String.valueOf(i)).setValue(occurrence);
                 classRef.child("timein").child(String.valueOf(i)).setValue(timeIn);
                 classRef.child("timeout").child(String.valueOf(i)).setValue(timeOut);
-                classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeInAlt);
-                classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOutAlt);
+
+                // If it'same-week schedule is being used, let timein and out values be copied into their alt variables
+                if (weekType.equals("1")) {
+                    classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeInAlt);
+                    classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOutAlt);
+                } else {
+                    classRef.child("timeinalt").child(String.valueOf(i)).setValue(timeIn);
+                    classRef.child("timeoutalt").child(String.valueOf(i)).setValue(timeOut);
+                }
+
                 classRef.child("periods").child(String.valueOf(i)).setValue(periods);
             }
         } else {
@@ -706,6 +715,7 @@ public class NewScheduleActivity extends AppCompatActivity
                 Uri imageUri = Uri.parse(iconUri);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 String filename = title + ".jpg";
+
                 byte[] data = getBytes(inputStream);
                 File file = new File(getFilesDir(), filename);
                 FileOutputStream outputStream;
@@ -820,7 +830,7 @@ public class NewScheduleActivity extends AppCompatActivity
 
         DbHelper dbHelper = new DbHelper(this);
         if (FLAG_EDIT) {
-            // Delete the previous all instances of the schedule (based on the title)
+            // Delete the previous all instances of the schedule (based on the category)
             Cursor cursor = dbHelper.getScheduleDataByTitle(this.title);
             for (int i = 0; i < cursor.getCount(); i++) {
                 if (cursor.moveToPosition(i)) {
@@ -838,8 +848,19 @@ public class NewScheduleActivity extends AppCompatActivity
                     String occurrence = item.occurrence;
                     long timeIn = item.timeinValue;
                     long timeOut = item.timeoutValue;
-                    long timeInAlt = item.timeinaltValue;
-                    long timeOutAlt = item.timeoutaltValue;
+
+                    // If it'same-week schedule is being used, let timein and out values be copied into their alt variables
+                    long timeInAlt;
+                    long timeOutAlt;
+                    if (weekType.equals("1")) {
+                        timeInAlt = item.timeinaltValue;
+                        timeOutAlt = item.timeoutaltValue;
+                    } else {
+                        timeInAlt = item.timeinValue;
+                        timeOutAlt = item.timeoutValue;
+                    }
+
+
                     String periods = getItemPeriods(i);
 
                     scheduleNotification(title, Uri.parse(iconUri), -1);
@@ -956,9 +977,10 @@ public class NewScheduleActivity extends AppCompatActivity
                 .setDefaults(Notification.DEFAULT_ALL)
                 .build();
 
-        Intent notificationIntent = new Intent(this, TaskNotificationPublisher.class);;
-        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION_ID, 1);
-        notificationIntent.putExtra(TaskNotificationPublisher.NOTIFICATION, notification);
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        ;
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, REQUEST_NOTIFICATION_ALARM,
                 notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/bg_about"/>
+        android:src="@drawable/bg_about" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -44,8 +44,8 @@
                     android:layout_toEndOf="@id/about_appicon"
                     android:layout_toRightOf="@id/about_appicon"
                     android:text="@string/Classify"
-                    android:textSize="18sp"
-                    android:textColor="@color/black"/>
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/about_assistant"
@@ -57,8 +57,8 @@
                     android:layout_toEndOf="@id/about_appicon"
                     android:layout_toRightOf="@id/about_appicon"
                     android:text="@string/Assistant"
-                    android:textSize="14sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
             </RelativeLayout>
 
             <TextView
@@ -176,6 +176,15 @@
                 android:text="@string/Graphics"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/George"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/black" />
 
             <TextView
                 android:layout_width="wrap_content"

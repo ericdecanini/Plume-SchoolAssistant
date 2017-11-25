@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.pdt.plume.ColouredPreferenceCategory android:title="@string/general"
-        android:key="@string/KEY_THEME_CATEGORY_GENERAL">
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:key="@string/KEY_THEME_CATEGORY_GENERAL"
+        android:title="@string/general">
 
         <Preference
             android:key="@string/KEY_SETTINGS_THEME_PRIMARY"
@@ -15,16 +16,32 @@
     </com.pdt.plume.ColouredPreferenceCategory>
 
     <com.pdt.plume.ColouredPreferenceCategory
-        android:title="@string/planner"
-        android:key="@string/KEY_THEME_CATEGORY_PLANNER">
+        android:key="@string/KEY_THEME_CATEGORY_PLANNER"
+        android:title="@string/planner">
 
         <Preference
             android:key="@string/KEY_THEME_BACKGROUND_COLOUR"
             android:title="@string/settings_theme_background" />
 
         <Preference
-            android:key="@string/KEY_THEME_TITLE_COLOUR"
+            android:key="@string/KEY_THEME_TEXT_COLOUR"
             android:title="@string/settings_theme_title_colour" />
+
+    </com.pdt.plume.ColouredPreferenceCategory>
+
+    <Preference
+        android:key="@string/KEY_SETTINGS_THEME_PRESETS"
+        android:title="@string/presets" />
+
+    <com.pdt.plume.ColouredPreferenceCategory
+        android:key="@string/KEY_THEME_CATEGORY_TASKS"
+        android:title="@string/tasks">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/KEY_THEME_TASKS_INDICATOR"
+            android:summary="@string/settings_tasks_indicator_summary"
+            android:title="@string/settings_tasks_indicator" />
 
     </com.pdt.plume.ColouredPreferenceCategory>
 

@@ -207,7 +207,7 @@ public class TasksDetailFragment extends Fragment {
                             intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
 
                             // Create an intent to NewScheduleActivity and include the selected
-                            // item's id, title, and an edit flag as extras
+                            // item's id, category, and an edit flag as extras
                             intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
                             taskRef.removeEventListener(this);
                             startActivity(intent);
@@ -544,7 +544,7 @@ public class TasksDetailFragment extends Fragment {
         int darkenedBackgroundColor = Color.HSVToColor(hsv);
         rootview.findViewById(R.id.container).setBackgroundColor(darkenedBackgroundColor);
 
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(textColor, hsv);
         hsv[2] *= 0.8f;
         int darkTextColor = Color.HSVToColor(hsv);

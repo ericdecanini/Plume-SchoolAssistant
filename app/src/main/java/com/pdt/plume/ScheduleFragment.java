@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -79,8 +78,9 @@ public class ScheduleFragment extends Fragment {
     // UI Data
     ScheduleAdapter mScheduleAdapter;
     ArrayList<Schedule> mScheduleList = new ArrayList<>();
+    ArrayList<Long> timeInList = new ArrayList<>();
     ArrayList<String> mOccurrenceList = new ArrayList<>();
-    ArrayList<String> mOccurrenceIndexList = new ArrayList<>();
+    ArrayList<String> mOccurrenceIndexes = new ArrayList<>();
 
     // Flags
     boolean isTablet;
@@ -196,7 +196,7 @@ public class ScheduleFragment extends Fragment {
                     .commit();
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+                .getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         ((TextView) rootView.findViewById(R.id.textView1)).setTextColor(textColor);
 
         // Inflate the layout for this fragment
@@ -283,6 +283,8 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        mScheduleAdapter = new ScheduleAdapter(getContext(),
+                R.layout.list_item_schedule, mScheduleList);
         querySchedule();
 
         // Click the first list item
@@ -349,13 +351,7 @@ public class ScheduleFragment extends Fragment {
                         // Shared element transition
                         ImageView iconView = (ImageView) view.findViewById(R.id.schedule_icon);
                         Uri iconUri = Uri.parse(mScheduleList.get(position).scheduleIcon);
-                        boolean transition = false;
-
-                        if (iconUri.toString().contains("art_"))
-                            transition = true;
-                        else {
-                            transition = false;
-                        }
+                        boolean transition = iconUri.toString().contains("art_");
 
                         if (transition) {
                             Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
@@ -389,6 +385,7 @@ public class ScheduleFragment extends Fragment {
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         if (firebaseUser != null) {
             // Get data from Firebase
             spinner.setVisibility(View.VISIBLE);
@@ -396,17 +393,26 @@ public class ScheduleFragment extends Fragment {
             classesRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId).child("classes");
 
+            // Create the event listener to download the data from online storage
             childEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot classSnapshot, String s) {
+                    // Temporarily set 12 hours to false to correct sorting
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+
                     final String title = classSnapshot.getKey();
                     final String teacher = classSnapshot.child("teacher").getValue(String.class);
                     final String room = classSnapshot.child("room").getValue(String.class);
                     final String iconUri = classSnapshot.child("icon").getValue(String.class);
 
+                    // Array data, get and add to array lists
                     final ArrayList<String> occurrences = new ArrayList<>();
-                    for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren())
+                    final ArrayList<String> occurrenceIndexes = new ArrayList<>();
+                    for (DataSnapshot occurrenceSnapshot : classSnapshot.child("occurrence").getChildren()) {
                         occurrences.add(occurrenceSnapshot.getValue(String.class));
+                        occurrenceIndexes.add(occurrenceSnapshot.getKey());
+                    }
+
                     final ArrayList<Integer> timeins = new ArrayList<>();
                     for (DataSnapshot timeinSnapshot : classSnapshot.child("timein").getChildren())
                         timeins.add(timeinSnapshot.getValue(int.class));
@@ -423,20 +429,22 @@ public class ScheduleFragment extends Fragment {
                     for (DataSnapshot periodsSnapshot : classSnapshot.child("periods").getChildren())
                         periods.add(periodsSnapshot.getValue(String.class));
 
-
-                    for (int i3 = 0; i3 < occurrences.size(); i3++) {
-                        mOccurrenceList.add(occurrences.get(i3));
-
+                    // For each of the subject's occurrences, check if that matches the current day
+                    // If it does, add it to the lists of occurrences to be added by the listview adapter
+                    for (int occurrenceIndex = 0; occurrenceIndex < occurrences.size(); occurrenceIndex++) {
                         // Check if the iconUri points to an existing file
                         if (iconUri == null) return;
 
-                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(i3),
+                        if (utility.occurrenceMatchesCurrentDay(getContext(), occurrences.get(occurrenceIndex),
                                 periods.get(periods.size() - 1), weekNumber, dayOfWeek)) {
-                            ArrayList<String> periodsList = new ArrayList<>();
-                            if (periods.size() < i3)
-                                periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(i3), weekNumber,
-                                        occurrences.get(i3).split(":")[1]));
+                            mOccurrenceList.add(occurrences.get(occurrenceIndex));
+                            mOccurrenceIndexes.add(occurrenceIndexes.get(occurrenceIndex));
 
+                            // If it is a period based item, check if it has more than one period per day
+                            ArrayList<String> periodsList = new ArrayList<>();
+                            if (periods.size() < occurrenceIndex)
+                                periodsList.addAll(utility.createSetPeriodsArrayList(periods.get(occurrenceIndex), weekNumber,
+                                        occurrences.get(occurrenceIndex).split(":")[1]));
 
                             File file = new File(getContext().getFilesDir(), title + ".jpg");
                             if (file.exists() || iconUri.contains("art_")) {
@@ -444,14 +452,14 @@ public class ScheduleFragment extends Fragment {
                                     for (int i = 0; i < periodsList.size(); i++) {
                                         if (weekNumber.equals("0") || occurrences.get(i).split(":")[1].equals("0")) {
                                             mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                    utility.millisToHourTime(timeins.get(i)),
-                                                    utility.millisToHourTime(timeouts.get(i)),
+                                                    utility.millisToHourTime(getContext(), timeins.get(i)),
+                                                    utility.millisToHourTime(getContext(), timeouts.get(i)),
                                                     periodsList.get(i)));
                                         }
                                         else {
                                             mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                    utility.millisToHourTime(timeinalts.get(i)),
-                                                    utility.millisToHourTime(timeoutalts.get(i)),
+                                                    utility.millisToHourTime(getContext(), timeinalts.get(i)),
+                                                    utility.millisToHourTime(getContext(), timeoutalts.get(i)),
                                                     periodsList.get(i)));
                                         }
 
@@ -459,16 +467,16 @@ public class ScheduleFragment extends Fragment {
                                         mScheduleAdapter.notifyDataSetChanged();
                                     }
                                 } else {
-                                    if (weekNumber.equals("0") || occurrences.get(i3).split(":")[1].equals("0")) {
+                                    if (weekNumber.equals("0") || occurrences.get(occurrenceIndex).split(":")[1].equals("0")) {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                utility.millisToHourTime(timeins.get(i3)),
-                                                utility.millisToHourTime(timeouts.get(i3)),
+                                                utility.millisToHourTime(getContext(), timeins.get(occurrenceIndex)),
+                                                utility.millisToHourTime(getContext(), timeouts.get(occurrenceIndex)),
                                                 ""));
                                     }
                                     else {
                                         mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                utility.millisToHourTime(timeinalts.get(i3)),
-                                                utility.millisToHourTime(timeoutalts.get(i3)),
+                                                utility.millisToHourTime(getContext(), timeinalts.get(occurrenceIndex)),
+                                                utility.millisToHourTime(getContext(), timeoutalts.get(occurrenceIndex)),
                                                 ""));
                                     }
                                     Collections.sort(mScheduleList, new ScheduleComparator());
@@ -486,13 +494,13 @@ public class ScheduleFragment extends Fragment {
                                         for (int i = 0; i < occurrences.size(); i++) {
                                             if (weekNumber.equals("0") || occurrences.get(i).split(":")[1].equals("0"))
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                        utility.millisToHourTime(timeins.get(i)),
-                                                        utility.millisToHourTime(timeouts.get(i)),
+                                                        utility.millisToHourTime(getContext(), timeins.get(i)),
+                                                        utility.millisToHourTime(getContext(), timeouts.get(i)),
                                                         periods.get(i)));
                                             else
                                                 mScheduleList.add(new Schedule(getContext(), iconUri, title, teacher, room,
-                                                        utility.millisToHourTime(timeinalts.get(i)),
-                                                        utility.millisToHourTime(timeoutalts.get(i)),
+                                                        utility.millisToHourTime(getContext(), timeinalts.get(i)),
+                                                        utility.millisToHourTime(getContext(), timeoutalts.get(i)),
                                                         periods.get(i)));
                                             Collections.sort(mScheduleList, new ScheduleComparator());
                                             mScheduleAdapter.notifyDataSetChanged();
@@ -513,6 +521,7 @@ public class ScheduleFragment extends Fragment {
                         spinner.setVisibility(View.GONE);
                         noItems = false;
                     }
+
                     mScheduleAdapter.notifyDataSetChanged();
                 }
 
@@ -610,7 +619,7 @@ public class ScheduleFragment extends Fragment {
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
 
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle(getContext().getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -671,13 +680,28 @@ public class ScheduleFragment extends Fragment {
                         .child("users").child(mUserId).child("classes");
 
                 ArrayList<Integer> indexes = new ArrayList<>();
-                for (int i = CAMselectedItemsList.size() - 1; i > -1; i--)
+                for (int i = 0; i < CAMselectedItemsList.size(); i++)
                     indexes.add(CAMselectedItemsList.get(i));
 
                 Collections.sort(indexes);
-                for (int i = indexes.size() - 1; i > -1; i--) {
+                for (int i = 0; i < indexes.size(); i++) {
+                    // Delete the selected occurrence of the subject
+                    final DatabaseReference classRef =  classesRef.child(mScheduleList.get(indexes.get(i)).scheduleLesson);
                     classesRef.child(mScheduleList.get(indexes.get(i)).scheduleLesson).child("occurrence")
-                            .child(mOccurrenceIndexList.get(indexes.get(i))).removeValue();
+                            .child(mOccurrenceIndexes.get(indexes.get(i))).removeValue();
+
+                    // If the subject has no more occurrences, delete the subject altogether
+                    classesRef.child(mScheduleList.get(indexes.get(i)).scheduleLesson)
+                            .child("occurrence").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.getChildrenCount() == 0)
+                                classRef.removeValue();
+                        }
+
+                        @Override public void onCancelled(DatabaseError databaseError) {}});
+
+                    // Remove the class from the array list and adapter
                     mScheduleList.remove((int) indexes.get(i));
                 }
 
@@ -743,7 +767,7 @@ public class ScheduleFragment extends Fragment {
 
 
                 // Create an intent to NewScheduleActivity and include the selected
-                // item's id, title, and an edit flag as extras
+                // item's id, category, and an edit flag as extras
                 intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
                 intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 

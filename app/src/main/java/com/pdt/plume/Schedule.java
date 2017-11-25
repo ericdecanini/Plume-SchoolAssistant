@@ -14,6 +14,7 @@ public class Schedule {
     public String scheduleRoom;
     public String scheduleTimeIn;
     public String scheduleTimeOut;
+    public String schedulePeriod;
 
     public Object extra;
 
@@ -30,6 +31,7 @@ public class Schedule {
         this.scheduleLesson = lesson;
         this.scheduleTeacher = teacher;
         this.scheduleRoom = room;
+        this.schedulePeriod = period;
 
         // Find out the basis of the item based on the timeIn and period Strings
         // and set the in and out strings based on that

@@ -10,6 +10,7 @@
     <string name="nav_classes">Classes</string>
     <string name="nav_completedTasks">Completed tasks</string>
     <string name="nav_people">Peers</string>
+    <string name="nav_timetable">Timetable</string>
     <string name="nav_requests">Requests</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_help">Help</string>
@@ -120,6 +121,7 @@
     <string name="add_peer">Add a new Peer</string>
     <string name="AddByUsername">Add by Username</string>
     <string name="addPeers">Add Peers</string>
+    <string name="addToCalendar">Add to Calendar</string>
     <string name="aiSlide1Desc">Manage your schedules and tasks all from your phone</string>
     <string name="aiSlide1Title">Your Digital Planner</string>
     <string name="aiSlide2Desc">Share tasks and make working together even easier</string>
@@ -149,7 +151,9 @@
     <string name="coming_soon">Coming soon&#8230;</string>
     <string name="completed_task">Completed task</string>
     <string name="confirm">Confirm</string>
+    <string name="cool_presets">Cool Presets</string>
     <string name="days">Days</string>
+    <string name="Default">Default</string>
     <string name="delete">Delete</string>
     <string name="deny">Deny</string>
     <string name="dialog_unmatched_title">Classes not matched</string>
@@ -165,6 +169,7 @@
     <string name="dialog_example_sameweek">Maths on Mon, 9:00 Every Week</string>
     <string name="dialog_example_timebased">Maths - 9:00&#8211;10:00am</string>
     <string name="dialog_permission_rationale_take_photo">To use this feature, Class-ify requires access to your storage.</string>
+    <string name="dialog_permission_denied_take_photo">To use this feature, Class-ify requires these permissions</string>
     <string name="dialog_rate">Take a second to give us a friendly rating and review. This will also help us improve Class-ify and bring you better apps!</string>
     <string name="dialog_rate_title">Rate us on Google Play</string>
     <string name="dialog_remove_class">Remove %1$s from %2$s and stop sharing tasks?</string>
@@ -207,9 +212,12 @@
     <string name="general">General</string>
     <string name="get_started">Get Started</string>
     <string name="got_it">got it</string>
+    <string name="halloween">Halloween</string>
+    <string name="help_the_developers">Help the developers</string>
     <string name="here">Here</string>
     <string name="ignore">Ignore</string>
     <string name="invalid_qr_message">Please scan a valid user\'s QR code</string>
+    <string name="intent_share">Class-ify School Assistant and Planner is a great help. I recommend you try it out</string>
     <string name="irreversible">This action is irreversible</string>
     <string name="link_to_class">Link to Class</string>
     <string name="manage_classes">Manage classes</string>
@@ -255,6 +263,8 @@
     <string name="notification_shared_task_text">Click here for more details</string>
     <string name="notification_message_reminder">Touch for more details.</string>
     <string name="ok">OK</string>
+    <string name="period_duration">Period Length</string>
+    <string name="presets">Presets</string>
     <string name="planner">Planner</string>
     <string name="preference_category_appearance">Appearance settings</string>
     <string name="preference_category_general">General settings</string>
@@ -273,6 +283,10 @@
     <string name="request_pending_text">Do you want to delete this request and send a new one?</string>
     <string name="requestSent">Request sent to %1$s</string>
     <string name="restore">Restore</string>
+    <string name="review">Review</string>
+    <string name="review_menu">Give a review</string>
+    <string name="review_dialog_title">Give Class-ify a review!</string>
+    <string name="review_dialog_message">Help the developers by giving a review. You may give us suggestions and feedback and we\'ll respond to them immediately!</string>
     <string name="save">Save</string>
     <string name="scan">Scan</string>
     <string name="ScanQRCode">Scan QR Code</string>
@@ -309,9 +323,12 @@
     <string name="settings_class_notification_dialog_message">Set to 0 to disable class notifications</string>
     <string name="settings_class_notification_dialog_title">Class notifications (minutes before)</string>
     <string name="settings_class_notification_subtitle">%1$s minutes before class</string>
-    <string name="settings_class_notification_title">Class notifications</string>
-    <string name="settings_task_notification_title">Task notifications</string>
+    <string name="settings_class_notification_title">Add Classes to Google Calendar</string>
+    <string name="settings_task_notification_title">Add Tasks to Google Calendar by Default</string>
+    <string name="settings_clock_format_title">24-hour Clock</string>
     <string name="settings_date_format_title">Date format</string>
+    <string name="settings_tasks_indicator">Due Date Indicator</string>
+    <string name="settings_tasks_indicator_summary">Allow tasks to be coloured yellow or red if their due date is near</string>
     <string name="settings_theme_background">Background Colour</string>
     <string name="settings_theme_description_colour">Description Text Colour</string>
     <string name="settings_theme_primary_title">Primary Colour</string>
@@ -319,6 +336,8 @@
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_title_colour">Text Colour</string>
     <string name="share">Share</string>
+    <string name="share_facebook">Share us on Facebook</string>
+    <string name="share_twitter">Tweet about us</string>
     <string name="share_task">Share task with peers</string>
     <string name="shared_by">Shared by %1$s</string>
     <string name="splash_no_classes_shared">You have no classes together</string>
@@ -331,6 +350,7 @@
     <string name="task_detail_dialog_completed_confirm">Completed task?</string>
     <string name="task_detail_dialog_delete_confirm">Are you sure you want to delete this task?</string>
     <string name="task_type">Task type</string>
+    <string name="tell_your_friends">Tell your friends about Class-ify!</string>
     <string name="timer_end">Countdown reached.</string>
     <string name="timeTask">Setup a timer</string>
     <string name="time_start">Start</string>
@@ -358,7 +378,7 @@
     <string name="about_activity_label">About Class-ify</string>
     <string name="Classify" translatable="false">Class-ify</string>
     <string name="Assistant">School Assistant and Planner</string>
-    <string name="Version">Version 1.4.1</string>
+    <string name="Version">Version 1.5.3</string>
     <string name="Weblink" translatable="false">https://class-ify.com</string>
     <string name="Contact">Contact us</string>
     <string name="Email">Email:&#160;</string>
@@ -367,6 +387,7 @@
     <string name="Eric" translatable="false">Eric Decanini</string>
     <string name="Security">Database Security:</string>
     <string name="Graphics">Graphics and design:</string>
+    <string name="George" translatable="false">George Judd</string>
     <string name="Reiss" translatable="false">Reiss Tozer</string>
     <string name="Michael" translatable="false">Michael Sumner</string>
     <string name="Testers">App testers:</string>
@@ -387,6 +408,15 @@
     <string name="date_format_today">%1$s, Today</string>
     <string name="date_format_tomorrow">%1$s, Tomorrow</string>
 
+
+    <!-- Preset Names -->
+    <string name="beta">Beta</string>
+    <string name="Halloween">Halloween</string>
+    <string name="material_light">Material Light</string>
+    <string name="material_dark">Material Dark</string>
+    <string name="classify_red">Class-ify Red</string>
+    <string name="notebook">Notebook</string>
+    <string name="minimal">Minimal</string>
 
     <string-array name="new_schedule_icon_list_array">
         <item>@string/new_schedule_icon_list_builtin</item>
@@ -520,12 +550,14 @@
     <string name="KEY_SETTINGS_TASK_NOTIFICATION" translatable="false">KEY_SETTINGS_TASK_NOTIFICATION</string>
     <string name="KEY_THEME_CATEGORY_GENERAL" translatable="false">KEY_THEME_CATEGORY_GENERAL</string>
     <string name="KEY_THEME_CATEGORY_PLANNER" translatable="false">KEY_THEME_CATEGORY_PLANNER</string>
+    <string name="KEY_THEME_CATEGORY_TASKS" translatable="false">KEY_THEME_CATEGORY_TASKS</string>
     <string name="KEY_THEME_PRIMARY_COLOR" translatable="false">KEY_THEME_PRIMARY_COLOR</string>
     <string name="KEY_THEME_SECONDARY_COLOR" translatable="false">KEY_THEME_SECONDARY_COLOR</string>
     <string name="KEY_WEEK_NUMBER" translatable="false">KEY_WEEK_NUMBER</string>
     <string name="KEY_WEEK_OF_YEAR" translatable="false">KEY_WEEK_OF_YEAR</string>
     <string name="KEY_FIRST_LAUNCH" translatable="false">KEY_FIRST_LAUNCH</string>
     <string name="KEY_FIRST_LAUNCH_DATE" translatable="false">KEY_FIRST_LAUNCH_DATE</string>
+    <string name="KEY_REVIEW_PROMPTED" translatable="false">KEY_REVIEW_PROMPTED</string>
     <string name="KEY_WEEK_PASSED" translatable="false">KEY_WEEK_PASSED</string>
 
     <string name="KEY_CATEGORY_OTHER_SETTINGS" translatable="false">KEY_CATEGORY_OTHER_SETTINGS</string>
@@ -536,12 +568,14 @@
     <string name="KEY_SETTINGS_CHANGELOG" translatable="false">KEY_SETTINGS_CHANGELOG</string>
     <string name="KEY_SETTINGS_CLASS_MUTE" translatable="false">KEY_SETTINGS_CLASS_MUTE</string>
     <string name="KEY_SETTINGS_DATE_FORMAT" translatable="false">KEY_SETTINGS_DATE_FORMAT</string>
+    <string name="KEY_SETTINGS_CLOCK_FORMAT" translatable="false">KEY_SETTINGS_CLOCK_FORMAT</string>
     <string name="KEY_SETTINGS_THEME" translatable="false">KEY_SETTINGS_THEME</string>
     <string name="KEY_THEME_BACKGROUND_COLOUR" translatable="false">KEY_SETTINGS_THEME_BACKGROUND</string>
-    <string name="KEY_THEME_TITLE_COLOUR" translatable="false">KEY_SETTINGS_THEME_TITLE</string>
-    <string name="KEY_THEME_DESCRIPTION_COLOUR" translatable="false">KEY_SETTINGS_THEME_DESCRIPTION</string>
+    <string name="KEY_THEME_TASKS_INDICATOR" translatable="false">KEY_SETTINGS_TASKS_INDICATOR</string>
+    <string name="KEY_THEME_TEXT_COLOUR" translatable="false">KEY_SETTINGS_THEME_TITLE</string>
     <string name="KEY_SETTINGS_THEME_PRIMARY" translatable="false">KEY_SETTINGS_THEME_PRIMARY</string>
     <string name="KEY_SETTINGS_THEME_SECONDARY" translatable="false">KEY_SETTINGS_THEME_SECONDARY</string>
+    <string name="KEY_SETTINGS_THEME_PRESETS" translatable="false">KEY_SETTINGS_THEME_PRESETS</string>
     <string name="KEY_SETTINGS_WEEK_NUMBER" translatable="false">KEY_SETTINGS_WEEK_NUMBER</string>
     <string name="KEY_SETTINGS_CATEGORY_GENERAL" translatable="false">KEY_SETTINGS_CATEGORY_GENERAL</string>
     <string name="KEY_SETTINGS_CATEGORY_SCHEDULE" translatable="false">KEY_SETTINGS_CATEGORY_SCHEDULE</string>
@@ -550,6 +584,7 @@
     <string name="KEY_PREFERENCES_SELF_ICON" translatable="false">KEY_PREFERENCES_SELF_ICON</string>
     <string name="KEY_PREFERENCES_SELF_NAME" translatable="false">KEY_PREFERENCES_SELF_NAME</string>
     <string name="KEY_PREFERENCES_SELF_USERNAME" translatable="false">KEY_PREFERENCES_SELF_USERNAME</string>
+    <string name="KEY_PREFERENCES_PERIOD_DURATION" translatable="false">KEY_PREFERENCES_PERIOD_DURATION</string>
 
     <!-- INTENT EXTRAS -->
     <string name="INTENT_EXTRA_ALARM_DATE" translatable="false">INTENT_EXTRA_ALARM_DATE</string>

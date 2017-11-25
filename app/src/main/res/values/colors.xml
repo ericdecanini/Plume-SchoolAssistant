@@ -3,6 +3,7 @@
     <color name="colorPrimary">#2196F3</color>
     <color name="colorPrimaryDark">#1976D2</color>
     <color name="colorAccent">#536DFE</color>
+    <color name="colorAccentBeta">#00C853</color>
     <color name="colorAccentLight">#8C9EFF</color>
     <color name="backgroundColor">#FAFAFA</color>
 
@@ -10,6 +11,8 @@
     <color name="unreadBadgeColor2">#C62828</color>
     <color name="unreadBadgeColor3">#B71C1C</color>
 
+    <color name="temp1">#F44336</color>
+    <color name="temp2">#FF9100</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
@@ -34,11 +37,10 @@
     <color name="blue_600">#1E88E5</color>
     <color name="facebook_blue">#3B5998</color>
 
-    <color name="yellow_100">#FFF9C4</color>
+    <color name="bg_yellow_transparent">#55FFEB3B</color>
+    <color name="bg_red_transparent">#55F44336</color>
 
-    <color name="red_100">#FFCDD2</color>
     <color name="red_500">#F44336</color>
-
 
     <color name="mainTextColor">#95989A</color>
 

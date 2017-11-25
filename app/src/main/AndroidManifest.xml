@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdt.plume"
-    android:versionCode="21">
+    android:versionCode="27">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -12,6 +12,9 @@
     <uses-permission android:name="com.pdt.plume.fileprovider.READ_DATABASE" />
     <uses-permission android:name="com.pdt.plume.fileprovider.WRITE_DATABASE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
 
     <application
         android:name=".App"
@@ -23,6 +26,9 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -85,7 +91,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <!--
-                     The OPENABLE category declares that the returned file is accessible
+                     The OPENABLE title declares that the returned file is accessible
                      from a content provider that supports OpenableColumns
                      and ContentResolver.openFileDescriptor()
                 -->
@@ -140,7 +146,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".TaskNotificationPublisher" />
+        <receiver android:name=".NotificationPublisher" />
         <receiver android:name=".services.ClassNotificationReceiver">
             <intent-filter>
                 <action android:name="com.pdt.plume.NOTIFICATION" />
@@ -203,7 +209,7 @@
             android:name=".UserSearchActivity"
             android:label=""
             android:parentActivityName=".PeopleActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".AddPeerActivity"
             android:label=""
@@ -241,15 +247,24 @@
             android:name=".services.ClassNotificationService"
             android:enabled="true"
             android:exported="false" />
-
         <service
             android:name=".services.ActiveNotificationService"
             android:enabled="true"
             android:exported="false" />
 
-        <activity android:name=".MatchClassActivity"
+        <activity
+            android:name=".MatchClassActivity"
             android:label="@string/match_classes"
-            android:parentActivityName=".RequestsActivity"/>
+            android:parentActivityName=".RequestsActivity" />
+
+        <activity
+            android:name=".TimetableActivity"
+            android:label="@string/nav_timetable"
+            android:parentActivityName=".MainActivity" />
+
+        <activity android:name=".PresetThemesActivity"
+            android:label="@string/presets"
+            android:parentActivityName=".SettingsThemeActivity"/>
 
     </application>
 

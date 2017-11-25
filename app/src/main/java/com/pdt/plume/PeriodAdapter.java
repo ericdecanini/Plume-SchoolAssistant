@@ -5,13 +5,12 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,18 +18,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.ViewSwitcher;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import static android.R.attr.fragment;
-import static com.pdt.plume.R.id.timein;
-import static com.pdt.plume.R.id.view;
-import static com.pdt.plume.R.id.zxing_viewfinder_view;
-import static com.pdt.plume.R.string.re;
 
 
 public class PeriodAdapter extends ArrayAdapter {
@@ -67,8 +57,12 @@ public class PeriodAdapter extends ArrayAdapter {
                 context.getResources().getColor(R.color.colorPrimary));
         final int backgroundColor = preferences.getInt(context.getString(R.string.KEY_THEME_BACKGROUND_COLOUR),
                 context.getResources().getColor(R.color.backgroundColor));
-        final int textColor = preferences.getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR),
+        final int textColor = preferences.getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR),
                 context.getResources().getColor(R.color.gray_900));
+        float[] hsv = new float[3];
+        Color.colorToHSV(textColor, hsv);
+        hsv[2] *= 0.8f;
+        int darkTextColor = Color.HSVToColor(hsv);
 
 
         if (row == null) {
@@ -169,7 +163,7 @@ public class PeriodAdapter extends ArrayAdapter {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
                                 item.timeinValue = utility.timeToMillis(i, i1);
-                                item.timein = utility.millisToHourTime(item.timeinValue);
+                                item.timein = utility.millisToHourTime(context, item.timeinValue);
                                 holder.timein.setText(item.timein);
                             }
                         }, hour, minute, false);
@@ -203,7 +197,7 @@ public class PeriodAdapter extends ArrayAdapter {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
                                 item.timeoutValue = utility.timeToMillis(i, i1);
-                                item.timeout = utility.millisToHourTime(item.timeoutValue);
+                                item.timeout = utility.millisToHourTime(context, item.timeoutValue);
                                 holder.timeout.setText(item.timeout);
                             }
                         }, hour, minute, false);
@@ -236,7 +230,7 @@ public class PeriodAdapter extends ArrayAdapter {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
                                 item.timeinaltValue = utility.timeToMillis(i, i1);
-                                item.timeinalt = utility.millisToHourTime(item.timeinaltValue);
+                                item.timeinalt = utility.millisToHourTime(context, item.timeinaltValue);
                                 holder.timeinAlt.setText(item.timeinalt);
                             }
                         }, hour, minute, false);
@@ -270,13 +264,18 @@ public class PeriodAdapter extends ArrayAdapter {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int i, int i1) {
                                 item.timeoutaltValue = utility.timeToMillis(i, i1);
-                                item.timeoutalt = utility.millisToHourTime(item.timeoutaltValue);
+                                item.timeoutalt = utility.millisToHourTime(context, item.timeoutaltValue);
                                 holder.timeoutAlt.setText(item.timeoutalt);
                             }
                         }, hour, minute, false);
                         timePickerDialog.show();
                     }
                 });
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    row.findViewById(R.id.delete_time).setBackgroundTintList(ColorStateList.valueOf(darkTextColor));
+                    row.findViewById(R.id.delete_period).setBackgroundTintList(ColorStateList.valueOf(darkTextColor));
+                }
 
                 row.findViewById(R.id.delete_time).setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -285,6 +284,7 @@ public class PeriodAdapter extends ArrayAdapter {
                         notifyDataSetChanged();
                     }
                 });
+
                 row.findViewById(R.id.delete_period).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

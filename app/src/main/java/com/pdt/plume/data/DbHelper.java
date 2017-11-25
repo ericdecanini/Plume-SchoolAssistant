@@ -1,45 +1,28 @@
 package com.pdt.plume.data;
 
-import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.journeyapps.barcodescanner.Util;
 import com.pdt.plume.R;
 import com.pdt.plume.Schedule;
-import com.pdt.plume.ScheduleDetailActivity;
 import com.pdt.plume.Task;
-import com.pdt.plume.TaskNotificationPublisher;
 import com.pdt.plume.Utility;
 import com.pdt.plume.data.DbContract.ScheduleEntry;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.data.DbContract.NotesEntry;
-import com.pdt.plume.data.DbContract.PeersEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,11 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM;
-import static com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT;
-import static java.security.AccessController.getContext;
 
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -225,6 +203,13 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public ArrayList<Schedule> getCurrentDayScheduleArray(Context context, @Nullable Integer year,
                                                           @Nullable Integer month, @Nullable Integer day) throws IOException {
+        // Temporarily set 12 hours to false to correct sorting
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean twentyFourHours = preferences.getBoolean(context.getString(R.string.KEY_SETTINGS_CLOCK_FORMAT), true);
+        if (!twentyFourHours) {
+            preferences.edit().putBoolean(context.getString(R.string.KEY_SETTINGS_CLOCK_FORMAT), true).apply();
+        }
+
         Calendar c = Calendar.getInstance();
         if (year == null)
             year = c.get(Calendar.YEAR);
@@ -233,7 +218,6 @@ public class DbHelper extends SQLiteOpenHelper {
         if (day == null)
             day = c.get(Calendar.DAY_OF_MONTH);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         int forerunnerTime = preferences.getInt(context.getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION), 0);
         String weekNumber = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(context.getString(R.string.KEY_WEEK_NUMBER), "0");
@@ -257,7 +241,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 if (weekNumber.equals("0") || occurrence.split(":")[1].equals("0")) {
                     // Get the variables to check from the database
                     long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN));
-                    Log.v(LOG_TAG, "TimeInValue: " + timeInValue);
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item and schedule the notification
@@ -268,8 +251,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
-                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
+                                utility.millisToHourTime(context, cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN))),
+                                utility.millisToHourTime(context, cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT))),
                                 ""));
                         // Schedule the notification
                         int ID = cursor.getInt(cursor.getColumnIndex(ScheduleEntry._ID));
@@ -306,7 +289,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 else {
                     // Get the variables to check from the database
                     long timeInValue = cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT));
-                    Log.v(LOG_TAG, "TimeInAltValue: " + timeInValue);
                     String periods = cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_PERIODS));
 
                     // Add the time based list item
@@ -317,8 +299,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TITLE)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_TEACHER)),
                                 cursor.getString(cursor.getColumnIndex(ScheduleEntry.COLUMN_ROOM)),
-                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
-                                utility.millisToHourTime(cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
+                                utility.millisToHourTime(context, cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEIN_ALT))),
+                                utility.millisToHourTime(context, cursor.getLong(cursor.getColumnIndex(ScheduleEntry.COLUMN_TIMEOUT_ALT))),
                                 ""));
 
                         // Schedule the notification
@@ -836,6 +818,10 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null);
+
+        if (cursor.getCount() == 0)
+            return -1;
+
         cursor.moveToFirst();
         String title = cursor.getString(cursor.getColumnIndex(TasksEntry.COLUMN_TITLE));
 

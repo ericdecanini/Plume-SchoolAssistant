@@ -363,7 +363,7 @@ public class ClassFragment extends Fragment{
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
 
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle(getContext().getString(R.string.select_items));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -490,7 +490,7 @@ public class ClassFragment extends Fragment{
 
 
                 // Create an intent to NewScheduleActivity and include the selected
-                // item's id, title, and an edit flag as extras
+                // item's id, category, and an edit flag as extras
                 intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_TITLE), title);
                 intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 

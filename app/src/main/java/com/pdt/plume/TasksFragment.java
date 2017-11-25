@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -41,7 +40,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pdt.plume.data.DbContract;
@@ -161,7 +159,7 @@ public class TasksFragment extends Fragment {
                     .commit();
 
         int textColor = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+                .getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         ((TextView) rootView.findViewById(R.id.textView1)).setTextColor(textColor);
 
         // Inflate the layout for this fragment
@@ -219,10 +217,9 @@ public class TasksFragment extends Fragment {
                         return;
 
                     // Check if icon URI is valid
-                    final File file = new File(getContext().getFilesDir(), dataSnapshot.getKey());
+                    final File file = new File(getContext().getFilesDir(), dataSnapshot.getKey() + ".jpg");
                     if (file.exists() || icon.contains("art_")) {
                         if (!completed && duedate != null) {
-                            Log.v(LOG_TAG, "(OnFileExists) Task " + title + " added with icon " + icon);
                             mTasksList.add(new Task(dataSnapshot.getKey(), icon, title, sharer, taskClass, tasktType, description, "", duedate, -1f, bitmap[0]));
                             mTasksAdapter.notifyDataSetChanged();
                             spinner.setVisibility(View.GONE);
@@ -251,11 +248,9 @@ public class TasksFragment extends Fragment {
                         StorageReference storageRef = storage.getReference();
                         StorageReference iconsRef = storageRef.child(mUserId)
                                 .child("tasks").child(dataSnapshot.getKey());
-                        Log.v(LOG_TAG, "IconsRef: " + iconsRef.getPath());
 
                         final Boolean finalCompleted = completed;
                         long ONE_MEGABYTE = 1024 * 1024;
-                        Log.v(LOG_TAG, "Attempting to download icon for " + title);
                         iconsRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                             @Override
                             public void onSuccess(byte[] bytes) {
@@ -523,7 +518,7 @@ public class TasksFragment extends Fragment {
             inflater.inflate(R.menu.menu_action_mode_single, menu);
             mActionMenu = menu;
 
-            // Set the title and colour of the contextual action bar
+            // Set the category and colour of the contextual action bar
             mode.setTitle("Select Items");
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -682,7 +677,7 @@ public class TasksFragment extends Fragment {
                             intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime[0]);
 
                             // Create an intent to NewScheduleActivity and include the selected
-                            // item's id, title, and an edit flag as extras
+                            // item's id, category, and an edit flag as extras
                             intent.putExtra("position", position);
                             intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 
@@ -734,7 +729,7 @@ public class TasksFragment extends Fragment {
                         intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_ALARM_TIME), reminderTime[0]);
 
                         // Create an intent to NewScheduleActivity and include the selected
-                        // item's id, title, and an edit flag as extras
+                        // item's id, category, and an edit flag as extras
                         intent.putExtra("position", position);
                         intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
 

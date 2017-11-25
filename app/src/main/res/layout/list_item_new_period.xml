@@ -76,8 +76,7 @@
                 android:layout_height="24dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
-                android:src="@drawable/ic_close_black_24dp"
-                android:tint="@color/gray_700"/>
+                android:background="@drawable/ic_close_black_24dp" />
 
         </LinearLayout>
 
@@ -492,8 +491,7 @@
                 android:layout_height="24dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
-                android:src="@drawable/ic_close_black_24dp"
-                android:tint="@color/gray_700" />
+                android:background="@drawable/ic_close_black_24dp" />
 
         </LinearLayout>
 

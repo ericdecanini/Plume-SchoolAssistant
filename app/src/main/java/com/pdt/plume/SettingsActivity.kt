@@ -32,7 +32,8 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
     internal var mDarkColor: Int = 0
     internal var mSecondaryColor: Int = 0
 
-    lateinit var mainCategory: ColouredPreferenceCategory
+//    lateinit var mainCategory: ColouredPreferenceCategory
+    lateinit var scheduleCategory: ColouredPreferenceCategory
     lateinit var appearanceCategory: ColouredPreferenceCategory
     lateinit var blockFormatPreference: Preference
     lateinit var weekFormatPreference: Preference
@@ -49,7 +50,7 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_BASIS)))
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_PREFERENCE_WEEKTYPE)))
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)))
+//        bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)))
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_WEEK_NUMBER)))
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_DATE_FORMAT)))
         bindPreferenceSummaryToValue(findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT)))
@@ -59,7 +60,8 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
         findPreference(getString(R.string.KEY_SETTINGS_ABOUT_PLUME)).onPreferenceClickListener = onPreferenceClickListener()
         //        findPreference(getString(R.string.KEY_SETTINGS_CHANGELOG)).setOnPreferenceClickListener(onPreferenceClickListener());
 
-        mainCategory = findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_GENERAL)) as ColouredPreferenceCategory
+//        mainCategory = findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_GENERAL)) as ColouredPreferenceCategory
+        scheduleCategory = findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_SCHEDULE)) as ColouredPreferenceCategory
         appearanceCategory = findPreference(getString(R.string.KEY_SETTINGS_CATEGORY_APPEARANCE)) as ColouredPreferenceCategory
         blockFormatPreference = findPreference(getString(R.string.KEY_SETTINGS_BLOCK_FORMAT))
         weekFormatPreference = findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT))
@@ -86,8 +88,8 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
             }
         }
         if (scheduleType != "0") {
-            findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = false
-            findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = false
+//            findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = false
+//            findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = false
         }
 
     }
@@ -110,7 +112,8 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
             window.statusBarColor = mDarkColor
         }
 
-        mainCategory.setColor(mSecondaryColor)
+//        mainCategory.setColor(mSecondaryColor)
+        scheduleCategory.setColor(mSecondaryColor)
         appearanceCategory.setColor(mSecondaryColor)
     }
 
@@ -167,11 +170,11 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
                         findPreference(getString(R.string.KEY_SETTINGS_WEEK_FORMAT)).isEnabled = true
                     }
                     if (scheduleType != "0") {
-                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = false
-                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = false
+//                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = false
+//                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = false
                     } else {
-                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = true
-                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = true
+//                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_NOTIFICATION)).isEnabled = true
+//                        findPreference(getString(R.string.KEY_SETTINGS_CLASS_MUTE)).isEnabled = true
                     }
                 }
 
@@ -213,7 +216,7 @@ class SettingsActivity : PreferenceActivity(), Preference.OnPreferenceChangeList
 
         }
 
-        editor.commit()
+        editor.apply()
         return true
     }
 

@@ -15,42 +15,32 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
-import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.Transition;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -66,10 +56,7 @@ import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.services.RevisionTimerService;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -289,13 +276,10 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
 
                         // Get the photo data
                         for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").getChildren()) {
-                            String photoPath = photoSnapshot.getKey()
-                                    .replace("'dot'", ".")
-                                    .replace("'slash'", "/")
-                                    .replace("'hash'", "#")
-                                    .replace("'ampers'", "&");
+                            String photoPath = photoSnapshot.getKey();
                             photoUris.add(Uri.parse(photoPath));
                         }
+
                         // Add in the views for the photos
                         final ArrayList<Uri> photos = new ArrayList<>();
                         GridView photosLayout = (GridView) findViewById(R.id.photos_layout);
@@ -305,18 +289,19 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                 Intent pictureIntent = new Intent(TasksDetailActivityTablet.this, PictureActivity.class);
-                                pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(i).toString());
+                                pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photos.get(i).toString());
                                 View view1 = view.findViewById(R.id.photo);
                                 Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
                                         (TasksDetailActivityTablet.this, view1, view1.getTransitionName()).toBundle();
                                 startActivity(pictureIntent, bundle);
                             }
                         });
+
                         for (int i = 0; i < photoUris.size(); i++) {
                             // Check validity of URI
-                            final File file = new File(getFilesDir(), photoUris.get(i).getPath());
+                            final File file = new File(getFilesDir(), title + "safechar" + photoUris.get(i).getLastPathSegment() + ".jpg");
                             if (file.exists()) {
-                                photos.add(photoUris.get(i));
+                                photos.add(Uri.parse(file.getPath()));
                                 adapter.notifyDataSetChanged();
                             } else {
                                 // Download the photo data
@@ -450,7 +435,7 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
 
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         descriptionTextview.setTextColor(textColor);
 
         if (FLAG_TASK_COMPLETED) {
@@ -662,7 +647,7 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
                             intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
 
                             // Create an intent to NewScheduleActivity and include the selected
-                            // item's id, title, and an edit flag as extras
+                            // item's id, category, and an edit flag as extras
                             intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
                             taskRef.removeEventListener(this);
                             startActivity(intent);
@@ -713,7 +698,7 @@ public class TasksDetailActivityTablet extends AppCompatActivity {
     private void startTimer() {
         // REVISION TIMER HERE
         final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_number_picker);
+        dialog.setContentView(R.layout.dialog_class_notification);
         Button buttonDone = (Button) dialog.findViewById(R.id.button_done);
         final NumberPicker picker = (NumberPicker) dialog.findViewById(R.id.number_picker);
         picker.setMinValue(1);

@@ -1,5 +1,6 @@
 package com.pdt.plume
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -16,10 +17,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
-import kotlinx.android.synthetic.main.menu_counter.view.*
 
 
 class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChangeListener {
@@ -41,21 +40,8 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
         findPreference(getString(R.string.KEY_SETTINGS_THEME_PRIMARY)).onPreferenceClickListener = onPreferenceClickListener()
         findPreference(getString(R.string.KEY_SETTINGS_THEME_SECONDARY)).onPreferenceClickListener = onPreferenceClickListener()
         findPreference(getString(R.string.KEY_THEME_BACKGROUND_COLOUR)).onPreferenceClickListener = onPreferenceClickListener()
-        findPreference(getString(R.string.KEY_THEME_TITLE_COLOUR)).onPreferenceClickListener = onPreferenceClickListener()
-
-        // Initialise the theme variables
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary)
-        val hsv = FloatArray(3)
-        val tempColor = mPrimaryColor
-        Color.colorToHSV(tempColor, hsv)
-        hsv[2] *= 0.8f // value component
-        darkColor = Color.HSVToColor(hsv)
-
-        supportActionBar.setBackgroundDrawable(ColorDrawable(mPrimaryColor))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.statusBarColor = darkColor
-        }
+        findPreference(getString(R.string.KEY_THEME_TEXT_COLOUR)).onPreferenceClickListener = onPreferenceClickListener()
+        findPreference(getString(R.string.KEY_SETTINGS_THEME_PRESETS)).onPreferenceClickListener = onPreferenceClickListener()
     }
 
     private fun bindPreferenceSummaryToValue(preference: Preference) {
@@ -102,8 +88,13 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
                     return@OnPreferenceClickListener true
                 }
 
-                getString(R.string.KEY_THEME_TITLE_COLOUR) -> {
+                getString(R.string.KEY_THEME_TEXT_COLOUR) -> {
                     showColorsDialog(3)
+                    return@OnPreferenceClickListener true
+                }
+
+                getString(R.string.KEY_SETTINGS_THEME_PRESETS) -> {
+                    startActivity(Intent(this, PresetThemesActivity::class.java))
                     return@OnPreferenceClickListener true
                 }
 
@@ -122,7 +113,7 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
             0 -> initialColour = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), resources.getColor(R.color.colorPrimary))
             1 -> initialColour = preferences.getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), resources.getColor(R.color.colorAccent))
             2 -> initialColour = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), resources.getColor(R.color.white))
-            3 -> initialColour = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), resources.getColor(R.color.gray_900))
+            3 -> initialColour = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), resources.getColor(R.color.gray_900))
             else -> initialColour = preferences.getInt(getString(R.string.KEY_SETTINGS_THEME_PRIMARY), resources.getColor(R.color.colorPrimary))
         }
 
@@ -152,9 +143,11 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
                                     .setColor(initialColour)
                             (findPreference(getString(R.string.KEY_THEME_CATEGORY_PLANNER)) as ColouredPreferenceCategory)
                                     .setColor(initialColour)
+                            (findPreference(getString(R.string.KEY_THEME_CATEGORY_TASKS)) as ColouredPreferenceCategory)
+                                    .setColor(initialColour)
                         }
                         2 -> editor.putInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), initialColour)
-                        3 -> editor.putInt(getString(R.string.KEY_THEME_TITLE_COLOUR), initialColour)
+                        3 -> editor.putInt(getString(R.string.KEY_THEME_TEXT_COLOUR), initialColour)
 
                     }
                     editor.apply()
@@ -177,9 +170,11 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
                                     .setColor(selectedColor)
                             (findPreference(getString(R.string.KEY_THEME_CATEGORY_PLANNER)) as ColouredPreferenceCategory)
                                     .setColor(selectedColor)
+                            (findPreference(getString(R.string.KEY_THEME_CATEGORY_TASKS)) as ColouredPreferenceCategory)
+                                    .setColor(selectedColor)
                         }
                         2 -> editor.putInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), selectedColor)
-                        3 -> editor.putInt(getString(R.string.KEY_THEME_TITLE_COLOUR), selectedColor)
+                        3 -> editor.putInt(getString(R.string.KEY_THEME_TEXT_COLOUR), selectedColor)
 
                     }
                     editor.apply()
@@ -243,6 +238,33 @@ class SettingsThemeActivity : PreferenceActivity(), Preference.OnPreferenceChang
     override fun onStop() {
         super.onStop()
         delegate.onStop()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        // Initialise the theme variables
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        mPrimaryColor = preferences.getInt(getString(R.string.KEY_THEME_PRIMARY_COLOR), R.color.colorPrimary)
+        val hsv = FloatArray(3)
+        val tempColor = mPrimaryColor
+        Color.colorToHSV(tempColor, hsv)
+        hsv[2] *= 0.8f // value component
+        darkColor = Color.HSVToColor(hsv)
+
+        supportActionBar.setBackgroundDrawable(ColorDrawable(mPrimaryColor))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = darkColor
+        }
+
+        val secondaryColour = PreferenceManager.getDefaultSharedPreferences(this)
+                .getInt(getString(R.string.KEY_THEME_SECONDARY_COLOR), resources.getColor(R.color.colorAccent))
+        (findPreference(getString(R.string.KEY_THEME_CATEGORY_GENERAL)) as ColouredPreferenceCategory)
+                .setColor(secondaryColour)
+        (findPreference(getString(R.string.KEY_THEME_CATEGORY_PLANNER)) as ColouredPreferenceCategory)
+                .setColor(secondaryColour)
+        (findPreference(getString(R.string.KEY_THEME_CATEGORY_TASKS)) as ColouredPreferenceCategory)
+                .setColor(secondaryColour)
     }
 
     override fun onDestroy() {

@@ -3,31 +3,28 @@ package com.pdt.plume
 import android.app.*
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.ColorStateList
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.preference.PreferenceManager
-import android.provider.MediaStore
 import android.support.annotation.IdRes
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.NavigationView
 import android.support.design.widget.TabLayout
-import android.support.v4.app.TaskStackBuilder
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.app.NotificationCompat
-import android.support.v7.graphics.Palette
 import android.support.v7.widget.ThemedSpinnerAdapter
 import android.support.v7.widget.Toolbar
 
@@ -36,6 +33,8 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.os.Bundle
+import android.support.v4.app.FragmentActivity
+import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -50,10 +49,6 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 
-import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.FacebookSdk
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.firebase.auth.FirebaseAuth
@@ -62,27 +57,32 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.pdt.plume.data.DbContract
 import com.pdt.plume.data.DbHelper
 import com.pdt.plume.services.ClassNotificationReceiver
 
-import java.io.IOException
 import java.util.ArrayList
 import java.util.Calendar
-import java.util.Date
 
-import android.os.Build.ID
 import android.support.v4.view.PagerAdapter
-import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_ALARM
-import com.pdt.plume.StaticRequestCodes.REQUEST_NOTIFICATION_INTENT
+import com.facebook.*
+import com.facebook.share.model.ShareLinkContent
+import com.facebook.share.model.ShareOpenGraphAction
+import com.facebook.share.model.ShareOpenGraphContent
+import com.facebook.share.model.ShareOpenGraphObject
+import com.facebook.share.widget.ShareDialog
+import com.pdt.plume.R.bool.isTablet
 import com.pdt.plume.StaticRequestCodes.REQUEST_STORAGE_PERMISSION
 
 import com.pdt.plume.data.DbContract.TasksEntry
 import com.pdt.plume.services.ActiveNotificationService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, TasksDetailFragment.OnTaskCompleteListener, TasksDetailFragment.OnTaskDeleteListener, ScheduleDetailFragment.OnClassDeleteListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+        TasksDetailFragment.OnTaskCompleteListener, TasksDetailFragment.OnTaskDeleteListener,
+        ScheduleDetailFragment.OnClassDeleteListener {
 
     // Constantly used variables
     internal var LOG_TAG = MainActivity::class.java.simpleName
@@ -204,6 +204,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (FIRST_LAUNCH)
             init()
 
+        // If its 2 or more days from first app launch, prompt for a review
+        val twoDaysAfterFirstLaunch = Calendar.getInstance()
+        twoDaysAfterFirstLaunch.timeInMillis = firstLaunchMillis
+        twoDaysAfterFirstLaunch.set(Calendar.DAY_OF_YEAR, twoDaysAfterFirstLaunch.get(Calendar.DAY_OF_YEAR + 2))
+        val reviewPrompted = preferences.getBoolean(getString(R.string.KEY_REVIEW_PROMPTED), false)
+
+        if (!reviewPrompted && System.currentTimeMillis() > twoDaysAfterFirstLaunch.timeInMillis) {
+            AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.review_dialog_title))
+                    .setMessage(getString(R.string.review_dialog_message))
+                    .setNegativeButton(getString(R.string.not_now), null)
+                    .setPositiveButton(getString(R.string.review), { _, _ ->
+                        // TODO: Write intent for review
+                        val intent = Intent()
+                        startActivity(intent)
+                    })
+                    .show()
+            preferences.edit().putBoolean(getString(R.string.KEY_REVIEW_PROMPTED), true).apply()
+        }
+
         // Check if the device is a phone or tablet, then
         // initialise the tab layout based on that
         isTablet = resources.getBoolean(R.bool.isTablet)
@@ -250,7 +270,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             header.setOnClickListener(View.OnClickListener {
                 val datePickerDialog = DatePickerDialog(this@MainActivity, DatePickerDialog.OnDateSetListener { datePicker, y, m, d ->
                     val c = Calendar.getInstance()
-                    c.set(y, m ,d)
+                    c.set(y, m, d)
                     val current = Calendar.getInstance()
                     if (utility.datesMatch(c, current))
                         reset.visibility = View.GONE
@@ -380,7 +400,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (!isTablet) tabs.setBackgroundColor(backgroundColor)
         nav_view.setBackgroundColor(backgroundColor)
 
-        val textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), resources.getColor(R.color.gray_900))
+        val textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), resources.getColor(R.color.gray_900))
         if (!isTablet) tabs.tabTextColors = ColorStateList.valueOf(textColor)
         val navigationView = findViewById(R.id.nav_view) as NavigationView
         (navigationView.getHeaderView(0).findViewById(R.id.header) as TextView)
@@ -482,51 +502,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         if (id == R.id.notification) {
-            val dbHelper = DbHelper(this@MainActivity)
-            val tasksCursor = dbHelper.taskData
-            tasksCursor.moveToFirst()
-            for (i in 0..tasksCursor.count - 1) {
-                // Get the data
-                tasksCursor.moveToPosition(i)
-                val title = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_TITLE))
-                val icon = tasksCursor.getString(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_ICON))
-                val reminderDateMillis = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_DATE))
-                val reminderTimeSeconds = tasksCursor.getLong(tasksCursor.getColumnIndex(DbContract.TasksEntry.COLUMN_REMINDER_TIME))
-                val c = Calendar.getInstance()
-                c.timeInMillis = reminderDateMillis
-                val hour = reminderTimeSeconds.toInt() / 3600
-                val minute = (reminderTimeSeconds - hour * 3600).toInt() / 60
-                c.set(Calendar.HOUR_OF_DAY, hour)
-                c.set(Calendar.MINUTE, minute)
-                val notificationMillis = c.timeInMillis
+            val notifIntent = Intent(this, ClassNotificationReceiver::class.java)
+            notifIntent.action = "com.pdt.plume.NOTIFICATION"
+            val pendingIntent = PendingIntent.getBroadcast(this,
+                    57, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
-                // Rebuild the notification
-                val builder = NotificationCompat.Builder(this@MainActivity)
-                var largeIcon: Bitmap? = null
-                try {
-                    largeIcon = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(icon))
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+            // Set the time for the class notification service
+            val calendar = Calendar.getInstance()
 
-                val contentIntent = Intent(this@MainActivity, TasksDetailActivity::class.java)
-                contentIntent.putExtra(getString(R.string.INTENT_EXTRA_ID), ID)
-                val stackBuilder = TaskStackBuilder.create(this@MainActivity)
-                stackBuilder.addParentStack(TasksDetailActivity::class.java)
-                stackBuilder.addNextIntent(contentIntent)
-                val contentPendingIntent = stackBuilder.getPendingIntent(REQUEST_NOTIFICATION_INTENT, 0)
-                builder.setContentIntent(contentPendingIntent)
-                        .setSmallIcon(R.drawable.ic_assignment)
-                        .setColor(resources.getColor(R.color.colorPrimary))
-                        .setContentTitle(getString(R.string.notification_message_reminder))
-                        .setContentText(title)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setDefaults(Notification.DEFAULT_ALL)
+            val alarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarm.cancel(pendingIntent)
 
-                val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                mNotificationManager.notify(REQUEST_NOTIFICATION_ALARM, builder.build())
-            }
+//            alarm.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
         }
 
         return false
@@ -557,25 +544,51 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // Method to handle item selections of the navigation drawer
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        Log.v(LOG_TAG, "ItemTitle: " + item.title)
         // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.nav_classes -> if (isTablet)
                 startActivity(Intent(this, ClassesActivityTablet::class.java))
             else
                 startActivity(Intent(this, ClassesActivity::class.java))
+
             R.id.nav_people -> if (isTablet)
                 startActivity(Intent(this, PeopleActivity::class.java))
             else
                 startActivity(Intent(this, PeopleActivity::class.java))
-            R.id.nav_requests -> startActivity(Intent(
-                    this, RequestsActivity::class.java
-            ))
+
+            R.id.nav_requests -> startActivity(Intent(this, RequestsActivity::class.java))
+
             R.id.nav_completedTasks -> startActivity(Intent(this, CompletedTasksActivity::class.java))
+
             R.id.nav_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
             }
+
+            R.id.nav_timetable -> startActivity(Intent(this, TimetableActivity::class.java))
+
+            R.id.nav_share_facebook -> {
+                val content = ShareLinkContent.Builder()
+                        .setContentUrl(Uri.parse("https://play.google.com/store/apps/details?id=com.pdt.plume"))
+                        .build()
+                ShareDialog.show(this, content)
+            }
+
+            R.id.nav_share_twitter -> {
+                shareToTwitter()
+            }
+
+            R.id.nav_review -> {
+                val uri = Uri.parse("market://details?id=" + packageName)
+                val openPlayStore = Intent(Intent.ACTION_VIEW, uri)
+                try {
+                    startActivity(openPlayStore)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(this, " unable to find market app", Toast.LENGTH_LONG).show()
+                }
+
+            }
+
         }
 
         // Close the navigation drawer upon item selection
@@ -584,6 +597,49 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         return true
     }
+
+    fun shareToTwitter() {
+        val tweetIntent = Intent(Intent.ACTION_SEND)
+        val message = "${getString(R.string.intent_share)}\n\nhttps://play.google.com/store/apps/details?id=com.pdt.plume"
+        tweetIntent.putExtra(Intent.EXTRA_TEXT, message)
+        tweetIntent.type = "text/plain"
+
+        val packManager = packageManager
+        val resolvedInfoList = packManager.queryIntentActivities(tweetIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        var resolved = false
+        for (resolveInfo in resolvedInfoList) {
+            if (resolveInfo.activityInfo.packageName.startsWith("com.twitter.android")) {
+                tweetIntent.setClassName(
+                        resolveInfo.activityInfo.packageName,
+                        resolveInfo.activityInfo.name)
+                resolved = true
+                break
+            }
+        }
+        if (resolved) {
+            startActivity(tweetIntent);
+        } else {
+            val i = Intent()
+            val message = "${getString(R.string.intent_share)}\nhttps://play.google.com/store/apps/details?id=com.pdt.plume"
+            i.putExtra(Intent.EXTRA_TEXT, message)
+            i.action = Intent.ACTION_VIEW
+            i.data = Uri.parse("https://twitter.com/intent/tweet?text=" + urlEncode("https://play.google.com/store/apps/details?id=com.pdt.plume"))
+            startActivity(i)
+            Toast.makeText(this, "Twitter app isn't found", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun urlEncode(s: String): String {
+        return try {
+            URLEncoder.encode(s, "UTF-8")
+        } catch (e: UnsupportedEncodingException) {
+            Log.wtf(LOG_TAG, "UTF-8 should always be supported", e)
+            ""
+        }
+
+    }
+
 
     private fun init() {
         // The boolean is falsed in ScheduleFragment
@@ -608,21 +664,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editor.putLong(getString(R.string.KEY_FIRST_LAUNCH_DATE), c.timeInMillis)
 
         // Trigger the notification services
+        // Get the intent for the class notification service
         val notifIntent = Intent(this, ClassNotificationReceiver::class.java)
         notifIntent.action = "com.pdt.plume.NOTIFICATION"
         val pendingIntent = PendingIntent.getBroadcast(this,
                 57, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        // Get the intent for the active notification service
         val activeNotifIntent = Intent(this, ActiveNotificationService::class.java)
         activeNotifIntent.action = "com.pdt.plume.NOTIFICATION"
         val activePendingIntent = PendingIntent.getBroadcast(this,
                 58, notifIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        // Set the time for the class notification service
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = System.currentTimeMillis()
         calendar.set(Calendar.HOUR_OF_DAY, 1)
         calendar.set(Calendar.MINUTE, 1)
+
+        // Set the alarm for the class notification service
         val alarm = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarm.cancel(pendingIntent)
         alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+
+        // Set the time for the active notification service
         calendar.set(Calendar.HOUR_OF_DAY, 8)
         calendar.set(Calendar.MINUTE, 0)
         alarm.cancel(activePendingIntent)
@@ -686,7 +751,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun initSpinner() {
         // Get a reference to the action bar and
-        // disable its title display
+        // disable its category display
         val actionBar = supportActionBar
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false)
@@ -843,7 +908,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 0 -> return resources.getString(R.string.schedule)
                 1 -> return resources.getString(R.string.task)
                 else -> {
-                    Log.e(LOG_TAG, "Error setting tab title at getPageTitle")
+                    Log.e(LOG_TAG, "Error setting tab category at getPageTitle")
                     return null
                 }
             }

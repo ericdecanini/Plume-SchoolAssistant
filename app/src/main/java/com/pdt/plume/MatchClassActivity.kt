@@ -1,20 +1,16 @@
 package com.pdt.plume
 
-import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.v7.app.AlertDialog
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -67,7 +63,7 @@ class MatchClassActivity : AppCompatActivity() {
         val mDarkColor = Color.HSVToColor(hsv)
         val backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), resources.getColor(R.color.backgroundColor))
 
-        val textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), resources.getColor(R.color.gray_900))
+        val textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), resources.getColor(R.color.gray_900))
         Color.colorToHSV(textColor, hsv)
         hsv[2] *= 0.8f
         val textColor800 = Color.HSVToColor(hsv)

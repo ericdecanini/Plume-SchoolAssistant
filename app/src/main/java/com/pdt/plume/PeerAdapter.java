@@ -3,11 +3,8 @@ package com.pdt.plume;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
@@ -20,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,12 +24,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
@@ -77,9 +68,10 @@ public class PeerAdapter extends ArrayAdapter {
         }
 
         final Peer peer = data.get(position);
+        Log.v(LOG_TAG, "Peer name: " + peer.peerName);
         holder.name.setText(peer.peerName);
-        int textColor = getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.KEY_THEME_TITLE_COLOUR), context.getResources().getColor(R.color.gray_900));
+        int textColor = PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getInt(context.getString(R.string.KEY_THEME_TEXT_COLOUR), context.getResources().getColor(R.color.gray_900));
         holder.name.setTextColor(textColor);
 
         final int menuRes;
@@ -197,10 +189,6 @@ public class PeerAdapter extends ArrayAdapter {
         });
 
         // Set the icon
-        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        final String mUserId = mFirebaseUser.getUid();
-
         if (peer.peerIcon != null) {
             holder.icon.setImageURI(Uri.parse(peer.peerIcon));
             holder.icon.setTag(peer.peerIcon);

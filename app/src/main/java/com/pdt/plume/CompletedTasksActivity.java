@@ -7,10 +7,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -19,7 +16,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,13 +23,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -201,7 +195,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
                 findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
         } else findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
 
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         ((TextView)findViewById(R.id.textView1)).setTextColor(textColor);
         findViewById(R.id.textView1).setAlpha(0.8f);
 
@@ -375,7 +369,7 @@ public class CompletedTasksActivity extends AppCompatActivity {
             inflater.inflate(R.menu.menu_action_mode_completed_task, menu);
             mActionMenu = menu;
 
-            // Set the title of the contextual action bar
+            // Set the category of the contextual action bar
             mode.setTitle(CompletedTasksActivity.this.getString(R.string.select_items));
 
             // Set the colour of the contextual action bar

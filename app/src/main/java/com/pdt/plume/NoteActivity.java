@@ -50,7 +50,7 @@ public class NoteActivity extends AppCompatActivity {
         mDarkColor = Color.HSVToColor(hsv);
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
-        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int titleColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(titleColor, hsv);
         hsv[2] *= 0.8f;
         int darkTextColor = Color.HSVToColor(hsv);
@@ -113,14 +113,14 @@ public class NoteActivity extends AppCompatActivity {
     }
 
     private void saveNote() {
-        // Get the title and note data
+        // Get the category and note data
         String title = fieldTitle.getText().toString();
         String note = fieldNote.getText().toString();
 
-        // Get the intent data which should contain the title of the class
+        // Get the intent data which should contain the category of the class
         String classTitle = getIntent().getStringExtra(getString(R.string.INTENT_EXTRA_TITLE));
 
-        // Then query a cursor with all of the rows of that title
+        // Then query a cursor with all of the rows of that category
         DbHelper dbHelper = new DbHelper(this);
 
         if (edit_ID == -1) {

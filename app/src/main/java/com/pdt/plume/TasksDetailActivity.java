@@ -19,7 +19,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.LocalBroadcastManager;
@@ -28,31 +27,25 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.Transition;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -68,16 +61,10 @@ import com.pdt.plume.data.DbHelper;
 import com.pdt.plume.data.DbContract.TasksEntry;
 import com.pdt.plume.services.RevisionTimerService;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import static com.pdt.plume.R.id.collapsingToolbar;
-import static com.pdt.plume.R.id.fab;
 
 public class TasksDetailActivity extends AppCompatActivity {
 
@@ -206,7 +193,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         isLandscape = getResources().getBoolean(R.bool.isLandscape);
         if (savedInstanceState != null) transitioning = false;
@@ -217,9 +204,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
 
         isTablet = getResources().getBoolean(R.bool.isTablet);
-        if (isTablet) {
-
-        } else {
+        if (!isTablet) {
             // Set window properties
             setTheme(R.style.AppTheme_NoActionBar);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
@@ -335,13 +320,10 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                         // Get the photo data
                         for (DataSnapshot photoSnapshot : dataSnapshot.child("photos").getChildren()) {
-                            String photoPath = photoSnapshot.getKey()
-                                    .replace("'dot'", ".")
-                                    .replace("'slash'", "/")
-                                    .replace("'hash'", "#")
-                                    .replace("'ampers'", "&");
+                            String photoPath = photoSnapshot.getKey();
                             photoUris.add(Uri.parse(photoPath));
                         }
+
                         // Add in the views for the photos
                         final ArrayList<Uri> photos = new ArrayList<>();
                         GridView photosLayout = (GridView) findViewById(R.id.photos_layout);
@@ -351,18 +333,19 @@ public class TasksDetailActivity extends AppCompatActivity {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                 Intent pictureIntent = new Intent(TasksDetailActivity.this, PictureActivity.class);
-                                pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photoUris.get(i).toString());
+                                pictureIntent.putExtra(getString(R.string.INTENT_EXTRA_PATH), photos.get(i).toString());
                                 View view1 = view.findViewById(R.id.photo);
                                 Bundle bundle = ActivityOptions.makeSceneTransitionAnimation
                                         (TasksDetailActivity.this, view1, view1.getTransitionName()).toBundle();
                                 startActivity(pictureIntent, bundle);
                             }
                         });
+
                         for (int i = 0; i < photoUris.size(); i++) {
                             // Check validity of URI
-                            final File file = new File(getFilesDir(), photoUris.get(i).getPath());
+                            final File file = new File(getFilesDir(), title + "safechar" + photoUris.get(i).getLastPathSegment() + ".jpg");
                             if (file.exists()) {
-                                photos.add(photoUris.get(i));
+                                photos.add(Uri.parse(file.getPath()));
                                 adapter.notifyDataSetChanged();
                             } else {
                                 // Download the photo data
@@ -502,7 +485,7 @@ public class TasksDetailActivity extends AppCompatActivity {
 
         int backgroundColor = preferences.getInt(getString(R.string.KEY_THEME_BACKGROUND_COLOUR), getResources().getColor(R.color.backgroundColor));
         findViewById(R.id.master_layout).setBackgroundColor(backgroundColor);
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         descriptionTextview.setTextColor(textColor);
 
         mDefaultColor = mPrimaryColor;
@@ -512,82 +495,50 @@ public class TasksDetailActivity extends AppCompatActivity {
         if (isLandscape)
             tempIcon.setVisibility(View.INVISIBLE);
 
-        if (iconUri.contains("art_"))
-            Palette.generateAsync(iconBitmap, new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    int mainColour;
+        if (iconUri.contains("art_")) {
+            // Set the primary color to that of the icon
+            int mainColour = Utility.getColorFromIcon(TasksDetailActivity.this, iconUri);
 
-                    if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_arts_64dp")))
-                        mainColour = Color.parseColor("#29235C");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_business_64dp")))
-                        mainColour = Color.parseColor("#575756");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_chemistry_64dp")))
-                        mainColour = Color.parseColor("#006838");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_cooking_64dp")))
-                        mainColour = Color.parseColor("#A48A7B");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_drama_64dp")))
-                        mainColour = Color.parseColor("#7B6A58");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_engineering_64dp")))
-                        mainColour = Color.parseColor("#9E9E9E");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_ict_64dp")))
-                        mainColour = Color.parseColor("#936037");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_media_64dp")))
-                        mainColour = Color.parseColor("#F39200");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_music_64dp")))
-                        mainColour = Color.parseColor("#432918");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_re_64dp")))
-                        mainColour = Color.parseColor("#D35095");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_science_64dp")))
-                        mainColour = Color.parseColor("#1D1D1B");
-                    else if (ParsedIconUri.equals(Uri.parse("android.resource://com.pdt.plume/drawable/art_woodwork_64dp")))
-                        mainColour = Color.parseColor("#424242");
-                    else {
-                        // Set the action bar colour according to the theme
-                        mainColour = palette.getVibrantColor(mPrimaryColor);
-                    }
-                    if (mainColour == mPrimaryColor)
-                        findViewById(R.id.temp_icon).setVisibility(View.GONE);
-                    if (!iconUri.contains("art_"))
-                        mainColour = mPrimaryColor;
-                    mPrimaryColor = mainColour;
-                    float[] hsv = new float[3];
-                    int color = mainColour;
-                    Color.colorToHSV(color, hsv);
-                    hsv[2] *= 0.8f; // value component
-                    mDarkColor = Color.HSVToColor(hsv);
+            if (mainColour == mPrimaryColor)
+                findViewById(R.id.temp_icon).setVisibility(View.GONE);
+            if (!iconUri.contains("art_"))
+                mainColour = mPrimaryColor;
+            mPrimaryColor = mainColour;
+            int color = mainColour;
+            Color.colorToHSV(color, hsv);
+            hsv[2] *= 0.8f; // value component
+            mDarkColor = Color.HSVToColor(hsv);
 
-                    String icon = getIntent().getStringExtra("icon");
-                    ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
+            String icon = getIntent().getStringExtra("icon");
+            ((ImageView) findViewById(R.id.temp_icon)).setImageURI(Uri.parse(icon));
 
 
-                    if (findViewById(R.id.temp_icon).getTag() != null || !transitioning) {
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
+            if (findViewById(R.id.temp_icon).getTag() != null || !transitioning) {
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mPrimaryColor));
 
-                        mToolbar.setBackgroundColor(mPrimaryColor);
-                        mRevealView = findViewById(R.id.reveal);
-                        mRevealView2 = findViewById(R.id.reveal2);
-                        mRevealBackgroundView2 = findViewById(R.id.temp_icon);
-                        mRevealBackgroundView = findViewById(R.id.revealBackground);
+                mToolbar.setBackgroundColor(mPrimaryColor);
+                mRevealView = findViewById(R.id.reveal);
+                mRevealView2 = findViewById(R.id.reveal2);
+                mRevealBackgroundView2 = findViewById(R.id.temp_icon);
+                mRevealBackgroundView = findViewById(R.id.revealBackground);
 
-                        mRevealView.setVisibility(View.INVISIBLE);
-                        mRevealView2.setVisibility(View.INVISIBLE);
-                        mRevealBackgroundView.setVisibility(View.INVISIBLE);
-                        mRevealBackgroundView2.setVisibility(View.INVISIBLE);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                            collapsingToolbar.setBackground(new ColorDrawable(mainColour));
-                        } else {
-                            collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
-                        }
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        getWindow().setStatusBarColor(mDarkColor);
-                    }
-
-                    markAsDoneView.setTextColor(mPrimaryColor);
+                mRevealView.setVisibility(View.INVISIBLE);
+                mRevealView2.setVisibility(View.INVISIBLE);
+                mRevealBackgroundView.setVisibility(View.INVISIBLE);
+                mRevealBackgroundView2.setVisibility(View.INVISIBLE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    collapsingToolbar.setBackground(new ColorDrawable(mainColour));
+                } else {
+                    collapsingToolbar.setBackgroundDrawable(new ColorDrawable(mainColour));
                 }
-            }); else {
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(mDarkColor);
+            }
+
+            markAsDoneView.setTextColor(mPrimaryColor);
+        } else {
             hsv = new float[3];
             int color = mPrimaryColor;
             Color.colorToHSV(color, hsv);
@@ -768,12 +719,17 @@ public class TasksDetailActivity extends AppCompatActivity {
 
                                     // Navigate back to MainActivity
                                     Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                 } else {
                                     // Delete from SQLite
                                     DbHelper dbHelper = new DbHelper(TasksDetailActivity.this);
                                     dbHelper.deleteTaskItem(TasksDetailActivity.this.id);
+
+                                    // Navigate back to MainActivity
+                                    Intent intent = new Intent(TasksDetailActivity.this, MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
                                 }
                             }
                         })
@@ -811,7 +767,7 @@ public class TasksDetailActivity extends AppCompatActivity {
                             intent.putExtra(getResources().getString(R.string.INTENT_EXTRA_DUEDATE), dueDate);
 
                             // Create an intent to NewScheduleActivity and include the selected
-                            // item's id, title, and an edit flag as extras
+                            // item's id, category, and an edit flag as extras
                             intent.putExtra(getResources().getString(R.string.INTENT_FLAG_EDIT), true);
                             taskRef.removeEventListener(this);
                             startActivity(intent);
@@ -862,7 +818,7 @@ public class TasksDetailActivity extends AppCompatActivity {
     private void startTimer() {
         // REVISION TIMER HERE
         final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_number_picker);
+        dialog.setContentView(R.layout.dialog_class_notification);
         Button buttonDone = (Button) dialog.findViewById(R.id.button_done);
         final NumberPicker picker = (NumberPicker) dialog.findViewById(R.id.number_picker);
         picker.setMinValue(1);

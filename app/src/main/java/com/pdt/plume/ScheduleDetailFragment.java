@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,8 +37,6 @@ import com.pdt.plume.data.DbContract;
 import com.pdt.plume.data.DbHelper;
 
 import java.util.ArrayList;
-
-import static com.pdt.plume.R.string.tasks;
 
 
 /**
@@ -185,7 +182,7 @@ public class ScheduleDetailFragment extends Fragment {
         rootview.findViewById(R.id.schedule_detail_notes_layout).setBackgroundColor(backgroundColor);
         rootview.findViewById(R.id.schedule_detail_tasks_layout).setBackgroundColor(backgroundColor);
 
-        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TITLE_COLOUR), getResources().getColor(R.color.gray_900));
+        int textColor = preferences.getInt(getString(R.string.KEY_THEME_TEXT_COLOUR), getResources().getColor(R.color.gray_900));
         Color.colorToHSV(textColor, hsv);
         hsv[2] *= 0.8f;
         int darkTextColor = Color.HSVToColor(hsv);
@@ -205,7 +202,7 @@ public class ScheduleDetailFragment extends Fragment {
         TextView addNoteTextview = (TextView) rootview.findViewById(R.id.schedule_detail_notes_textview);
         addNoteTextview.setOnClickListener(addNoteListener());
 
-        // Get the class's data based on the title and fill in the fields
+        // Get the class's data based on the category and fill in the fields
         // Also inflate the tasks list
         Bundle args = getArguments();
         if (args != null) {

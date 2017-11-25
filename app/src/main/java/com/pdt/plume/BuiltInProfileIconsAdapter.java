@@ -7,15 +7,28 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-public class BuiltInProfileIconsAdapter extends BaseAdapter {
-    private Context mContext;
+import static com.pdt.plume.R.id.imageView;
 
-    public BuiltInProfileIconsAdapter(Context c) {
+public class BuiltInProfileIconsAdapter extends BaseAdapter {
+
+    private Context mContext;
+    private int selection;
+
+    public BuiltInProfileIconsAdapter(Context c, int selection) {
         mContext = c;
+        this.selection = selection;
+
     }
 
     public int getCount() {
-        return mThumbIds.length;
+        switch (selection) {
+            case 0:
+                return mThumbIds.length;
+            case 1:
+                return mThumbIdsHalloween.length;
+            default:
+                return 0;
+        }
     }
 
     public Object getItem(int position) {
@@ -40,7 +53,15 @@ public class BuiltInProfileIconsAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        imageView.setImageResource(mThumbIds[position]);
+        switch (selection) {
+            case 0:
+                imageView.setImageResource(mThumbIds[position]);
+                break;
+            case 1:
+                imageView.setImageResource(mThumbIdsHalloween[position]);
+                break;
+        }
+
         return imageView;
     }
 
@@ -54,4 +75,17 @@ public class BuiltInProfileIconsAdapter extends BaseAdapter {
             R.drawable.art_profile_mustache,
             R.drawable.art_profile_pandakun
     };
+
+    private Integer[] mThumbIdsHalloween = {
+            R.drawable.art_profile_catgirl,
+            R.drawable.art_profile_jason,
+            R.drawable.art_profile_morty,
+            R.drawable.art_profile_pennywise,
+            R.drawable.art_profile_pumpkin,
+            R.drawable.art_profile_skull,
+            R.drawable.art_profile_vampire,
+            R.drawable.art_profile_witch,
+            R.drawable.art_profile_zombie
+    };
+
 }

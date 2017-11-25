@@ -13,5 +13,5 @@
         android:drawable="@color/gray_400" />
 
     <!-- Default, "just hangin' out" state. -->
-    <item android:drawable="@color/red_100" />
+    <item android:drawable="@color/bg_red_transparent" />
 </selector>

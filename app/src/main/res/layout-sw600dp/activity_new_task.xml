@@ -211,6 +211,51 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/field_calendar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginStart="16dp"
+                        android:visibility="gone"
+                        android:layout_marginTop="24dp"
+                        android:orientation="horizontal"
+                        android:paddingEnd="64dp"
+                        android:paddingLeft="64dp"
+                        android:paddingRight="64dp"
+                        android:paddingStart="64dp">
+
+                        <ImageView
+                            android:id="@+id/imageView7"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_calendar_black_24dp"
+                            android:tint="@color/gray_700" />
+
+                        <TextView
+                            android:id="@+id/add_to_calendar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="32dp"
+                            android:layout_marginStart="32dp"
+                            android:text="@string/addToCalendar"
+                            android:textColor="@color/gray_900"
+                            android:textSize="18sp" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <CheckBox
+                            android:id="@+id/field_add_to_calendar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"

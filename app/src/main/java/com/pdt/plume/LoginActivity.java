@@ -417,7 +417,7 @@ public class LoginActivity extends AppCompatActivity {
                                         }
                                     });
                             Bundle parameters = new Bundle();
-                            parameters.putString("fields", "id,title");
+                            parameters.putString("fields", "id,category");
                             request.setParameters(parameters);
                             request.executeAsync();
 
